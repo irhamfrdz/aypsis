@@ -191,9 +191,15 @@ class UpdateManifestPenerima extends Command
             // --- 2. Update Manifest dari Prospek -> Tanda Terima ---
             $this->info('--- Memproses Update Manifest ---');
 
-            // Query manifest yang memiliki prospek_id
-            $query = Manifest::whereNotNull('prospek_id')
-                ->with(['prospek.tandaTerima']);
+            // Query manifest yang memiliki prospek_id ATAU nomor_tanda_terima ATAU suratJalanBongkaran
+            $query = Manifest::where(function($q) {
+                $q->whereNotNull('prospek_id')
+                  ->orWhere(function($sq) {
+                      $sq->whereNotNull('nomor_tanda_terima')
+                        ->where('nomor_tanda_terima', '!=', '');
+                  })
+                  ->orWhereHas('suratJalanBongkaran');
+            })->with(['prospek.tandaTerima', 'suratJalanBongkaran']);
 
             if ($manifestId) {
                 $query->where('id', $manifestId);
@@ -220,6 +226,7 @@ class UpdateManifestPenerima extends Command
                     $tandaTerima = $manifest->prospek ? $manifest->prospek->tandaTerima : null;
                     $tttsj = null;
                     $tandaTerimaLcl = null;
+                    $sjBongkaran = $manifest->suratJalanBongkaran; // Direct relation for bongkaran
                     
                     if (!$tandaTerima && $manifest->prospek && $manifest->prospek->keterangan) {
                         if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $manifest->prospek->keterangan, $matches)) {
@@ -231,11 +238,28 @@ class UpdateManifestPenerima extends Command
                     }
 
                     // Jika masih belum ketemu, coba cari di TandaTerimaLcl berdasarkan nomor_tanda_terima
-                    if (!$tandaTerima && !$tttsj && $manifest->nomor_tanda_terima) {
+                    if (!$tandaTerima && !$tttsj && !$sjBongkaran && $manifest->nomor_tanda_terima) {
                         $tandaTerimaLcl = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', $manifest->nomor_tanda_terima)->first();
+
+                        // Coba hapus prefix jika tidak ketemu (misal: "LS1 0019560" -> "0019560")
+                        if (!$tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
+                            $parts = explode(' ', $manifest->nomor_tanda_terima);
+                            $lastPart = end($parts);
+                            $tandaTerimaLcl = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', trim($lastPart))->first();
+                        }
+
+                        // Jika MASIH belum ketemu, cek di table singular (legacy)
+                        if (!$tandaTerimaLcl) {
+                            $tandaTerimaLcl = DB::table('tanda_terima_lcl')->where('nomor_tanda_terima', $manifest->nomor_tanda_terima)->first();
+                            if (!$tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
+                                $parts = explode(' ', $manifest->nomor_tanda_terima);
+                                $lastPart = end($parts);
+                                $tandaTerimaLcl = DB::table('tanda_terima_lcl')->where('nomor_tanda_terima', trim($lastPart))->first();
+                            }
+                        }
                     }
                     
-                    if (!$tandaTerima && !$tttsj && !$tandaTerimaLcl) {
+                    if (!$tandaTerima && !$tttsj && !$tandaTerimaLcl && !$sjBongkaran) {
                         $bar->advance();
                         continue;
                     }
@@ -263,11 +287,18 @@ class UpdateManifestPenerima extends Command
                         $nomorTandaTerima = $tttsj->no_tanda_terima;
                         $sealTandaTerima = $tttsj->no_seal;
                     } elseif ($tandaTerimaLcl) {
-                        $penerimaName = $tandaTerimaLcl->nama_penerima;
-                        $alamatPenerima = $tandaTerimaLcl->alamat_penerima;
-                        $pengirimName = $tandaTerimaLcl->nama_pengirim;
-                        $alamatPengirim = $tandaTerimaLcl->alamat_pengirim;
-                        $nomorTandaTerima = $tandaTerimaLcl->nomor_tanda_terima;
+                        // Handle both Model and stdClass (DB::table)
+                        $penerimaName = isset($tandaTerimaLcl->nama_penerima) ? $tandaTerimaLcl->nama_penerima : null;
+                        $alamatPenerima = isset($tandaTerimaLcl->alamat_penerima) ? $tandaTerimaLcl->alamat_penerima : null;
+                        $pengirimName = isset($tandaTerimaLcl->nama_pengirim) ? $tandaTerimaLcl->nama_pengirim : null;
+                        $alamatPengirim = isset($tandaTerimaLcl->alamat_pengirim) ? $tandaTerimaLcl->alamat_pengirim : null;
+                        $nomorTandaTerima = isset($tandaTerimaLcl->nomor_tanda_terima) ? $tandaTerimaLcl->nomor_tanda_terima : null;
+                    } elseif ($sjBongkaran) {
+                        $penerimaName = $sjBongkaran->penerima;
+                        $alamatPenerima = $sjBongkaran->tujuan_alamat;
+                        $pengirimName = $sjBongkaran->pengirim;
+                        $nomorTandaTerima = $manifest->nomor_tanda_terima; // Bongkaran doesn't always have a distinct TT number in the same field
+                        $sealTandaTerima = $sjBongkaran->no_seal;
                     }
                     
                     // Cek apakah ada perubahan
