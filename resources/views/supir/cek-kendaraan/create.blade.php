@@ -83,11 +83,17 @@
                             </div>
                         </div>
                         
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Odometer (KM)</label>
-                            <div class="relative">
-                                <input type="number" name="odometer" placeholder="KM" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">KM</span>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Odometer (KM)</label>
+                                <div class="relative">
+                                    <input type="number" name="odometer" placeholder="KM" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">KM</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nomor SIM</label>
+                                <input type="text" name="nomor_sim" placeholder="Masukkan No. SIM" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
                             </div>
                         </div>
 
@@ -101,6 +107,16 @@
                                 <input type="date" name="masa_berlaku_kir" id="masa_berlaku_kir" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
                             </div>
                         </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Berlaku SIM (Dari)</label>
+                                <input type="date" name="masa_berlaku_sim_start" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Berlaku SIM (Sampai)</label>
+                                <input type="date" name="masa_berlaku_sim_end" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
+                            </div>
                     </div>
                 </div>
 

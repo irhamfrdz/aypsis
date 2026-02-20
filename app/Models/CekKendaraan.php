@@ -78,6 +78,9 @@ class CekKendaraan extends Model
         'odometer',
         'masa_berlaku_stnk',
         'masa_berlaku_kir',
+        'nomor_sim',
+        'masa_berlaku_sim_start',
+        'masa_berlaku_sim_end',
         'catatan',
         'pernyataan',
         'foto_sebelum',
@@ -90,6 +93,8 @@ class CekKendaraan extends Model
         'odometer' => 'integer',
         'masa_berlaku_stnk' => 'date',
         'masa_berlaku_kir' => 'date',
+        'masa_berlaku_sim_start' => 'date',
+        'masa_berlaku_sim_end' => 'date',
     ];
 
     public function karyawan()
