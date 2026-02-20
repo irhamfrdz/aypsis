@@ -33,22 +33,11 @@
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half Folio'];
 
-    // Resolve nama_kapal dan no_voyage — bisa array atau string
-    $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal ?? '-'];
-    $noVoyages  = is_array($biayaKapal->no_voyage)  ? $biayaKapal->no_voyage  : [$biayaKapal->no_voyage  ?? '-'];
+    // Gunakan relasi perlengkapanDetails jika ada, fallback ke array lama
+    $details = $biayaKapal->perlengkapanDetails ?? collect();
 
-    // Build rows: zip nama_kapal dan no_voyage; nominal dibagi rata
-    $jumlahBaris = max(count($namaKapals), count($noVoyages), 1);
-    $nominalPerBaris = $jumlahBaris > 0 ? ($biayaKapal->nominal ?? 0) / $jumlahBaris : 0;
-
-    $rows = [];
-    for ($i = 0; $i < $jumlahBaris; $i++) {
-        $rows[] = [
-            'nama_kapal' => $namaKapals[$i] ?? '-',
-            'no_voyage'  => $noVoyages[$i]  ?? '-',
-            'nominal'    => $nominalPerBaris,
-        ];
-    }
+    // Hitung total dari relasi detail, atau dari nominal di parent jika tidak ada
+    $grandTotal = $details->sum('jumlah_biaya') ?: ($biayaKapal->nominal ?? 0);
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -187,7 +176,7 @@
             <option value="A4"         {{ $paperSize == 'A4'         ? 'selected' : '' }}>A4</option>
         </select>
         <button onclick="window.print()" style="width:100%;padding:5px;background:#007bff;color:white;border:none;border-radius:3px;cursor:pointer;">
-            🖨️ Cetak
+            Cetak
         </button>
     </div>
 
@@ -251,30 +240,55 @@
             <thead>
                 <tr>
                     <th style="width:5%;">No</th>
-                    <th style="width:35%;">Nama Kapal</th>
-                    <th style="width:25%;">Nomor Voyage</th>
-                    <th style="width:35%;">Jumlah Biaya</th>
+                    <th style="width:30%;">Nama Kapal</th>
+                    <th style="width:20%;">Nomor Voyage</th>
+                    <th style="width:30%;">Keterangan</th>
+                    <th style="width:15%;">Jumlah Biaya</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($rows as $i => $row)
+                @forelse($details as $i => $item)
                 <tr>
                     <td class="center">{{ $i + 1 }}</td>
-                    <td>{{ $row['nama_kapal'] }}</td>
-                    <td>{{ $row['no_voyage'] }}</td>
-                    <td class="right">Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
+                    <td>{{ $item->nama_kapal ?? '-' }}</td>
+                    <td>{{ $item->no_voyage ?? '-' }}</td>
+                    <td>{{ $item->keterangan ?? '-' }}</td>
+                    <td class="right">Rp {{ number_format($item->jumlah_biaya, 0, ',', '.') }}</td>
                 </tr>
-                @endforeach
+                @empty
+                {{-- fallback: data lama disimpan di biaya_kapals --}}
+                <tr>
+                    <td class="center">1</td>
+                    <td>
+                        @php
+                            $nk = is_array($biayaKapal->nama_kapal)
+                                ? implode(', ', array_filter($biayaKapal->nama_kapal))
+                                : ($biayaKapal->nama_kapal ?? '-');
+                        @endphp
+                        {{ $nk }}
+                    </td>
+                    <td>
+                        @php
+                            $nv = is_array($biayaKapal->no_voyage)
+                                ? implode(', ', array_filter($biayaKapal->no_voyage))
+                                : ($biayaKapal->no_voyage ?? '-');
+                        @endphp
+                        {{ $nv }}
+                    </td>
+                    <td>{{ $biayaKapal->keterangan ?? '-' }}</td>
+                    <td class="right">Rp {{ number_format($biayaKapal->nominal ?? 0, 0, ',', '.') }}</td>
+                </tr>
+                @endforelse
                 <!-- Total row -->
                 <tr class="total-row">
-                    <td colspan="3" class="right">TOTAL:</td>
-                    <td class="right">Rp {{ number_format($biayaKapal->nominal ?? 0, 0, ',', '.') }}</td>
+                    <td colspan="4" class="right">TOTAL:</td>
+                    <td class="right">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
         </table>
 
-        <!-- Keterangan -->
-        @if($biayaKapal->keterangan)
+        <!-- Keterangan global (opsional) -->
+        @if($biayaKapal->keterangan && $details->count() == 0)
         <div class="notes">
             <strong>Keterangan:</strong><br>
             {!! nl2br(e($biayaKapal->keterangan)) !!}

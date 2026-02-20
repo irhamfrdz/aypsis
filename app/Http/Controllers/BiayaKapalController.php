@@ -14,6 +14,7 @@ use App\Models\BiayaKapalOperasional;
 use App\Models\BiayaKapalOperasionalItem;
 use App\Models\BiayaKapalTrucking;
 use App\Models\BiayaKapalStuffing;
+use App\Models\BiayaKapalPerlengkapan;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaTanpaSuratJalan;
 use App\Models\TandaTerimaLcl;
@@ -146,7 +147,7 @@ class BiayaKapalController extends Controller
         $data = $request->all();
         
         // Root fields
-        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air', 'perlengkapan_jumlah_biaya'];
+        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air'];
         foreach ($fieldsToClean as $field) {
             if (isset($data[$field]) && $data[$field] !== null) {
                 $data[$field] = str_replace(',', '.', str_replace('.', '', $data[$field]));
@@ -894,40 +895,34 @@ class BiayaKapalController extends Controller
                 }
             }
 
-            // BIAYA PERLENGKAPAN MULTI-SECTION: simpan setiap section ke biaya_kapals
+            // BIAYA PERLENGKAPAN: simpan setiap section ke tabel biaya_kapal_perlengkapan
             if (!empty($validated['perlengkapan_sections'])) {
-                $sections = $validated['perlengkapan_sections'];
+                $perlTotal = 0;
 
-                // Kumpulkan semua nama_kapal, no_voyage, keterangan, dan total nominal
-                $perlNamaKapal  = [];
-                $perlNoVoyage   = [];
-                $perlKeterangan = [];
-                $perlTotal      = 0;
-
-                foreach ($sections as $section) {
-                    if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) continue;
-
-                    if (!empty($section['nama_kapal'])) {
-                        $perlNamaKapal[] = $section['nama_kapal'];
-                    }
-                    if (!empty($section['no_voyage'])) {
-                        $perlNoVoyage[] = $section['no_voyage'];
-                    }
-                    if (!empty($section['keterangan'])) {
-                        $perlKeterangan[] = $section['keterangan'];
+                foreach ($validated['perlengkapan_sections'] as $section) {
+                    // Skip baris kosong
+                    if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) {
+                        continue;
                     }
 
-                    // Clean & accumulate jumlah
-                    $jumlah = str_replace(',', '.', str_replace('.', '', $section['jumlah_biaya'] ?? '0'));
-                    $perlTotal += floatval($jumlah);
+                    // Bersihkan & konversi jumlah_biaya
+                    $jumlah = floatval(
+                        str_replace(',', '.', str_replace('.', '', $section['jumlah_biaya'] ?? '0'))
+                    );
+
+                    BiayaKapalPerlengkapan::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'nama_kapal'     => $section['nama_kapal']     ?? null,
+                        'no_voyage'      => $section['no_voyage']      ?? null,
+                        'keterangan'     => $section['keterangan']     ?? null,
+                        'jumlah_biaya'   => $jumlah,
+                    ]);
+
+                    $perlTotal += $jumlah;
                 }
 
-                $biayaKapal->update([
-                    'nama_kapal'  => !empty($perlNamaKapal)  ? $perlNamaKapal  : null,
-                    'no_voyage'   => !empty($perlNoVoyage)   ? $perlNoVoyage   : null,
-                    'keterangan'  => !empty($perlKeterangan) ? implode('; ', $perlKeterangan) : null,
-                    'nominal'     => $perlTotal,
-                ]);
+                // Update nominal di biaya_kapals dengan total semua section
+                $biayaKapal->update(['nominal' => $perlTotal]);
             }
 
             DB::commit();
@@ -1027,7 +1022,7 @@ class BiayaKapalController extends Controller
      */
     public function printPerlengkapan(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya']);
+        $biayaKapal->load(['klasifikasiBiaya', 'perlengkapanDetails']);
         return view('biaya-kapal.print-perlengkapan', compact('biayaKapal'));
     }
 
