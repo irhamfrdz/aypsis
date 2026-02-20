@@ -21,6 +21,57 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
     public function collection()
     {
         $rows = $this->manifests->map(function($m, $index) {
+            $tandaTerima = $m->prospek ? $m->prospek->tandaTerima : null;
+
+            // Logic untuk Kuantitas & Satuan (PKGS)
+            $qtyUnit = '';
+            // Cek manifest dulu
+            if (!empty($m->kuantitas) || !empty($m->satuan)) {
+                $qtyUnit = trim(($m->kuantitas ?? '') . ' ' . ($m->satuan ?? ''));
+            } 
+            // Fallback ke Tanda Terima
+            elseif ($tandaTerima) {
+                if (!empty($tandaTerima->dimensi_details) && is_array($tandaTerima->dimensi_details)) {
+                    $parts = [];
+                    foreach ($tandaTerima->dimensi_details as $item) {
+                        $q = $item['jumlah'] ?? '';
+                        $s = $item['satuan'] ?? '';
+                        if ($q || $s) $parts[] = trim("$q $s");
+                    }
+                    $qtyUnit = implode("\n", $parts);
+                } else {
+                    // Fallback ke kolom biasa jika dimensi_details kosong tapi ada jumlah/satuan
+                    $q = $tandaTerima->jumlah;
+                    $s = $tandaTerima->satuan;
+                    if ($q || $s) {
+                        $qtyUnit = trim(($q ?? '') . ' ' . ($s ?? ''));
+                    }
+                }
+            }
+
+            // Logic untuk Nama Barang (DESCRIPTION OF GOODS)
+            $goodsName = '';
+            // Cek manifest dulu
+            if (!empty($m->nama_barang)) {
+                $goodsName = $m->nama_barang;
+            } 
+            // Fallback ke Tanda Terima
+            elseif ($tandaTerima) {
+                if (!empty($tandaTerima->dimensi_details) && is_array($tandaTerima->dimensi_details)) {
+                    $names = [];
+                    foreach ($tandaTerima->dimensi_details as $item) {
+                        $names[] = $item['nama_barang'] ?? '';
+                    }
+                    $goodsName = implode("\n", $names);
+                } elseif (!empty($tandaTerima->nama_barang)) {
+                    if (is_array($tandaTerima->nama_barang)) {
+                        $goodsName = implode(", ", $tandaTerima->nama_barang);
+                    } else {
+                        $goodsName = $tandaTerima->nama_barang;
+                    }
+                }
+            }
+
             return [
                 $index + 1,
                 $m->nomor_urut ?? '-',
@@ -30,8 +81,8 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
                 $m->no_seal ?? '-',
                 $m->tipe_kontainer,
                 $m->size_kontainer,
-                trim(($m->kuantitas ?? '') . ' ' . ($m->satuan ?? '')),
-                $m->nama_barang,
+                $qtyUnit,
+                $goodsName,
                 $m->pengirim,
                 $m->penerima,
                 $m->prospek && $m->prospek->tandaTerima ? $m->prospek->tandaTerima->meter_kubik : ($m->volume ?? '-'),
@@ -76,9 +127,12 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
                 $sheet->getStyle('A1:N1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle('A1:N1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
                 
-                // Add cell borders to all data
+                // Add cell borders and wrap text to all data
                 $lastRow = count($this->manifests) + 1;
-                $sheet->getStyle('A1:N' . $lastRow)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                $range = 'A1:N' . $lastRow;
+                $sheet->getStyle($range)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                $sheet->getStyle($range)->getAlignment()->setWrapText(true);
+                $sheet->getStyle($range)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
             }
         ];
     }
