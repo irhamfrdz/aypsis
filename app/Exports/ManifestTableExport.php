@@ -48,7 +48,7 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
             'No. Urut',
             'No. BL',
             'No. Tanda Terima',
-            'No. Kontainer',
+            'MARK AND NUMBERS',
             'No. Seal',
             'Tipe',
             'Size',
