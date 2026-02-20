@@ -253,6 +253,12 @@ class UpdateManifestPenerima extends Command
                     if ($nomorTandaTerima && $manifest->nomor_tanda_terima != $nomorTandaTerima) {
                         $hasChanges = true;
                     }
+
+                    // Sync No. Seal if empty or different
+                    $sealTandaTerima = $tandaTerima ? $tandaTerima->no_seal : ($tttsj ? $tttsj->no_seal : null);
+                    if ($sealTandaTerima && $manifest->no_seal != $sealTandaTerima) {
+                        $hasChanges = true;
+                    }
                     
                     if ($hasChanges) {
                         $totalWithChanges++;
@@ -267,6 +273,9 @@ class UpdateManifestPenerima extends Command
                             }
                             if ($nomorTandaTerima) {
                                 $manifest->nomor_tanda_terima = $nomorTandaTerima;
+                            }
+                            if ($sealTandaTerima) {
+                                $manifest->no_seal = $sealTandaTerima;
                             }
                             $manifest->save();
                             $totalUpdated++;

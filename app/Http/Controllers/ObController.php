@@ -1429,9 +1429,19 @@ class ObController extends Controller
                         $manifest->pengirim   = $prospekPtPengirim;
                         $manifest->penerima   = $prospekTujuanPengiriman;
 
+                        // Ambil nomor seal dari prospek jika di manifest masih kosong
+                        if (empty($manifest->no_seal) && $record->prospek && $record->prospek->no_seal) {
+                            $manifest->no_seal = $record->prospek->no_seal;
+                        }
+
                         // Tambahkan nomor tanda terima ke manifest
                         if ($record->prospek && $record->prospek->tandaTerima) {
                             $manifest->nomor_tanda_terima = $record->prospek->tandaTerima->no_tanda_terima;
+                            
+                            // Ambil seal dari tanda terima jika masih kosong
+                            if (empty($manifest->no_seal) && $record->prospek->tandaTerima->no_seal) {
+                                $manifest->no_seal = $record->prospek->tandaTerima->no_seal;
+                            }
                         } elseif ($record->prospek && $record->prospek->keterangan) {
                             // Ekstrak dari keterangan jika ini adalah TTTSJ
                             if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $record->prospek->keterangan, $matches)) {
