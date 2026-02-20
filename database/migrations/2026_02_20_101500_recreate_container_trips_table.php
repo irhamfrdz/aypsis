@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         // Drop old table if exists to recreate with new schema
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('container_trips');
+        Schema::enableForeignKeyConstraints();
         
         Schema::create('container_trips', function (Blueprint $table) {
             $table->id();
