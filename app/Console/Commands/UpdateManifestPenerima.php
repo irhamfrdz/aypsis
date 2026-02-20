@@ -219,6 +219,7 @@ class UpdateManifestPenerima extends Command
                     // Cek apakah prospek memiliki tanda terima atau merupakan TTTSJ
                     $tandaTerima = $manifest->prospek ? $manifest->prospek->tandaTerima : null;
                     $tttsj = null;
+                    $tandaTerimaLcl = null;
                     
                     if (!$tandaTerima && $manifest->prospek && $manifest->prospek->keterangan) {
                         if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $manifest->prospek->keterangan, $matches)) {
@@ -228,16 +229,46 @@ class UpdateManifestPenerima extends Command
                             }
                         }
                     }
+
+                    // Jika masih belum ketemu, coba cari di TandaTerimaLcl berdasarkan nomor_tanda_terima
+                    if (!$tandaTerima && !$tttsj && $manifest->nomor_tanda_terima) {
+                        $tandaTerimaLcl = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', $manifest->nomor_tanda_terima)->first();
+                    }
                     
-                    if (!$tandaTerima && !$tttsj) {
+                    if (!$tandaTerima && !$tttsj && !$tandaTerimaLcl) {
                         $bar->advance();
                         continue;
                     }
 
-                    // Ambil data penerima dari tanda terima atau tttsj
-                    $penerimaName = $tandaTerima ? $tandaTerima->penerima : ($tttsj ? $tttsj->penerima : null);
-                    $alamatPenerima = $tandaTerima ? $tandaTerima->alamat_penerima : ($tttsj ? $tttsj->alamat_penerima : null);
-                    $nomorTandaTerima = $tandaTerima ? $tandaTerima->no_tanda_terima : ($tttsj ? $tttsj->no_tanda_terima : null);
+                    // Ambil data penerima dari tanda terima, tttsj, atau tandaTerimaLcl
+                    $penerimaName = null;
+                    $alamatPenerima = null;
+                    $pengirimName = null;
+                    $alamatPengirim = null;
+                    $nomorTandaTerima = null;
+                    $sealTandaTerima = null;
+
+                    if ($tandaTerima) {
+                        $penerimaName = $tandaTerima->penerima;
+                        $alamatPenerima = $tandaTerima->alamat_penerima;
+                        $pengirimName = $tandaTerima->pengirim;
+                        $alamatPengirim = $tandaTerima->alamat_pengirim; // Assuming it exists if needed, mostly it's empty in TandaTerima though
+                        $nomorTandaTerima = $tandaTerima->no_tanda_terima;
+                        $sealTandaTerima = $tandaTerima->no_seal;
+                    } elseif ($tttsj) {
+                        $penerimaName = $tttsj->penerima;
+                        $alamatPenerima = $tttsj->alamat_penerima;
+                        $pengirimName = $tttsj->pengirim;
+                        $alamatPengirim = $tttsj->alamat_pengirim;
+                        $nomorTandaTerima = $tttsj->no_tanda_terima;
+                        $sealTandaTerima = $tttsj->no_seal;
+                    } elseif ($tandaTerimaLcl) {
+                        $penerimaName = $tandaTerimaLcl->nama_penerima;
+                        $alamatPenerima = $tandaTerimaLcl->alamat_penerima;
+                        $pengirimName = $tandaTerimaLcl->nama_pengirim;
+                        $alamatPengirim = $tandaTerimaLcl->alamat_pengirim;
+                        $nomorTandaTerima = $tandaTerimaLcl->nomor_tanda_terima;
+                    }
                     
                     // Cek apakah ada perubahan
                     $hasChanges = false;
@@ -250,12 +281,19 @@ class UpdateManifestPenerima extends Command
                         $hasChanges = true;
                     }
 
+                    if ($pengirimName && $manifest->pengirim != $pengirimName) {
+                        $hasChanges = true;
+                    }
+
+                    if ($alamatPengirim && $manifest->alamat_pengirim != $alamatPengirim) {
+                        $hasChanges = true;
+                    }
+
                     if ($nomorTandaTerima && $manifest->nomor_tanda_terima != $nomorTandaTerima) {
                         $hasChanges = true;
                     }
 
                     // Sync No. Seal if empty or different
-                    $sealTandaTerima = $tandaTerima ? $tandaTerima->no_seal : ($tttsj ? $tttsj->no_seal : null);
                     if ($sealTandaTerima && $manifest->no_seal != $sealTandaTerima) {
                         $hasChanges = true;
                     }
@@ -270,6 +308,12 @@ class UpdateManifestPenerima extends Command
                             }
                             if ($alamatPenerima) {
                                 $manifest->alamat_penerima = $alamatPenerima;
+                            }
+                            if ($pengirimName) {
+                                $manifest->pengirim = $pengirimName;
+                            }
+                            if ($alamatPengirim) {
+                                $manifest->alamat_pengirim = $alamatPengirim;
                             }
                             if ($nomorTandaTerima) {
                                 $manifest->nomor_tanda_terima = $nomorTandaTerima;

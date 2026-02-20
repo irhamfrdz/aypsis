@@ -1077,7 +1077,7 @@ class ObController extends Controller
                             $manifest->no_voyage = $manifestDataForLater['no_voyage'];
                             $manifest->nomor_tanda_terima = $tandaTerima->nomor_tanda_terima;
                             $manifest->pengirim = $tandaTerima->nama_pengirim;
-                            $manifest->penerima = $tandaTerima->penerima;
+                            $manifest->penerima = $tandaTerima->nama_penerima;
                             $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
                             $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
                             $namaBarang = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
@@ -1334,7 +1334,7 @@ class ObController extends Controller
                         $manifest->no_voyage       = $noVoyage;
                         $manifest->nomor_tanda_terima = $tandaTerima->nomor_tanda_terima;
                         $manifest->pengirim        = $tandaTerima->nama_pengirim;
-                        $manifest->penerima        = $tandaTerima->penerima;
+                        $manifest->penerima        = $tandaTerima->nama_penerima;
                         $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
                         $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
                         $namaBarangItems = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
