@@ -449,15 +449,32 @@
                             <td>{{ $invoice->nomor_invoice }}</td>
                             <td class="text-center">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
                             @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
-                                <td>{{ $invoice->suratJalan->no_surat_jalan ?? '-' }}</td>
                                 <td>
                                     @php
-                                        $nomorAccurateSebelumnya = '-';
-                                        if ($invoice->suratJalan && $invoice->suratJalan->pembayaranPranotaUangJalan) {
-                                            $nomorAccurateSebelumnya = $invoice->suratJalan->pembayaranPranotaUangJalan->nomor_accurate ?? '-';
+                                        // Attempt to get from relation first
+                                        $noSJ = $invoice->suratJalan->no_surat_jalan ?? null;
+                                        $noAccurate = null;
+                                        if ($invoice->suratJalan) {
+                                            $pymt = $invoice->suratJalan->pembayaranPranotaUangJalan ?? 
+                                                    ($invoice->suratJalan->getPembayaranPranotaUangJalanAttribute() ?? null);
+                                            $noAccurate = $pymt->nomor_accurate ?? '-';
                                         }
+
+                                        // Fallback to snapshot in keterangan if deleted
+                                        if (!$noSJ && !empty($invoice->keterangan)) {
+                                            $snapshot = json_decode($invoice->keterangan, true);
+                                            if (is_array($snapshot)) {
+                                                $noSJ = $snapshot['snapshot_no_surat_jalan'] ?? null;
+                                                $noAccurate = $snapshot['snapshot_no_accurate'] ?? ($noAccurate ?? '-');
+                                            }
+                                        }
+                                        $noSJ = $noSJ ?? '-';
+                                        $noAccurate = $noAccurate ?? '-';
                                     @endphp
-                                    {{ $nomorAccurateSebelumnya }}
+                                    {{ $noSJ }}
+                                </td>
+                                <td>
+                                    {{ $noAccurate }}
                                 </td>
                             @endif
                             <td>

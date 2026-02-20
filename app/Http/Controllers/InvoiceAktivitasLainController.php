@@ -443,6 +443,25 @@ class InvoiceAktivitasLainController extends Controller
                 } else {
                     $noSuratJalan = $suratJalan->no_surat_jalan;
                 }
+                
+                // Get Nomor Accurate if available
+                $noAccurate = null;
+                // Use snake_case for accessor
+                if (isset($suratJalan->pembayaran_pranota_uang_jalan)) {
+                    $noAccurate = $suratJalan->pembayaran_pranota_uang_jalan->nomor_accurate;
+                } elseif (method_exists($suratJalan, 'getPembayaranPranotaUangJalanAttribute')) {
+                     // Fallback
+                     $payment = $suratJalan->getPembayaranPranotaUangJalanAttribute();
+                     if ($payment) $noAccurate = $payment->nomor_accurate;
+                }
+
+                // Snapshot data to invoice description/keterangan before deleting
+                $invoice->update([
+                    'keterangan' => json_encode([
+                        'snapshot_no_surat_jalan' => $noSuratJalan,
+                        'snapshot_no_accurate' => $noAccurate
+                    ])
+                ]);
 
                 // Update related Prospeks
                 $query = \App\Models\Prospek::where('surat_jalan_id', $request->surat_jalan_id);
