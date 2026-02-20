@@ -102,6 +102,17 @@
                 <p class="font-semibold text-gray-600">Nomor KK</p>
                 <p class="text-gray-800">{{ $karyawan->kk ?? '-' }}</p>
             </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Nomor SIM</p>
+                <p class="text-gray-800">{{ $karyawan->no_sim ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">Masa Berlaku SIM</p>
+                <p class="text-gray-800">
+                    {{ $formatDate($karyawan->sim_berlaku_mulai, 'd/M/Y') }} s/d {{ $formatDate($karyawan->sim_berlaku_sampai, 'd/M/Y') }}
+                </p>
+            </div>
         </div>
     </details>
 
