@@ -191,30 +191,6 @@
             </form>
         </div>
 
-        <!-- Recent Ships (Optional) -->
-        @if($ships->count() > 0)
-        <div class="mt-8 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Kapal yang Tersedia
-            </h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                @foreach($ships->take(6) as $ship)
-                <div class="bg-gray-50 hover:bg-purple-50 border border-gray-200 hover:border-purple-300 rounded-lg p-3 transition-all duration-200 cursor-pointer" 
-                     onclick="document.getElementById('nama_kapal').value='{{ $ship->nama_kapal }}'; document.getElementById('nama_kapal').dispatchEvent(new Event('change'));">
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        <span class="text-sm font-medium text-gray-700">{{ $ship->nama_kapal }}</span>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
     </div>
 </div>
 
