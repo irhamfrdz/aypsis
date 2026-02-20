@@ -52,7 +52,9 @@ class SupirCekKendaraanController extends Controller
             }
         }
 
-        return view('supir.cek-kendaraan.create', compact('mobils', 'defaultMobilId'));
+        $karyawan = $user->karyawan;
+
+        return view('supir.cek-kendaraan.create', compact('mobils', 'defaultMobilId', 'karyawan'));
     }
 
     public function store(Request $request)

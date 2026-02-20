@@ -90,7 +90,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Nomor SIM</label>
-                                <input type="text" name="nomor_sim" placeholder="Masukkan No. SIM" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
+                                <input type="text" name="nomor_sim" value="{{ $karyawan->no_sim ?? '' }}" placeholder="Masukkan No. SIM" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
                             </div>
                         </div>
 
