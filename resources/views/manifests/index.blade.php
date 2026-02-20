@@ -643,7 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateManifestData(isDryRun) {
+    window.updateManifestData = function(isDryRun) {
         const actionText = isDryRun ? 'Preview Update' : 'Update Data';
         const confirmText = isDryRun ? 
             'Anda akan melihat preview data Manifest yang akan diupdate dari Tanda Terima tanpa mengubah data apapun. Lanjutkan?' : 
@@ -768,7 +768,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 
-    function closeManifestUpdateModal() {
+    window.closeManifestUpdateModal = function() {
         const modal = document.getElementById('manifest-update-result-modal');
         if (modal) {
             modal.remove();
