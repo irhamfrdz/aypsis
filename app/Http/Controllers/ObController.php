@@ -1429,9 +1429,15 @@ class ObController extends Controller
             $naikKapal->updated_by = $user->id;
             $naikKapal->save();
 
+            // Set Prospek status to ACTIVE if exists
+            if ($naikKapal->prospek) {
+                $naikKapal->prospek->status = 'ACTIVE';
+                $naikKapal->prospek->save();
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Status OB kontainer berhasil dibatalkan'
+                'message' => 'Status OB kontainer berhasil dibatalkan dan status Prospek dikembalikan ke ACTIVE'
             ]);
         } catch (\Exception $e) {
             \Log::error('Unmark OB error: ' . $e->getMessage());

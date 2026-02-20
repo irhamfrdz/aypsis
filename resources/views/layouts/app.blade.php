@@ -678,8 +678,8 @@
 
                         {{-- Master Pemasok Sub-Dropdown --}}
                         @php
-                            $isPemasokRoute = Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*');
-                            $hasPemasokPermissions = $user && ($user->can('master-vendor-bengkel.view') || $user->can('vendor-kontainer-sewa-view'));
+                            $isPemasokRoute = Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('container-trip.*');
+                            $hasPemasokPermissions = $user && ($user->can('master-vendor-bengkel.view') || $user->can('vendor-kontainer-sewa-view') || $user->can('container-trip-view'));
                         @endphp
 
                         @if($hasPemasokPermissions)
@@ -701,7 +701,17 @@
                                         <span class="text-xs">Vendor Kontainer Sewa</span>
                                     </a>
                                 @endif
-
+                                <a href="{{ route('master.vendors.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('master.vendors.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <span class="text-xs">Master Vendors</span>
+                                </a>
+                                @if($user && $user->can('container-trip-view'))
+                                    <a href="{{ route('container-trip.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('container-trip.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Master Perjalanan Kontainer</span>
+                                    </a>
+                                @endif
+                                <a href="{{ route('container-trip.report.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('container-trip.report.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <span class="text-xs">Laporan Sewa Kontainer</span>
+                                </a>
                             </div>
                         </div>
                         @endif
