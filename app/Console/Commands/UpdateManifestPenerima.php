@@ -271,14 +271,22 @@ class UpdateManifestPenerima extends Command
                     $alamatPengirim = null;
                     $nomorTandaTerima = null;
                     $sealTandaTerima = null;
+                    $kuantitasVal = null;
+                    $satuanVal = null;
+                    $volumeVal = null;
+                    $tonnageVal = null;
 
                     if ($tandaTerima) {
                         $penerimaName = $tandaTerima->penerima;
                         $alamatPenerima = $tandaTerima->alamat_penerima;
                         $pengirimName = $tandaTerima->pengirim;
-                        $alamatPengirim = $tandaTerima->alamat_pengirim; // Assuming it exists if needed, mostly it's empty in TandaTerima though
+                        $alamatPengirim = $tandaTerima->alamat_pengirim;
                         $nomorTandaTerima = $tandaTerima->no_tanda_terima;
                         $sealTandaTerima = $tandaTerima->no_seal;
+                        $kuantitasVal = $tandaTerima->jumlah;
+                        $satuanVal = $tandaTerima->satuan;
+                        $volumeVal = $tandaTerima->meter_kubik;
+                        $tonnageVal = $tandaTerima->tonase;
                     } elseif ($tttsj) {
                         $penerimaName = $tttsj->penerima;
                         $alamatPenerima = $tttsj->alamat_penerima;
@@ -286,18 +294,58 @@ class UpdateManifestPenerima extends Command
                         $alamatPengirim = $tttsj->alamat_pengirim;
                         $nomorTandaTerima = $tttsj->no_tanda_terima;
                         $sealTandaTerima = $tttsj->no_seal;
+                        $kuantitasVal = $tttsj->jumlah_barang;
+                        $satuanVal = $tttsj->satuan_barang;
+                        $volumeVal = $tttsj->meter_kubik;
+                        $tonnageVal = $tttsj->tonase;
                     } elseif ($tandaTerimaLcl) {
                         // Handle both Model and stdClass (DB::table)
-                        $penerimaName = isset($tandaTerimaLcl->nama_penerima) ? $tandaTerimaLcl->nama_penerima : null;
-                        $alamatPenerima = isset($tandaTerimaLcl->alamat_penerima) ? $tandaTerimaLcl->alamat_penerima : null;
-                        $pengirimName = isset($tandaTerimaLcl->nama_pengirim) ? $tandaTerimaLcl->nama_pengirim : null;
-                        $alamatPengirim = isset($tandaTerimaLcl->alamat_pengirim) ? $tandaTerimaLcl->alamat_pengirim : null;
-                        $nomorTandaTerima = isset($tandaTerimaLcl->nomor_tanda_terima) ? $tandaTerimaLcl->nomor_tanda_terima : null;
+                        $isModel = $tandaTerimaLcl instanceof \Illuminate\Database\Eloquent\Model;
+                        
+                        $penerimaName = $isModel ? $tandaTerimaLcl->nama_penerima : ($tandaTerimaLcl->nama_penerima ?? null);
+                        $alamatPenerima = $isModel ? $tandaTerimaLcl->alamat_penerima : ($tandaTerimaLcl->alamat_penerima ?? null);
+                        $pengirimName = $isModel ? $tandaTerimaLcl->nama_pengirim : ($tandaTerimaLcl->nama_pengirim ?? null);
+                        $alamatPengirim = $isModel ? $tandaTerimaLcl->alamat_pengirim : ($tandaTerimaLcl->alamat_pengirim ?? null);
+                        $nomorTandaTerima = $isModel ? $tandaTerimaLcl->nomor_tanda_terima : ($tandaTerimaLcl->nomor_tanda_terima ?? null);
+                        
+                        if ($isModel) {
+                            $kuantitasVal = $tandaTerimaLcl->total_koli;
+                            $volumeVal = $tandaTerimaLcl->total_volume;
+                            $tonnageVal = $tandaTerimaLcl->total_weight;
+                            
+                            // Determin satuan from items
+                            $items = $tandaTerimaLcl->items;
+                            if ($items->count() > 0) {
+                                $units = $items->pluck('satuan')->unique()->filter();
+                                if ($units->count() === 1) {
+                                    $satuanVal = $units->first();
+                                } else {
+                                    $satuanVal = 'PKGS';
+                                }
+                            }
+                        } else {
+                            // Raw DB access fallback (totals might need manual query if not on table)
+                            $kuantitasVal = DB::table('tanda_terima_lcl_items')->where('tanda_terima_lcl_id', $tandaTerimaLcl->id)->sum('jumlah');
+                            $volumeVal = DB::table('tanda_terima_lcl_items')->where('tanda_terima_lcl_id', $tandaTerimaLcl->id)->sum('meter_kubik');
+                            $tonnageVal = DB::table('tanda_terima_lcl_items')->where('tanda_terima_lcl_id', $tandaTerimaLcl->id)->sum('tonase');
+                            
+                            $units = DB::table('tanda_terima_lcl_items')
+                                ->where('tanda_terima_lcl_id', $tandaTerimaLcl->id)
+                                ->whereNotNull('satuan')
+                                ->distinct()
+                                ->pluck('satuan');
+                                
+                            if ($units->count() === 1) {
+                                $satuanVal = $units->first();
+                            } elseif ($units->count() > 1) {
+                                $satuanVal = 'PKGS';
+                            }
+                        }
                     } elseif ($sjBongkaran) {
                         $penerimaName = $sjBongkaran->penerima;
                         $alamatPenerima = $sjBongkaran->tujuan_alamat;
                         $pengirimName = $sjBongkaran->pengirim;
-                        $nomorTandaTerima = $manifest->nomor_tanda_terima; // Bongkaran doesn't always have a distinct TT number in the same field
+                        $nomorTandaTerima = $manifest->nomor_tanda_terima;
                         $sealTandaTerima = $sjBongkaran->no_seal;
                     }
                     
@@ -325,7 +373,23 @@ class UpdateManifestPenerima extends Command
                     }
 
                     // Sync No. Seal if empty or different
-                    if ($sealTandaTerima && $manifest->no_seal != $sealTandaTerima) {
+                    if ($sealTandaTerima !== null && $manifest->no_seal != $sealTandaTerima) {
+                        $hasChanges = true;
+                    }
+
+                    if ($kuantitasVal !== null && $manifest->kuantitas != $kuantitasVal) {
+                        $hasChanges = true;
+                    }
+
+                    if ($satuanVal !== null && $manifest->satuan != $satuanVal) {
+                        $hasChanges = true;
+                    }
+
+                    if ($volumeVal !== null && $manifest->volume != $volumeVal) {
+                        $hasChanges = true;
+                    }
+
+                    if ($tonnageVal !== null && $manifest->tonnage != $tonnageVal) {
                         $hasChanges = true;
                     }
                     
@@ -349,8 +413,20 @@ class UpdateManifestPenerima extends Command
                             if ($nomorTandaTerima) {
                                 $manifest->nomor_tanda_terima = $nomorTandaTerima;
                             }
-                            if ($sealTandaTerima) {
+                            if ($sealTandaTerima !== null) {
                                 $manifest->no_seal = $sealTandaTerima;
+                            }
+                            if ($kuantitasVal !== null) {
+                                $manifest->kuantitas = $kuantitasVal;
+                            }
+                            if ($satuanVal !== null) {
+                                $manifest->satuan = $satuanVal;
+                            }
+                            if ($volumeVal !== null) {
+                                $manifest->volume = $volumeVal;
+                            }
+                            if ($tonnageVal !== null) {
+                                $manifest->tonnage = $tonnageVal;
                             }
                             $manifest->save();
                             $totalUpdated++;

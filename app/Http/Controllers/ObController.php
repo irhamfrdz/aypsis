@@ -856,6 +856,8 @@ class ObController extends Controller
                 'prospek_id' => $naikKapal->prospek_id,
                 'prospek_pt_pengirim' => $naikKapal->prospek ? $naikKapal->prospek->pt_pengirim : null,
                 'prospek_tujuan_pengiriman' => $naikKapal->prospek ? $naikKapal->prospek->tujuan_pengiriman : null,
+                'prospek_jumlah' => $naikKapal->prospek ? $naikKapal->prospek->kuantitas : ($naikKapal->kuantitas ?? null),
+                'prospek_satuan' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->satuan : null,
             ];
 
             if (!$existingBl) {
@@ -1084,6 +1086,15 @@ class ObController extends Controller
                             $manifest->nama_barang = $namaBarang ?: $manifestDataForLater['jenis_barang'];
                             $manifest->volume = $tandaTerima->items->sum('meter_kubik');
                             $manifest->tonnage = $tandaTerima->items->sum('tonase');
+                            $manifest->kuantitas = $tandaTerima->total_koli;
+                            
+                            // Determin satuan from items
+                            $units = $tandaTerima->items->pluck('satuan')->unique()->filter();
+                            if ($units->count() === 1) {
+                                $manifest->satuan = $units->first();
+                            } elseif ($units->count() > 1) {
+                                $manifest->satuan = 'PKGS';
+                            }
                             $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
                             $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
                             $manifest->tanggal_berangkat = now();
@@ -1124,6 +1135,8 @@ class ObController extends Controller
                         $manifest->nama_barang = $manifestDataForLater['jenis_barang'];
                         $manifest->volume = $manifestDataForLater['total_volume'];
                         $manifest->tonnage = $manifestDataForLater['total_tonase'];
+                        $manifest->kuantitas = $manifestDataForLater['prospek_jumlah'] ?? null;
+                        $manifest->satuan = $manifestDataForLater['prospek_satuan'] ?? null;
                         $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
                         $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
                         $manifest->tanggal_berangkat = now();
@@ -1341,6 +1354,14 @@ class ObController extends Controller
                         $manifest->nama_barang     = $namaBarangItems ?: $namaBarang;
                         $manifest->volume          = $tandaTerima->items->sum('meter_kubik');
                         $manifest->tonnage         = $tandaTerima->items->sum('tonase');
+                        $manifest->kuantitas       = $tandaTerima->total_koli;
+                        
+                        $units = $tandaTerima->items->pluck('satuan')->unique()->filter();
+                        if ($units->count() === 1) {
+                            $manifest->satuan = $units->first();
+                        } elseif ($units->count() > 1) {
+                            $manifest->satuan = 'PKGS';
+                        }
                         $manifest->pelabuhan_muat  = $asalKontainer;
                         $manifest->pelabuhan_bongkar = $ke;
                         $manifest->tanggal_berangkat = now();
@@ -1376,6 +1397,8 @@ class ObController extends Controller
                     $manifest->nama_barang      = $namaBarang;
                     $manifest->volume           = $totalVolume;
                     $manifest->tonnage          = $totalTonase;
+                    $manifest->kuantitas         = $record->prospek ? $record->prospek->kuantitas : ($record->kuantitas ?? null);
+                    $manifest->satuan           = ($record->prospek && $record->prospek->tandaTerima) ? $record->prospek->tandaTerima->satuan : null;
                     $manifest->pelabuhan_muat   = $asalKontainer;
                     $manifest->pelabuhan_bongkar = $ke;
                     $manifest->tanggal_berangkat = now();
