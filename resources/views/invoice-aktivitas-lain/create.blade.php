@@ -463,9 +463,19 @@
                             </option>
                         @endforeach
                     </select>
+                    <input type="hidden" name="surat_jalan_source" id="surat_jalan_source" value="">
                     @error('surat_jalan_id')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            $('#surat_jalan_select').on('change', function() {
+                                var selected = $(this).find(':selected');
+                                var source = selected.data('source');
+                                $('#surat_jalan_source').val(source);
+                            });
+                        });
+                    </script>
                 </div>
 
                 <!-- Jenis Penyesuaian (conditional for Adjustment) -->
@@ -1779,6 +1789,11 @@ console.log('Akun COAs data:', akunCoasData);
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
                 
+                // Ensure Surat Jalan is required
+                if (suratJalanSelect) {
+                    suratJalanSelect.setAttribute('required', 'required');
+                }
+
                 // Set total from surat jalan
                 const selectedSJ = $('#surat_jalan_select').find('option:selected');
                 const uangJalan = selectedSJ.data('uang-jalan');
@@ -1786,13 +1801,28 @@ console.log('Akun COAs data:', akunCoasData);
                     totalInput.value = parseInt(uangJalan).toLocaleString('id-ID');
                 }
             } else if (jenisPenyesuaian === 'pengembalian sebagian') {
+                // Ensure Surat Jalan is required
+                if (suratJalanSelect) {
+                    suratJalanSelect.setAttribute('required', 'required');
+                }
+                
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
                 // Total can be entered manually
             } else if (jenisPenyesuaian === 'penambahan') {
+                // Ensure Surat Jalan is required
+                if (suratJalanSelect) {
+                    suratJalanSelect.setAttribute('required', 'required');
+                }
+                
                 tipePenyesuaianWrapper.classList.remove('hidden');
                 initializeTipePenyesuaianInputs();
             } else {
+                // Ensure Surat Jalan is required if no type selected yet
+                if (suratJalanSelect) {
+                    suratJalanSelect.setAttribute('required', 'required');
+                }
+
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
             }

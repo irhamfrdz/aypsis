@@ -462,18 +462,22 @@
                             @endif
                             <td>
                                 @if(stripos($pembayaranAktivitasLain->jenis_aktivitas, 'Adjustment') !== false)
-                                    @php
-                                        $tipePenyesuaianList = [];
-                                        if (!empty($invoice->tipe_penyesuaian)) {
-                                            $decodedTipe = json_decode($invoice->tipe_penyesuaian, true);
-                                            if (is_array($decodedTipe)) {
-                                                foreach ($decodedTipe as $tipe) {
-                                                    $tipePenyesuaianList[] = strtoupper($tipe['tipe'] ?? '-');
+                                    @if(strtolower($invoice->jenis_penyesuaian ?? '') == 'pengembalian penuh')
+                                        BATAL
+                                    @else
+                                        @php
+                                            $tipePenyesuaianList = [];
+                                            if (!empty($invoice->tipe_penyesuaian)) {
+                                                $decodedTipe = json_decode($invoice->tipe_penyesuaian, true);
+                                                if (is_array($decodedTipe)) {
+                                                    foreach ($decodedTipe as $tipe) {
+                                                        $tipePenyesuaianList[] = strtoupper($tipe['tipe'] ?? '-');
+                                                    }
                                                 }
                                             }
-                                        }
-                                    @endphp
-                                    {{ count($tipePenyesuaianList) > 0 ? implode(', ', $tipePenyesuaianList) : '-' }}
+                                        @endphp
+                                        {{ count($tipePenyesuaianList) > 0 ? implode(', ', $tipePenyesuaianList) : '-' }}
+                                    @endif
                                 @else
                                     {{ $invoice->sub_jenis_kendaraan ?? '-' }}
                                 @endif

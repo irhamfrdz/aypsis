@@ -409,8 +409,6 @@ class InvoiceAktivitasLainController extends Controller
             // NEW: Create MasterLwbpLama record based on the first entry's lwbp_baru
             if ($isBiayaListrik) {
                 // Use the first entry as reference for the new master record
-                $firstEntry = $biayaListrikEntries[0]; // Arrays are 0-indexed in PHP if sequential, validation keeps keys but here it's likely sequential
-                // Actually validation might keep keys like [0=>..., 1=>...]. safest is reset or foreach break.
                 $firstEntry = reset($biayaListrikEntries);
                 
                 if (isset($firstEntry['lwbp_baru']) && is_numeric($firstEntry['lwbp_baru'])) {
@@ -421,6 +419,47 @@ class InvoiceAktivitasLainController extends Controller
                         'status' => 'active'
                     ]);
                 }
+            }
+        }
+        
+        // Remove Prospek's Surat Jalan if pengembalian penuh
+        // Remove Prospek's Surat Jalan and Delete Surat Jalan if pengembalian penuh
+        if ($request->jenis_penyesuaian == 'pengembalian penuh' && $request->surat_jalan_id) {
+            $source = $request->input('surat_jalan_source', 'regular');
+            $suratJalan = null;
+
+            if ($source == 'bongkar') {
+                $suratJalan = \App\Models\SuratJalanBongkaran::find($request->surat_jalan_id);
+            } else {
+                // Default to regular
+                $suratJalan = \App\Models\SuratJalan::find($request->surat_jalan_id);
+            }
+            
+            if ($suratJalan) {
+                // Determine Surat Jalan Number
+                $noSuratJalan = null;
+                if ($source == 'bongkar') {
+                    $noSuratJalan = $suratJalan->nomor_surat_jalan;
+                } else {
+                    $noSuratJalan = $suratJalan->no_surat_jalan;
+                }
+
+                // Update related Prospeks
+                $query = \App\Models\Prospek::where('surat_jalan_id', $request->surat_jalan_id);
+                if ($noSuratJalan) {
+                    $query->orWhere('no_surat_jalan', $noSuratJalan);
+                }
+                
+                $prospeks = $query->get();
+                foreach ($prospeks as $prospek) {
+                    $prospek->update([
+                        'surat_jalan_id' => null,
+                        'no_surat_jalan' => null
+                    ]);
+                }
+
+                // Delete the Surat Jalan record
+                $suratJalan->delete();
             }
         }
 
