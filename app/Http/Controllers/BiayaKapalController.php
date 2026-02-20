@@ -378,12 +378,24 @@ class BiayaKapalController extends Controller
             $nomorInvoice = sprintf("%s-%s-%s-%06d", $prefix, $currentMonth, $currentYear, $newNumber);
             $validated['nomor_invoice'] = $nomorInvoice;
 
+
             // Handle file upload
             if ($request->hasFile('bukti')) {
                 $file = $request->file('bukti');
                 $fileName = time() . '_' . $file->getClientOriginalName();
                 $filePath = $file->storeAs('biaya-kapal', $fileName, 'public');
                 $validated['bukti'] = $filePath;
+            }
+
+            // HITUNG TOTAL PERLENGKAPAN DULU (agar nominal tidak null)
+            if (!empty($validated['perlengkapan_sections'])) {
+                $grandTotalPerlengkapan = 0;
+                foreach ($validated['perlengkapan_sections'] as $s) {
+                    if (empty($s['nama_kapal']) && empty($s['jumlah_biaya'])) continue;
+                    $v = str_replace(',', '.', str_replace('.', '', $s['jumlah_biaya'] ?? '0'));
+                    $grandTotalPerlengkapan += floatval($v);
+                }
+                $validated['nominal'] = $grandTotalPerlengkapan;
             }
 
             // Create BiayaKapal record
