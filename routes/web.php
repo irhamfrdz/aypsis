@@ -1386,6 +1386,9 @@ Route::middleware([
     Route::get('biaya-kapal/{biayaKapal}/print-trucking', [\App\Http\Controllers\BiayaKapalController::class, 'printTrucking'])
          ->name('biaya-kapal.print-trucking')
          ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/{biayaKapal}/print-perlengkapan', [\App\Http\Controllers\BiayaKapalController::class, 'printPerlengkapan'])
+         ->name('biaya-kapal.print-perlengkapan')
+         ->middleware('can:biaya-kapal-view');
     Route::get('biaya-kapal', [\App\Http\Controllers\BiayaKapalController::class, 'index'])
          ->name('biaya-kapal.index')
          ->middleware('can:biaya-kapal-view');
@@ -3834,6 +3837,9 @@ Route::middleware(['auth'])->group(function() {
          ->middleware('can:ob-view');
     Route::post('ob/confirm-update-size', [\App\Http\Controllers\ObController::class, 'confirmUpdateSize'])
          ->name('ob.confirm-update-size')
+         ->middleware('can:ob-view');
+    Route::post('ob/kirim-manifest', [\App\Http\Controllers\ObController::class, 'kirimManifest'])
+         ->name('ob.kirim-manifest')
          ->middleware('can:ob-view');
     
     // Fix CARGO Manifests Script

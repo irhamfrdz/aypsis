@@ -414,6 +414,11 @@
                             <i class="fas fa-times-circle mr-1"></i>Clear TL
                         </button>
                         @endif
+                        <button type="button" onclick="kirimManifest('bl', {{ $bl->id }})"
+                               class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-medium"
+                               title="Kirim ke Manifest">
+                            <i class="fas fa-paper-plane mr-1"></i>Kirim Manifest
+                        </button>
                     </div>
                 </div>
             @empty
@@ -529,6 +534,11 @@
                             <i class="fas fa-times-circle mr-1"></i>Clear TL
                         </button>
                         @endif
+                        <button type="button" onclick="kirimManifest('naik_kapal', {{ $naikKapal->id }})"
+                               class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-xs font-medium"
+                               title="Kirim ke Manifest">
+                            <i class="fas fa-paper-plane mr-1"></i>Kirim Manifest
+                        </button>
                     </div>
                 </div>
             @empty
@@ -744,6 +754,11 @@
                                     <i class="fas fa-times-circle"></i>
                                 </button>
                                 @endif
+                                <button type="button" onclick="kirimManifest('bl', {{ $bl->id }})"
+                                       class="text-indigo-600 hover:text-indigo-900 transition duration-150"
+                                       title="Kirim ke Manifest">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
                                 <a href="#" class="text-gray-600 hover:text-gray-900 transition duration-150"
                                    title="Lihat Detail">
                                     <i class="fas fa-eye"></i>
@@ -971,6 +986,11 @@
                                            class="text-blue-600 hover:text-blue-900 transition duration-150"
                                            title="Input Supir OB">
                                         <i class="fas fa-user-plus"></i>
+                                    </button>
+                                    <button type="button" onclick="kirimManifest('naik_kapal', {{ $naikKapal->id }})"
+                                           class="text-indigo-600 hover:text-indigo-900 transition duration-150"
+                                           title="Kirim ke Manifest">
+                                        <i class="fas fa-paper-plane"></i>
                                     </button>
                                     <a href="#" class="text-gray-600 hover:text-gray-900 transition duration-150"
                                        title="Lihat Detail">
@@ -1317,6 +1337,60 @@ function changePerPage(perPage) {
     url.searchParams.set('per_page', perPage);
     url.searchParams.delete('page'); // Reset to page 1 when changing per page
     window.location.href = url.toString();
+}
+
+// Kirim data ke manifest secara manual
+function kirimManifest(type, id) {
+    if (!confirm('Apakah Anda yakin ingin mengirim data kontainer ini ke Manifest?')) {
+        return;
+    }
+
+    fetch('{{ route('ob.kirim-manifest') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            record_type: type,
+            record_id: id,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Tampilkan notifikasi sukses
+            showNotification(data.message || 'Berhasil dikirim ke manifest!', 'success');
+        } else {
+            showNotification(data.message || 'Gagal mengirim ke manifest.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('kirimManifest error:', error);
+        showNotification('Terjadi kesalahan saat mengirim ke manifest.', 'error');
+    });
+}
+
+// Helper: tampilkan notifikasi sementara di atas halaman
+function showNotification(message, type) {
+    const existing = document.getElementById('ob-notification');
+    if (existing) existing.remove();
+
+    const div = document.createElement('div');
+    div.id = 'ob-notification';
+    div.className = 'fixed top-4 right-4 z-[9999] px-5 py-3 rounded-lg shadow-lg text-white text-sm font-medium transition-all duration-300 ' +
+        (type === 'success' ? 'bg-green-600' : 'bg-red-600');
+    div.innerHTML = (type === 'success'
+        ? '<i class="fas fa-check-circle mr-2"></i>'
+        : '<i class="fas fa-exclamation-circle mr-2"></i>') + message;
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+        div.style.opacity = '0';
+        setTimeout(() => div.remove(), 400);
+    }, 4000);
 }
 
 function openSupirModal(type, id) {

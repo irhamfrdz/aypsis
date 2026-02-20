@@ -473,6 +473,84 @@
                     </button>
                 </div>
 
+                <!-- Biaya Perlengkapan -->
+                <div id="perlengkapan_wrapper" class="md:col-span-2 hidden">
+                    <div class="bg-orange-50 border border-orange-200 rounded-xl p-5">
+                        <div class="flex items-center gap-2 mb-4">
+                            <i class="fas fa-toolbox text-orange-600"></i>
+                            <h3 class="text-sm font-semibold text-orange-800">Detail Biaya Perlengkapan</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Nama Kapal -->
+                            <div>
+                                <label for="perlengkapan_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nama Kapal <span class="text-red-500">*</span>
+                                </label>
+                                <select id="perlengkapan_nama_kapal"
+                                        name="perlengkapan_nama_kapal"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                    <option value="">-- Pilih Kapal --</option>
+                                    @foreach($kapals as $kapal)
+                                        <option value="{{ $kapal->nama_kapal }}"
+                                                data-id="{{ $kapal->id }}"
+                                                {{ old('perlengkapan_nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
+                                            {{ $kapal->nama_kapal }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <!-- Nomor Voyage -->
+                            <div>
+                                <label for="perlengkapan_no_voyage" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nomor Voyage <span class="text-red-500">*</span>
+                                </label>
+                                <select id="perlengkapan_no_voyage"
+                                        name="perlengkapan_no_voyage"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                        disabled>
+                                    <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk memuat daftar voyage</p>
+                            </div>
+                            <!-- Keterangan -->
+                            <div class="md:col-span-2">
+                                <label for="perlengkapan_keterangan" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Keterangan
+                                </label>
+                                <textarea id="perlengkapan_keterangan"
+                                          name="perlengkapan_keterangan"
+                                          rows="3"
+                                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                          placeholder="Masukkan keterangan perlengkapan...">{{ old('perlengkapan_keterangan') }}</textarea>
+                            </div>
+                            <!-- Jumlah Biaya -->
+                            <div>
+                                <label for="perlengkapan_jumlah_biaya" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Jumlah Biaya <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
+                                    <input type="text"
+                                           id="perlengkapan_jumlah_biaya"
+                                           name="perlengkapan_jumlah_biaya"
+                                           value="{{ old('perlengkapan_jumlah_biaya', '0') }}"
+                                           class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                           placeholder="0">
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Masukkan nominal tanpa titik atau koma</p>
+                            </div>
+                            <!-- Total display -->
+                            <div class="flex items-end">
+                                <div class="w-full bg-orange-100 border border-orange-200 rounded-lg px-4 py-3">
+                                    <p class="text-xs text-orange-700 font-medium mb-1">Total Biaya Perlengkapan</p>
+                                    <p class="text-lg font-bold text-orange-800" id="perlengkapan_total_display">Rp 0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
                 <!-- Nominal -->
                 <div id="nominal_wrapper" class="hidden">
                     <label for="nominal" class="block text-sm font-medium text-gray-700 mb-2">
@@ -968,6 +1046,13 @@
     const stuffingSectionsContainer = document.getElementById('stuffing_sections_container');
     const addStuffingSectionBtn = document.getElementById('add_stuffing_section_btn');
     const addStuffingSectionBottomBtn = document.getElementById('add_stuffing_section_bottom_btn');
+
+    // Biaya Perlengkapan specific fields
+    const perlengkapanWrapper = document.getElementById('perlengkapan_wrapper');
+    const perlengkapanNamaKapalSelect = document.getElementById('perlengkapan_nama_kapal');
+    const perlengkapanNoVoyageSelect = document.getElementById('perlengkapan_no_voyage');
+    const perlengkapanJumlahBiayaInput = document.getElementById('perlengkapan_jumlah_biaya');
+    const perlengkapanTotalDisplay = document.getElementById('perlengkapan_total_display');
     
     // Standard field wrappers
     const nominalWrapper = document.getElementById('nominal_wrapper');
@@ -1686,6 +1771,60 @@
             if (truckingWrapper) truckingWrapper.classList.add('hidden');
             clearAllTruckingSections();
         }
+        // Show Perlengkapan fields if "Biaya Perlengkapan" is selected
+        else if (selectedText.toLowerCase().includes('perlengkapan')) {
+            // Show Perlengkapan wrapper
+            if (perlengkapanWrapper) perlengkapanWrapper.classList.remove('hidden');
+            resetPerlengkapanSection();
+
+            // Hide standard kapal/voyage/bl multi-select fields (perlengkapan has its own)
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Show nominal, penerima, nama vendor, nomor rekening, nomor referensi  
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
+            if(penerimaInput) penerimaInput.setAttribute('required', 'required');
+            if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
+
+            // Hide all type-specific fields
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            dpInput.value = '0';
+            sisaPembayaranInput.value = '0';
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            if (operasionalWrapper) operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+        }
         // Show operasional wrapper if "Operasional" is selected
         else if (selectedText.toLowerCase().includes('operasional')) {
             operasionalWrapper.classList.remove('hidden');
@@ -1878,8 +2017,79 @@
             // Hide Stuffing wrapper
             if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
             clearAllStuffingSections();
+
+            // Hide Perlengkapan wrapper
+            if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
         }
     });
+
+    // ============= BIAYA PERLENGKAPAN LOGIC =============
+    // Attach perlengkapan kapal -> voyage loader
+    if (perlengkapanNamaKapalSelect) {
+        perlengkapanNamaKapalSelect.addEventListener('change', function() {
+            const kapalNama = this.value;
+
+            // Reset voyage dropdown
+            perlengkapanNoVoyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            perlengkapanNoVoyageSelect.disabled = true;
+
+            if (!kapalNama) {
+                return;
+            }
+
+            perlengkapanNoVoyageSelect.innerHTML = '<option value="">Loading...</option>';
+            perlengkapanNoVoyageSelect.disabled = true;
+
+            // Use the same endpoint as other voyage selectors
+            fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.voyages) {
+                        let html = '<option value="">-- Pilih Voyage --</option>';
+                        data.voyages.forEach(voyage => {
+                            html += `<option value="${voyage}">${voyage}</option>`;
+                        });
+                        perlengkapanNoVoyageSelect.innerHTML = html;
+                        perlengkapanNoVoyageSelect.disabled = false;
+                    } else {
+                        perlengkapanNoVoyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
+                        perlengkapanNoVoyageSelect.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    perlengkapanNoVoyageSelect.innerHTML = '<option value="">Gagal memuat voyage</option>';
+                    perlengkapanNoVoyageSelect.disabled = false;
+                });
+        });
+    }
+
+    // Format jumlah biaya perlengkapan with thousand separator & update display
+    if (perlengkapanJumlahBiayaInput) {
+        perlengkapanJumlahBiayaInput.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value) {
+                value = parseInt(value).toLocaleString('id-ID');
+            }
+            this.value = value;
+
+            // Update display
+            const numVal = parseInt(this.value.replace(/\./g, '') || 0);
+            if (perlengkapanTotalDisplay) {
+                perlengkapanTotalDisplay.textContent = 'Rp ' + numVal.toLocaleString('id-ID');
+            }
+        });
+    }
+
+    // Reset perlengkapan section helper
+    function resetPerlengkapanSection() {
+        if (perlengkapanNamaKapalSelect) perlengkapanNamaKapalSelect.value = '';
+        if (perlengkapanNoVoyageSelect) {
+            perlengkapanNoVoyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            perlengkapanNoVoyageSelect.disabled = true;
+        }
+        if (perlengkapanJumlahBiayaInput) perlengkapanJumlahBiayaInput.value = '0';
+        if (perlengkapanTotalDisplay) perlengkapanTotalDisplay.textContent = 'Rp 0';
+    }
     
     // Function to clear BL selections
     function clearBlSelections() {

@@ -146,7 +146,7 @@ class BiayaKapalController extends Controller
         $data = $request->all();
         
         // Root fields
-        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air'];
+        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air', 'perlengkapan_jumlah_biaya'];
         foreach ($fieldsToClean as $field) {
             if (isset($data[$field]) && $data[$field] !== null) {
                 $data[$field] = str_replace(',', '.', str_replace('.', '', $data[$field]));
@@ -341,6 +341,12 @@ class BiayaKapalController extends Controller
             'stuffing_sections.*.subtotal' => 'nullable|numeric|min:0',
             'stuffing_sections.*.pph' => 'nullable|numeric|min:0',
             'stuffing_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // Perlengkapan fields
+            'perlengkapan_nama_kapal'  => 'nullable|string|max:255',
+            'perlengkapan_no_voyage'   => 'nullable|string|max:255',
+            'perlengkapan_keterangan'  => 'nullable|string',
+            'perlengkapan_jumlah_biaya' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -887,6 +893,16 @@ class BiayaKapalController extends Controller
                 }
             }
 
+            // BIAYA PERLENGKAPAN: simpan nama_kapal, no_voyage, keterangan, dan nominal ke biaya_kapals
+            if (!empty($validated['perlengkapan_nama_kapal']) || !empty($validated['perlengkapan_jumlah_biaya'])) {
+                $biayaKapal->update([
+                    'nama_kapal' => !empty($validated['perlengkapan_nama_kapal']) ? [$validated['perlengkapan_nama_kapal']] : null,
+                    'no_voyage'  => !empty($validated['perlengkapan_no_voyage'])  ? [$validated['perlengkapan_no_voyage']]  : null,
+                    'keterangan' => $validated['perlengkapan_keterangan'] ?? null,
+                    'nominal'    => floatval($validated['perlengkapan_jumlah_biaya'] ?? 0),
+                ]);
+            }
+
             DB::commit();
 
             return redirect()
@@ -960,6 +976,12 @@ class BiayaKapalController extends Controller
             stripos($biayaKapal->klasifikasiBiaya->nama, 'operasional') !== false) {
             return view('biaya-kapal.print-operasional', compact('biayaKapal'));
         }
+
+        // Check if it's Biaya Perlengkapan and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'perlengkapan') !== false) {
+            return view('biaya-kapal.print-perlengkapan', compact('biayaKapal'));
+        }
         
         return view('biaya-kapal.print', compact('biayaKapal'));
     }
@@ -973,6 +995,15 @@ class BiayaKapalController extends Controller
         return view('biaya-kapal.print-dokumen', compact('biayaKapal'));
     }
     
+    /**
+     * Print biaya perlengkapan specifically.
+     */
+    public function printPerlengkapan(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya']);
+        return view('biaya-kapal.print-perlengkapan', compact('biayaKapal'));
+    }
+
     /**
      * Print biaya trucking specifically.
      */
