@@ -119,6 +119,73 @@ class UpdateManifestPenerima extends Command
                 $this->info('Tidak ada prospek dengan tanda terima yang ditemukan.');
             }
 
+            // --- 1.1 Update Prospek dari Tanda Terima Tanpa Surat Jalan (using regex matching) ---
+            $this->newLine();
+            $this->info('--- Memproses Update Prospek (dari Tanda Terima Tanpa Surat Jalan) ---');
+            
+            $prospeksTttsj = Prospek::whereNull('tanda_terima_id')
+                ->where('keterangan', 'LIKE', '%Tanda Terima Tanpa Surat Jalan:%')
+                ->get();
+
+            if ($prospeksTttsj->isNotEmpty()) {
+                $bar = $this->output->createProgressBar($prospeksTttsj->count());
+                $bar->start();
+
+                foreach ($prospeksTttsj as $prospek) {
+                    $totalProspek++;
+                    
+                    // Extract TTTSJ number from keterangan
+                    if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $prospek->keterangan, $matches)) {
+                        $noTttsj = trim($matches[1]);
+                        if (empty($noTttsj)) {
+                            $bar->advance();
+                            continue;
+                        }
+                        
+                        $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
+                        
+                        if ($tttsj) {
+                            $hasChanges = false;
+
+                            // Update fields from TTTSJ
+                            if ($tttsj->pengirim && $prospek->pt_pengirim != $tttsj->pengirim) {
+                                $prospek->pt_pengirim = $tttsj->pengirim;
+                                $hasChanges = true;
+                            }
+                            if ($tttsj->tujuan_pengiriman && $prospek->tujuan_pengiriman != $tttsj->tujuan_pengiriman) {
+                                $prospek->tujuan_pengiriman = $tttsj->tujuan_pengiriman;
+                                $hasChanges = true;
+                            }
+                            if ($tttsj->supir && $prospek->nama_supir != $tttsj->supir) {
+                                $prospek->nama_supir = $tttsj->supir;
+                                $hasChanges = true;
+                            }
+                            if (($tttsj->nama_barang || $tttsj->jenis_barang) && $prospek->barang != ($tttsj->nama_barang ?: $tttsj->jenis_barang)) {
+                                $prospek->barang = $tttsj->nama_barang ?: $tttsj->jenis_barang;
+                                $hasChanges = true;
+                            }
+                            if ($tttsj->estimasi_naik_kapal && $prospek->nama_kapal != $tttsj->estimasi_naik_kapal) {
+                                $prospek->nama_kapal = $tttsj->estimasi_naik_kapal;
+                                $hasChanges = true;
+                            }
+
+                            if ($hasChanges) {
+                                $totalProspekWithChanges++;
+                                if (!$dryRun) {
+                                    $prospek->save();
+                                    $totalProspekUpdated++;
+                                }
+                            }
+                        }
+                    }
+                    $bar->advance();
+                }
+                $bar->finish();
+                $this->newLine();
+            } else {
+                $this->info('Tidak ada prospek dari Tanda Terima Tanpa Surat Jalan yang ditemukan.');
+            }
+
             $this->newLine();
 
             // --- 2. Update Manifest dari Prospek -> Tanda Terima ---
@@ -149,17 +216,28 @@ class UpdateManifestPenerima extends Command
                 foreach ($manifests as $manifest) {
                     $totalManifestCount++;
                     
-                    // Cek apakah prospek memiliki tanda terima
-                    if (!$manifest->prospek || !$manifest->prospek->tandaTerima) {
+                    // Cek apakah prospek memiliki tanda terima atau merupakan TTTSJ
+                    $tandaTerima = $manifest->prospek ? $manifest->prospek->tandaTerima : null;
+                    $tttsj = null;
+                    
+                    if (!$tandaTerima && $manifest->prospek && $manifest->prospek->keterangan) {
+                        if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $manifest->prospek->keterangan, $matches)) {
+                            $noTttsj = trim($matches[1]);
+                            if (!empty($noTttsj)) {
+                                $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
+                            }
+                        }
+                    }
+                    
+                    if (!$tandaTerima && !$tttsj) {
                         $bar->advance();
                         continue;
                     }
 
-                    $tandaTerima = $manifest->prospek->tandaTerima;
-                    
-                    // Ambil data penerima dari tanda terima
-                    $penerimaName = $tandaTerima->penerima;
-                    $alamatPenerima = $tandaTerima->alamat_penerima;
+                    // Ambil data penerima dari tanda terima atau tttsj
+                    $penerimaName = $tandaTerima ? $tandaTerima->penerima : ($tttsj ? $tttsj->penerima : null);
+                    $alamatPenerima = $tandaTerima ? $tandaTerima->alamat_penerima : ($tttsj ? $tttsj->alamat_penerima : null);
+                    $nomorTandaTerima = $tandaTerima ? $tandaTerima->no_tanda_terima : ($tttsj ? $tttsj->no_tanda_terima : null);
                     
                     // Cek apakah ada perubahan
                     $hasChanges = false;
@@ -169,6 +247,10 @@ class UpdateManifestPenerima extends Command
                     }
                     
                     if ($alamatPenerima && $manifest->alamat_penerima != $alamatPenerima) {
+                        $hasChanges = true;
+                    }
+
+                    if ($nomorTandaTerima && $manifest->nomor_tanda_terima != $nomorTandaTerima) {
                         $hasChanges = true;
                     }
                     
@@ -182,6 +264,9 @@ class UpdateManifestPenerima extends Command
                             }
                             if ($alamatPenerima) {
                                 $manifest->alamat_penerima = $alamatPenerima;
+                            }
+                            if ($nomorTandaTerima) {
+                                $manifest->nomor_tanda_terima = $nomorTandaTerima;
                             }
                             $manifest->save();
                             $totalUpdated++;

@@ -70,4 +70,27 @@ class Manifest extends Model
     {
         return $this->hasOne(SuratJalanBongkaran::class, 'manifest_id');
     }
+
+    /**
+     * Get the Tanda Terima number for display, with fallbacks.
+     */
+    public function getNomorTandaTerimaDisplayAttribute()
+    {
+        if (!empty($this->nomor_tanda_terima)) {
+            return $this->nomor_tanda_terima;
+        }
+
+        if ($this->prospek) {
+            if ($this->prospek->tandaTerima) {
+                return $this->prospek->tandaTerima->no_tanda_terima;
+            }
+            
+            // Fallback: extract from keterangan if it's a TTTSJ
+            if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $this->prospek->keterangan, $matches)) {
+                return trim($matches[1]);
+            }
+        }
+        
+        return '-';
+    }
 }

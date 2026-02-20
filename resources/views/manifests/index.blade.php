@@ -251,7 +251,7 @@
                                 @endcan
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $manifest->nomor_tanda_terima ?? '-' }}
+                                {{ $manifest->nomor_tanda_terima_display }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ $manifest->nomor_kontainer }}</div>

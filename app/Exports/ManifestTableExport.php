@@ -76,7 +76,7 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
                 $index + 1,
                 $m->nomor_urut ?? '-',
                 $m->nomor_bl,
-                $m->nomor_tanda_terima ?? '-',
+                $m->nomor_tanda_terima_display,
                 $m->nomor_kontainer,
                 $m->no_seal ?? '-',
                 $m->tipe_kontainer,

@@ -81,7 +81,7 @@ class ManifestController extends Controller
         $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
         $noVoyage = trim($noVoyage);
 
-        $query = Manifest::with(['prospek', 'createdBy', 'updatedBy'])
+        $query = Manifest::with(['prospek.tandaTerima', 'createdBy', 'updatedBy'])
             ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage);
 

@@ -1428,6 +1428,16 @@ class ObController extends Controller
                         $manifest->prospek_id = $prospekId;
                         $manifest->pengirim   = $prospekPtPengirim;
                         $manifest->penerima   = $prospekTujuanPengiriman;
+
+                        // Tambahkan nomor tanda terima ke manifest
+                        if ($record->prospek && $record->prospek->tandaTerima) {
+                            $manifest->nomor_tanda_terima = $record->prospek->tandaTerima->no_tanda_terima;
+                        } elseif ($record->prospek && $record->prospek->keterangan) {
+                            // Ekstrak dari keterangan jika ini adalah TTTSJ
+                            if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $record->prospek->keterangan, $matches)) {
+                                $manifest->nomor_tanda_terima = trim($matches[1]);
+                            }
+                        }
                     }
 
                     $lastManifest = Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
