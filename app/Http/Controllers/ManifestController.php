@@ -91,6 +91,7 @@ class ManifestController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('nomor_bl', 'LIKE', "%{$search}%")
                   ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
+                  ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
                   ->orWhere('nama_barang', 'LIKE', "%{$search}%")
                   ->orWhere('pengirim', 'LIKE', "%{$search}%")
                   ->orWhere('penerima', 'LIKE', "%{$search}%");
@@ -143,6 +144,7 @@ class ManifestController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('nomor_bl', 'LIKE', "%{$search}%")
                   ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
+                  ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
                   ->orWhere('nama_barang', 'LIKE', "%{$search}%")
                   ->orWhere('pengirim', 'LIKE', "%{$search}%")
                   ->orWhere('penerima', 'LIKE', "%{$search}%");

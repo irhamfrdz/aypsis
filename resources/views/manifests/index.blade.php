@@ -131,7 +131,7 @@
                             Pencarian
                         </label>
                         <input type="text" name="search" id="search" value="{{ request('search') }}"
-                               placeholder="No. BL, No. Kontainer, Nama Barang..."
+                               placeholder="No. BL, No. Tanda Terima, No. Kontainer, Nama Barang..."
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                     </div>
 
