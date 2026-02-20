@@ -102,7 +102,7 @@ class TandaTerimaLcl extends Model
     
     public function getTotalKoliAttribute(): int
     {
-        return $this->items->sum('jumlah_koli') ?? 0;
+        return $this->items->sum('jumlah') ?? 0;
     }
     
     public function getFormattedNumberAttribute(): string

@@ -73,8 +73,8 @@
                                 </div>
                             @endif
                             <div>
-                                <label class="block text-sm font-medium text-gray-500 mb-2">Kuantitas</label>
-                                <p class="text-base text-gray-900">{{ $tandaTerima->kuantitas ?? 0 }}</p>
+                                <label class="block text-sm font-medium text-gray-500 mb-2">Total Kuantitas</label>
+                                <p class="text-base font-semibold text-gray-900">{{ $tandaTerima->total_koli }} Item</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-500 mb-2">Status</label>
@@ -218,7 +218,8 @@
                                         <tr>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Item</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Nama Barang</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Kuantitas</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Jumlah</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Satuan</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Panjang (m)</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Lebar (m)</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Tinggi (m)</th>
@@ -232,6 +233,7 @@
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ $item->item_number ?? $loop->iteration }}</td>
                                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $item->nama_barang ?? $tandaTerima->nama_barang ?? '-' }}</td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->jumlah ?? '-' }}</td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->satuan ?? '-' }}</td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->panjang ?? '-' }}</td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->lebar ?? '-' }}</td>
                                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $item->tinggi ?? '-' }}</td>
@@ -242,7 +244,9 @@
                                     </tbody>
                                     <tfoot class="bg-gray-50">
                                         <tr>
-                                            <td colspan="6" class="px-4 py-3 text-sm font-medium text-gray-900 text-right">Total:</td>
+                                            <td colspan="2" class="px-4 py-3 text-sm font-medium text-gray-900 text-right">Total:</td>
+                                            <td class="px-4 py-3 text-sm font-semibold text-purple-600">{{ $tandaTerima->total_koli }}</td>
+                                            <td colspan="4"></td>
                                             <td class="px-4 py-3 text-sm font-semibold text-purple-600">{{ number_format($tandaTerima->items->sum('meter_kubik'), 3) }} m³</td>
                                             <td class="px-4 py-3 text-sm font-semibold text-purple-600">{{ number_format($tandaTerima->items->sum('tonase'), 2) }} Ton</td>
                                         </tr>
