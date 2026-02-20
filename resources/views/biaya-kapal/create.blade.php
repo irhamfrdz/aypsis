@@ -473,81 +473,22 @@
                     </button>
                 </div>
 
-                <!-- Biaya Perlengkapan -->
+                <!-- Biaya Perlengkapan - MULTI SECTION SYSTEM -->
                 <div id="perlengkapan_wrapper" class="md:col-span-2 hidden">
-                    <div class="bg-orange-50 border border-orange-200 rounded-xl p-5">
-                        <div class="flex items-center gap-2 mb-4">
-                            <i class="fas fa-toolbox text-orange-600"></i>
-                            <h3 class="text-sm font-semibold text-orange-800">Detail Biaya Perlengkapan</h3>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Nama Kapal -->
-                            <div>
-                                <label for="perlengkapan_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nama Kapal <span class="text-red-500">*</span>
-                                </label>
-                                <select id="perlengkapan_nama_kapal"
-                                        name="perlengkapan_nama_kapal"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                                    <option value="">-- Pilih Kapal --</option>
-                                    @foreach($kapals as $kapal)
-                                        <option value="{{ $kapal->nama_kapal }}"
-                                                data-id="{{ $kapal->id }}"
-                                                {{ old('perlengkapan_nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
-                                            {{ $kapal->nama_kapal }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <!-- Nomor Voyage -->
-                            <div>
-                                <label for="perlengkapan_no_voyage" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nomor Voyage <span class="text-red-500">*</span>
-                                </label>
-                                <select id="perlengkapan_no_voyage"
-                                        name="perlengkapan_no_voyage"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        disabled>
-                                    <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
-                                </select>
-                                <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk memuat daftar voyage</p>
-                            </div>
-                            <!-- Keterangan -->
-                            <div class="md:col-span-2">
-                                <label for="perlengkapan_keterangan" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Keterangan
-                                </label>
-                                <textarea id="perlengkapan_keterangan"
-                                          name="perlengkapan_keterangan"
-                                          rows="3"
-                                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                          placeholder="Masukkan keterangan perlengkapan...">{{ old('perlengkapan_keterangan') }}</textarea>
-                            </div>
-                            <!-- Jumlah Biaya -->
-                            <div>
-                                <label for="perlengkapan_jumlah_biaya" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Jumlah Biaya <span class="text-red-500">*</span>
-                                </label>
-                                <div class="relative">
-                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
-                                    <input type="text"
-                                           id="perlengkapan_jumlah_biaya"
-                                           name="perlengkapan_jumlah_biaya"
-                                           value="{{ old('perlengkapan_jumlah_biaya', '0') }}"
-                                           class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                           placeholder="0">
-                                </div>
-                                <p class="text-xs text-gray-500 mt-1">Masukkan nominal tanpa titik atau koma</p>
-                            </div>
-                            <!-- Total display -->
-                            <div class="flex items-end">
-                                <div class="w-full bg-orange-100 border border-orange-200 rounded-lg px-4 py-3">
-                                    <p class="text-xs text-orange-700 font-medium mb-1">Total Biaya Perlengkapan</p>
-                                    <p class="text-lg font-bold text-orange-800" id="perlengkapan_total_display">Rp 0</p>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Detail Kapal &amp; Perlengkapan <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" id="add_perlengkapan_section_btn" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-lg transition flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Tambah Kapal</span>
+                        </button>
                     </div>
+                    <div id="perlengkapan_sections_container"></div>
+                    <button type="button" id="add_perlengkapan_section_bottom_btn" class="mt-2 w-full py-2 border-2 border-dashed border-orange-300 rounded-lg text-orange-600 hover:bg-orange-50 hover:border-orange-400 transition flex items-center justify-center gap-2 font-medium">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Tambah Kapal Lainnya</span>
+                    </button>
                 </div>
 
 
@@ -1047,12 +988,11 @@
     const addStuffingSectionBtn = document.getElementById('add_stuffing_section_btn');
     const addStuffingSectionBottomBtn = document.getElementById('add_stuffing_section_bottom_btn');
 
-    // Biaya Perlengkapan specific fields
+    // Biaya Perlengkapan multi-section
     const perlengkapanWrapper = document.getElementById('perlengkapan_wrapper');
-    const perlengkapanNamaKapalSelect = document.getElementById('perlengkapan_nama_kapal');
-    const perlengkapanNoVoyageSelect = document.getElementById('perlengkapan_no_voyage');
-    const perlengkapanJumlahBiayaInput = document.getElementById('perlengkapan_jumlah_biaya');
-    const perlengkapanTotalDisplay = document.getElementById('perlengkapan_total_display');
+    const perlengkapanSectionsContainer = document.getElementById('perlengkapan_sections_container');
+    const addPerlengkapanSectionBtn = document.getElementById('add_perlengkapan_section_btn');
+    const addPerlengkapanSectionBottomBtn = document.getElementById('add_perlengkapan_section_bottom_btn');
     
     // Standard field wrappers
     const nominalWrapper = document.getElementById('nominal_wrapper');
@@ -1775,7 +1715,7 @@
         else if (selectedText.toLowerCase().includes('perlengkapan')) {
             // Show Perlengkapan wrapper
             if (perlengkapanWrapper) perlengkapanWrapper.classList.remove('hidden');
-            resetPerlengkapanSection();
+            initializePerlengkapanSections();
 
             // Hide standard kapal/voyage/bl multi-select fields (perlengkapan has its own)
             kapalWrapper.classList.add('hidden');
@@ -2020,75 +1960,157 @@
 
             // Hide Perlengkapan wrapper
             if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
+            clearAllPerlengkapanSections();
         }
     });
 
-    // ============= BIAYA PERLENGKAPAN LOGIC =============
-    // Attach perlengkapan kapal -> voyage loader
-    if (perlengkapanNamaKapalSelect) {
-        perlengkapanNamaKapalSelect.addEventListener('change', function() {
-            const kapalNama = this.value;
+    // ============= BIAYA PERLENGKAPAN LOGIC (MULTI-SECTION) =============
+    let perlengkapanSectionCounter = 0;
 
-            // Reset voyage dropdown
-            perlengkapanNoVoyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
-            perlengkapanNoVoyageSelect.disabled = true;
-
-            if (!kapalNama) {
-                return;
-            }
-
-            perlengkapanNoVoyageSelect.innerHTML = '<option value="">Loading...</option>';
-            perlengkapanNoVoyageSelect.disabled = true;
-
-            // Use the same endpoint as other voyage selectors
-            fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success && data.voyages) {
-                        let html = '<option value="">-- Pilih Voyage --</option>';
-                        data.voyages.forEach(voyage => {
-                            html += `<option value="${voyage}">${voyage}</option>`;
-                        });
-                        perlengkapanNoVoyageSelect.innerHTML = html;
-                        perlengkapanNoVoyageSelect.disabled = false;
-                    } else {
-                        perlengkapanNoVoyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
-                        perlengkapanNoVoyageSelect.disabled = false;
-                    }
-                })
-                .catch(() => {
-                    perlengkapanNoVoyageSelect.innerHTML = '<option value="">Gagal memuat voyage</option>';
-                    perlengkapanNoVoyageSelect.disabled = false;
-                });
-        });
+    function initializePerlengkapanSections() {
+        if (perlengkapanSectionsContainer) perlengkapanSectionsContainer.innerHTML = '';
+        perlengkapanSectionCounter = 0;
+        addPerlengkapanSection();
     }
 
-    // Format jumlah biaya perlengkapan with thousand separator & update display
-    if (perlengkapanJumlahBiayaInput) {
-        perlengkapanJumlahBiayaInput.addEventListener('input', function() {
-            let value = this.value.replace(/\D/g, '');
-            if (value) {
-                value = parseInt(value).toLocaleString('id-ID');
-            }
-            this.value = value;
-
-            // Update display
-            const numVal = parseInt(this.value.replace(/\./g, '') || 0);
-            if (perlengkapanTotalDisplay) {
-                perlengkapanTotalDisplay.textContent = 'Rp ' + numVal.toLocaleString('id-ID');
-            }
-        });
+    function clearAllPerlengkapanSections() {
+        if (perlengkapanSectionsContainer) perlengkapanSectionsContainer.innerHTML = '';
+        perlengkapanSectionCounter = 0;
     }
 
-    // Reset perlengkapan section helper
-    function resetPerlengkapanSection() {
-        if (perlengkapanNamaKapalSelect) perlengkapanNamaKapalSelect.value = '';
-        if (perlengkapanNoVoyageSelect) {
-            perlengkapanNoVoyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
-            perlengkapanNoVoyageSelect.disabled = true;
+    function addPerlengkapanSection() {
+        perlengkapanSectionCounter++;
+        const idx = perlengkapanSectionCounter;
+
+        let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
+        allKapalsData.forEach(kapal => {
+            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
+        });
+
+        const section = document.createElement('div');
+        section.className = 'perlengkapan-section mb-5 p-4 border-2 border-orange-200 rounded-lg bg-orange-50';
+        section.setAttribute('data-section-index', idx);
+        section.innerHTML = `
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-toolbox text-orange-600"></i>
+                    <h4 class="text-sm font-semibold text-orange-800">Kapal ${idx}</h4>
+                </div>
+                ${idx > 1 ? `<button type="button" onclick="removePerlengkapanSection(this)" class="text-red-500 hover:text-red-700 text-sm flex items-center gap-1">
+                    <i class="fas fa-trash-alt"></i> Hapus
+                </button>` : ''}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal <span class="text-red-500">*</span></label>
+                    <select name="perlengkapan_sections[${idx}][nama_kapal]"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 perlengkapan-kapal-select"
+                            onchange="loadVoyagesForPerlengkapanSection(${idx}, this.value)">
+                        ${kapalOptions}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Voyage <span class="text-red-500">*</span></label>
+                    <select name="perlengkapan_sections[${idx}][no_voyage]"
+                            id="perlengkapan_voyage_${idx}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                            disabled>
+                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk memuat daftar voyage</p>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
+                    <textarea name="perlengkapan_sections[${idx}][keterangan]"
+                              rows="2"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                              placeholder="Masukkan keterangan perlengkapan..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Biaya <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
+                        <input type="text"
+                               name="perlengkapan_sections[${idx}][jumlah_biaya]"
+                               id="perlengkapan_jumlah_${idx}"
+                               value="0"
+                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 perlengkapan-jumlah-input"
+                               placeholder="0"
+                               oninput="formatPerlengkapanBiaya(this)">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Masukkan nominal tanpa titik atau koma</p>
+                </div>
+                <div class="flex items-end">
+                    <div class="w-full bg-orange-100 border border-orange-200 rounded-lg px-4 py-3">
+                        <p class="text-xs text-orange-700 font-medium mb-1">Subtotal</p>
+                        <p class="text-lg font-bold text-orange-800" id="perlengkapan_subtotal_${idx}">Rp 0</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        perlengkapanSectionsContainer.appendChild(section);
+    }
+
+    window.removePerlengkapanSection = function(btn) {
+        const section = btn.closest('.perlengkapan-section');
+        if (section) section.remove();
+    };
+
+    window.formatPerlengkapanBiaya = function(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value) {
+            value = parseInt(value).toLocaleString('id-ID');
         }
-        if (perlengkapanJumlahBiayaInput) perlengkapanJumlahBiayaInput.value = '0';
-        if (perlengkapanTotalDisplay) perlengkapanTotalDisplay.textContent = 'Rp 0';
+        input.value = value;
+
+        // Update subtotal display in same section
+        const section = input.closest('.perlengkapan-section');
+        if (section) {
+            const idx = section.getAttribute('data-section-index');
+            const subtotalEl = document.getElementById(`perlengkapan_subtotal_${idx}`);
+            const numVal = parseInt(input.value.replace(/\./g, '') || 0);
+            if (subtotalEl) subtotalEl.textContent = 'Rp ' + numVal.toLocaleString('id-ID');
+        }
+    };
+
+    window.loadVoyagesForPerlengkapanSection = function(sectionIndex, kapalNama) {
+        const voyageSelect = document.getElementById(`perlengkapan_voyage_${sectionIndex}`);
+        if (!voyageSelect) return;
+
+        voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        voyageSelect.disabled = true;
+
+        if (!kapalNama) {
+            voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            return;
+        }
+
+        fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.voyages && data.voyages.length > 0) {
+                    let html = '<option value="">-- Pilih Voyage --</option>';
+                    data.voyages.forEach(v => {
+                        html += `<option value="${v}">${v}</option>`;
+                    });
+                    voyageSelect.innerHTML = html;
+                } else {
+                    voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
+                }
+                voyageSelect.disabled = false;
+            })
+            .catch(() => {
+                voyageSelect.innerHTML = '<option value="">Gagal memuat voyage</option>';
+                voyageSelect.disabled = false;
+            });
+    };
+
+    if (addPerlengkapanSectionBtn) {
+        addPerlengkapanSectionBtn.addEventListener('click', () => addPerlengkapanSection());
+    }
+    if (addPerlengkapanSectionBottomBtn) {
+        addPerlengkapanSectionBottomBtn.addEventListener('click', () => addPerlengkapanSection());
     }
     
     // Function to clear BL selections

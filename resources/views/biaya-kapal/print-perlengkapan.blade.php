@@ -33,25 +33,29 @@
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half Folio'];
 
-    // Resolve nama kapal & voyage dari array atau string
-    $namaKapal = is_array($biayaKapal->nama_kapal)
-        ? implode(', ', array_filter($biayaKapal->nama_kapal))
-        : ($biayaKapal->nama_kapal ?? '-');
+    // Resolve nama_kapal dan no_voyage — bisa array atau string
+    $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal ?? '-'];
+    $noVoyages  = is_array($biayaKapal->no_voyage)  ? $biayaKapal->no_voyage  : [$biayaKapal->no_voyage  ?? '-'];
 
-    $noVoyage = is_array($biayaKapal->no_voyage)
-        ? implode(', ', array_filter($biayaKapal->no_voyage))
-        : ($biayaKapal->no_voyage ?? '-');
+    // Build rows: zip nama_kapal dan no_voyage; nominal dibagi rata
+    $jumlahBaris = max(count($namaKapals), count($noVoyages), 1);
+    $nominalPerBaris = $jumlahBaris > 0 ? ($biayaKapal->nominal ?? 0) / $jumlahBaris : 0;
+
+    $rows = [];
+    for ($i = 0; $i < $jumlahBaris; $i++) {
+        $rows[] = [
+            'nama_kapal' => $namaKapals[$i] ?? '-',
+            'no_voyage'  => $noVoyages[$i]  ?? '-',
+            'nominal'    => $nominalPerBaris,
+        ];
+    }
 @endphp
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
     <title>Biaya Perlengkapan - {{ $biayaKapal->nomor_invoice }}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         @page {
             size: {{ $currentPaper['size'] }} portrait;
@@ -76,178 +80,94 @@
             min-height: calc({{ $currentPaper['height'] }} - 20mm);
         }
 
+        /* ---- Header ---- */
         .header {
             text-align: center;
-            margin-bottom: 15px;
-            border-bottom: 3px solid #000;
-            padding-bottom: 10px;
+            margin-bottom: 12px;
+            border-bottom: 3px double #000;
+            padding-bottom: 8px;
         }
-
         .header h1 {
             font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+        .header .subtitle { font-size: {{ $currentPaper['fontSize'] }}; color: #444; }
 
-        .header .subtitle {
-            font-size: {{ $currentPaper['fontSize'] }};
-            color: #444;
-        }
-
-        .document-info {
+        /* ---- Doc Info ---- */
+        .doc-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0;
-            margin-bottom: 18px;
+            gap: 0 20px;
+            margin-bottom: 14px;
             font-size: {{ $currentPaper['fontSize'] }};
         }
+        .doc-info .row { display: flex; padding: 2px 0; }
+        .doc-info .lbl { width: 130px; flex-shrink: 0; }
+        .doc-info .sep { margin: 0 6px; }
+        .doc-info .val { flex: 1; }
 
-        .document-info .info-row {
-            display: flex;
-            padding: 2px 0;
-        }
-
-        .document-info .label {
-            font-weight: normal;
-            width: 140px;
-            flex-shrink: 0;
-        }
-
-        .document-info .separator {
-            margin: 0 8px;
-            flex-shrink: 0;
-        }
-
-        .document-info .value {
-            flex: 1;
-            font-weight: normal;
-        }
-
-        /* Detail box */
-        .detail-box {
-            border: 1px solid #333;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-
-        .detail-box .box-header {
-            background-color: #f2f2f2;
-            padding: 6px 10px;
+        /* ---- Detail Table ---- */
+        .section-title {
+            background: #f0f0f0;
             font-weight: bold;
+            padding: 5px 8px;
             font-size: {{ $currentPaper['fontSize'] }};
-            border-bottom: 1px solid #ccc;
+            border: 1px solid #ccc;
+            border-bottom: none;
         }
 
         .detail-table {
             width: 100%;
             border-collapse: collapse;
             font-size: {{ $currentPaper['tableFont'] }};
+            margin-bottom: 14px;
         }
-
-        .detail-table th,
-        .detail-table td {
-            border: 1px solid #bbb;
-            padding: 6px 8px;
+        .detail-table th, .detail-table td {
+            border: 1px solid #aaa;
+            padding: 5px 8px;
             vertical-align: top;
         }
-
         .detail-table th {
-            background-color: #ececec;
+            background: #ececec;
             font-weight: bold;
             text-align: center;
         }
-
-        .detail-table td.right { text-align: right; }
+        .detail-table td.right  { text-align: right; }
         .detail-table td.center { text-align: center; }
-
-        /* Total summary */
-        .summary-box {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-
-        .summary-table {
-            width: 50%;
-            border-collapse: collapse;
-        }
-
-        .summary-table td {
-            padding: 3px 0;
-            font-size: {{ $currentPaper['fontSize'] }};
-        }
-
-        .summary-table .lbl {
+        .detail-table tr.total-row td {
             font-weight: bold;
-            text-align: right;
-            padding-right: 15px;
+            background: #f5f5f5;
         }
 
-        .summary-table .val {
-            font-weight: bold;
-            text-align: right;
-            width: 130px;
-        }
-
-        .summary-table .total-row .lbl,
-        .summary-table .total-row .val {
-            border-top: 2px solid #000;
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-
-        /* Keterangan notes */
+        /* ---- Keterangan ---- */
         .notes {
-            margin-bottom: 15px;
-            padding: 8px 10px;
+            margin-bottom: 14px;
+            padding: 6px 10px;
             border: 1px dashed #999;
             font-size: {{ $currentPaper['tableFont'] }};
-            background-color: #fafafa;
+            background: #fafafa;
         }
 
-        /* Signature area */
+        /* ---- Signatures ---- */
         .signatures {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            margin-top: 30px;
+            margin-top: 28px;
         }
+        .sig-box { text-align: center; }
+        .sig-box .title { font-weight: normal; margin-bottom: 52px; font-size: {{ $currentPaper['fontSize'] }}; }
+        .sig-box .line  { border-top: 1px solid #000; width: 80%; margin: 0 auto 3px; }
+        .sig-box .name  { font-size: {{ $currentPaper['fontSize'] }}; }
 
-        .signature-box {
-            text-align: center;
-        }
-
-        .signature-box .title {
-            font-weight: normal;
-            margin-bottom: 55px;
-            font-size: {{ $currentPaper['fontSize'] }};
-        }
-
-        .signature-box .line {
-            border-top: 1px solid #000;
-            margin: 0 auto;
-            width: 80%;
-            margin-bottom: 3px;
-        }
-
-        .signature-box .name {
-            font-size: {{ $currentPaper['fontSize'] }};
-        }
-
-        /* Print controls (hidden when printing) */
+        /* ---- Print Controls ---- */
         .print-controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: white;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: white; padding: 10px; border: 1px solid #ddd;
+            border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,.1);
         }
 
         @media print {
@@ -258,7 +178,8 @@
     </style>
 </head>
 <body>
-    <!-- Print Controls (non-print) -->
+
+    <!-- Print Controls -->
     <div class="print-controls no-print">
         <select id="paperSizeSelect" onchange="changePaperSize()" style="padding:5px;margin-bottom:5px;width:100%;">
             <option value="Half Folio" {{ $paperSize == 'Half Folio' ? 'selected' : '' }}>Setengah Folio</option>
@@ -279,95 +200,78 @@
         </div>
 
         <!-- Document Info -->
-        <div class="document-info">
+        <div class="doc-info">
             <div>
-                <div class="info-row">
-                    <span class="label">Tanggal</span>
-                    <span class="separator">:</span>
-                    <span class="value">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') }}</span>
+                <div class="row">
+                    <span class="lbl">Tanggal</span>
+                    <span class="sep">:</span>
+                    <span class="val">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/m/Y') }}</span>
                 </div>
-                <div class="info-row">
-                    <span class="label">Nomor Invoice</span>
-                    <span class="separator">:</span>
-                    <span class="value"><strong>{{ $biayaKapal->nomor_invoice }}</strong></span>
+                <div class="row">
+                    <span class="lbl">Nomor Invoice</span>
+                    <span class="sep">:</span>
+                    <span class="val"><strong>{{ $biayaKapal->nomor_invoice }}</strong></span>
                 </div>
                 @if($biayaKapal->nomor_referensi)
-                <div class="info-row">
-                    <span class="label">Nomor Referensi</span>
-                    <span class="separator">:</span>
-                    <span class="value">{{ $biayaKapal->nomor_referensi }}</span>
+                <div class="row">
+                    <span class="lbl">Nomor Referensi</span>
+                    <span class="sep">:</span>
+                    <span class="val">{{ $biayaKapal->nomor_referensi }}</span>
                 </div>
                 @endif
             </div>
             <div>
-                <div class="info-row">
-                    <span class="label">Nama Kapal</span>
-                    <span class="separator">:</span>
-                    <span class="value"><strong>{{ $namaKapal }}</strong></span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Nomor Voyage</span>
-                    <span class="separator">:</span>
-                    <span class="value">{{ $noVoyage }}</span>
-                </div>
                 @if($biayaKapal->penerima)
-                <div class="info-row">
-                    <span class="label">Penerima</span>
-                    <span class="separator">:</span>
-                    <span class="value">{{ $biayaKapal->penerima }}</span>
+                <div class="row">
+                    <span class="lbl">Penerima</span>
+                    <span class="sep">:</span>
+                    <span class="val">{{ $biayaKapal->penerima }}</span>
                 </div>
                 @endif
                 @if($biayaKapal->nama_vendor)
-                <div class="info-row">
-                    <span class="label">Nama Vendor</span>
-                    <span class="separator">:</span>
-                    <span class="value">{{ $biayaKapal->nama_vendor }}</span>
+                <div class="row">
+                    <span class="lbl">Nama Vendor</span>
+                    <span class="sep">:</span>
+                    <span class="val">{{ $biayaKapal->nama_vendor }}</span>
                 </div>
                 @endif
                 @if($biayaKapal->nomor_rekening)
-                <div class="info-row">
-                    <span class="label">Nomor Rekening</span>
-                    <span class="separator">:</span>
-                    <span class="value">{{ $biayaKapal->nomor_rekening }}</span>
+                <div class="row">
+                    <span class="lbl">Nomor Rekening</span>
+                    <span class="sep">:</span>
+                    <span class="val">{{ $biayaKapal->nomor_rekening }}</span>
                 </div>
                 @endif
             </div>
         </div>
 
-        <!-- Detail Biaya Table -->
-        <div class="detail-box">
-            <div class="box-header">Detail Biaya Perlengkapan</div>
-            <table class="detail-table">
-                <thead>
-                    <tr>
-                        <th style="width:5%;">No</th>
-                        <th style="width:30%;">Nama Kapal</th>
-                        <th style="width:25%;">Nomor Voyage</th>
-                        <th style="width:40%;">Jumlah Biaya</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="center">1</td>
-                        <td>{{ $namaKapal }}</td>
-                        <td>{{ $noVoyage }}</td>
-                        <td class="right">
-                            <strong>Rp {{ number_format($biayaKapal->nominal ?? 0, 0, ',', '.') }}</strong>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Summary / Total -->
-        <div class="summary-box">
-            <table class="summary-table">
-                <tr class="total-row">
-                    <td class="lbl">TOTAL BIAYA:</td>
-                    <td class="val">Rp {{ number_format($biayaKapal->nominal ?? 0, 0, ',', '.') }}</td>
+        <!-- Detail Table -->
+        <div class="section-title">Detail Biaya Perlengkapan</div>
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th style="width:5%;">No</th>
+                    <th style="width:35%;">Nama Kapal</th>
+                    <th style="width:25%;">Nomor Voyage</th>
+                    <th style="width:35%;">Jumlah Biaya</th>
                 </tr>
-            </table>
-        </div>
+            </thead>
+            <tbody>
+                @foreach($rows as $i => $row)
+                <tr>
+                    <td class="center">{{ $i + 1 }}</td>
+                    <td>{{ $row['nama_kapal'] }}</td>
+                    <td>{{ $row['no_voyage'] }}</td>
+                    <td class="right">Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
+                </tr>
+                @endforeach
+                <!-- Total row -->
+                <tr class="total-row">
+                    <td colspan="3" class="right">TOTAL:</td>
+                    <td class="right">Rp {{ number_format($biayaKapal->nominal ?? 0, 0, ',', '.') }}</td>
+                </tr>
+            </tbody>
+        </table>
 
         <!-- Keterangan -->
         @if($biayaKapal->keterangan)
@@ -379,17 +283,17 @@
 
         <!-- Tanda Tangan -->
         <div class="signatures">
-            <div class="signature-box">
+            <div class="sig-box">
                 <div class="title">Dibuat Oleh</div>
                 <div class="line"></div>
                 <div class="name">&nbsp;</div>
             </div>
-            <div class="signature-box">
+            <div class="sig-box">
                 <div class="title">Diperiksa Oleh</div>
                 <div class="line"></div>
                 <div class="name">&nbsp;</div>
             </div>
-            <div class="signature-box">
+            <div class="sig-box">
                 <div class="title">Disetujui Oleh</div>
                 <div class="line"></div>
                 <div class="name">&nbsp;</div>
@@ -400,10 +304,10 @@
 
     <script>
         function changePaperSize() {
-            const paperSize = document.getElementById('paperSizeSelect').value;
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('paper_size', paperSize);
-            window.location.href = currentUrl.toString();
+            const ps = document.getElementById('paperSizeSelect').value;
+            const url = new URL(window.location.href);
+            url.searchParams.set('paper_size', ps);
+            window.location.href = url.toString();
         }
     </script>
 </body>

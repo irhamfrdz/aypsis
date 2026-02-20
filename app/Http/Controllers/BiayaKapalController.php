@@ -342,11 +342,12 @@ class BiayaKapalController extends Controller
             'stuffing_sections.*.pph' => 'nullable|numeric|min:0',
             'stuffing_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
-            // Perlengkapan fields
-            'perlengkapan_nama_kapal'  => 'nullable|string|max:255',
-            'perlengkapan_no_voyage'   => 'nullable|string|max:255',
-            'perlengkapan_keterangan'  => 'nullable|string',
-            'perlengkapan_jumlah_biaya' => 'nullable|numeric|min:0',
+            // Perlengkapan sections
+            'perlengkapan_sections'                     => 'nullable|array',
+            'perlengkapan_sections.*.nama_kapal'        => 'nullable|string|max:255',
+            'perlengkapan_sections.*.no_voyage'         => 'nullable|string|max:255',
+            'perlengkapan_sections.*.keterangan'        => 'nullable|string',
+            'perlengkapan_sections.*.jumlah_biaya'      => 'nullable|string',
         ]);
 
         try {
@@ -893,13 +894,39 @@ class BiayaKapalController extends Controller
                 }
             }
 
-            // BIAYA PERLENGKAPAN: simpan nama_kapal, no_voyage, keterangan, dan nominal ke biaya_kapals
-            if (!empty($validated['perlengkapan_nama_kapal']) || !empty($validated['perlengkapan_jumlah_biaya'])) {
+            // BIAYA PERLENGKAPAN MULTI-SECTION: simpan setiap section ke biaya_kapals
+            if (!empty($validated['perlengkapan_sections'])) {
+                $sections = $validated['perlengkapan_sections'];
+
+                // Kumpulkan semua nama_kapal, no_voyage, keterangan, dan total nominal
+                $perlNamaKapal  = [];
+                $perlNoVoyage   = [];
+                $perlKeterangan = [];
+                $perlTotal      = 0;
+
+                foreach ($sections as $section) {
+                    if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) continue;
+
+                    if (!empty($section['nama_kapal'])) {
+                        $perlNamaKapal[] = $section['nama_kapal'];
+                    }
+                    if (!empty($section['no_voyage'])) {
+                        $perlNoVoyage[] = $section['no_voyage'];
+                    }
+                    if (!empty($section['keterangan'])) {
+                        $perlKeterangan[] = $section['keterangan'];
+                    }
+
+                    // Clean & accumulate jumlah
+                    $jumlah = str_replace(',', '.', str_replace('.', '', $section['jumlah_biaya'] ?? '0'));
+                    $perlTotal += floatval($jumlah);
+                }
+
                 $biayaKapal->update([
-                    'nama_kapal' => !empty($validated['perlengkapan_nama_kapal']) ? [$validated['perlengkapan_nama_kapal']] : null,
-                    'no_voyage'  => !empty($validated['perlengkapan_no_voyage'])  ? [$validated['perlengkapan_no_voyage']]  : null,
-                    'keterangan' => $validated['perlengkapan_keterangan'] ?? null,
-                    'nominal'    => floatval($validated['perlengkapan_jumlah_biaya'] ?? 0),
+                    'nama_kapal'  => !empty($perlNamaKapal)  ? $perlNamaKapal  : null,
+                    'no_voyage'   => !empty($perlNoVoyage)   ? $perlNoVoyage   : null,
+                    'keterangan'  => !empty($perlKeterangan) ? implode('; ', $perlKeterangan) : null,
+                    'nominal'     => $perlTotal,
                 ]);
             }
 
