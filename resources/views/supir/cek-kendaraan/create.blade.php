@@ -47,9 +47,9 @@
     <form action="{{ route('supir.cek-kendaraan.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column: Basic Info -->
-            <div class="space-y-8">
+        <div class="space-y-8">
+            <!-- Top Section: Basic Info -->
+            <div class="w-full">
                 <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-gray-100 border border-gray-100">
                     <h2 class="text-lg font-black text-gray-900 mb-6 flex items-center">
                         <span class="w-1.5 h-6 bg-indigo-600 rounded-full mr-3"></span>
@@ -72,7 +72,7 @@
                             </select>
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
                                 <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50" required>
@@ -81,9 +81,6 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Jam</label>
                                 <input type="time" name="jam" value="{{ date('H:i') }}" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50" required>
                             </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Odometer (KM)</label>
                                 <div class="relative">
@@ -97,7 +94,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Berlaku STNK</label>
                                 <input type="date" name="masa_berlaku_stnk" id="masa_berlaku_stnk" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
@@ -106,9 +103,6 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Berlaku KIR</label>
                                 <input type="date" name="masa_berlaku_kir" id="masa_berlaku_kir" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
                             </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Berlaku SIM (Dari)</label>
                                 <input type="date" name="masa_berlaku_sim_start" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
@@ -121,10 +115,12 @@
                 </div>
 
 
+                    </div>
+                </div>
             </div>
 
-            <!-- Middle & Right Columns: Checklist -->
-            <div class="lg:col-span-2 space-y-8">
+            <!-- Bottom Section: Checklist -->
+            <div class="w-full space-y-8">
                 <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-gray-100 border border-gray-100">
                     <div class="flex items-center justify-between mb-8">
                         <h2 class="text-xl font-bold text-gray-900 flex items-center">
