@@ -15,15 +15,12 @@ return new class extends Migration
         if (!Schema::hasTable('vendor_kontainer_sewas')) {
             Schema::create('vendor_kontainer_sewas', function (Blueprint $table) {
                 $table->id();
-                $table->string('kode')->unique()->comment('Kode unik vendor kontainer sewa');
-                $table->string('nama_vendor')->comment('Nama vendor kontainer sewa');
-                $table->text('catatan')->nullable()->comment('Catatan tambahan vendor');
-                $table->enum('status', ['aktif', 'nonaktif'])->default('aktif')->comment('Status vendor');
+                $table->string('name');
+                $table->string('npwp')->nullable();
+                $table->decimal('tax_ppn_percent', 5, 2)->default(11.00);
+                $table->decimal('tax_pph_percent', 5, 2)->default(2.00);
                 $table->timestamps();
-                
-                // Indexes
-                $table->index(['status'], 'idx_vendor_kontainer_sewas_status');
-                $table->index(['kode'], 'idx_vendor_kontainer_sewas_kode');
+
             });
         }
     }

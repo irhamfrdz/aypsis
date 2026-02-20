@@ -45,21 +45,6 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
                     <h2 class="text-lg font-semibold text-gray-900">Informasi Vendor</h2>
-                    @if($vendorKontainerSewa->status === 'aktif')
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Aktif
-                        </span>
-                    @else
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                            </svg>
-                            Non-Aktif
-                        </span>
-                    @endif
                 </div>
             </div>
 
@@ -67,52 +52,35 @@
                 <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-4">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Kode Vendor</dt>
-                            <dd class="mt-1 text-lg font-semibold text-gray-900">{{ $vendorKontainerSewa->kode }}</dd>
+                            <dt class="text-sm font-medium text-gray-500">ID Vendor</dt>
+                            <dd class="mt-1 text-lg font-semibold text-gray-900">#{{ $vendorKontainerSewa->id }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Nama Vendor</dt>
-                            <dd class="mt-1 text-lg text-gray-900">{{ $vendorKontainerSewa->nama_vendor }}</dd>
+                            <dd class="mt-1 text-lg text-gray-900">{{ $vendorKontainerSewa->name }}</dd>
                         </div>
                     </div>
 
                     <div class="space-y-4">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Status</dt>
-                            <dd class="mt-1">
-                                @if($vendorKontainerSewa->status === 'aktif')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Aktif
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                        Non-Aktif
-                                    </span>
-                                @endif
-                            </dd>
+                            <dt class="text-sm font-medium text-gray-500">NPWP</dt>
+                            <dd class="mt-1 text-lg text-gray-900">{{ $vendorKontainerSewa->npwp ?? '-' }}</dd>
                         </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">ID Vendor</dt>
-                            <dd class="mt-1 text-sm text-gray-500">#{{ $vendorKontainerSewa->id }}</dd>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">PPN (%)</dt>
+                                <dd class="mt-1 text-lg text-gray-900">{{ number_format($vendorKontainerSewa->tax_ppn_percent, 2) }}%</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">PPh (%)</dt>
+                                <dd class="mt-1 text-lg text-gray-900">{{ number_format($vendorKontainerSewa->tax_pph_percent, 2) }}%</dd>
+                            </div>
                         </div>
                     </div>
                 </dl>
             </div>
         </div>
 
-        <!-- Catatan -->
-        @if($vendorKontainerSewa->catatan)
-            <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Catatan</h3>
-                </div>
-                <div class="p-6">
-                    <div class="prose prose-sm max-w-none text-gray-700">
-                        {!! nl2br(e($vendorKontainerSewa->catatan)) !!}
-                    </div>
-                </div>
-            </div>
-        @endif
 
         <!-- Metadata -->
         <div class="bg-white shadow-lg rounded-lg overflow-hidden">

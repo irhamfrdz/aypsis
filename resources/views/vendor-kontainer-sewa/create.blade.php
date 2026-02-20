@@ -50,44 +50,20 @@
                 <form action="{{ route('vendor-kontainer-sewa.store') }}" method="POST" class="space-y-6">
                     @csrf
 
-                    <!-- Kode -->
-                    <div class="space-y-2">
-                        <label for="kode" class="block text-sm font-medium text-gray-700">
-                            Kode Vendor <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text"
-                               name="kode"
-                               id="kode"
-                               value="{{ old('kode') }}"
-                               required
-                               maxlength="50"
-                               placeholder="Masukkan kode vendor"
-                               class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out @error('kode') border-red-300 @enderror">
-                        @error('kode')
-                            <p class="mt-1 text-sm text-red-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                        <p class="text-xs text-gray-500">Kode unik untuk mengidentifikasi vendor (maksimal 50 karakter)</p>
-                    </div>
-
                     <!-- Nama Vendor -->
                     <div class="space-y-2">
-                        <label for="nama_vendor" class="block text-sm font-medium text-gray-700">
+                        <label for="name" class="block text-sm font-medium text-gray-700">
                             Nama Vendor <span class="text-red-500">*</span>
                         </label>
                         <input type="text"
-                               name="nama_vendor"
-                               id="nama_vendor"
-                               value="{{ old('nama_vendor') }}"
+                               name="name"
+                               id="name"
+                               value="{{ old('name') }}"
                                required
                                maxlength="255"
                                placeholder="Masukkan nama vendor"
-                               class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out @error('nama_vendor') border-red-300 @enderror">
-                        @error('nama_vendor')
+                               class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out @error('name') border-red-300 @enderror">
+                        @error('name')
                             <p class="mt-1 text-sm text-red-600 flex items-center">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -97,55 +73,72 @@
                         @enderror
                     </div>
 
-                    <!-- Status -->
+                    <!-- NPWP -->
                     <div class="space-y-2">
-                        <label for="status" class="block text-sm font-medium text-gray-700">
-                            Status <span class="text-red-500">*</span>
+                        <label for="npwp" class="block text-sm font-medium text-gray-700">
+                            NPWP
                         </label>
-                        <div class="relative">
-                            <select name="status"
-                                    id="status"
-                                    required
-                                    class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out @error('status') border-red-300 @enderror">
-                                <option value="">Pilih Status</option>
-                                <option value="aktif" {{ old('status') === 'aktif' ? 'selected' : '' }}>Aktif</option>
-                                <option value="non-aktif" {{ old('status') === 'non-aktif' ? 'selected' : '' }}>Non-Aktif</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        <input type="text"
+                               name="npwp"
+                               id="npwp"
+                               value="{{ old('npwp') }}"
+                               maxlength="50"
+                               placeholder="Masukkan NPWP vendor (opsional)"
+                               class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out @error('npwp') border-red-300 @enderror">
+                        @error('npwp')
+                            <p class="mt-1 text-sm text-red-600 flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                            </div>
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Tax PPN Percent -->
+                        <div class="space-y-2">
+                            <label for="tax_ppn_percent" class="block text-sm font-medium text-gray-700">
+                                PPN (%) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number"
+                                   step="0.01"
+                                   name="tax_ppn_percent"
+                                   id="tax_ppn_percent"
+                                   value="{{ old('tax_ppn_percent', 11.00) }}"
+                                   required
+                                   class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out @error('tax_ppn_percent') border-red-300 @enderror">
+                            @error('tax_ppn_percent')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    {{ $message }}
+                                </p>
+                            @enderror
                         </div>
-                        @error('status')
-                            <p class="mt-1 text-sm text-red-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
 
-                    <!-- Catatan -->
-                    <div class="space-y-2">
-                        <label for="catatan" class="block text-sm font-medium text-gray-700">
-                            Catatan
-                        </label>
-                        <textarea name="catatan"
-                                  id="catatan"
-                                  rows="4"
-                                  placeholder="Masukkan catatan atau keterangan tambahan (opsional)"
-                                  class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out resize-none @error('catatan') border-red-300 @enderror">{{ old('catatan') }}</textarea>
-                        @error('catatan')
-                            <p class="mt-1 text-sm text-red-600 flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                        <p class="text-xs text-gray-500">Informasi tambahan tentang vendor ini</p>
+                        <!-- Tax PPh Percent -->
+                        <div class="space-y-2">
+                            <label for="tax_pph_percent" class="block text-sm font-medium text-gray-700">
+                                PPh (%) <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number"
+                                   step="0.01"
+                                   name="tax_pph_percent"
+                                   id="tax_pph_percent"
+                                   value="{{ old('tax_pph_percent', 2.00) }}"
+                                   required
+                                   class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out @error('tax_pph_percent') border-red-300 @enderror">
+                            @error('tax_pph_percent')
+                                <p class="mt-1 text-sm text-red-600 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
                     </div>
 
                     <!-- Submit Buttons -->
@@ -175,31 +168,18 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Auto generate kode from nama vendor
-    $('#nama_vendor').on('input', function() {
-        if ($('#kode').val() === '') {
-            let namaVendor = $(this).val();
-            let kode = namaVendor
-                .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters
-                .replace(/\s+/g, '') // Remove spaces
-                .substring(0, 10) // Limit to 10 characters
-                .toUpperCase();
-            $('#kode').val(kode);
-        }
-    });
-
     // Form validation
     $('form').on('submit', function(e) {
         let hasErrors = false;
 
         // Check required fields
-        if ($('#kode').val().trim() === '') {
+        if ($('#name').val().trim() === '') {
             hasErrors = true;
         }
-        if ($('#nama_vendor').val().trim() === '') {
+        if ($('#tax_ppn_percent').val() === '') {
             hasErrors = true;
         }
-        if ($('#status').val() === '') {
+        if ($('#tax_pph_percent').val() === '') {
             hasErrors = true;
         }
 

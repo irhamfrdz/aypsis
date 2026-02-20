@@ -25,15 +25,9 @@ class VendorKontainerSewaController extends Controller
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('kode', 'like', "%{$search}%")
-                  ->orWhere('nama_vendor', 'like', "%{$search}%")
-                  ->orWhere('catatan', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('npwp', 'like', "%{$search}%");
             });
-        }
-
-        // Filter by status
-        if ($request->has('status') && $request->status !== '') {
-            $query->where('status', $request->status);
         }
 
         $vendors = $query->latest()->paginate(10);
@@ -55,10 +49,10 @@ class VendorKontainerSewaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode' => 'required|string|max:50|unique:vendor_kontainer_sewas,kode',
-            'nama_vendor' => 'required|string|max:255',
-            'catatan' => 'nullable|string',
-            'status' => 'required|in:aktif,non-aktif'
+            'name' => 'required|string|max:255',
+            'npwp' => 'nullable|string|max:50',
+            'tax_ppn_percent' => 'required|numeric|min:0|max:100',
+            'tax_pph_percent' => 'required|numeric|min:0|max:100'
         ]);
 
         try {
@@ -95,10 +89,10 @@ class VendorKontainerSewaController extends Controller
     public function update(Request $request, VendorKontainerSewa $vendorKontainerSewa)
     {
         $request->validate([
-            'kode' => 'required|string|max:50|unique:vendor_kontainer_sewas,kode,' . $vendorKontainerSewa->id,
-            'nama_vendor' => 'required|string|max:255',
-            'catatan' => 'nullable|string',
-            'status' => 'required|in:aktif,non-aktif'
+            'name' => 'required|string|max:255',
+            'npwp' => 'nullable|string|max:50',
+            'tax_ppn_percent' => 'required|numeric|min:0|max:100',
+            'tax_pph_percent' => 'required|numeric|min:0|max:100'
         ]);
 
         try {
