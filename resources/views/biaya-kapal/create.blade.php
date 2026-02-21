@@ -3140,6 +3140,10 @@
                                         <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
                                         <input type="number" name="air[${sectionIndex}][custom_prices][]" class="price-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 bg-gray-100" placeholder="0" readonly oninput="calculateAirSectionTotal(${sectionIndex})">
                                     </div>
+                                    <div class="w-1/4">
+                                        <label class="text-xs text-gray-500 block mb-1">Berapa Ton</label>
+                                        <input type="number" step="0.01" min="0" name="air[${sectionIndex}][type_tonase][]" class="tonase-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500" placeholder="0" oninput="calculateAirSectionTotal(${sectionIndex})">
+                                    </div>
                                     <div class="flex items-end pb-1">
                                         <div class="flex items-center gap-2">
                                             <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
@@ -3466,6 +3470,10 @@
                     <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
                     <input type="number" name="air[${sectionIndex}][custom_prices][]" class="price-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 bg-gray-100" placeholder="0" readonly oninput="calculateAirSectionTotal(${sectionIndex})">
                 </div>
+                <div class="w-1/4">
+                    <label class="text-xs text-gray-500 block mb-1">Berapa Ton</label>
+                    <input type="number" step="0.01" min="0" name="air[${sectionIndex}][type_tonase][]" class="tonase-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500" placeholder="0" oninput="calculateAirSectionTotal(${sectionIndex})">
+                </div>
                 <div class="flex items-end pb-1">
                     <div class="flex items-center gap-2">
                         <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
@@ -3548,14 +3556,20 @@
             if (select) {
                 // Determine price from input field now
                 const priceInput = container.querySelector('.price-input-air');
+                const tonaseInput = container.querySelector('.tonase-input-air');
                 const harga = parseFloat(priceInput.value) || 0;
+                
+                let selectedKuantitas = kuantitas;
+                if (tonaseInput && tonaseInput.value !== "") {
+                    selectedKuantitas = parseFloat(tonaseInput.value) || 0;
+                }
                 
                 const isLumpsum = checkbox ? checkbox.checked : false;
 
                 if (isLumpsum) {
                     totalCost += harga; // Fixed price
                 } else {
-                    totalCost += (harga * kuantitas); // Price * Qty
+                    totalCost += (harga * selectedKuantitas); // Price * Qty
                 }
             }
         });

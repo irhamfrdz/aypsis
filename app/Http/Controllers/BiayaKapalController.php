@@ -650,6 +650,11 @@ class BiayaKapalController extends Controller
                                 // Determine if this specific type is lumpsum
                                 $isLumpsum = isset($section['type_is_lumpsum'][$typeIndex]) && $section['type_is_lumpsum'][$typeIndex] == '1';
                                 
+                                $currentKuantitas = $kuantitas;
+                                if (isset($section['type_tonase'][$typeIndex]) && $section['type_tonase'][$typeIndex] !== '') {
+                                    $currentKuantitas = floatval($section['type_tonase'][$typeIndex]);
+                                }
+
                                 // Apply Jasa Air and Biaya Agen ONLY on the first record to avoid double counting
                                 $currentJasaAir = ($typeIndex === 0) ? $jasaAir : 0;
                                 $currentBiayaAgen = ($typeIndex === 0) ? $biayaAgen : 0;
@@ -658,7 +663,7 @@ class BiayaKapalController extends Controller
                                 if ($isLumpsum) {
                                     $waterCost = $typeHarga; // Fixed price, ignore quantity multiplier
                                 } else {
-                                    $waterCost = $typeHarga * $kuantitas;
+                                    $waterCost = $typeHarga * $currentKuantitas;
                                 }
                                 
                                 $currentSubTotal = $waterCost + $currentJasaAir + $currentBiayaAgen;
@@ -677,7 +682,7 @@ class BiayaKapalController extends Controller
                                     'type_id' => $actualTypeId,
                                     'type_keterangan' => $typeKeterangan,
                                     'is_lumpsum' => $isLumpsum,
-                                    'kuantitas' => $kuantitas,
+                                    'kuantitas' => $currentKuantitas,
                                     'harga' => $typeHarga,
                                     'jasa_air' => $currentJasaAir,
                                     'biaya_agen' => $currentBiayaAgen,
@@ -694,7 +699,7 @@ class BiayaKapalController extends Controller
                             $airDetails[] = "[" . ($section['kapal'] ?? 'N/A') . " - Voyage " . ($section['voyage'] ?? 'N/A') . "] " .
                                 "Vendor: " . ($section['vendor'] ?? 'N/A') . " | " .
                                 "Type: " . ($typeKeterangan ?? 'N/A') . " | " .
-                                "Kuantitas: " . number_format($kuantitas, 2, ',', '.') . " ton | " .
+                                "Kuantitas: " . number_format($currentKuantitas, 2, ',', '.') . " ton | " .
                                 "Grand Total: Rp " . number_format($currentGrandTotal, 0, ',', '.');
                         }
                     } else if (!empty($section['type'])) {
