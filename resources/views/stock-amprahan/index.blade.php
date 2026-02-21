@@ -283,9 +283,9 @@
                                                         @foreach($alatBerats as $alat)
                                                             <div class="alat-berat-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
                                                                  data-value="{{ $alat->id }}" 
-                                                                 data-name="{{ $alat->kode_alat }} {{ $alat->nama }}"
-                                                                 onclick="selectAlatBerat('{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }}')">
-                                                                <span class="block font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }}</span>
+                                                                 data-name="{{ $alat->kode_alat }} {{ $alat->nama }} {{ $alat->lokasi ?? '' }} {{ $alat->warna ?? '' }}"
+                                                                 onclick="selectAlatBerat('{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }}@if(isset($alat->lokasi)) - {{ $alat->lokasi }}@endif@if(isset($alat->warna)) - {{ $alat->warna }}@endif')">
+                                                                <span class="block font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }}@if(isset($alat->lokasi)) - {{ $alat->lokasi }}@endif@if(isset($alat->warna)) - {{ $alat->warna }}@endif</span>
                                                             </div>
                                                         @endforeach
                                                     @endif
