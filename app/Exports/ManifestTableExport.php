@@ -84,6 +84,7 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
                 $qtyUnit,
                 $goodsName,
                 $m->pengirim,
+                $m->alamat_pengirim,
                 $m->penerima,
                 $m->prospek && $m->prospek->tandaTerima ? $m->prospek->tandaTerima->meter_kubik : ($m->volume ?? '-'),
                 $m->prospek && $m->prospek->tandaTerima ? $m->prospek->tandaTerima->tonase : ($m->tonnage ?? '-'),
@@ -107,6 +108,7 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
             'PKGS',
             'DESCRIPTION OF GOODS',
             'SHIPPER',
+            'ALAMAT PENGIRIM',
             'CONSIGNEE',
             'Volume',
             'Tonase',
@@ -123,13 +125,13 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
                 $sheet->mergeCells('I1:J1');
                 $sheet->setCellValue('I1', 'DESCRIPTION OF GOODS');
 
-                $sheet->getStyle('A1:N1')->getFont()->setBold(true);
-                $sheet->getStyle('A1:N1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('A1:N1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+                $sheet->getStyle('A1:O1')->getFont()->setBold(true);
+                $sheet->getStyle('A1:O1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:O1')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
                 
                 // Add cell borders and wrap text to all data
                 $lastRow = count($this->manifests) + 1;
-                $range = 'A1:N' . $lastRow;
+                $range = 'A1:O' . $lastRow;
                 $sheet->getStyle($range)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
                 $sheet->getStyle($range)->getAlignment()->setWrapText(true);
                 $sheet->getStyle($range)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);

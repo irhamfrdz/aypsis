@@ -82,8 +82,9 @@ class ManifestImport
         $sizeKontainer = trim($row[5] ?? '');
         $namaBarang = trim($row[6] ?? '');
         $pengirim = trim($row[7] ?? '');
-        $penerima = trim($row[8] ?? '');
-        $term = trim($row[9] ?? '');
+        $alamatPengirim = trim($row[8] ?? '');
+        $penerima = trim($row[9] ?? '');
+        $term = trim($row[10] ?? '');
 
         // Validate row data
         $validator = Validator::make([
@@ -104,6 +105,7 @@ class ManifestImport
             'size_kontainer' => 'nullable|string|max:50',
             'nama_barang' => 'nullable|string|max:1000',
             'pengirim' => 'nullable|string|max:255',
+            'alamat_pengirim' => 'nullable|string|max:1000',
             'penerima' => 'nullable|string|max:255',
             'term' => 'nullable|string|max:255',
         ]);
@@ -130,6 +132,7 @@ class ManifestImport
                     'size_kontainer' => $sizeKontainer ?: $existing->size_kontainer,
                     'nama_barang' => $namaBarang ?: $existing->nama_barang,
                     'pengirim' => $pengirim ?: $existing->pengirim,
+                    'alamat_pengirim' => $alamatPengirim ?: $existing->alamat_pengirim,
                     'penerima' => $penerima ?: $existing->penerima,
                     'term' => $term ?: $existing->term,
                 ]);
@@ -146,6 +149,7 @@ class ManifestImport
                     'size_kontainer' => $sizeKontainer,
                     'nama_barang' => $namaBarang,
                     'pengirim' => $pengirim,
+                    'alamat_pengirim' => $alamatPengirim,
                     'penerima' => $penerima,
                     'term' => $term,
                     'input_by' => Auth::id(),
