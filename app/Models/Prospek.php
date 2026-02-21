@@ -199,4 +199,66 @@ class Prospek extends Model
     {
         return $this->tanggal ? $this->tanggal->format('d/m/Y') : '';
     }
+
+    public function getPenerimaAttribute()
+    {
+        // 1. Tanda Terima
+        if ($this->tandaTerima) {
+            return $this->tandaTerima->penerima;
+        }
+
+        // 2. Tanda Terima Tanpa Surat Jalan (via keterangan)
+        if ($this->keterangan && preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $this->keterangan, $matches)) {
+            $noTttsj = trim($matches[1]);
+            $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
+            if ($tttsj && $tttsj->penerima) {
+                return $tttsj->penerima;
+            }
+        }
+
+        // 3. CARGO fallback ke TTTSJ
+        if (strtoupper($this->tipe) === 'CARGO' && !$this->tanda_terima_id) {
+             $tttsj = \Illuminate\Support\Facades\DB::table('tanda_terima_tanpa_surat_jalan')
+                ->where('pengirim', $this->pt_pengirim)
+                ->where('supir', $this->nama_supir)
+                ->where('tujuan_pengiriman', $this->tujuan_pengiriman)
+                ->orderBy('created_at', 'desc')
+                ->first();
+             if ($tttsj && $tttsj->penerima) {
+                 return $tttsj->penerima;
+             }
+        }
+
+        // 4. LCL
+        if (strtoupper($this->tipe) === 'LCL' && $this->nomor_kontainer) {
+            $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) {
+                $q->where('nomor_kontainer', $this->nomor_kontainer);
+                if ($this->no_seal) {
+                    $q->where('nomor_seal', $this->no_seal);
+                }
+            })->get();
+
+            // Jika filter no_seal kosong, ambil tanpa filter no_seal kalau tidak nemu
+            if ($ttLcls->isEmpty() && $this->no_seal) {
+                $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) {
+                    $q->where('nomor_kontainer', $this->nomor_kontainer);
+                })->get();
+            }
+
+            if ($ttLcls->isNotEmpty()) {
+                $penerimas = collect();
+                foreach ($ttLcls as $tt) {
+                    if ($tt->nama_penerima) {
+                        $penerimas->push($tt->nama_penerima);
+                    }
+                }
+                
+                if ($penerimas->isNotEmpty()) {
+                    return $penerimas->unique()->implode(', ');
+                }
+            }
+        }
+
+        return null; // fallback will be handled by blade
+    }
 }

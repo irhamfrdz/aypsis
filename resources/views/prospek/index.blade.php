@@ -262,7 +262,7 @@
                                 {{ $prospek->no_seal ?? '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $prospek->tandaTerima->penerima ?? '-' }}
+                                {{ $prospek->penerima ?? '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $prospek->tujuan_pengiriman ?? '-' }}
