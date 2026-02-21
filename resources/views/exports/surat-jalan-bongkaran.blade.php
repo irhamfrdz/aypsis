@@ -56,7 +56,7 @@
                 <td style="border: 1px solid #000000;"></td>
                 <td style="border: 1px solid #000000;"></td>
                 <td style="border: 1px solid #000000;">{{ $item->nama_barang }}</td>
-                <td style="border: 1px solid #000000;">{{ $item->alamat_pengiriman ?? $item->tujuan_pengiriman }}</td>
+                <td style="border: 1px solid #000000;">{{ $item->tujuan_alamat ?? ($item->alamat_penerima ?? ($item->manifest->alamat_penerima ?? ($item->alamat_pengiriman ?? ($item->tujuan_pengiriman ?? '-')))) }}</td>
             </tr>
         @endforeach
 
@@ -84,7 +84,7 @@
                     <td style="border: 1px solid #000000;"></td>
                     <td style="border: 1px solid #000000;"></td>
                     <td style="border: 1px solid #000000;">{{ $item->nama_barang }}</td>
-                    <td style="border: 1px solid #000000;">{{ $item->alamat_pengiriman ?? $item->tujuan_pengiriman }}</td>
+                    <td style="border: 1px solid #000000;">{{ $item->tujuan_alamat ?? ($item->alamat_penerima ?? ($item->manifest->alamat_penerima ?? ($item->alamat_pengiriman ?? ($item->tujuan_pengiriman ?? '-')))) }}</td>
                 </tr>
             @endforeach
         @endif
