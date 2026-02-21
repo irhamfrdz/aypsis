@@ -135,6 +135,8 @@ class SuratJalanBongkaranController extends Controller
                       ->orWhere('jenis_barang', 'like', "%{$search}%")
                       ->orWhere('supir', 'like', "%{$search}%")
                       ->orWhere('no_plat', 'like', "%{$search}%")
+                      ->orWhere('tipe_kontainer', 'like', "%{$search}%")
+                      ->orWhere('jenis_pengiriman', 'like', "%{$search}%")
                       // Search without punctuation
                       ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
                       ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
@@ -179,6 +181,7 @@ class SuratJalanBongkaranController extends Controller
                       ->orWhere('term', 'like', "%{$search}%")
                       ->orWhere('nama_barang', 'like', "%{$search}%")
                       ->orWhere('penerima', 'like', "%{$search}%")
+                      ->orWhere('tipe_kontainer', 'like', "%{$search}%")
                       ->orWhereHas('suratJalanBongkaran', function($sq) use ($search) {
                           $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
                       })

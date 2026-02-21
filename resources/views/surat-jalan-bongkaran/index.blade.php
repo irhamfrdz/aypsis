@@ -166,6 +166,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type (Manifest)</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
                             </tr>
                         </thead>
@@ -218,6 +219,9 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->supir ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->no_plat ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->no_kontainer ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                        {{ $sj->jenis_pengiriman ?: ($sj->tipe_kontainer ?: ($sj->manifest->tipe_kontainer ?? '-')) }}
+                                    </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($sj->jenis_barang, 30) ?: '-' }}</td>
                                 </tr>
                             @empty
@@ -250,6 +254,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seal</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type (Manifest)</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
@@ -325,6 +330,7 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->nomor_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->no_seal ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->size_kontainer ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->tipe_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">
                                         {{ $manifest->term ? ($manifest->term_nama ? $manifest->term . ' - ' . $manifest->term_nama : $manifest->term) : '-' }}
                                     </td>
