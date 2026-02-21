@@ -3165,10 +3165,6 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kuantitas (Ton)</label>
-                    <input type="number" name="air[${sectionIndex}][kuantitas]" step="0.01" min="0" class="kuantitas-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="0.00">
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Input)</label>
                     <input type="number" name="air[${sectionIndex}][jasa_air]" class="jasa-air-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="0" placeholder="0">
                 </div>
@@ -3246,13 +3242,6 @@
                 calculateAirSectionTotal(sectionIndex);
             }
         });
-        
-        // Setup kuantitas change listener
-        const kuantitasInput = section.querySelector('.kuantitas-input-air');
-        kuantitasInput.addEventListener('input', function() {
-            calculateAirSectionTotal(sectionIndex);
-        });
-
         
         // Set default lokasi if available
         const lokasiSelect = section.querySelector('.lokasi-select-air');
@@ -3529,7 +3518,6 @@
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
         // Select all type wrapper containers (the flex-cols)
         const typeContainers = section.querySelectorAll('.types-list-air > div');
-        const kuantitasInput = section.querySelector('.kuantitas-input-air');
         
         // Updated selectors
         const subTotalDisplay = section.querySelector('.sub-total-display');
@@ -3546,7 +3534,6 @@
         const grandTotalValue = section.querySelector('.grand-total-value');
         
         let totalCost = 0;
-        const kuantitas = parseFloat(kuantitasInput.value) || 0;
 
         // Iterate through each type container to calculate individual costs
         typeContainers.forEach(container => {
@@ -3559,7 +3546,7 @@
                 const tonaseInput = container.querySelector('.tonase-input-air');
                 const harga = parseFloat(priceInput.value) || 0;
                 
-                let selectedKuantitas = kuantitas;
+                let selectedKuantitas = 0;
                 if (tonaseInput && tonaseInput.value !== "") {
                     selectedKuantitas = parseFloat(tonaseInput.value) || 0;
                 }

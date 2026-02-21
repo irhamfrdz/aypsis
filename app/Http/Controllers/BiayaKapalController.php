@@ -289,6 +289,7 @@ class BiayaKapalController extends Controller
             'air.*.types' => 'nullable|array',
             'air.*.types.*' => 'integer|exists:master_pricelist_air_tawar,id',
             'air.*.type_is_lumpsum' => 'nullable|array',
+            'air.*.type_tonase' => 'nullable|array',
             'air.*.kuantitas' => 'nullable|numeric|min:0',
             'air.*.harga' => 'nullable|numeric|min:0',
             'air.*.jasa_air' => 'nullable|numeric|min:0',
