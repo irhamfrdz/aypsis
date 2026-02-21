@@ -147,7 +147,7 @@
                     <p class="text-base text-gray-900">{{ $manifest->pengirim ?? '-' }}</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">Penerima</label>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">CONSIGNEE</label>
                     <p class="text-base text-gray-900">{{ $manifest->penerima ?? '-' }}</p>
                 </div>
                 <div>
