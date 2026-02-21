@@ -60,7 +60,8 @@ class ReportLemburController extends Controller
             $suratJalanQuery->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%");
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%");
             });
         }
 
@@ -88,7 +89,8 @@ class ReportLemburController extends Controller
             $bongkaranQuery->where(function($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%");
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%");
             });
         }
 

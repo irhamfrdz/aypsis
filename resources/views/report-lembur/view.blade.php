@@ -76,6 +76,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Tanggal Tanda Terima</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No SJ</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -107,6 +108,7 @@
                             </span>
                         </td>
                         <td class="px-4 py-3">{{ $sj->no_surat_jalan }}</td>
+                        <td class="px-4 py-3">{{ $sj->pengirim ?: '-' }}</td>
                         <td class="px-4 py-3">{{ $sj->supir }}</td>
                         <td class="px-4 py-3">{{ $sj->no_plat }}</td>
                         <td class="px-4 py-3">
