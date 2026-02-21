@@ -3607,8 +3607,8 @@
         });
         
         // Set to Nominal field
-        if (totalBase > 0) {
-            nominalInput.value = totalBase.toLocaleString('id-ID');
+        if (totalGrandTotal > 0) {
+            nominalInput.value = totalGrandTotal.toLocaleString('id-ID');
         } else {
             nominalInput.value = '';
         }

@@ -180,6 +180,8 @@
                                     $displayNominal = $biaya->nominal;
                                     if(isset($biaya->operasionalDetails) && $biaya->operasionalDetails->count() > 0) {
                                         $displayNominal = $biaya->operasionalDetails->sum('nominal');
+                                    } elseif(isset($biaya->airDetails) && $biaya->airDetails->count() > 0) {
+                                        $displayNominal = $biaya->airDetails->sum('grand_total');
                                     }
                                 @endphp
                                 Rp {{ number_format($displayNominal ?? 0, 0, ',', '.') }}

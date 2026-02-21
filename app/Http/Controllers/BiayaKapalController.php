@@ -763,6 +763,9 @@ class BiayaKapalController extends Controller
                     $biayaKapal->save();
                 }
                 */
+                // AUTO-CALCULATE NOMINAL FOR AIR
+                $totalGrandTotal = BiayaKapalAir::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
+                $biayaKapal->update(['nominal' => $totalGrandTotal]);
             }
 
             // BIAYA TKBM SECTIONS: Store TKBM details
@@ -1341,6 +1344,10 @@ class BiayaKapalController extends Controller
                         }
                     }
                 }
+
+                // AUTO-CALCULATE NOMINAL FOR AIR
+                $totalGrandTotal = BiayaKapalAir::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
+                $biayaKapal->update(['nominal' => $totalGrandTotal]);
             }
 
             // TKBM UPDATE
