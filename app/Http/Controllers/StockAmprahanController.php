@@ -12,6 +12,7 @@ use App\Models\AlatBerat;
 use App\Models\MasterKapal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class StockAmprahanController extends Controller
 {
@@ -46,7 +47,13 @@ class StockAmprahanController extends Controller
     {
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
         $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
-        return view('stock-amprahan.create', compact('masterItems', 'gudangItems'));
+        
+        $karyawans = Karyawan::orderBy('nama_lengkap')->get();
+        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
+        $alatBerats = AlatBerat::orderBy('kode_alat')->get();
+
+        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'mobils', 'kapals', 'alatBerats'));
     }
 
     public function store(Request $request)
@@ -61,13 +68,67 @@ class StockAmprahanController extends Controller
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
+            
+            // Langsung Pakai Fields
+            'is_langsung_pakai' => 'nullable',
+            'penerima_id' => 'nullable|required_if:is_langsung_pakai,1|exists:karyawans,id',
+            'mobil_id' => 'nullable|exists:mobils,id',
+            'kapal_id' => 'nullable|exists:master_kapals,id',
+            'alat_berat_id' => 'nullable|exists:alat_berats,id',
+            'tanggal_pengambilan' => 'nullable|required_if:is_langsung_pakai,1|date',
+            'jumlah_pakai' => 'nullable|required_if:is_langsung_pakai,1|numeric|min:0',
+            'keterangan_pakai' => 'nullable|required_if:is_langsung_pakai,1|string',
         ]);
 
         $data['created_by'] = Auth::id();
         
-        StockAmprahan::create($data);
+        // Manual validation for mobil/alat_berat if is_langsung_pakai
+        if ($request->is_langsung_pakai == '1') {
+            if (empty($request->mobil_id) && empty($request->alat_berat_id) && empty($request->kapal_id)) {
+                return redirect()->back()->withErrors(['mobil_id' => 'Pilih mobil, kapal, atau alat berat jika langsung pakai.'])->withInput();
+            }
+            
+            if ($request->jumlah_pakai > $request->jumlah) {
+                return redirect()->back()->withErrors(['jumlah_pakai' => 'Jumlah pakai tidak boleh lebih besar dari jumlah stock.'])->withInput();
+            }
+        }
 
-        return redirect()->route('stock-amprahan.index')->with('success', 'Stock amprahan berhasil ditambahkan');
+        $stockData = [
+            'nomor_bukti' => $data['nomor_bukti'],
+            'tanggal_beli' => $data['tanggal_beli'],
+            'nama_barang' => $data['nama_barang'],
+            'master_nama_barang_amprahan_id' => $data['master_nama_barang_amprahan_id'],
+            'harga_satuan' => $data['harga_satuan'],
+            'jumlah' => $data['jumlah'],
+            'satuan' => $data['satuan'],
+            'lokasi' => $data['lokasi'],
+            'keterangan' => $data['keterangan'],
+            'created_by' => $data['created_by'],
+        ];
+
+        // If langsung pakai, deduct from initial stock immediately
+        if ($request->is_langsung_pakai == '1') {
+            $stockData['jumlah'] -= $request->jumlah_pakai;
+        }
+
+        $stock = StockAmprahan::create($stockData);
+
+        // Record usage if applicable
+        if ($request->is_langsung_pakai == '1') {
+            StockAmprahanUsage::create([
+                'stock_amprahan_id' => $stock->id,
+                'penerima_id' => $request->penerima_id,
+                'mobil_id' => $request->mobil_id,
+                'kapal_id' => $request->kapal_id,
+                'alat_berat_id' => $request->alat_berat_id,
+                'jumlah' => $request->jumlah_pakai,
+                'tanggal_pengambilan' => $request->tanggal_pengambilan,
+                'keterangan' => $request->keterangan_pakai,
+                'created_by' => Auth::id(),
+            ]);
+        }
+
+        return redirect()->route('stock-amprahan.index')->with('success', 'Stock amprahan berhasil ditambahkan' . ($request->is_langsung_pakai == '1' ? ' dan langsung diproses pemakaiannya.' : '.'));
     }
 
     public function show($id)
@@ -118,7 +179,7 @@ class StockAmprahanController extends Controller
     {
         $item = StockAmprahan::findOrFail($id);
 
-        $validator = \Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'jumlah' => 'required|numeric|min:0.01|max:' . $item->jumlah,
             'tanggal' => 'required|date',
             'keterangan' => 'required|string',

@@ -224,6 +224,141 @@
                                 </p>
                             @enderror
                         </div>
+
+                        {{-- Langsung Pakai Checklist --}}
+                        <div class="pt-4">
+                            <label class="flex items-center space-x-3 cursor-pointer group w-fit">
+                                <div class="relative">
+                                    <input type="checkbox" name="is_langsung_pakai" id="is_langsung_pakai" value="1" {{ old('is_langsung_pakai') ? 'checked' : '' }} class="peer hidden">
+                                    <div class="w-6 h-6 border-2 border-gray-300 rounded-lg group-hover:border-indigo-500 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-all duration-200 flex items-center justify-center">
+                                        <i class="fas fa-check text-white text-xs scale-0 peer-checked:scale-100 transition-transform duration-200"></i>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-gray-700 group-hover:text-indigo-600 transition-colors">Langsung Pakai (Gunakan Barang Ini)</span>
+                            </label>
+                        </div>
+
+                        {{-- Usage Fields Container --}}
+                        <div id="usage_fields_container" class="{{ old('is_langsung_pakai') ? '' : 'hidden' }} mt-6 p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-6">
+                            <h3 class="text-sm font-bold text-indigo-800 flex items-center uppercase tracking-wider">
+                                <i class="fas fa-wrench mr-2"></i>Informasi Pemakaian Langsung
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {{-- Jumlah Pakai --}}
+                                <div class="group">
+                                    <label for="jumlah_pakai" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                        Jumlah Pakai <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number" step="0.01" name="jumlah_pakai" id="jumlah_pakai" value="{{ old('jumlah_pakai') }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                    @error('jumlah_pakai')
+                                        <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- Tanggal Pakai --}}
+                                <div class="group">
+                                    <label for="tanggal_pengambilan" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                        Tanggal Pakai <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="date" name="tanggal_pengambilan" id="tanggal_pengambilan" value="{{ old('tanggal_pengambilan', date('Y-m-d')) }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                    @error('tanggal_pengambilan')
+                                        <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            {{-- Penerima --}}
+                            <div class="group">
+                                <label for="penerima_id" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                    Penerima <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="dropdown-container-penerima">
+                                        <input type="text" id="search_penerima" placeholder="Cari penerima..." autocomplete="off"
+                                               class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                        <select name="penerima_id" id="penerima_id" class="hidden">
+                                            <option value="">-- Pilih Penerima --</option>
+                                            @foreach($karyawans as $k)
+                                                <option value="{{ $k->id }}" {{ old('penerima_id') == $k->id ? 'selected' : '' }}>{{ $k->nama_lengkap }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div id="dropdown_options_penerima" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
+                                    </div>
+                                </div>
+                                @error('penerima_id')
+                                    <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {{-- Mobil --}}
+                                <div class="group">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Mobil</label>
+                                    <div class="dropdown-container-mobil relative">
+                                        <input type="text" id="search_mobil" placeholder="Cari mobil..." autocomplete="off"
+                                               class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                        <select name="mobil_id" id="mobil_id" class="hidden">
+                                            <option value="">-- Pilih Mobil --</option>
+                                            @foreach($mobils as $m)
+                                                <option value="{{ $m->id }}" {{ old('mobil_id') == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
+                                            @endforeach
+                                        </select>
+                                        <div id="dropdown_options_mobil" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
+                                    </div>
+                                    @error('mobil_id')
+                                        <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- Kapal --}}
+                                <div class="group">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Kapal</label>
+                                    <div class="dropdown-container-kapal relative">
+                                        <input type="text" id="search_kapal" placeholder="Cari kapal..." autocomplete="off"
+                                               class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                        <select name="kapal_id" id="kapal_id" class="hidden">
+                                            <option value="">-- Pilih Kapal --</option>
+                                            @foreach($kapals as $k)
+                                                <option value="{{ $k->id }}" {{ old('kapal_id') == $k->id ? 'selected' : '' }}>{{ $k->nama_kapal }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div id="dropdown_options_kapal" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
+                                    </div>
+                                    @error('kapal_id')
+                                        <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- Alat Berat --}}
+                                <div class="group">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Alat Berat</label>
+                                    <div class="dropdown-container-alat-berat relative">
+                                        <input type="text" id="search_alat_berat" placeholder="Cari alat berat..." autocomplete="off"
+                                               class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                        <select name="alat_berat_id" id="alat_berat_id" class="hidden">
+                                            <option value="">-- Pilih Alat Berat --</option>
+                                            @foreach($alatBerats as $ab)
+                                                <option value="{{ $ab->id }}" {{ old('alat_berat_id') == $ab->id ? 'selected' : '' }}>{{ $ab->kode_alat }} - {{ $ab->nama }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div id="dropdown_options_alat_berat" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
+                                    </div>
+                                    @error('alat_berat_id')
+                                        <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            {{-- Keterangan Pakai --}}
+                            <div class="group">
+                                <label for="keterangan_pakai" class="block text-sm font-bold text-gray-700 mb-2">Keterangan Pakai <span class="text-red-500">*</span></label>
+                                <textarea name="keterangan_pakai" id="keterangan_pakai" rows="2" placeholder="Tujuan pemakaian..." class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm resize-none">{{ old('keterangan_pakai') }}</textarea>
+                                @error('keterangan_pakai')
+                                    <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
                     </div>
 
                     <div class="pt-6 border-t border-gray-100 flex items-center justify-end space-x-4">
@@ -337,6 +472,74 @@ document.addEventListener('DOMContentLoaded', function() {
         containerClass: 'dropdown-container-lokasi'
     });
 
+    // Initialize Usage Fields Dropdowns
+    createSearchableDropdown({
+        selectId: 'penerima_id',
+        searchId: 'search_penerima',
+        dropdownId: 'dropdown_options_penerima',
+        containerClass: 'dropdown-container-penerima'
+    });
+
+    createSearchableDropdown({
+        selectId: 'mobil_id',
+        searchId: 'search_mobil',
+        dropdownId: 'dropdown_options_mobil',
+        containerClass: 'dropdown-container-mobil'
+    });
+
+    createSearchableDropdown({
+        selectId: 'kapal_id',
+        searchId: 'search_kapal',
+        dropdownId: 'dropdown_options_kapal',
+        containerClass: 'dropdown-container-kapal'
+    });
+
+    createSearchableDropdown({
+        selectId: 'alat_berat_id',
+        searchId: 'search_alat_berat',
+        dropdownId: 'dropdown_options_alat_berat',
+        containerClass: 'dropdown-container-alat-berat'
+    });
+
+    // Langsung Pakai Toggle Logic
+    const isLangsungPakaiCheckbox = document.getElementById('is_langsung_pakai');
+    const usageFieldsContainer = document.getElementById('usage_fields_container');
+    const jumlahPakaiInput = document.getElementById('jumlah_pakai');
+    const jumlahStockInput = document.getElementById('jumlah');
+    const keteranganPakaiTextarea = document.getElementById('keterangan_pakai');
+    const keteranganStockTextarea = document.getElementById('keterangan');
+
+    if (isLangsungPakaiCheckbox) {
+        isLangsungPakaiCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                usageFieldsContainer.classList.remove('hidden');
+                // Auto-fill jumlah pakai with jumlah stock if empty
+                if (!jumlahPakaiInput.value && jumlahStockInput.value) {
+                    jumlahPakaiInput.value = jumlahStockInput.value;
+                }
+                // Auto-fill keterangan pakai with keterangan stock if empty
+                if (!keteranganPakaiTextarea.value && keteranganStockTextarea.value) {
+                    keteranganPakaiTextarea.value = keteranganStockTextarea.value;
+                }
+            } else {
+                usageFieldsContainer.classList.add('hidden');
+            }
+        });
+    }
+
+    // Update jumlah_pakai when jumlah stock changes (if checkbox is checked and values were synced)
+    if (jumlahStockInput && jumlahPakaiInput) {
+        jumlahStockInput.addEventListener('input', function() {
+            if (isLangsungPakaiCheckbox && isLangsungPakaiCheckbox.checked) {
+                // Only sync if they were already same or jumlah_pakai was empty
+                if (!jumlahPakaiInput.value || jumlahPakaiInput.value == this.oldValue) {
+                    jumlahPakaiInput.value = this.value;
+                }
+            }
+            this.oldValue = this.value;
+        });
+    }
+
     // Handle Type Barang "Tambah" link to pass search parameter
     const addTypeBarangLink = document.getElementById('add_type_barang_link');
     const searchTypeBarangInput = document.getElementById('search_type_barang');
@@ -382,7 +585,10 @@ document.addEventListener('DOMContentLoaded', function() {
             maximumFractionDigits: 2
         });
         
-        document.getElementById('harga_total').value = formattedTotal;
+        const hargaTotalInput = document.getElementById('harga_total');
+        if (hargaTotalInput) {
+            hargaTotalInput.value = formattedTotal;
+        }
     }
 
     // Add event listeners to harga_satuan and jumlah
