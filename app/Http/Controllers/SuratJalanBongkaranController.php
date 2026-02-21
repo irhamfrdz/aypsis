@@ -120,6 +120,15 @@ class SuratJalanBongkaranController extends Controller
                 $query->where('no_voyage', $selectedVoyage);
             }
 
+            // Filter by types (FCL, LCL, Cargo)
+            if ($request->filled('types')) {
+                $types = (array) $request->types;
+                $query->where(function($q) use ($types) {
+                    $q->whereIn('jenis_pengiriman', $types)
+                      ->orWhereIn('tipe_kontainer', $types);
+                });
+            }
+
             // Search in surat jalan bongkaran (ignore punctuation)
             if ($request->filled('search')) {
                 $search = $request->search;
@@ -165,6 +174,12 @@ class SuratJalanBongkaranController extends Controller
             }
             if ($selectedVoyage) {
                 $query->where('manifests.no_voyage', $selectedVoyage);
+            }
+
+            // Filter by types (FCL, LCL, Cargo)
+            if ($request->filled('types')) {
+                $types = (array) $request->types;
+                $query->whereIn('manifests.tipe_kontainer', $types);
             }
 
             // Search in Manifest data (ignore punctuation)
@@ -242,6 +257,13 @@ class SuratJalanBongkaranController extends Controller
             if ($selectedVoyage) {
                 $query->where('no_voyage', $selectedVoyage);
             }
+            if ($request->filled('types')) {
+                $types = (array) $request->types;
+                $query->where(function($q) use ($types) {
+                    $q->whereIn('jenis_pengiriman', $types)
+                      ->orWhereIn('tipe_kontainer', $types);
+                });
+            }
             if ($request->filled('search')) {
                 $search = $request->search;
                 $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
@@ -270,6 +292,10 @@ class SuratJalanBongkaranController extends Controller
             }
             if ($selectedVoyage) {
                 $query->where('manifests.no_voyage', $selectedVoyage);
+            }
+            if ($request->filled('types')) {
+                $types = (array) $request->types;
+                $query->whereIn('manifests.tipe_kontainer', $types);
             }
             if ($request->filled('search')) {
                 $search = $request->search;

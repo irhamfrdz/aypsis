@@ -69,7 +69,7 @@
                         </svg>
                         Tambah Surat Jalan
                     </button>
-                    <a href="{{ route('surat-jalan-bongkaran.export', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => request('mode', 'bl')] + request()->only(['search', 'tipe_kontainer', 'size_kontainer'])) }}" 
+                    <a href="{{ route('surat-jalan-bongkaran.export', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => request('mode', 'manifest')] + request()->only(['search', 'types'])) }}" 
                        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -95,15 +95,33 @@
                 <input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}">
                 
                 <div class="flex flex-col gap-4">
-                    <!-- Mode Filter -->
-                    <div class="flex items-center gap-4">
-                        <label for="mode" class="text-sm font-medium text-gray-700 whitespace-nowrap">Tampilan:</label>
-                        <select name="mode" id="mode" 
-                                class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                onchange="this.form.submit()">
-                            <option value="manifest" {{ request('mode', 'manifest') == 'manifest' ? 'selected' : '' }}>Manifest</option>
-                            <option value="surat_jalan" {{ request('mode') == 'surat_jalan' ? 'selected' : '' }}>Surat Jalan Bongkaran</option>
-                        </select>
+                    <div class="flex flex-wrap items-center gap-6">
+                        <!-- Mode Filter -->
+                        <div class="flex items-center gap-3">
+                            <label for="mode" class="text-sm font-medium text-gray-700 whitespace-nowrap">Tampilan:</label>
+                            <select name="mode" id="mode" 
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    onchange="this.form.submit()">
+                                <option value="manifest" {{ request('mode', 'manifest') == 'manifest' ? 'selected' : '' }}>Manifest</option>
+                                <option value="surat_jalan" {{ request('mode') == 'surat_jalan' ? 'selected' : '' }}>Surat Jalan Bongkaran</option>
+                            </select>
+                        </div>
+
+                        <!-- Type Multi-select Filter -->
+                        <div class="flex items-center gap-4">
+                            <span class="text-sm font-medium text-gray-700">Tipe Kontainer:</span>
+                            <div class="flex items-center gap-4">
+                                @foreach(['FCL', 'LCL', 'Cargo'] as $type)
+                                    <label class="inline-flex items-center cursor-pointer group">
+                                        <input type="checkbox" name="types[]" value="{{ $type }}" 
+                                               class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors duration-200"
+                                               {{ in_array($type, (array)request('types')) ? 'checked' : '' }}
+                                               onchange="this.form.submit()">
+                                        <span class="ml-2 text-sm text-gray-600 group-hover:text-blue-600 transition-colors duration-200">{{ $type }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Search and Filter Row -->
