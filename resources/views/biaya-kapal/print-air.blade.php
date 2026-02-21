@@ -189,7 +189,11 @@
             }
             
             $waterByType[$typeKey]['qty'] += $detail->kuantitas;
-            $waterByType[$typeKey]['cost'] += ($detail->kuantitas * ($detail->harga ?? 0));
+            if ($detail->is_lumpsum) {
+                $waterByType[$typeKey]['cost'] += $detail->harga;
+            } else {
+                $waterByType[$typeKey]['cost'] += ($detail->kuantitas * ($detail->harga ?? 0));
+            }
             
             if ($detail->jasa_air > 0) {
                 $totalJasaAir += $detail->jasa_air;

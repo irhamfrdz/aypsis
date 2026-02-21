@@ -651,7 +651,7 @@ class BiayaKapalController extends Controller
                                 // Determine if this specific type is lumpsum
                                 $isLumpsum = isset($section['type_is_lumpsum'][$typeIndex]) && $section['type_is_lumpsum'][$typeIndex] == '1';
                                 
-                                $currentKuantitas = $kuantitas;
+                                $currentKuantitas = 0;
                                 if (isset($section['type_tonase'][$typeIndex]) && $section['type_tonase'][$typeIndex] !== '') {
                                     $currentKuantitas = floatval($section['type_tonase'][$typeIndex]);
                                 }
@@ -1184,8 +1184,17 @@ class BiayaKapalController extends Controller
             'air.*.kapal' => 'nullable|string|max:255',
             'air.*.voyage' => 'nullable|string|max:255',
             'air.*.vendor' => 'nullable|string|max:255',
+            'air.*.types' => 'nullable|array',
+            'air.*.type_is_lumpsum' => 'nullable|array',
+            'air.*.type_tonase' => 'nullable|array',
             'air.*.kuantitas' => 'nullable|numeric|min:0',
             'air.*.harga' => 'nullable|numeric|min:0',
+            'air.*.jasa_air' => 'nullable|numeric|min:0',
+            'air.*.biaya_agen' => 'nullable|numeric|min:0',
+            'air.*.lokasi' => 'nullable|string|max:255',
+            'air.*.sub_total' => 'nullable|numeric|min:0',
+            'air.*.pph' => 'nullable|numeric|min:0',
+            'air.*.grand_total' => 'nullable|numeric|min:0',
             'air.*.penerima' => 'nullable|string|max:255',
             'air.*.nomor_rekening' => 'nullable|string|max:100',
             'air.*.nomor_referensi' => 'nullable|string|max:100',
@@ -1253,16 +1262,41 @@ class BiayaKapalController extends Controller
 
                         if (!empty($section['types']) && is_array($section['types'])) {
                             foreach ($section['types'] as $typeIndex => $typeId) {
-                                // Get type detail from master
-                                $typeData = DB::table('master_pricelist_air_tawar')
-                                    ->where('id', $typeId)
-                                    ->first();
-                                
-                                $typeKeterangan = $typeData ? $typeData->keterangan : null;
-                                $typeHarga = $typeData ? floatval($typeData->harga) : 0;
+                                $typeKeterangan = null;
+                                $typeHarga = 0;
+                                $actualTypeId = null;
+
+                                if ($typeId === 'MANUAL') {
+                                    // Manual Input
+                                    $typeKeterangan = isset($section['manual_names'][$typeIndex]) ? $section['manual_names'][$typeIndex] : 'Manual Type';
+                                    
+                                    // Clean price input
+                                    $manualPriceRaw = isset($section['custom_prices'][$typeIndex]) ? $section['custom_prices'][$typeIndex] : 0;
+                                    if (is_string($manualPriceRaw)) {
+                                        $typeHarga = floatval(str_replace(',', '.', str_replace('.', '', $manualPriceRaw)));
+                                    } else {
+                                        $typeHarga = floatval($manualPriceRaw);
+                                    }
+                                    
+                                    $actualTypeId = null; // No ID for manual
+                                } else {
+                                    // Master Data
+                                    $typeData = DB::table('master_pricelist_air_tawar')
+                                        ->where('id', $typeId)
+                                        ->first();
+                                    
+                                    $typeKeterangan = $typeData ? $typeData->keterangan : null;
+                                    $typeHarga = $typeData ? floatval($typeData->harga) : 0;
+                                    $actualTypeId = $typeId;
+                                }
                                 
                                 // Determine if this specific type is lumpsum
                                 $isLumpsum = isset($section['type_is_lumpsum'][$typeIndex]) && $section['type_is_lumpsum'][$typeIndex] == '1';
+                                
+                                $currentKuantitas = 0;
+                                if (isset($section['type_tonase'][$typeIndex]) && $section['type_tonase'][$typeIndex] !== '') {
+                                    $currentKuantitas = floatval($section['type_tonase'][$typeIndex]);
+                                }
 
                                 // Apply Jasa Air and Biaya Agen ONLY on the first record to avoid double counting
                                 $currentJasaAir = ($typeIndex === 0) ? $jasaAir : 0;
@@ -1270,9 +1304,9 @@ class BiayaKapalController extends Controller
                                 
                                 // Calculate values for this specific type record
                                 if ($isLumpsum) {
-                                    $waterCost = $typeHarga;
+                                    $waterCost = $typeHarga; // Fixed price, ignore quantity multiplier
                                 } else {
-                                    $waterCost = $typeHarga * $kuantitas;
+                                    $waterCost = $typeHarga * $currentKuantitas;
                                 }
                                 
                                 $currentSubTotal = $waterCost + $currentJasaAir + $currentBiayaAgen;
@@ -1280,7 +1314,7 @@ class BiayaKapalController extends Controller
                                 // PPH is on Services (Jasa Air + Biaya Agen), so only apply if they exist
                                 $currentPph = round(($currentJasaAir + $currentBiayaAgen) * 0.02);
                                 $currentGrandTotal = $currentSubTotal - $currentPph;
-    
+
                                 // Create BiayaKapalAir record
                                 BiayaKapalAir::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
@@ -1288,10 +1322,10 @@ class BiayaKapalController extends Controller
                                     'voyage' => $section['voyage'] ?? null,
                                     'vendor' => $section['vendor'] ?? null,
                                     'lokasi' => $section['lokasi'] ?? null,
-                                    'type_id' => $typeId,
+                                    'type_id' => $actualTypeId,
                                     'type_keterangan' => $typeKeterangan,
                                     'is_lumpsum' => $isLumpsum,
-                                    'kuantitas' => $kuantitas,
+                                    'kuantitas' => $currentKuantitas,
                                     'harga' => $typeHarga,
                                     'jasa_air' => $currentJasaAir,
                                     'biaya_agen' => $currentBiayaAgen,
@@ -1304,41 +1338,6 @@ class BiayaKapalController extends Controller
                                     'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                                 ]);
                             }
-                        } else if (!empty($section['type'])) {
-                            $typeKeterangan = null;
-                            if (!empty($section['type'])) {
-                                $typeData = DB::table('master_pricelist_air_tawar')->where('id', $section['type'])->first();
-                                $typeKeterangan = $typeData ? $typeData->keterangan : null;
-                            }
-    
-                            // Recalculate if lumpsum
-                            if ($isLumpsum) {
-                                $subTotal = $harga + $jasaAir + $biayaAgen;
-                                $pph = round(($jasaAir + $biayaAgen) * 0.02);
-                                $grandTotal = $subTotal - $pph;
-                            }
-
-                            BiayaKapalAir::create([
-                                'biaya_kapal_id' => $biayaKapal->id,
-                                'kapal' => $section['kapal'] ?? null,
-                                'voyage' => $section['voyage'] ?? null,
-                                'vendor' => $section['vendor'] ?? null,
-                                'lokasi' => $section['lokasi'] ?? null,
-                                'type_id' => $section['type'] ?? null,
-                                'type_keterangan' => $typeKeterangan,
-                                'is_lumpsum' => $isLumpsum,
-                                'kuantitas' => $kuantitas,
-                                'harga' => $harga,
-                                'jasa_air' => $jasaAir,
-                                'biaya_agen' => $biayaAgen,
-                                'sub_total' => $subTotal,
-                                'pph' => $pph,
-                                'grand_total' => $grandTotal,
-                                'penerima' => $section['penerima'] ?? null,
-                                'nomor_rekening' => $section['nomor_rekening'] ?? null,
-                                'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
-                            ]);
                         }
                     }
                 }

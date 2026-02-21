@@ -791,21 +791,36 @@
         }
 
         // Map Air
-        foreach($biayaKapal->airDetails as $air) {
-            $editAirSections[] = [
-                'kapal' => $air->kapal,
-                'voyage' => $air->voyage,
-                'vendor' => $air->vendor,
-                'type' => $air->type_id,
-                'lokasi' => $air->lokasi,
-                'kuantitas' => $air->kuantitas,
-                'jasa_air' => $air->jasa_air,
-                'biaya_agen' => $air->biaya_agen,
-                'penerima' => $air->penerima,
-                'nomor_rekening' => $air->nomor_rekening,
-                'nomor_referensi' => $air->nomor_referensi,
-                'tanggal_invoice_vendor' => $air->tanggal_invoice_vendor,
-            ];
+        if($biayaKapal->airDetails->count() > 0) {
+            $groupedAir = $biayaKapal->airDetails->groupBy(function($item) {
+                return $item->kapal . '|||' . $item->voyage . '|||' . $item->vendor . '|||' . ($item->lokasi ?? '') . '|||' . ($item->jasa_air ?? 0) . '|||' . ($item->biaya_agen ?? 0) . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . ($item->tanggal_invoice_vendor ?? '');
+            });
+            foreach($groupedAir as $key => $items) {
+                 $parts = explode('|||', $key);
+                 if(count($parts) >= 10) {
+                     $editAirSections[] = [
+                         'kapal' => $parts[0],
+                         'voyage' => $parts[1],
+                         'vendor' => $parts[2],
+                         'lokasi' => $parts[3],
+                         'jasa_air' => $parts[4],
+                         'biaya_agen' => $parts[5],
+                         'penerima' => $parts[6],
+                         'nomor_rekening' => $parts[7],
+                         'nomor_referensi' => $parts[8],
+                         'tanggal_invoice_vendor' => $parts[9],
+                         'types' => $items->map(function($i){
+                             return [
+                                 'type_id' => $i->type_id,
+                                 'type_keterangan' => $i->type_keterangan,
+                                 'is_lumpsum' => $i->is_lumpsum,
+                                 'kuantitas' => $i->kuantitas,
+                                 'harga' => $i->harga
+                             ];
+                         })->toArray()
+                     ];
+                 }
+            }
         }
 
         // Group TKBM
@@ -941,15 +956,20 @@
                  sec.querySelector('.vendor-select-air').value = data.vendor;
                  loadTypesForVendor(sectionIndex, data.vendor); // Synchronous
                  
-                 sec.querySelector('.type-select-air').value = data.type;
                  if(data.lokasi) sec.querySelector('.lokasi-select-air').value = data.lokasi;
-                 sec.querySelector('.kuantitas-input-air').value = data.kuantitas;
                  sec.querySelector('.jasa-air-input').value = data.jasa_air;
                  sec.querySelector('.biaya-agen-input').value = data.biaya_agen;
                  if(data.penerima) sec.querySelector('.penerima-input-air').value = data.penerima;
                  if(data.nomor_rekening) sec.querySelector('.nomor-rekening-input-air').value = data.nomor_rekening;
                  if(data.nomor_referensi) sec.querySelector('input[name="air['+sectionIndex+'][nomor_referensi]"]').value = data.nomor_referensi;
                  if(data.tanggal_invoice_vendor) sec.querySelector('input[name="air['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor;
+                 
+                 const typesList = sec.querySelector('.types-list-air');
+                 typesList.innerHTML = ''; // clear default template
+                 data.types.forEach((t) => {
+                     // Add each type
+                     addTypeToAirSectionWithValue(sectionIndex, t.type_id, t.type_keterangan, t.is_lumpsum, t.kuantitas, t.harga);
+                 });
                  
                  calculateAirSectionTotal(sectionIndex);
              });
@@ -2865,9 +2885,9 @@
     }
 
     // ============= AIR SECTIONS MANAGEMENT =============
-    var airSectionCounter = 0;
-    var airSectionsContainer = document.getElementById('air_sections_container');
-    var addAirSectionBtn = document.getElementById('add_air_section_btn');
+    let airSectionCounter = 0;
+    const airSectionsContainer = document.getElementById('air_sections_container');
+    const addAirSectionBtn = document.getElementById('add_air_section_btn');
     
     function initializeAirSections() {
         airSectionsContainer.innerHTML = '';
@@ -2888,6 +2908,74 @@
         addAirSection();
     });
     
+    window.updatePriceFromSelect = function(select) {
+        const container = select.closest('.flex.flex-col');
+        const priceInput = container.querySelector('.price-input-air');
+        const selectedOption = select.options[select.selectedIndex];
+        
+        if (selectedOption && selectedOption.value) {
+            const harga = selectedOption.getAttribute('data-harga');
+            priceInput.value = harga || 0;
+        } else {
+            priceInput.value = 0;
+        }
+    };
+    
+    window.toggleTypeInput = function(btn, sectionIndex) {
+        const container = btn.closest('.flex.flex-col');
+        const select = container.querySelector('.type-select-air');
+        const manualInput = container.querySelector('.type-manual-input-air');
+        const hiddenManual = container.querySelector('.hidden-type-manual');
+        const priceInput = container.querySelector('.price-input-air');
+        
+        if (manualInput.classList.contains('hidden')) {
+            // Switch to Manual
+            select.classList.add('hidden');
+            select.disabled = true;
+            select.required = false;
+            
+            manualInput.classList.remove('hidden');
+            manualInput.required = true;
+            
+            hiddenManual.disabled = false;
+            
+            btn.classList.add('bg-blue-200', 'text-blue-700');
+            btn.classList.remove('bg-gray-200', 'text-gray-600');
+            btn.innerHTML = '<i class="fas fa-list"></i>';
+            btn.title = "Switch to List Selection";
+            
+            priceInput.readOnly = false;
+            priceInput.classList.remove('bg-gray-100');
+            priceInput.classList.add('bg-white');
+            priceInput.value = '';
+            priceInput.focus();
+        } else {
+            // Switch to Select
+            manualInput.classList.add('hidden');
+            manualInput.required = false;
+            
+            select.classList.remove('hidden');
+            select.disabled = false;
+            select.required = true;
+            
+            hiddenManual.disabled = true;
+            
+            btn.classList.remove('bg-blue-200', 'text-blue-700');
+            btn.classList.add('bg-gray-200', 'text-gray-600');
+            btn.innerHTML = '<i class="fas fa-keyboard"></i>';
+            btn.title = "Switch to Manual Input";
+            
+            priceInput.readOnly = true;
+            priceInput.classList.add('bg-gray-100');
+            priceInput.classList.remove('bg-white');
+            
+            // Restore price
+            updatePriceFromSelect(select);
+        }
+        
+        calculateAirSectionTotal(sectionIndex);
+    };
+
     function addAirSection() {
         airSectionCounter++;
         const sectionIndex = airSectionCounter;
@@ -2955,11 +3043,46 @@
                         ${vendorOptions}
                     </select>
                 </div>
-                <div>
+                <div class="types-wrapper-air-container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <select name="air[${sectionIndex}][type]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required>
-                        <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
-                    </select>
+                    <div class="types-list-air space-y-2 mb-2">
+                          <div class="flex flex-col gap-1 border p-2 rounded bg-gray-50 relative">
+                                <div class="flex gap-2 w-full">
+                                    <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" disabled required onchange="updatePriceFromSelect(this); calculateAirSectionTotal(${sectionIndex})">
+                                        <option value="">-- Pilih Vendor Terlebih Dahulu --</option>
+                                    </select>
+                                    
+                                    <input type="hidden" name="air[${sectionIndex}][types][]" class="hidden-type-manual" value="MANUAL" disabled>
+                                    
+                                    <input type="text" name="air[${sectionIndex}][manual_names][]" class="type-manual-input-air hidden w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nama Type Manual">
+                                    
+                                    <button type="button" class="type-toggle-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleTypeInput(this, ${sectionIndex})">
+                                        <i class="fas fa-keyboard"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center gap-2 mt-1">
+                                    <div class="flex-grow">
+                                        <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
+                                        <input type="number" name="air[${sectionIndex}][custom_prices][]" class="price-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 bg-gray-100" placeholder="0" readonly oninput="calculateAirSectionTotal(${sectionIndex})">
+                                    </div>
+                                    <div class="w-1/4">
+                                        <label class="text-xs text-gray-500 block mb-1">Berapa Ton</label>
+                                        <input type="number" step="0.01" min="0" name="air[${sectionIndex}][type_tonase][]" class="tonase-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500" placeholder="0" oninput="calculateAirSectionTotal(${sectionIndex})">
+                                    </div>
+                                    <div class="flex items-end pb-1">
+                                        <div class="flex items-center gap-2">
+                                            <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
+                                            <input type="checkbox" class="lumpsum-checkbox rounded text-cyan-600 focus:ring-cyan-500 h-5 w-5" onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateAirSectionTotal(${sectionIndex})">
+                                            <label class="text-xs text-gray-600">Lumpsum (Fix)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <button type="button" class="add-type-btn-air text-xs bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-2 py-1 rounded transition duration-200 flex items-center gap-1" disabled onclick="addTypeToAirSection(${sectionIndex})">
+                        <i class="fas fa-plus"></i> Tambah Type
+                    </button>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
@@ -2968,33 +3091,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kuantitas (Ton)</label>
-                    <input type="number" name="air[${sectionIndex}][kuantitas]" step="0.01" min="0" class="kuantitas-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="0.00" required>
-                </div>
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Input)</label>
                     <input type="number" name="air[${sectionIndex}][jasa_air]" class="jasa-air-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="0" placeholder="0">
-                </div>
-                <!-- Tanggal -->
-                <div>
-                    <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                    <input type="date" name="tanggal" id="tanggal" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" value="{{ old('tanggal', $biayaKapal->tanggal->format('Y-m-d')) }}" required>
-                </div>
-
-                <!-- Nomor Invoice -->
-                <div>
-                    <label for="nomor_invoice" class="block text-sm font-medium text-gray-700 mb-1">Nomor Invoice</label>
-                    <div class="relative">
-                        <input type="text" name="nomor_invoice" id="nomor_invoice_display" class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-600 cursor-not-allowed" value="{{ $biayaKapal->nomor_invoice }}" readonly>
-                        <input type="hidden" name="nomor_invoice_value" id="nomor_invoice_value" value="{{ $biayaKapal->nomor_invoice }}">
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">Nomor invoice tidak dapat diubah (Auto-generated)</p>
-                </div>
-
-                <!-- Referensi (Optional) -->
-                <div class="md:col-span-2">
-                    <label for="nomor_referensi" class="block text-sm font-medium text-gray-700 mb-1">Nomor Referensi (Opsional)</label>
-                    <input type="text" name="nomor_referensi" id="nomor_referensi" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" placeholder="Contoh: REF-001" value="{{ old('nomor_referensi', $biayaKapal->nomor_referensi) }}">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Agen</label>
@@ -3057,18 +3155,20 @@
             calculateAirSectionTotal(sectionIndex);
         });
         
-        // Setup type change listener for auto-calculation
-        const typeSelect = section.querySelector('.type-select-air');
-        typeSelect.addEventListener('change', function() {
-            calculateAirSectionTotal(sectionIndex);
-        });
-        
-        // Setup kuantitas change listener
-        const kuantitasInput = section.querySelector('.kuantitas-input-air');
-        kuantitasInput.addEventListener('input', function() {
-            calculateAirSectionTotal(sectionIndex);
+        // Setup add type button listener
+        const addTypeBtn = section.querySelector('.add-type-btn-air');
+        addTypeBtn.addEventListener('click', function() {
+            addTypeToAirSection(sectionIndex);
         });
 
+        // Setup type change listener for auto-calculation (using delegation for dynamic inputs)
+        const typesList = section.querySelector('.types-list-air');
+        typesList.addEventListener('change', function(e) {
+            if (e.target.classList.contains('type-select-air')) {
+                calculateAirSectionTotal(sectionIndex);
+            }
+        });
+        
         // Set default lokasi if available
         const lokasiSelect = section.querySelector('.lokasi-select-air');
         if (lokasiSelect) {
@@ -3099,6 +3199,7 @@
             calculateAirSectionTotal(sectionIndex);
         });
 
+        // Setup manual voyage toggle
         // Setup manual voyage toggle
         const voyageSelect = section.querySelector('.voyage-select-air');
         const voyageInput = section.querySelector('.voyage-input-air');
@@ -3137,6 +3238,9 @@
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
+        
+        // Trigger initial calculation for this section
+        calculateAirSectionTotal(sectionIndex);
     }
     
     window.removeAirSection = function(sectionIndex) {
@@ -3190,11 +3294,18 @@
     
     function loadTypesForVendor(sectionIndex, vendorName) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
-        const typeSelect = section.querySelector('.type-select-air');
+        const typesList = section.querySelector('.types-list-air');
+        const typeContainers = typesList.querySelectorAll('.flex.flex-col.gap-1.border.p-2.rounded.bg-gray-50'); // Select the new container
+        const addTypeBtn = section.querySelector('.add-type-btn-air');
         
         if (!vendorName) {
-            typeSelect.disabled = true;
-            typeSelect.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
+            typeContainers.forEach(container => {
+                const select = container.querySelector('.type-select-air');
+                select.disabled = true;
+                select.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
+            });
+            addTypeBtn.disabled = true;
+            typesList.dataset.options = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
             return;
         }
         
@@ -3205,17 +3316,90 @@
         // Filter pricelist data by vendor name and lokasi (if selected)
         const vendorTypes = pricelistAirTawarData.filter(item => item.nama_agen === vendorName && (selectedLokasi === '' || item.lokasi === selectedLokasi));
         
+        let options = '<option value="">-- Pilih Type --</option>';
         if (vendorTypes.length > 0) {
-            typeSelect.disabled = false;
-            let options = '<option value="">-- Pilih Type --</option>';
             vendorTypes.forEach(type => {
-                options += `<option value="${type.id}" data-keterangan="${type.keterangan}" data-harga="${type.harga}">${type.keterangan} - Rp ${parseInt(type.harga).toLocaleString('id-ID')}/ton</option>`;
+                // REMOVE /ton as requested
+                options += `<option value="${type.id}" data-keterangan="${type.keterangan}" data-harga="${type.harga}">${type.keterangan} - Rp ${parseInt(type.harga).toLocaleString('id-ID')}</option>`;
             });
-            typeSelect.innerHTML = options;
+            
+            typeContainers.forEach(container => {
+                const select = container.querySelector('.type-select-air');
+                const priceInput = container.querySelector('.price-input-air');
+                const currentValue = select.value;
+                select.disabled = false;
+                select.innerHTML = options;
+                if (currentValue) select.value = currentValue;
+                
+                // Update price if not manual
+                if (!container.querySelector('.type-manual-input-air').required) {
+                    updatePriceFromSelect(select);
+                }
+            });
+            
+            addTypeBtn.disabled = false;
         } else {
-            typeSelect.disabled = true;
-            typeSelect.innerHTML = '<option value="">Tidak ada type tersedia</option>';
+            options = '<option value="">Tidak ada type tersedia</option>';
+            typeContainers.forEach(container => {
+                const select = container.querySelector('.type-select-air');
+                select.disabled = true;
+                select.innerHTML = options;
+            });
+            addTypeBtn.disabled = true;
         }
+        
+        // Store current options in dataset for new inputs
+        typesList.dataset.options = options;
+    }
+
+    function addTypeToAirSection(sectionIndex) {
+        const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
+        const typesList = section.querySelector('.types-list-air');
+        
+        // Ensure options exist
+        const options = typesList.dataset.options || '<option value="">-- Pilih Type --</option>';
+        
+        const div = document.createElement('div');
+        div.className = 'flex flex-col gap-1 border p-2 rounded bg-gray-50 relative';
+        div.innerHTML = `
+            <div class="flex gap-2 w-full">
+                <select name="air[${sectionIndex}][types][]" class="type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" onchange="updatePriceFromSelect(this); calculateAirSectionTotal(${sectionIndex})">
+                    ${options}
+                </select>
+                
+                <input type="hidden" name="air[${sectionIndex}][types][]" class="hidden-type-manual" value="MANUAL" disabled>
+                
+                <input type="text" name="air[${sectionIndex}][manual_names][]" class="type-manual-input-air hidden w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nama Type Manual">
+                                    
+                <button type="button" class="type-toggle-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleTypeInput(this, ${sectionIndex})">
+                    <i class="fas fa-keyboard"></i>
+                </button>
+                    
+                <button type="button" class="text-red-500 hover:text-red-700 ml-1" onclick="this.closest('.flex-col').remove(); calculateAirSectionTotal(${sectionIndex})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            
+            <div class="flex items-center gap-2 mt-1">
+                <div class="flex-grow">
+                    <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
+                    <input type="number" name="air[${sectionIndex}][custom_prices][]" class="price-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 bg-gray-100" placeholder="0" readonly oninput="calculateAirSectionTotal(${sectionIndex})">
+                </div>
+                <div class="w-1/4">
+                    <label class="text-xs text-gray-500 block mb-1">Berapa Ton</label>
+                    <input type="number" step="0.01" min="0" name="air[${sectionIndex}][type_tonase][]" class="tonase-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500" placeholder="0" oninput="calculateAirSectionTotal(${sectionIndex})">
+                </div>
+                <div class="flex items-end pb-1">
+                    <div class="flex items-center gap-2">
+                        <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden">
+                        <input type="checkbox" class="lumpsum-checkbox rounded text-cyan-600 focus:ring-cyan-500 h-5 w-5" onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateAirSectionTotal(${sectionIndex})">
+                        <label class="text-xs text-gray-600">Lumpsum (Fix)</label>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        typesList.appendChild(div);
     }
 
     // Update vendor list for a given lokasi in a section
@@ -3223,7 +3407,9 @@
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
         if (!section) return;
         const vendorSelect = section.querySelector('.vendor-select-air');
-        const typeSelect = section.querySelector('.type-select-air');
+        const typesList = section.querySelector('.types-list-air');
+        const typeSelects = typesList.querySelectorAll('.type-select-air');
+        const addTypeBtn = section.querySelector('.add-type-btn-air');
 
         // Build vendor list filtered by lokasi; if lokasi is empty, include all vendors
         let vendors = [];
@@ -3244,16 +3430,20 @@
         }
 
         // Clear type options whenever vendor list changes
-        if (typeSelect) {
-            typeSelect.disabled = true;
-            typeSelect.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
+        if (typeSelects.length > 0) {
+            typeSelects.forEach(select => {
+                select.disabled = true;
+                select.innerHTML = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
+            });
+            addTypeBtn.disabled = true;
+            typesList.dataset.options = '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
         }
     }
     
     function calculateAirSectionTotal(sectionIndex) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
-        const typeSelect = section.querySelector('.type-select-air');
-        const kuantitasInput = section.querySelector('.kuantitas-input-air');
+        // Select all type wrapper containers (the flex-cols)
+        const typeContainers = section.querySelectorAll('.types-list-air > div');
         
         // Updated selectors
         const subTotalDisplay = section.querySelector('.sub-total-display');
@@ -3269,11 +3459,36 @@
         const grandTotalDisplay = section.querySelector('.grand-total-display');
         const grandTotalValue = section.querySelector('.grand-total-value');
         
-        const selectedOption = typeSelect.options[typeSelect.selectedIndex];
-        const hargaPerTon = parseFloat(selectedOption.getAttribute('data-harga')) || 0;
-        const kuantitas = parseFloat(kuantitasInput.value) || 0;
+        let totalCost = 0;
+
+        // Iterate through each type container to calculate individual costs
+        typeContainers.forEach(container => {
+            const select = container.querySelector('.type-select-air');
+            const checkbox = container.querySelector('.lumpsum-checkbox');
+            
+            if (select) {
+                // Determine price from input field now
+                const priceInput = container.querySelector('.price-input-air');
+                const tonaseInput = container.querySelector('.tonase-input-air');
+                const harga = parseFloat(priceInput.value) || 0;
+                
+                let selectedKuantitas = 0;
+                if (tonaseInput && tonaseInput.value !== "") {
+                    selectedKuantitas = parseFloat(tonaseInput.value) || 0;
+                }
+                
+                const isLumpsum = checkbox ? checkbox.checked : false;
+
+                if (isLumpsum) {
+                    totalCost += harga; // Fixed price
+                } else {
+                    totalCost += (harga * selectedKuantitas); // Price * Qty
+                }
+            }
+        });
+
+        let waterCost = Math.round(totalCost); // This is now the calculated base cost
         
-        let waterCost = Math.round(hargaPerTon * kuantitas);
         let jasaAir = parseFloat(jasaAirInput.value) || 0;
         let biayaAgen = parseFloat(biayaAgenInput.value) || 0;
         
@@ -3286,7 +3501,8 @@
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
         subTotalValue.value = subTotal;
-        hargaHidden.value = hargaPerTon;
+        // hargaHidden is less relevant now as it varies, but we can store the calculated waterCost for reference if needed
+        hargaHidden.value = waterCost; 
         
         if (pphDisplay) pphDisplay.value = pph > 0 ? `Rp ${pph.toLocaleString('id-ID')}` : 'Rp 0';
         if (pphValue) pphValue.value = pph;
@@ -3325,15 +3541,86 @@
         
         // Calculate Jasa Air / Total Base summary
         if (jasaAirInput) jasaAirInput.value = totalBase > 0 ? totalBase.toLocaleString('id-ID') : '0';
-        
+         
         // Calculate PPH total
         if (pphAirInput) pphAirInput.value = totalPph > 0 ? totalPph.toLocaleString('id-ID') : '0';
         
         // Calculate Grand Total
         if (grandTotalAirInput) grandTotalAirInput.value = totalGrandTotal > 0 ? totalGrandTotal.toLocaleString('id-ID') : '0';
     }
+    window.addTypeToAirSectionWithValue = function(sectionIndex, typeId, typeKeterangan, isLumpsum, kuantitas, harga) {
+        const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
+        const typesList = section.querySelector('.types-list-air');
+        const count = typesList.children.length;
+        
+        const div = document.createElement('div');
+        div.className = 'flex flex-col gap-1 border p-2 rounded bg-gray-50 relative mt-2';
+        
+        let typeSelectOptions = typesList.dataset.options || '<option value="">-- Pilih Vendor Terlebih Dahulu --</option>';
 
-    // ============= PENERIMA SELECT2 INITIALIZATION =============
+        const isManual = (typeId == null || typeId == '' || typeId == 'MANUAL' || typeId == 0);
+        
+        let selectClass = isManual ? 'type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 hidden' : 'type-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500';
+        let selectDisabled = isManual ? 'disabled' : '';
+        
+        let manualInputClass = isManual ? 'type-manual-input-air w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500' : 'type-manual-input-air hidden w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500';
+        let manualInputDisabled = isManual ? '' : 'disabled';
+        let manualInputValue = isManual ? typeKeterangan : '';
+
+        let hiddenManualDisabled = isManual ? '' : 'disabled';
+        
+        let btnClass = isManual ? 'type-toggle-btn px-3 py-2 bg-blue-200 hover:bg-blue-300 text-blue-700 rounded-lg transition' : 'type-toggle-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition';
+        let btnInner = isManual ? '<i class="fas fa-list"></i>' : '<i class="fas fa-keyboard"></i>';
+
+        let priceReadOnly = isManual ? '' : 'readonly';
+        let priceBgClass = isManual ? 'bg-white' : 'bg-gray-100';
+        
+        let lumpsumChecked = isLumpsum == 1 ? 'checked' : '';
+
+        div.innerHTML = `
+            <div class="flex gap-2 w-full">
+                <select name="air[${sectionIndex}][types][]" class="${selectClass}" ${selectDisabled} required onchange="updatePriceFromSelect(this); calculateAirSectionTotal(${sectionIndex})">
+                    ${typeSelectOptions}
+                </select>
+                <input type="hidden" name="air[${sectionIndex}][types][]" class="hidden-type-manual" value="MANUAL" ${hiddenManualDisabled}>
+                <input type="text" name="air[${sectionIndex}][manual_names][]" class="${manualInputClass}" value="${manualInputValue}" placeholder="Nama Type Manual">
+                
+                <button type="button" class="${btnClass}" title="Switch Input (Master/Manual)" onclick="toggleTypeInput(this, ${sectionIndex})">
+                    ${btnInner}
+                </button>
+                <button type="button" class="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition" onclick="removeTypeFromAirSection(this, ${sectionIndex})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            
+            <div class="flex items-center gap-2 mt-1">
+                <div class="flex-grow">
+                    <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
+                    <input type="number" name="air[${sectionIndex}][custom_prices][]" class="price-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 ${priceBgClass}" value="${harga}" placeholder="0" ${priceReadOnly} oninput="calculateAirSectionTotal(${sectionIndex})">
+                </div>
+                <div class="w-1/4">
+                    <label class="text-xs text-gray-500 block mb-1">Berapa Ton</label>
+                    <input type="number" step="0.01" min="0" name="air[${sectionIndex}][type_tonase][]" class="tonase-input-air w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500" value="${kuantitas}" placeholder="0" oninput="calculateAirSectionTotal(${sectionIndex})">
+                </div>
+                <div class="flex items-end pb-1">
+                    <div class="flex items-center gap-2">
+                        <input type="hidden" name="air[${sectionIndex}][type_is_lumpsum][]" value="${isLumpsum}" class="lumpsum-hidden">
+                        <input type="checkbox" class="lumpsum-checkbox rounded text-cyan-600 focus:ring-cyan-500 h-5 w-5" ${lumpsumChecked} onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateAirSectionTotal(${sectionIndex})">
+                        <label class="text-xs text-gray-600">Lumpsum (Fix)</label>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        typesList.appendChild(div);
+        
+        if (!isManual) {
+            const select = div.querySelector('.type-select-air');
+            setTimeout(() => { select.value = typeId; }, 100);
+        }
+    };
+
+// ============= PENERIMA SELECT2 INITIALIZATION =============
     // Load Select2 if jQuery is available
     if (typeof jQuery !== 'undefined') {
         // Check if Select2 is loaded
