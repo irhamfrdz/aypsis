@@ -106,7 +106,7 @@ class ManifestTableExport implements FromCollection, WithHeadings, ShouldAutoSiz
             'Size',
             'PKGS',
             'DESCRIPTION OF GOODS',
-            'Pengirim',
+            'SHIPPER',
             'Penerima',
             'Volume',
             'Tonase',

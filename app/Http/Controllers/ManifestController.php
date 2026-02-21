@@ -474,7 +474,7 @@ class ManifestController extends Controller
             'Tipe Kontainer',
             'Size Kontainer',
             'Nama Barang',
-            'Pengirim',
+            'SHIPPER',
             'Penerima',
             'Term'
         ];
@@ -759,7 +759,7 @@ class ManifestController extends Controller
             'Tipe Kontainer',
             'Size Kontainer',
             'Nama Barang',
-            'Pengirim',
+            'SHIPPER',
             'Alamat Pengirim',
             'Penerima',
             'Alamat Penerima',

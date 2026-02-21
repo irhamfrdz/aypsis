@@ -143,7 +143,7 @@
             <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b">Informasi Pengirim & Penerima</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">Pengirim</label>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">SHIPPER</label>
                     <p class="text-base text-gray-900">{{ $manifest->pengirim ?? '-' }}</p>
                 </div>
                 <div>
