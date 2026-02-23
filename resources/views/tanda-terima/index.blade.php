@@ -1058,10 +1058,10 @@
         }
 
         const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        const url = '/surat-jalan/' + suratJalanId;
+        const url = '/surat-jalan/' + suratJalanId + '/update-supir';
 
         fetch(url, {
-            method: 'PATCH',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': token,

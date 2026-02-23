@@ -96,6 +96,40 @@ class SuratJalanController extends Controller
     }
 
     /**
+     * Update only the supir field for a surat jalan (lightweight endpoint)
+     */
+    public function updateSupir(Request $request, $id)
+    {
+        $suratJalan = SuratJalan::findOrFail($id);
+
+        // Authorize using same permission used for update route
+        if (!auth()->user()->can('surat-jalan-update')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'supir' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $suratJalan->supir = $validated['supir'] ?? null;
+            $suratJalan->save();
+
+            // Log change
+            \Log::info('Supir updated via lightweight endpoint', [
+                'surat_jalan_id' => $suratJalan->id,
+                'supir' => $suratJalan->supir,
+                'updated_by' => auth()->id()
+            ]);
+
+            return response()->json(['success' => true, 'supir' => $suratJalan->supir]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating supir: ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
+            return response()->json(['success' => false, 'message' => 'Server error while updating supir'], 500);
+        }
+    }
+
+    /**
      * Export surat jalan listing to Excel with current filters
      */
     public function exportExcel(Request $request)

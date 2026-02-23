@@ -2504,6 +2504,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan.update-status')
          ->middleware('can:surat-jalan-update');
 
+    // Lightweight endpoint to update only the supir field without running full surat-jalan validation
+    Route::post('/surat-jalan/{suratJalan}/update-supir', [\App\Http\Controllers\SuratJalanController::class, 'updateSupir'])
+         ->name('surat-jalan.update-supir')
+         ->middleware('can:surat-jalan-update');
+
     // AJAX route for getting uang jalan by tujuan
     Route::post('/api/get-uang-jalan-by-tujuan', [\App\Http\Controllers\SuratJalanController::class, 'getUangJalanByTujuan'])
          ->name('surat-jalan.get-uang-jalan')
