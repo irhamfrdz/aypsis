@@ -1069,23 +1069,41 @@
             },
             body: JSON.stringify({ supir: newSupir, redirect_to: 'tanda-terima' })
         })
-        .then(res => {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.text();
+        .then(async res => {
+            const text = await res.text();
+            let data = null;
+            try { data = JSON.parse(text); } catch (e) { /* not JSON */ }
+
+            if (!res.ok) {
+                // Build descriptive message from response
+                let msg = `Gagal memperbarui supir (HTTP ${res.status})`;
+                if (data) {
+                    if (data.message) msg += `: ${data.message}`;
+                    else if (data.errors) msg += `: ${Object.values(data.errors).flat().join('; ')}`;
+                } else if (text) {
+                    msg += `: ${text}`;
+                }
+                throw new Error(msg);
+            }
+
+            // If server returned structured error while 200 OK
+            if (data && data.success === false) {
+                let msg = data.message || 'Server menolak permintaan.';
+                if (data.errors) msg += '\n' + Object.values(data.errors).flat().join('\n');
+                throw new Error(msg);
+            }
+
+            return { data, text };
         })
-        .then(text => {
-            // try parse JSON, otherwise treat as success
-            try { return JSON.parse(text); } catch (e) { return { success: true }; }
-        })
-        .then(data => {
-            // Update UI
+        .then(() => {
             const el = document.getElementById(elementId);
             if (el) el.textContent = newSupir || '-';
             alert('Supir berhasil diperbarui.');
         })
         .catch(err => {
             console.error('Error updating supir:', err);
-            alert('Gagal memperbarui supir.');
+            const msg = err && err.message ? err.message : 'Terjadi kesalahan saat memperbarui supir.';
+            alert('Gagal memperbarui supir: ' + msg);
         });
     }
 
