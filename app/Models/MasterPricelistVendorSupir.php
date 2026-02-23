@@ -6,5 +6,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class MasterPricelistVendorSupir extends Model
 {
-    //
+    protected $fillable = [
+        'tujuan_id',
+        'jenis_kontainer',
+        'nominal',
+        'status',
+        'keterangan',
+        'created_by',
+        'updated_by',
+    ];
+
+    public function tujuan()
+    {
+        return $this->belongsTo(Tujuan::class, 'tujuan_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
 }
