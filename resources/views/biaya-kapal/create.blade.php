@@ -3560,8 +3560,8 @@
         // Sub Total = (Price * Qty) + Jasa Air
         let subTotal = waterCost + jasaAir;
         
-        // PPH = Jasa Air * 2%
-        const pph = Math.round(jasaAir * 0.02);
+        // PPH = Sub Total * 2%
+        const pph = Math.round(subTotal * 0.02);
         const grandTotal = subTotal - pph;
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';

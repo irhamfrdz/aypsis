@@ -667,8 +667,8 @@ class BiayaKapalController extends Controller
                                 
                                 $currentSubTotal = $waterCost + $currentJasaAir;
                                 
-                                // PPH is on Services (Jasa Air), so only apply if they exist
-                                $currentPph = round($currentJasaAir * 0.02);
+                                // PPH is on Sub Total
+                                $currentPph = round($currentSubTotal * 0.02);
                                 $currentGrandTotal = $currentSubTotal - $currentPph;
 
                                 // Create BiayaKapalAir record
@@ -1480,8 +1480,8 @@ class BiayaKapalController extends Controller
                                 
                                 $currentSubTotal = $waterCost + $currentJasaAir;
                                 
-                                // PPH is on Services (Jasa Air), so only apply if they exist
-                                $currentPph = round($currentJasaAir * 0.02);
+                                // PPH is on Sub Total
+                                $currentPph = round($currentSubTotal * 0.02);
                                 $currentGrandTotal = $currentSubTotal - $currentPph;
 
                                 // Create BiayaKapalAir record
