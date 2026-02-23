@@ -780,6 +780,20 @@ Route::middleware([
              ->name('pricelist-rit.destroy')
              ->middleware('can:master-pricelist-rit-delete');
 
+        // Master Pricelist Vendor Supir routes
+        Route::resource('pricelist-vendor-supir', \App\Http\Controllers\MasterPricelistVendorSupirController::class)
+             ->middleware('can:master-pricelist-vendor-supir-create')
+             ->only(['create', 'store']);
+        Route::resource('pricelist-vendor-supir', \App\Http\Controllers\MasterPricelistVendorSupirController::class)
+             ->middleware('can:master-pricelist-vendor-supir-view')
+             ->only(['index', 'show']);
+        Route::resource('pricelist-vendor-supir', \App\Http\Controllers\MasterPricelistVendorSupirController::class)
+             ->middleware('can:master-pricelist-vendor-supir-update')
+             ->only(['edit', 'update']);
+        Route::resource('pricelist-vendor-supir', \App\Http\Controllers\MasterPricelistVendorSupirController::class)
+             ->middleware('can:master-pricelist-vendor-supir-delete')
+             ->only(['destroy']);
+
         // Pricelist Buruh Import/Export routes (must be BEFORE resource routes)
         Route::get('pricelist-buruh/export', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'export'])
              ->name('pricelist-buruh.export')

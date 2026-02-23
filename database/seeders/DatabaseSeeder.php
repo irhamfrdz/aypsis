@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             UangJalanBongkaranPermissionSeeder::class,
             PranotaUangJalanBongkaranPermissionSeeder::class,
                 MasterPricelistObPermissionSeeder::class, // Permission untuk pricelist OB
+            MasterPricelistVendorSupirPermissionSeeder::class, // Permission untuk pricelist Vendor Supir
             // Payment permissions for Pranota Uang Jalan Bongkaran
             PembayaranPranotaUangJalanBongkaranPermissionSeeder::class,
             AdminUserSeeder::class, // User admin dengan semua permissions
