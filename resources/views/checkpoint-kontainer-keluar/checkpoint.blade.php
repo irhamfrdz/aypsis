@@ -18,13 +18,22 @@
             <p class="text-sm sm:text-base lg:text-lg text-gray-600 px-4">
                 Cabang: <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs sm:text-sm font-medium bg-orange-100 text-orange-800">{{ $cabangNama }}</span>
             </p>
-            <a href="{{ route('checkpoint-kontainer-keluar.index') }}" 
-               class="inline-flex items-center text-xs sm:text-sm text-gray-600 hover:text-gray-900 mt-3 sm:mt-4 transition-colors touch-manipulation">
-                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-                Kembali ke Pilihan Cabang
-            </a>
+            <div class="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a href="{{ route('checkpoint-kontainer-keluar.export-all-gudang-excel', $cabangSlug) }}" 
+                   class="inline-flex items-center px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Export Semua Gudang
+                </a>
+                <a href="{{ route('checkpoint-kontainer-keluar.index') }}" 
+                   class="inline-flex items-center text-xs sm:text-sm text-gray-600 hover:text-gray-900 transition-colors touch-manipulation">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Kembali ke Pilihan Cabang
+                </a>
+            </div>
         </div>
 
         <!-- Success/Error Messages -->

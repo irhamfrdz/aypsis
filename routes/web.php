@@ -2971,12 +2971,24 @@ Route::middleware(['auth'])->group(function () {
          ->name('checkpoint-kontainer-keluar.history')
          ->middleware('can:checkpoint-kontainer-keluar-view');
 
+    Route::get('checkpoint-kontainer-keluar/export-excel', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'exportExcel'])
+         ->name('checkpoint-kontainer-keluar.export-excel')
+         ->middleware('can:checkpoint-kontainer-keluar-view');
+
     Route::get('checkpoint-kontainer-keluar/{cabangSlug}', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'checkpoint'])
          ->name('checkpoint-kontainer-keluar.checkpoint')
          ->middleware('can:checkpoint-kontainer-keluar-view');
 
     Route::get('checkpoint-kontainer-keluar/{cabangSlug}/gudang/{gudangId}', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'showSuratJalan'])
          ->name('checkpoint-kontainer-keluar.surat-jalan')
+         ->middleware('can:checkpoint-kontainer-keluar-view');
+
+    Route::get('checkpoint-kontainer-keluar/export-gudang-excel/{gudangId}', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'exportGudangExcel'])
+         ->name('checkpoint-kontainer-keluar.export-gudang-excel')
+         ->middleware('can:checkpoint-kontainer-keluar-view');
+
+    Route::get('checkpoint-kontainer-keluar/{cabangSlug}/export-all-gudang-excel', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'exportBranchGudangExcel'])
+         ->name('checkpoint-kontainer-keluar.export-all-gudang-excel')
          ->middleware('can:checkpoint-kontainer-keluar-view');
 
     Route::post('checkpoint-kontainer-keluar/{suratJalan}/keluar', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'processKeluar'])

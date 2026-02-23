@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\HistoryKontainer;
+use App\Exports\CheckpointKontainerKeluarExport;
+use App\Exports\GudangKontainerExport;
+use App\Exports\BranchGudangKontainerExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CheckpointKontainerKeluarController extends Controller
 {
@@ -143,6 +147,84 @@ class CheckpointKontainerKeluarController extends Controller
         $suratJalans = $query->paginate(20);
 
         return view('checkpoint-kontainer-keluar.history', compact('suratJalans'));
+    }
+
+    /**
+     * Export history to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $this->authorize('checkpoint-kontainer-keluar-view');
+
+        $query = SuratJalan::whereNotNull('tanggal_checkpoint')
+            ->orderBy('tanggal_checkpoint', 'desc');
+
+        // Filter by date range if provided
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal_checkpoint', '>=', $request->tanggal_dari);
+        }
+
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal_checkpoint', '<=', $request->tanggal_sampai);
+        }
+
+        // Filter by search term
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%");
+            });
+        }
+
+        $filters = $request->only(['tanggal_dari', 'tanggal_sampai', 'search']);
+
+        return Excel::download(
+            new CheckpointKontainerKeluarExport($filters),
+            'checkpoint-kontainer-keluar-history-' . date('YmdHis') . '.xlsx'
+        );
+    }
+
+    /**
+     * Export containers per warehouse to Excel
+     */
+    public function exportGudangExcel($gudangId)
+    {
+        $this->authorize('checkpoint-kontainer-keluar-view');
+
+        $gudang = \App\Models\Gudang::findOrFail($gudangId);
+
+        return Excel::download(
+            new GudangKontainerExport($gudangId),
+            'kontainer-gudang-' . str_replace(' ', '-', strtolower($gudang->nama_gudang)) . '-' . date('YmdHis') . '.xlsx'
+        );
+    }
+
+    /**
+     * Export all containers in all warehouses of a branch to Excel
+     */
+    public function exportBranchGudangExcel($cabangSlug)
+    {
+        $this->authorize('checkpoint-kontainer-keluar-view');
+
+        $cabangMap = [
+            'jakarta' => 'Jakarta',
+            'batam' => 'Batam',
+            'tanjung-pinang' => 'Tanjung Pinang',
+        ];
+
+        $cabangNama = $cabangMap[$cabangSlug] ?? null;
+
+        if (!$cabangNama) {
+            return redirect()->route('checkpoint-kontainer-keluar.index')
+                ->with('error', 'Cabang tidak ditemukan');
+        }
+
+        return Excel::download(
+            new BranchGudangKontainerExport($cabangNama),
+            'kontainer-semua-gudang-' . $cabangSlug . '-' . date('YmdHis') . '.xlsx'
+        );
     }
 
     /**
