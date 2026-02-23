@@ -76,6 +76,18 @@ class ProspekController extends Controller
                 });
             }
 
+            // Filter Duplicate No. Surat Jalan
+            if ($request->has('show_duplicates') && $request->show_duplicates == '1') {
+                $duplicateNos = Prospek::select('no_surat_jalan')
+                    ->whereNotNull('no_surat_jalan')
+                    ->where('no_surat_jalan', '!=', '')
+                    ->groupBy('no_surat_jalan')
+                    ->havingRaw('COUNT(no_surat_jalan) > 1')
+                    ->pluck('no_surat_jalan');
+                
+                $query->whereIn('no_surat_jalan', $duplicateNos);
+            }
+
             // Allow configurable rows per page, default to 15. Validate allowed values to prevent abuse.
             $allowedPerPage = [10, 25, 50, 100];
             $perPage = (int) $request->get('per_page', 10);
@@ -127,7 +139,7 @@ class ProspekController extends Controller
 
             return Excel::download($export, $fileName);
         } catch (\Exception $e) {
-            \Log::error('Error exporting prospek: ' . $e->getMessage());
+            Log::error('Error exporting prospek: ' . $e->getMessage());
             return back()->with('error', 'Gagal export prospek: ' . $e->getMessage());
         }
     }
@@ -355,7 +367,7 @@ class ProspekController extends Controller
                     } else {
                         // Cari semua tanda terima yang cocok dengan pengirim dan supir
                         // Ambil yang paling cocok berdasarkan tanggal atau ID
-                        $tttsj = \DB::table('tanda_terima_tanpa_surat_jalan')
+                        $tttsj = DB::table('tanda_terima_tanpa_surat_jalan')
                             ->where('pengirim', $prospek->pt_pengirim)
                             ->where('supir', $prospek->nama_supir)
                             ->where('tujuan_pengiriman', $prospek->tujuan_pengiriman)
@@ -397,7 +409,7 @@ class ProspekController extends Controller
                 ->get();
 
             $masterTujuanKirims = \App\Models\MasterTujuanKirim::all(); // Debug: get all data first
-            \Log::info('Master Tujuan Kirim data:', $masterTujuanKirims->toArray());
+            Log::info('Master Tujuan Kirim data:', $masterTujuanKirims->toArray());
 
             return view('prospek.proses-naik-kapal', compact('tujuan', 'prospeksAktif', 'tujuanId', 'masterKapals', 'masterTujuanKirims'));
         } catch (\Exception $e) {
@@ -419,7 +431,7 @@ class ProspekController extends Controller
             $user = Auth::user();
             
             // Log incoming request data
-            \Log::info('Execute Naik Kapal - Request Data:', $request->all());
+            Log::info('Execute Naik Kapal - Request Data:', $request->all());
             
             if (!$this->hasProspekPermission($user, 'prospek-edit')) {
                 abort(403, "Tidak memiliki akses untuk mengubah status prospek");
@@ -438,7 +450,7 @@ class ProspekController extends Controller
             
             $debugFile = storage_path('logs/debug_submit.txt');
             file_put_contents($debugFile, 'Validation passed' . "\n", FILE_APPEND);
-            \Log::info('Validation passed successfully');
+            Log::info('Validation passed successfully');
 
             $tujuanId = $request->tujuan_id;
             
@@ -464,16 +476,16 @@ class ProspekController extends Controller
 
             // Get prospek yang dipilih berdasarkan prospek_ids
             $prospekIds = $request->prospek_ids;
-            \Log::info('Selected Prospek IDs:', $prospekIds);
+            Log::info('Selected Prospek IDs:', $prospekIds);
             
             $prospeks = Prospek::whereIn('id', $prospekIds)
                 ->whereIn('status', ['aktif', 'batal'])
                 ->get();
 
-            \Log::info('Found ' . $prospeks->count() . ' active prospeks');
+            Log::info('Found ' . $prospeks->count() . ' active prospeks');
 
             if ($prospeks->isEmpty()) {
-                \Log::warning('No active prospeks found for selected IDs');
+                Log::warning('No active prospeks found for selected IDs');
                 return redirect()->back()
                     ->with('error', 'Tidak ada prospek aktif yang dipilih')
                     ->withInput();
@@ -484,7 +496,7 @@ class ProspekController extends Controller
 
             // Update semua prospek yang dipilih dan simpan ke tabel naik_kapal
             foreach ($prospeks as $prospek) {
-                \Log::info('Processing prospek ID: ' . $prospek->id);
+                Log::info('Processing prospek ID: ' . $prospek->id);
                 
                 // Jangan ubah status prospek, biarkan tetap aktif
                 // Hanya update informasi tambahan terkait kapal tanpa mengubah status
@@ -499,7 +511,7 @@ class ProspekController extends Controller
                 
                 $prospek->update($updateData);
                 
-                \Log::info('Updated prospek info (status tetap) for ID: ' . $prospek->id);
+                Log::info('Updated prospek info (status tetap) for ID: ' . $prospek->id);
 
                 // Simpan data ke tabel naik_kapal
                 // Format size_kontainer: convert ukuran (20, 40, 40hc, 45) to standard format (20ft, 40ft, 40hc, 45ft)
@@ -535,15 +547,15 @@ class ProspekController extends Controller
                 
                 try {
                     // Simpan ke naik_kapal
-                    \Log::info('Creating NaikKapal record with data:', $naikKapalData);
+                    Log::info('Creating NaikKapal record with data:', $naikKapalData);
                     $naikKapal = NaikKapal::create($naikKapalData);
-                    \Log::info('Successfully created NaikKapal record with ID: ' . $naikKapal->id);
+                    Log::info('Successfully created NaikKapal record with ID: ' . $naikKapal->id);
                     
                     $updatedCount++;
                     $updatedKontainers[] = $naikKapalData['nomor_kontainer'];
                     
                 } catch (\Exception $createError) {
-                    \Log::error('Failed to create NaikKapal record', [
+                    Log::error('Failed to create NaikKapal record', [
                         'prospek_id' => $prospek->id,
                         'error' => $createError->getMessage()
                     ]);
@@ -553,7 +565,7 @@ class ProspekController extends Controller
 
             $kontainerList = implode(', ', $updatedKontainers);
             
-            \Log::info('Successfully processed ' . $updatedCount . ' prospeks');
+            Log::info('Successfully processed ' . $updatedCount . ' prospeks');
             
             return redirect()->route('prospek.index')
                 ->with('success', "Berhasil memproses {$updatedCount} prospek ({$kontainerList}) untuk naik kapal {$masterKapal->nama_kapal} ke {$tujuanData['nama']}. Data telah disimpan ke tabel naik kapal dan BL.");
@@ -562,8 +574,8 @@ class ProspekController extends Controller
             $debugFile = storage_path('logs/debug_submit.txt');
             file_put_contents($debugFile, 'ERROR: ' . $e->getMessage() . "\n", FILE_APPEND);
             file_put_contents($debugFile, 'Stack trace: ' . $e->getTraceAsString() . "\n", FILE_APPEND);
-            \Log::error('Error in executeNaikKapal: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error in executeNaikKapal: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
                 ->withInput();
@@ -629,7 +641,7 @@ class ProspekController extends Controller
             ]);
 
             // Log the update
-            \Log::info('Seal updated for prospek (inline edit)', [
+            Log::info('Seal updated for prospek (inline edit)', [
                 'prospek_id' => $prospek->id,
                 'old_seal' => $oldSeal,
                 'new_seal' => $request->no_seal,
@@ -652,7 +664,7 @@ class ProspekController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Error updating seal (inline edit)', [
+            Log::error('Error updating seal (inline edit)', [
                 'prospek_id' => $prospek->id ?? null,
                 'error' => $e->getMessage()
             ]);
@@ -684,7 +696,7 @@ class ProspekController extends Controller
             ]);
 
             // Log the update
-            \Log::info('Status updated for prospek', [
+            Log::info('Status updated for prospek', [
                 'prospek_id' => $prospek->id,
                 'no_surat_jalan' => $prospek->no_surat_jalan,
                 'old_status' => $oldStatus,
@@ -709,7 +721,7 @@ class ProspekController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Error updating status', [
+            Log::error('Error updating status', [
                 'prospek_id' => $prospek->id ?? null,
                 'error' => $e->getMessage()
             ]);
@@ -753,7 +765,7 @@ class ProspekController extends Controller
             $prospek->delete();
 
             // Log the deletion
-            \Log::info('Prospek deleted', [
+            Log::info('Prospek deleted', [
                 'prospek_data' => $prospekData,
                 'deleted_by' => $user->username,
                 'deleted_at' => now()
@@ -765,7 +777,7 @@ class ProspekController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error deleting prospek', [
+            Log::error('Error deleting prospek', [
                 'prospek_id' => $prospek->id ?? null,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -824,7 +836,7 @@ class ProspekController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error syncing prospek from surat jalan', [
+            Log::error('Error syncing prospek from surat jalan', [
                 'prospek_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -851,7 +863,7 @@ class ProspekController extends Controller
             }
 
             // Debug logging
-            \Log::info('Scan Surat Jalan Request', [
+            Log::info('Scan Surat Jalan Request', [
                 'has_file' => $request->hasFile('excel_file'),
                 'all_files' => $request->allFiles(),
                 'content_type' => $request->header('Content-Type')
@@ -863,7 +875,7 @@ class ProspekController extends Controller
                     'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120' // max 5MB
                 ]);
             } catch (\Illuminate\Validation\ValidationException $e) {
-                \Log::error('Validation failed', ['errors' => $e->validator->errors()->toArray()]);
+                Log::error('Validation failed', ['errors' => $e->validator->errors()->toArray()]);
                 return response()->json([
                     'success' => false,
                     'message' => $e->validator->errors()->first()
@@ -972,7 +984,7 @@ class ProspekController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error scanning surat jalan: ' . $e->getMessage());
+            Log::error('Error scanning surat jalan: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
@@ -996,12 +1008,12 @@ class ProspekController extends Controller
             
             // Debug logging - remove this later
             if (!$hasPermission) {
-                \Log::warning("User {$user->username} (ID: {$user->id}) missing permission: {$permission}");
+                Log::warning("User {$user->username} (ID: {$user->id}) missing permission: {$permission}");
             }
             
             return $hasPermission;
         } catch (\Exception $e) {
-            \Log::error("Permission check failed for user {$user->id}: " . $e->getMessage());
+            Log::error("Permission check failed for user {$user->id}: " . $e->getMessage());
             return false;
         }
     }
@@ -1106,7 +1118,7 @@ class ProspekController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error('Error gabungkan LCL: ' . $e->getMessage());
+            Log::error('Error gabungkan LCL: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()

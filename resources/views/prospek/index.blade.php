@@ -21,12 +21,23 @@
 <div class="container mx-auto px-4 py-6">
     {{-- Header --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div class="flex items-center">
-            <i class="fas fa-shipping-fast mr-3 text-blue-600 text-2xl"></i>
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Data Prospek</h1>
-                <p class="text-gray-600">Daftar prospek pengiriman kontainer</p>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-shipping-fast mr-3 text-blue-600 text-2xl"></i>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Data Prospek</h1>
+                    <p class="text-gray-600">Daftar prospek pengiriman kontainer</p>
+                </div>
             </div>
+            @if(request('show_duplicates') == '1')
+                <div class="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-bold flex items-center shadow-sm border border-red-200 animate-pulse">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    FILTER: NO. SURAT JALAN KEMBAR
+                    <a href="{{ route('prospek.index') }}" class="ml-3 text-red-900 hover:text-red-700" title="Matikan Filter">
+                        <i class="fas fa-times-circle"></i>
+                    </a>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -119,6 +130,10 @@
                     <a href="{{ route('prospek.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-times mr-2"></i>
                         Reset
+                    </a>
+                    <a href="{{ route('prospek.index', ['show_duplicates' => 1]) }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center shadow-sm">
+                        <i class="fas fa-clone mr-2"></i>
+                        Cek No. SJ Kembar
                     </a>
                 </div>
                 
