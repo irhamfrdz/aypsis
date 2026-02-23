@@ -300,7 +300,9 @@ class TandaTerimaController extends Controller
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                                    ->orWhere('supir', 'like', "%{$search}%")
+                                    ->orWhere('no_plat', 'like', "%{$search}%")
                   ->orWhere('penerima', 'like', "%{$search}%")
                   ->orWhere('estimasi_nama_kapal', 'like', "%{$search}%")
                   ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
