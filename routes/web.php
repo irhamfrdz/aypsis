@@ -525,6 +525,9 @@ Route::middleware([
         Route::get('tujuan-kegiatan-utama/export', [TujuanKegiatanUtamaController::class, 'export'])
              ->name('tujuan-kegiatan-utama.export')
              ->middleware('can:master-tujuan-kirim-view');
+        Route::get('tujuan-kegiatan-utama/export-excel', [TujuanKegiatanUtamaController::class, 'exportExcel'])
+             ->name('tujuan-kegiatan-utama.export-excel')
+             ->middleware('can:master-tujuan-kirim-view');
         Route::get('tujuan-kegiatan-utama/print', [TujuanKegiatanUtamaController::class, 'print'])
              ->name('tujuan-kegiatan-utama.print')
              ->middleware('can:master-tujuan-kirim-view');

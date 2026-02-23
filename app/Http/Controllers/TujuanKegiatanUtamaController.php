@@ -1,9 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exports\TujuanKegiatanUtamaExport;
 use App\Models\TujuanKegiatanUtama;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TujuanKegiatanUtamaController extends Controller
 {
@@ -218,6 +220,15 @@ class TujuanKegiatanUtamaController extends Controller
         $response->headers->set('Content-Disposition', 'attachment; filename="transportasi_data_' . date('Y-m-d_H-i-s') . '.csv"');
 
         return $response;
+    }
+
+    /**
+     * Export data tujuan kegiatan utama to Excel (.xlsx)
+     */
+    public function exportExcel()
+    {
+        $fileName = 'transportasi_data_' . date('Y-m-d_H-i-s') . '.xlsx';
+        return Excel::download(new TujuanKegiatanUtamaExport(), $fileName);
     }
 
     /**
