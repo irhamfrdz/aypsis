@@ -176,10 +176,10 @@
             <form method="GET" action="{{ route('tanda-terima.index') }}" class="mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                     <div class="md:col-span-3">
-                        <input type="text"
+                           <input type="text"
                                name="search"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Cari no. surat jalan, kontainer, kapal..."
+                               placeholder="Cari no. surat jalan, kontainer, kapal, supir..."
                                value="{{ request('search') }}">
                     </div>
                     <div class="md:col-span-3">

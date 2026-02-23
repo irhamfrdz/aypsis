@@ -309,12 +309,14 @@ class TandaTerimaController extends Controller
                       $orderQuery->where('tujuan_ambil', 'like', "%{$search}%")
                                  ->orWhere('penerima', 'like', "%{$search}%");
                   })
-                  ->orWhereHas('suratJalan', function($suratJalanQuery) use ($search) {
-                      $suratJalanQuery->where('no_surat_jalan', 'like', "%{$search}%")
-                          ->orWhere('penerima_id', 'like', "%{$search}%")
-                          ->orWhere('pengirim', 'like', "%{$search}%")
-                          ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
-                  });
+                                ->orWhereHas('suratJalan', function($suratJalanQuery) use ($search) {
+                                            $suratJalanQuery->where('no_surat_jalan', 'like', "%{$search}%")
+                                                    ->orWhere('penerima_id', 'like', "%{$search}%")
+                                                    ->orWhere('pengirim', 'like', "%{$search}%")
+                                                    ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
+                                                    ->orWhere('supir', 'like', "%{$search}%")
+                                                    ->orWhere('no_plat', 'like', "%{$search}%");
+                                    });
             });
         }
 
