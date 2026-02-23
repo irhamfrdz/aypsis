@@ -8,8 +8,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AssetDashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\VendorController;
-use App\Http\Controllers\ContainerTripReportController;
+
+
 use App\Http\Controllers\KontainerController;
 use App\Http\Controllers\KontainerImportController;
 use App\Http\Controllers\DivisiController;
@@ -268,7 +268,7 @@ Route::middleware([
     */
 
     Route::prefix('master')->name('master.')->group(function() {
-        Route::resource('vendors', VendorController::class);
+
      Route::post('pengirim-import', [App\Http\Controllers\PengirimController::class, 'import'])->name('pengirim.import.process')->middleware('can:master-pengirim-create');
 
         // Master Nama Barang Amprahan
@@ -1830,34 +1830,7 @@ Route::middleware([
              'destroy' => 'can:vendor-kontainer-sewa-delete'
          ]);
 
-    // 📦 Container Trip Management (Data Master Sewa)
-    Route::resource('master/container-trip', \App\Http\Controllers\ContainerTripController::class)
-         ->names([
-             'index' => 'container-trip.index',
-             'create' => 'container-trip.create',
-             'store' => 'container-trip.store',
-             'show' => 'container-trip.show',
-             'edit' => 'container-trip.edit',
-             'update' => 'container-trip.update',
-             'destroy' => 'container-trip.destroy'
-         ])
-         ->parameters(['container-trip' => 'containerTrip'])
-         ->middleware([
-             'index' => 'can:container-trip-view',
-             'create' => 'can:container-trip-create',
-             'store' => 'can:container-trip-create',
-             'show' => 'can:container-trip-view',
-             'edit' => 'can:container-trip-edit',
-             'update' => 'can:container-trip-edit',
-             'destroy' => 'can:container-trip-delete'
-         ]);
 
-    // Container Trip Reports & Simple Input Layout
-    Route::get('/laporan', [ContainerTripReportController::class, 'dashboard'])->name('container-trip.report.dashboard');
-    Route::get('/input-kontainer', [ContainerTripReportController::class, 'create'])->name('container-trip.report.create');
-    Route::post('/simpan-kontainer', [ContainerTripReportController::class, 'store'])->name('container-trip.report.store');
-    Route::post('/bayar-tagihan', [ContainerTripReportController::class, 'bayar'])->name('bayar.tagihan');
-    Route::get('/summary', [ContainerTripReportController::class, 'summary'])->name('container-trip.report.summary');
 
     Route::resource('master/vendor-invoice', \App\Http\Controllers\VendorInvoiceController::class)
          ->names([
