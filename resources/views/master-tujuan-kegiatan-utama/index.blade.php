@@ -32,6 +32,13 @@
                     Export CSV
                 </a>
 
+                <!-- Export Excel Button -->
+                <a href="{{ route('master.tujuan-kegiatan-utama.export-excel') }}" class="inline-flex items-center px-3 py-2 border border-green-700 text-sm font-medium rounded-md shadow-sm text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600">
+                    <svg class="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-9 14H8v-2h2v2zm0-4H8V9h2v4zm4 4h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    Export Excel
+                </a>
                 <!-- Print Button -->
                 <a href="{{ route('master.tujuan-kegiatan-utama.print') }}" target="_blank" class="inline-flex items-center px-3 py-2 border border-blue-600 text-sm font-medium rounded-md shadow-sm text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
