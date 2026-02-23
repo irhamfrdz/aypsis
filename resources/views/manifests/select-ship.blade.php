@@ -90,7 +90,15 @@
                     
                     <!-- Right Side: Button -->
                     @can('manifest-create')
-                    <div class="flex-shrink-0">
+                    <div class="flex-shrink-0 flex gap-2">
+                        <button onclick="autoUpdateNomorUrutAll(event)" 
+                                style="background: #eab308; color: white;"
+                                class="hover:bg-yellow-600 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl whitespace-nowrap text-sm">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Update No. Urut (Semua)
+                        </button>
                         <button onclick="openBulkImportModal()" 
                                 style="background: white; color: #7c3aed;"
                                 class="hover:bg-gray-50 px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 flex items-center shadow-lg hover:shadow-xl whitespace-nowrap text-sm">
@@ -347,6 +355,51 @@ window.closeBulkImportModal = function() {
     document.getElementById('bulkImportModal').classList.remove('flex');
     document.getElementById('bulk_import_file').value = '';
     document.getElementById('fileName').textContent = '';
+}
+
+window.autoUpdateNomorUrutAll = function(event) {
+    if (!confirm('Apakah Anda yakin ingin mengupdate nomor urut secara otomatis untuk SEMUA voyage? (FCL 1,2.. dan LCL 1,2..)')) {
+        return;
+    }
+
+    const btn = event.currentTarget;
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `
+        <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Updating...
+    `;
+
+    const csrfToken = document.querySelector('input[name="_token"]').value;
+
+    fetch('{{ route("report.manifests.auto-update-nomor-urut-all") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    })
+    .catch(error => {
+        alert('Terjadi kesalahan network');
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+    });
 }
 
 // Show selected filename

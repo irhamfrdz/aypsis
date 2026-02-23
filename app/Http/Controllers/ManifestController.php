@@ -336,6 +336,44 @@ class ManifestController extends Controller
             return response()->json(['success' => false, 'message' => 'Data kapal dan voyage tidak valid'], 400);
         }
 
+        $count = $this->processAutoUpdateNomorUrut($namaKapal, $noVoyage);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil update nomor urut untuk {$count} data manifest.",
+        ]);
+    }
+
+    /**
+     * Auto update nomor urut for ALL voyages
+     */
+    public function autoUpdateNomorUrutAll(Request $request)
+    {
+        // Get all unique combinations of ship and voyage
+        $voyages = Manifest::select('nama_kapal', 'no_voyage')
+            ->whereNotNull('nama_kapal')
+            ->where('nama_kapal', '!=', '')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->groupBy('nama_kapal', 'no_voyage')
+            ->get();
+
+        $totalUpdated = 0;
+        foreach ($voyages as $v) {
+            $totalUpdated += $this->processAutoUpdateNomorUrut($v->nama_kapal, $v->no_voyage);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil update nomor urut untuk semua voyage ({$totalUpdated} manifest).",
+        ]);
+    }
+
+    /**
+     * Internal logic for auto-updating nomor urut
+     */
+    private function processAutoUpdateNomorUrut($namaKapal, $noVoyage)
+    {
         $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
         $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
         $noVoyage = trim($noVoyage);
@@ -382,10 +420,7 @@ class ManifestController extends Controller
             $updated++;
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => "Berhasil update nomor urut untuk {$updated} data manifest (FCL: " . ($fclCounter - 1) . ", LCL: " . ($lclCounter - 1) . ")",
-        ]);
+        return $updated;
     }
 
     /**

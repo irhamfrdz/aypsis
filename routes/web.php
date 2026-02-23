@@ -4350,6 +4350,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::post('manifests/import', [App\Http\Controllers\ManifestController::class, 'import'])->name('manifests.import');
     Route::post('manifests/bulk-import', [App\Http\Controllers\ManifestController::class, 'bulkImport'])->name('manifests.bulk-import');
     Route::post('manifests/auto-update-nomor-urut', [App\Http\Controllers\ManifestController::class, 'autoUpdateNomorUrut'])->name('manifests.auto-update-nomor-urut');
+    Route::post('manifests/auto-update-nomor-urut-all', [App\Http\Controllers\ManifestController::class, 'autoUpdateNomorUrutAll'])->name('manifests.auto-update-nomor-urut-all');
     Route::post('manifests/{id}/update-nomor-bl', [App\Http\Controllers\ManifestController::class, 'updateNomorBl'])->name('manifests.update-nomor-bl');
     Route::post('manifests/{id}/update-nomor-urut', [App\Http\Controllers\ManifestController::class, 'updateNomorUrut'])->name('manifests.update-nomor-urut');
     Route::get('manifests/export', [App\Http\Controllers\ManifestController::class, 'export'])->name('manifests.export');
