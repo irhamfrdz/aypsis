@@ -1828,16 +1828,17 @@ class TandaTerimaController extends Controller
                 
                 if (!empty($nomorKontainers)) {
                     // Match nomor_kontainer that equals or contains the given container values (CSV matching)
-                    $prospeksByKontainer = \App\Models\Prospek::where(function($q) use ($nomorKontainers) {
-                        foreach ($nomorKontainers as $containerValue) {
-                            $v = trim($containerValue);
-                            // match exact equal or CSV contains
-                            $q->orWhere('nomor_kontainer', $v)
-                              ->orWhere('nomor_kontainer', 'like', '%'. $v .'%');
-                        }
-                    })->get();
+                    $prospeksByKontainer = \App\Models\Prospek::where('tipe', '!=', 'LCL')
+                        ->where(function($q) use ($nomorKontainers) {
+                            foreach ($nomorKontainers as $containerValue) {
+                                $v = trim($containerValue);
+                                // match exact equal or CSV contains
+                                $q->orWhere('nomor_kontainer', $v)
+                                  ->orWhere('nomor_kontainer', 'like', '%'. $v .'%');
+                            }
+                        })->get();
                     $prospeksToUpdate = $prospeksToUpdate->merge($prospeksByKontainer);
-                    Log::info('Prospek search by nomor_kontainer used; results: ' . $prospeksByKontainer->count(), ['search_kontainers' => $nomorKontainers]);
+                    Log::info('Prospek search by nomor_kontainer used (excluding LCL); results: ' . $prospeksByKontainer->count(), ['search_kontainers' => $nomorKontainers]);
                 }
             }
 

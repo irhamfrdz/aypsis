@@ -202,47 +202,53 @@ class Prospek extends Model
 
     public function getPenerimaAttribute()
     {
-        // 1. Tanda Terima
-        if ($this->tandaTerima) {
-            return $this->tandaTerima->penerima;
-        }
-
-        // 2. Tanda Terima Tanpa Surat Jalan (via keterangan)
-        if ($this->keterangan && preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $this->keterangan, $matches)) {
-            $noTttsj = trim($matches[1]);
-            $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
-            if ($tttsj && $tttsj->penerima) {
-                return $tttsj->penerima;
-            }
-        }
-
-        // 3. CARGO fallback ke TTTSJ
-        if (strtoupper($this->tipe) === 'CARGO' && !$this->tanda_terima_id) {
-             $tttsj = \Illuminate\Support\Facades\DB::table('tanda_terima_tanpa_surat_jalan')
-                ->where('pengirim', $this->pt_pengirim)
-                ->where('supir', $this->nama_supir)
-                ->where('tujuan_pengiriman', $this->tujuan_pengiriman)
-                ->orderBy('created_at', 'desc')
-                ->first();
-             if ($tttsj && $tttsj->penerima) {
-                 return $tttsj->penerima;
-             }
-        }
-
-        // 4. LCL
+        // 1. If LCL, always prioritize LCL data regardless of tanda_terima_id (FCL) link
         if (strtoupper($this->tipe) === 'LCL' && $this->nomor_kontainer) {
-            $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) {
-                $q->where('nomor_kontainer', $this->nomor_kontainer);
-                if ($this->no_seal) {
-                    $q->where('nomor_seal', $this->no_seal);
+            $containers = array_filter(explode(',', $this->nomor_kontainer), 'trim');
+            $seals = array_filter(explode(',', $this->no_seal ?? ''), 'trim');
+            
+            // New structure: TandaTerimaLcl model and kontainerPivot
+            $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) use ($containers, $seals) {
+                $q->whereIn('nomor_kontainer', $containers);
+                if (!empty($seals)) {
+                    $q->whereIn('nomor_seal', $seals);
                 }
             })->get();
 
+            // Legacy structure checkbox: tanda_terima_lcl (singular)
+            if ($ttLcls->isEmpty()) {
+                $legacyData = \Illuminate\Support\Facades\DB::table('tanda_terima_lcl')
+                    ->whereIn('nomor_kontainer', $containers);
+                if (!empty($seals)) {
+                    $legacyData->whereIn('nomor_seal', $seals);
+                }
+                $ttLclsLegacy = $legacyData->get();
+                
+                if ($ttLclsLegacy->isNotEmpty()) {
+                    $penerimas = $ttLclsLegacy->pluck('nama_penerima')->filter()->unique();
+                    if ($penerimas->isNotEmpty()) {
+                        return $penerimas->implode(', ');
+                    }
+                }
+            }
+
             // Jika filter no_seal kosong, ambil tanpa filter no_seal kalau tidak nemu
-            if ($ttLcls->isEmpty() && $this->no_seal) {
-                $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) {
-                    $q->where('nomor_kontainer', $this->nomor_kontainer);
+            if ($ttLcls->isEmpty() && !empty($seals)) {
+                $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) use ($containers) {
+                    $q->whereIn('nomor_kontainer', $containers);
                 })->get();
+                
+                if ($ttLcls->isEmpty()) {
+                    $ttLclsLegacy = \Illuminate\Support\Facades\DB::table('tanda_terima_lcl')
+                        ->whereIn('nomor_kontainer', $containers)
+                        ->get();
+                    if ($ttLclsLegacy->isNotEmpty()) {
+                        $penerimas = $ttLclsLegacy->pluck('nama_penerima')->filter()->unique();
+                        if ($penerimas->isNotEmpty()) {
+                            return $penerimas->implode(', ');
+                        }
+                    }
+                }
             }
 
             if ($ttLcls->isNotEmpty()) {
@@ -259,6 +265,129 @@ class Prospek extends Model
             }
         }
 
-        return null; // fallback will be handled by blade
+        // 2. Tanda Terima (FCL/CARGO)
+        if ($this->tandaTerima) {
+            return $this->tandaTerima->penerima;
+        }
+
+        // 3. Tanda Terima Tanpa Surat Jalan (via keterangan)
+        if ($this->keterangan && preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $this->keterangan, $matches)) {
+            $noTttsj = trim($matches[1]);
+            $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
+            if ($tttsj && $tttsj->penerima) {
+                return $tttsj->penerima;
+            }
+        }
+
+        // 4. CARGO fallback ke TTTSJ
+        if (strtoupper($this->tipe) === 'CARGO' && !$this->tanda_terima_id) {
+             $tttsj = \Illuminate\Support\Facades\DB::table('tanda_terima_tanpa_surat_jalan')
+                ->where('pengirim', $this->pt_pengirim)
+                ->where('supir', $this->nama_supir)
+                ->where('tujuan_pengiriman', $this->tujuan_pengiriman)
+                ->orderBy('created_at', 'desc')
+                ->first();
+             if ($tttsj && $tttsj->penerima) {
+                 return $tttsj->penerima;
+             }
+        }
+
+        return $this->attributes['penerima'] ?? null;
+    }
+
+    public function getBarangAttribute($value)
+    {
+        // If LCL, aggregate from all LCL items for this container
+        if (strtoupper($this->tipe) === 'LCL' && $this->nomor_kontainer) {
+            $containers = array_filter(explode(',', $this->nomor_kontainer), 'trim');
+            $seals = array_filter(explode(',', $this->no_seal ?? ''), 'trim');
+            
+            // New structure
+            $ttLcls = \App\Models\TandaTerimaLcl::with('items')->whereHas('kontainerPivot', function($q) use ($containers, $seals) {
+                $q->whereIn('nomor_kontainer', $containers);
+                if (!empty($seals)) {
+                    $q->whereIn('nomor_seal', $seals);
+                }
+            })->get();
+
+            if ($ttLcls->isNotEmpty()) {
+                $barangList = collect();
+                foreach ($ttLcls as $tt) {
+                    if ($tt->items) {
+                        foreach ($tt->items as $item) {
+                            if ($item->nama_barang) {
+                                $barangList->push($item->nama_barang);
+                            }
+                        }
+                    }
+                }
+                
+                if ($barangList->isNotEmpty()) {
+                    return $barangList->unique()->implode(', ');
+                }
+            }
+            
+            // Legacy structure check
+            $legacyData = \Illuminate\Support\Facades\DB::table('tanda_terima_lcl')
+                ->whereIn('nomor_kontainer', $containers);
+            if (!empty($seals)) {
+                $legacyData->whereIn('nomor_seal', $seals);
+            }
+            $ttLclsLegacy = $legacyData->get();
+            if ($ttLclsLegacy->isNotEmpty()) {
+                $barangList = $ttLclsLegacy->pluck('nama_barang')->filter()->unique();
+                if ($barangList->isNotEmpty()) {
+                    return $barangList->implode(', ');
+                }
+            }
+        }
+
+        return $value;
+    }
+
+    public function getPtPengirimAttribute($value)
+    {
+        // If LCL, aggregate from all LCL shippers for this container
+        if (strtoupper($this->tipe) === 'LCL' && $this->nomor_kontainer) {
+            $containers = array_filter(explode(',', $this->nomor_kontainer), 'trim');
+            $seals = array_filter(explode(',', $this->no_seal ?? ''), 'trim');
+            
+            // New structure
+            $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) use ($containers, $seals) {
+                $q->whereIn('nomor_kontainer', $containers);
+                if (!empty($seals)) {
+                    $q->whereIn('nomor_seal', $seals);
+                }
+            })->get();
+
+            if ($ttLcls->isNotEmpty()) {
+                $pengirimList = collect();
+                foreach ($ttLcls as $tt) {
+                    if ($tt->nama_pengirim) {
+                        $pengirimList->push($tt->nama_pengirim);
+                    }
+                }
+                
+                if ($pengirimList->isNotEmpty()) {
+                    return $pengirimList->unique()->implode(', ');
+                }
+            }
+            
+            // Legacy structure check
+            $legacyData = \Illuminate\Support\Facades\DB::table('tanda_terima_lcl')
+                ->whereIn('nomor_kontainer', $containers);
+            if (!empty($seals)) {
+                $legacyData->whereIn('nomor_seal', $seals);
+            }
+            $ttLclsLegacy = $legacyData->get();
+            if ($ttLclsLegacy->isNotEmpty()) {
+                $pengirimList = $ttLclsLegacy->pluck('nama_pengirim')->filter()->unique();
+                if ($pengirimList->isNotEmpty()) {
+                    return $pengirimList->implode(', ');
+                }
+            }
+        }
+
+        return $value;
     }
 }
