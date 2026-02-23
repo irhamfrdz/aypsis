@@ -106,7 +106,7 @@
                             {{ $item->nomor_bukti ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $item->tanggal ?? ($item->created_at ? $item->created_at->format('Y-m-d') : '-') }}
+                            {{ $item->tanggal_beli ? $item->tanggal_beli->format('Y-m-d') : ($item->created_at ? $item->created_at->format('Y-m-d') : '-') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-semibold text-gray-900">{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}</div>
