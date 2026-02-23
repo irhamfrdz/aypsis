@@ -173,8 +173,6 @@
         $waterByType = [];
         $totalJasaAir = 0;
         $countJasaAir = 0;
-        $totalBiayaAgen = 0;
-        $countBiayaAgen = 0;
         $totalPPH = 0;
         $totalGrandTotal = 0;
         
@@ -198,11 +196,6 @@
             if ($detail->jasa_air > 0) {
                 $totalJasaAir += $detail->jasa_air;
                 $countJasaAir++;
-            }
-            
-            if ($detail->biaya_agen > 0) {
-                $totalBiayaAgen += $detail->biaya_agen;
-                $countBiayaAgen++;
             }
             
             $totalPPH += $detail->pph;
@@ -318,16 +311,7 @@
             </tr>
             @endif
             
-            <!-- Row 3: Biaya Agen (If exists) -->
-            @if($totalBiayaAgen > 0)
-            <tr>
-                <td class="text-center">{{ $no++ }}</td>
-                <td>BIAYA AGEN</td>
-                <td class="text-center">{{ $countBiayaAgen }}</td>
-                <td class="text-right">Rp {{ number_format($totalBiayaAgen / $countBiayaAgen, 0, ',', '.') }}</td>
-                <td class="text-right">Rp {{ number_format($totalBiayaAgen, 0, ',', '.') }}</td>
-            </tr>
-            @endif
+
             
             <!-- Row 4: PPH (If exists) -->
             @if($totalPPH > 0)

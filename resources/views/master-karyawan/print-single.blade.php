@@ -1,8 +1,13 @@
 @extends('layouts.print')
 
 @section('content')
+@if(!isset($isPdf))
 <div class="no-print" style="text-align:right; max-width:800px; margin:0 auto 10px auto;">
     @if(isset($karyawan) && $karyawan->exists)
+        <a href="{{ route('master.karyawan.download-pdf', $karyawan->id) }}" 
+           style="display:inline-block; padding:8px 12px; background:#ef4444; color:#fff; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px; margin-right: 5px;">
+            Download PDF
+        </a>
         <a href="{{ route('master.karyawan.export-single', $karyawan->id) }}" 
            style="display:inline-block; padding:8px 12px; background:#10b981; color:#fff; text-decoration:none; border-radius:4px; font-weight:bold; font-size:12px;">
             Export Excel
@@ -14,6 +19,7 @@
         </a>
     @endif
 </div>
+@endif
 <div style="padding:12px;max-width:800px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;color:#000;font-weight:bold;">
     @php use Carbon\Carbon; @endphp
     <style>

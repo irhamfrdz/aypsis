@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 // ...existing code...
 
@@ -1408,6 +1409,22 @@ class KaryawanController extends Controller
     public function printSingle(Karyawan $karyawan)
     {
         return view('master-karyawan.print-single', compact('karyawan'));
+    }
+
+    /**
+     * Download a single karyawan data as PDF.
+     */
+    public function downloadPdf(Karyawan $karyawan)
+    {
+        $pdf = Pdf::loadView('master-karyawan.print-single', [
+            'karyawan' => $karyawan,
+            'isPdf' => true
+        ]);
+        
+        $pdf->setPaper('a4', 'portrait');
+        
+        $safeName = preg_replace('/[^a-zA-Z0-9]/', '_', $karyawan->nama_lengkap);
+        return $pdf->download('karyawan_' . $safeName . '_' . date('Ymd_His') . '.pdf');
     }
 
     /**

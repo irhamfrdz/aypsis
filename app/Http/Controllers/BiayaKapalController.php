@@ -612,7 +612,6 @@ class BiayaKapalController extends Controller
                     $kuantitas = floatval($section['kuantitas'] ?? 0);
                     $harga = floatval($section['harga'] ?? 0);
                     $jasaAir = floatval($section['jasa_air'] ?? 0);
-                    $biayaAgen = floatval($section['biaya_agen'] ?? 0);
                     
                     // Use already cleaned values
                     $subTotal = floatval($section['sub_total'] ?? $section['sub_total_value'] ?? 0);
@@ -656,9 +655,8 @@ class BiayaKapalController extends Controller
                                     $currentKuantitas = floatval($section['type_tonase'][$typeIndex]);
                                 }
 
-                                // Apply Jasa Air and Biaya Agen ONLY on the first record to avoid double counting
+                                // Apply Jasa Air ONLY on the first record to avoid double counting
                                 $currentJasaAir = ($typeIndex === 0) ? $jasaAir : 0;
-                                $currentBiayaAgen = ($typeIndex === 0) ? $biayaAgen : 0;
                                 
                                 // Calculate values for this specific type record
                                 if ($isLumpsum) {
@@ -667,10 +665,10 @@ class BiayaKapalController extends Controller
                                     $waterCost = $typeHarga * $currentKuantitas;
                                 }
                                 
-                                $currentSubTotal = $waterCost + $currentJasaAir + $currentBiayaAgen;
+                                $currentSubTotal = $waterCost + $currentJasaAir;
                                 
-                                // PPH is on Services (Jasa Air + Biaya Agen), so only apply if they exist
-                                $currentPph = round(($currentJasaAir + $currentBiayaAgen) * 0.02);
+                                // PPH is on Services (Jasa Air), so only apply if they exist
+                                $currentPph = round($currentJasaAir * 0.02);
                                 $currentGrandTotal = $currentSubTotal - $currentPph;
 
                                 // Create BiayaKapalAir record
@@ -686,7 +684,6 @@ class BiayaKapalController extends Controller
                                     'kuantitas' => $currentKuantitas,
                                     'harga' => $typeHarga,
                                     'jasa_air' => $currentJasaAir,
-                                    'biaya_agen' => $currentBiayaAgen,
                                     'sub_total' => $currentSubTotal,
                                     'pph' => $currentPph,
                                     'grand_total' => $currentGrandTotal,
@@ -717,8 +714,8 @@ class BiayaKapalController extends Controller
                         
                         // Recalculate if lumpsum
                         if ($isLumpsum) {
-                            $subTotal = $harga + $jasaAir + $biayaAgen;
-                            $pph = round(($jasaAir + $biayaAgen) * 0.02);
+                            $subTotal = $harga + $jasaAir;
+                            $pph = round($jasaAir * 0.02);
                             $grandTotal = $subTotal - $pph;
                         }
 
@@ -735,7 +732,6 @@ class BiayaKapalController extends Controller
                             'kuantitas' => $kuantitas,
                             'harga' => $harga,
                             'jasa_air' => $jasaAir,
-                            'biaya_agen' => $biayaAgen,
                             'sub_total' => $subTotal,
                             'pph' => $pph,
                             'grand_total' => $grandTotal,
@@ -1306,7 +1302,7 @@ class BiayaKapalController extends Controller
         // Air Sections Cleaning
         if (isset($data['air']) && is_array($data['air'])) {
             foreach ($data['air'] as &$section) {
-                $numericAir = ['kuantitas', 'harga', 'jasa_air', 'biaya_agen', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
+                $numericAir = ['kuantitas', 'harga', 'jasa_air', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
                 foreach ($numericAir as $f) {
                     if (isset($section[$f])) $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                 }
@@ -1366,7 +1362,6 @@ class BiayaKapalController extends Controller
             'air.*.kuantitas' => 'nullable|numeric|min:0',
             'air.*.harga' => 'nullable|numeric|min:0',
             'air.*.jasa_air' => 'nullable|numeric|min:0',
-            'air.*.biaya_agen' => 'nullable|numeric|min:0',
             'air.*.lokasi' => 'nullable|string|max:255',
             'air.*.sub_total' => 'nullable|numeric|min:0',
             'air.*.pph' => 'nullable|numeric|min:0',
@@ -1434,7 +1429,6 @@ class BiayaKapalController extends Controller
                         $kuantitas = floatval($section['kuantitas'] ?? 0);
                         $harga = floatval($section['harga'] ?? 0);
                         $jasaAir = floatval($section['jasa_air'] ?? 0);
-                        $biayaAgen = floatval($section['biaya_agen'] ?? 0);
 
                         if (!empty($section['types']) && is_array($section['types'])) {
                             foreach ($section['types'] as $typeIndex => $typeId) {
@@ -1474,9 +1468,8 @@ class BiayaKapalController extends Controller
                                     $currentKuantitas = floatval($section['type_tonase'][$typeIndex]);
                                 }
 
-                                // Apply Jasa Air and Biaya Agen ONLY on the first record to avoid double counting
+                                // Apply Jasa Air ONLY on the first record to avoid double counting
                                 $currentJasaAir = ($typeIndex === 0) ? $jasaAir : 0;
-                                $currentBiayaAgen = ($typeIndex === 0) ? $biayaAgen : 0;
                                 
                                 // Calculate values for this specific type record
                                 if ($isLumpsum) {
@@ -1485,10 +1478,10 @@ class BiayaKapalController extends Controller
                                     $waterCost = $typeHarga * $currentKuantitas;
                                 }
                                 
-                                $currentSubTotal = $waterCost + $currentJasaAir + $currentBiayaAgen;
+                                $currentSubTotal = $waterCost + $currentJasaAir;
                                 
-                                // PPH is on Services (Jasa Air + Biaya Agen), so only apply if they exist
-                                $currentPph = round(($currentJasaAir + $currentBiayaAgen) * 0.02);
+                                // PPH is on Services (Jasa Air), so only apply if they exist
+                                $currentPph = round($currentJasaAir * 0.02);
                                 $currentGrandTotal = $currentSubTotal - $currentPph;
 
                                 // Create BiayaKapalAir record
@@ -1504,7 +1497,6 @@ class BiayaKapalController extends Controller
                                     'kuantitas' => $currentKuantitas,
                                     'harga' => $typeHarga,
                                     'jasa_air' => $currentJasaAir,
-                                    'biaya_agen' => $currentBiayaAgen,
                                     'sub_total' => $currentSubTotal,
                                     'pph' => $currentPph,
                                     'grand_total' => $currentGrandTotal,

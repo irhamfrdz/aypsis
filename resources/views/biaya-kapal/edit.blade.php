@@ -793,7 +793,7 @@
         // Map Air
         if($biayaKapal->airDetails->count() > 0) {
             $groupedAir = $biayaKapal->airDetails->groupBy(function($item) {
-                return $item->kapal . '|||' . $item->voyage . '|||' . $item->vendor . '|||' . ($item->lokasi ?? '') . '|||' . ($item->jasa_air ?? 0) . '|||' . ($item->biaya_agen ?? 0) . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . ($item->tanggal_invoice_vendor ?? '');
+                return $item->kapal . '|||' . $item->voyage . '|||' . $item->vendor . '|||' . ($item->lokasi ?? '') . '|||' . ($item->jasa_air ?? 0) . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . ($item->tanggal_invoice_vendor ?? '');
             });
             foreach($groupedAir as $key => $items) {
                  $parts = explode('|||', $key);
@@ -804,11 +804,10 @@
                          'vendor' => $parts[2],
                          'lokasi' => $parts[3],
                          'jasa_air' => $parts[4],
-                         'biaya_agen' => $parts[5],
-                         'penerima' => $parts[6],
-                         'nomor_rekening' => $parts[7],
-                         'nomor_referensi' => $parts[8],
-                         'tanggal_invoice_vendor' => $parts[9],
+                         'penerima' => $parts[5],
+                         'nomor_rekening' => $parts[6],
+                         'nomor_referensi' => $parts[7],
+                         'tanggal_invoice_vendor' => $parts[8],
                          'types' => $items->map(function($i){
                              return [
                                  'type_id' => $i->type_id,
@@ -958,7 +957,6 @@
                  
                  if(data.lokasi) sec.querySelector('.lokasi-select-air').value = data.lokasi;
                  sec.querySelector('.jasa-air-input').value = data.jasa_air;
-                 sec.querySelector('.biaya-agen-input').value = data.biaya_agen;
                  if(data.penerima) sec.querySelector('.penerima-input-air').value = data.penerima;
                  if(data.nomor_rekening) sec.querySelector('.nomor-rekening-input-air').value = data.nomor_rekening;
                  if(data.nomor_referensi) sec.querySelector('input[name="air['+sectionIndex+'][nomor_referensi]"]').value = data.nomor_referensi;
@@ -3094,10 +3092,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Input)</label>
                     <input type="number" name="air[${sectionIndex}][jasa_air]" class="jasa-air-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="0" placeholder="0">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Agen</label>
-                    <input type="number" name="air[${sectionIndex}][biaya_agen]" class="biaya-agen-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="6500000" placeholder="6500000">
-                </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Total</label>
                     <input type="text" class="sub-total-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
@@ -3193,11 +3188,7 @@
             calculateAirSectionTotal(sectionIndex);
         });
         
-        // Setup biaya agen input change listener
-        const biayaAgenInput = section.querySelector('.biaya-agen-input');
-        biayaAgenInput.addEventListener('input', function() {
-            calculateAirSectionTotal(sectionIndex);
-        });
+
 
         // Setup manual voyage toggle
         // Setup manual voyage toggle
@@ -3449,7 +3440,6 @@
         const subTotalDisplay = section.querySelector('.sub-total-display');
         const subTotalValue = section.querySelector('.sub-total-value');
         const jasaAirInput = section.querySelector('.jasa-air-input');
-        const biayaAgenInput = section.querySelector('.biaya-agen-input');
         
         const hargaHidden = section.querySelector('.harga-hidden');
         
@@ -3490,13 +3480,12 @@
         let waterCost = Math.round(totalCost); // This is now the calculated base cost
         
         let jasaAir = parseFloat(jasaAirInput.value) || 0;
-        let biayaAgen = parseFloat(biayaAgenInput.value) || 0;
         
-        // Sub Total = (Price * Qty) + Jasa Air + Biaya Agen
-        let subTotal = waterCost + jasaAir + biayaAgen;
+        // Sub Total = (Price * Qty) + Jasa Air
+        let subTotal = waterCost + jasaAir;
         
-        // PPH = (Jasa Air + Biaya Agen) * 2%
-        const pph = Math.round((jasaAir + biayaAgen) * 0.02);
+        // PPH = Jasa Air * 2%
+        const pph = Math.round(jasaAir * 0.02);
         const grandTotal = subTotal - pph;
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';

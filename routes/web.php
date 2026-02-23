@@ -321,6 +321,11 @@ Route::middleware([
              ->name('karyawan.print.single')
              ->middleware('can:master-karyawan-print');
 
+        // Download single karyawan PDF
+        Route::get('karyawan/{karyawan}/download-pdf', [KaryawanController::class, 'downloadPdf'])
+             ->name('karyawan.download-pdf')
+             ->middleware('can:master-karyawan-print');
+
         // Import karyawan from CSV (simple uploader)
         Route::get('karyawan/import', [KaryawanController::class, 'importForm'])
              ->name('karyawan.import')
