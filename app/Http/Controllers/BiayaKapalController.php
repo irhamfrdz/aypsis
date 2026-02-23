@@ -965,8 +965,74 @@ class BiayaKapalController extends Controller
      */
     public function show(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh']);
-        return view('biaya-kapal.show', compact('biayaKapal'));
+        $biayaKapal->load([
+            'klasifikasiBiaya', 
+            'barangDetails.pricelistBuruh', 
+            'airDetails', 
+            'tkbmDetails.pricelistTkbm', 
+            'operasionalDetails', 
+            'truckingDetails', 
+            'stuffingDetails',
+            'perlengkapanDetails'
+        ]);
+
+        // Resolve container details for trucking if needed
+        $blDetails = collect();
+        if ($biayaKapal->truckingDetails->count() > 0) {
+            $blIds = [];
+            $masterKontainerNos = [];
+            foreach ($biayaKapal->truckingDetails as $detail) {
+                if (!empty($detail->no_bl) && is_array($detail->no_bl)) {
+                    foreach ($detail->no_bl as $id) {
+                        if (is_string($id) && str_starts_with($id, 'master-')) {
+                            $masterKontainerNos[] = substr($id, 7);
+                        } else {
+                            $blIds[] = $id;
+                        }
+                    }
+                }
+            }
+
+            // Get from bls table
+            if (!empty($blIds)) {
+                $fromBls = DB::table('bls')->whereIn('id', $blIds)->get();
+                foreach ($fromBls as $bl) {
+                    $blDetails->put($bl->id, (object)[
+                        'kontainer' => $bl->nomor_kontainer,
+                        'seal' => $bl->no_seal,
+                        'size' => $bl->size_kontainer
+                    ]);
+                }
+            }
+
+            // Get from master tables if any
+            if (!empty($masterKontainerNos)) {
+                $fromKontainers = DB::table('kontainers')->whereIn('nomor_seri_gabungan', $masterKontainerNos)->get();
+                foreach ($fromKontainers as $k) {
+                    $id = 'master-' . $k->nomor_seri_gabungan;
+                    if (!$blDetails->has($id)) {
+                        $blDetails->put($id, (object)[
+                            'kontainer' => $k->nomor_seri_gabungan,
+                            'seal' => 'N/A',
+                            'size' => $k->ukuran
+                        ]);
+                    }
+                }
+                $fromStocks = DB::table('stock_kontainers')->whereIn('nomor_seri_gabungan', $masterKontainerNos)->get();
+                foreach ($fromStocks as $s) {
+                    $id = 'master-' . $s->nomor_seri_gabungan;
+                    if (!$blDetails->has($id)) {
+                        $blDetails->put($id, (object)[
+                            'kontainer' => $s->nomor_seri_gabungan,
+                            'seal' => 'N/A',
+                            'size' => $s->ukuran
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return view('biaya-kapal.show', compact('biayaKapal', 'blDetails'));
     }
 
     /**
@@ -987,17 +1053,71 @@ class BiayaKapalController extends Controller
         if ($biayaKapal->klasifikasiBiaya && 
             stripos($biayaKapal->klasifikasiBiaya->nama, 'trucking') !== false) {
             $biayaKapal->load(['truckingDetails']);
-            // Collect all BL IDs
+            
+            // Collect all BL IDs and Master IDs
             $blIds = [];
+            $masterKontainerNos = [];
+            
             foreach ($biayaKapal->truckingDetails as $detail) {
                 if (!empty($detail->no_bl) && is_array($detail->no_bl)) {
-                    $blIds = array_merge($blIds, $detail->no_bl);
+                    foreach ($detail->no_bl as $id) {
+                        if (is_string($id) && str_starts_with($id, 'master-')) {
+                            $masterKontainerNos[] = substr($id, 7);
+                        } else {
+                            $blIds[] = $id;
+                        }
+                    }
                 }
             }
-            $blDetails = DB::table('bls')
-                ->whereIn('id', $blIds)
-                ->get()
-                ->keyBy('id');
+
+            $blDetails = collect();
+
+            // Get from bls table
+            if (!empty($blIds)) {
+                $fromBls = DB::table('bls')
+                    ->whereIn('id', $blIds)
+                    ->get();
+                foreach ($fromBls as $bl) {
+                    $blDetails->put($bl->id, (object)[
+                        'kontainer' => $bl->nomor_kontainer,
+                        'seal' => $bl->no_seal,
+                        'size' => $bl->size_kontainer
+                    ]);
+                }
+            }
+
+            // Get from master tables if any
+            if (!empty($masterKontainerNos)) {
+                // Check kontainers table
+                $fromKontainers = DB::table('kontainers')
+                    ->whereIn('nomor_seri_gabungan', $masterKontainerNos)
+                    ->get();
+                foreach ($fromKontainers as $k) {
+                    $id = 'master-' . $k->nomor_seri_gabungan;
+                    if (!$blDetails->has($id)) {
+                        $blDetails->put($id, (object)[
+                            'kontainer' => $k->nomor_seri_gabungan,
+                            'seal' => 'N/A',
+                            'size' => $k->ukuran
+                        ]);
+                    }
+                }
+
+                // Check stock_kontainers table
+                $fromStocks = DB::table('stock_kontainers')
+                    ->whereIn('nomor_seri_gabungan', $masterKontainerNos)
+                    ->get();
+                foreach ($fromStocks as $s) {
+                    $id = 'master-' . $s->nomor_seri_gabungan;
+                    if (!$blDetails->has($id)) {
+                        $blDetails->put($id, (object)[
+                            'kontainer' => $s->nomor_seri_gabungan,
+                            'seal' => 'N/A',
+                            'size' => $s->ukuran
+                        ]);
+                    }
+                }
+            }
                 
             return view('biaya-kapal.print-trucking', compact('biayaKapal', 'blDetails'));
         }
@@ -1054,17 +1174,70 @@ class BiayaKapalController extends Controller
     {
         $biayaKapal->load(['klasifikasiBiaya', 'truckingDetails']);
         
-        // Collect all BL IDs
+        // Collect all BL IDs and Master IDs
         $blIds = [];
+        $masterKontainerNos = [];
+        
         foreach ($biayaKapal->truckingDetails as $detail) {
             if (!empty($detail->no_bl) && is_array($detail->no_bl)) {
-                $blIds = array_merge($blIds, $detail->no_bl);
+                foreach ($detail->no_bl as $id) {
+                    if (str_starts_with($id, 'master-')) {
+                        $masterKontainerNos[] = substr($id, 7);
+                    } else {
+                        $blIds[] = $id;
+                    }
+                }
             }
         }
-        $blDetails = DB::table('bls')
-            ->whereIn('id', $blIds)
-            ->get()
-            ->keyBy('id');
+
+        $blDetails = collect();
+
+        // Get from bls table
+        if (!empty($blIds)) {
+            $fromBls = DB::table('bls')
+                ->whereIn('id', $blIds)
+                ->get();
+            foreach ($fromBls as $bl) {
+                $blDetails->put($bl->id, (object)[
+                    'kontainer' => $bl->nomor_kontainer,
+                    'seal' => $bl->no_seal,
+                    'size' => $bl->size_kontainer
+                ]);
+            }
+        }
+
+        // Get from master tables if any
+        if (!empty($masterKontainerNos)) {
+            // Check kontainers table
+            $fromKontainers = DB::table('kontainers')
+                ->whereIn('nomor_seri_gabungan', $masterKontainerNos)
+                ->get();
+            foreach ($fromKontainers as $k) {
+                $id = 'master-' . $k->nomor_seri_gabungan;
+                if (!$blDetails->has($id)) {
+                    $blDetails->put($id, (object)[
+                        'kontainer' => $k->nomor_seri_gabungan,
+                        'seal' => 'N/A',
+                        'size' => $k->ukuran
+                    ]);
+                }
+            }
+
+            // Check stock_kontainers table
+            $fromStocks = DB::table('stock_kontainers')
+                ->whereIn('nomor_seri_gabungan', $masterKontainerNos)
+                ->get();
+            foreach ($fromStocks as $s) {
+                $id = 'master-' . $s->nomor_seri_gabungan;
+                if (!$blDetails->has($id)) {
+                    $blDetails->put($id, (object)[
+                        'kontainer' => $s->nomor_seri_gabungan,
+                        'seal' => 'N/A',
+                        'size' => $s->ukuran
+                    ]);
+                }
+            }
+        }
 
         return view('biaya-kapal.print-trucking', compact('biayaKapal', 'blDetails'));
     }
@@ -1569,7 +1742,47 @@ class BiayaKapalController extends Controller
     {
         try {
             $voyages = $request->input('voyages', []);
+            $source = $request->input('source');
             
+            // If source is trucking, get from master tables as requested
+            if ($source === 'trucking') {
+                $results = collect();
+
+                // Get from kontainers table
+                $kontainers = DB::table('kontainers')
+                    ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer')
+                    ->get();
+                
+                foreach ($kontainers as $k) {
+                    $results->put('master-'.$k->nomor_kontainer, [
+                        'kontainer' => $k->nomor_kontainer,
+                        'seal' => 'N/A',
+                        'size' => $k->size_kontainer
+                    ]);
+                }
+
+                // Get from stock_kontainers table
+                $stockKontainers = DB::table('stock_kontainers')
+                    ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer')
+                    ->get();
+                
+                foreach ($stockKontainers as $s) {
+                    // Avoid double entries if same number exists in both
+                    if (!$results->has('master-'.$s->nomor_kontainer)) {
+                        $results->put('master-'.$s->nomor_kontainer, [
+                            'kontainer' => $s->nomor_kontainer,
+                            'seal' => 'N/A',
+                            'size' => $s->size_kontainer
+                        ]);
+                    }
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'bls' => $results
+                ]);
+            }
+
             if (empty($voyages)) {
                 return response()->json([
                     'success' => true,

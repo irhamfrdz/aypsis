@@ -4181,6 +4181,8 @@
         blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Memuat kontainer...</p>';
         
         // Fetch BLs for all selected voyages
+        const isTrucking = selectedJenisBiaya && selectedJenisBiaya.nama && selectedJenisBiaya.nama.toLowerCase().includes('trucking');
+        
         fetch("{{ url('biaya-kapal/get-bls-by-voyages') }}", {
             method: 'POST',
             headers: {
@@ -4188,7 +4190,8 @@
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
-                voyages: selectedVoyages
+                voyages: selectedVoyages,
+                source: isTrucking ? 'trucking' : null
             })
         })
         .then(response => response.json())

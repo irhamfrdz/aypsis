@@ -217,6 +217,86 @@
             @endforeach
         </div>
     </div>
+    @if($biayaKapal->truckingDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Biaya Trucking</h3>
+        <div class="space-y-6">
+            @foreach($biayaKapal->truckingDetails as $trucking)
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $trucking->kapal }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $trucking->voyage }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Vendor Trucking</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $trucking->nama_vendor }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Kontainer</span>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">No. Kontainer</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Seal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @php
+                                        $noBls = is_array($trucking->no_bl) ? $trucking->no_bl : [];
+                                    @endphp
+                                    @foreach($noBls as $blId)
+                                        @php
+                                            $detail = $blDetails[$blId] ?? null;
+                                        @endphp
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900 font-medium">{{ $detail->kontainer ?? $blId }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600">
+                                                @if($detail && $detail->size)
+                                                    <span class="bg-gray-100 px-2 py-0.5 rounded text-xs">{{ $detail->size }}ft</span>
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2 text-sm text-gray-600">{{ $detail->seal ?? '-' }}</td>
+                                        </tr>
+                                    @endforeach
+                                    @if(empty($noBls))
+                                        <tr>
+                                            <td colspan="3" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada kontainer terpilih</td>
+                                        </tr>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-blue-200 pt-4">
+                        <div class="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                            <span class="text-xs font-semibold text-gray-500 uppercase">Subtotal</span>
+                            <p class="text-lg font-bold text-gray-900">Rp {{ number_format($trucking->subtotal, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                            <span class="text-xs font-semibold text-red-500 uppercase">PPh 2%</span>
+                            <p class="text-lg font-bold text-red-600">- Rp {{ number_format($trucking->pph, 0, ',', '.') }}</p>
+                        </div>
+                        <div class="bg-blue-600 p-3 rounded-lg shadow-md">
+                            <span class="text-xs font-semibold text-blue-100 uppercase">Total Biaya</span>
+                            <p class="text-xl font-black text-white">Rp {{ number_format($trucking->total_biaya, 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
     @endif
 
     @if($biayaKapal->stuffingDetails->count() > 0)

@@ -4783,7 +4783,10 @@
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ voyages: [voyage] })
+            body: JSON.stringify({ 
+                voyages: [voyage],
+                source: 'trucking'
+            })
         })
         .then(response => response.json())
         .then(data => {
