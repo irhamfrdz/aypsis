@@ -380,7 +380,12 @@
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $suratJalan->order->penerima ?? '-' }}
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->supir ?: '-' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <span id="supir-sj-{{ $suratJalan->id }}">{{ $suratJalan->supir ?: '-' }}</span>
+                                <button type="button" title="Ubah Supir" onclick="updateSupir('{{ $suratJalan->id }}','{{ $suratJalan->no_surat_jalan }}','{{ addslashes($suratJalan->supir) }}','supir-sj-{{ $suratJalan->id }}')" class="ml-2 text-xs text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-user-edit"></i>
+                                </button>
+                            </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->no_plat ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $suratJalan->rit ?: '-' }}</td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
@@ -448,7 +453,12 @@
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $item->penerima ?? '-' }}
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $item->supir ?: '-' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <span id="supir-sj-{{ $item->surat_jalan_id }}">{{ $item->supir ?: '-' }}</span>
+                                <button type="button" title="Ubah Supir" onclick="updateSupir('{{ $item->surat_jalan_id }}','{{ $item->no_surat_jalan }}','{{ addslashes($item->supir) }}','supir-sj-{{ $item->surat_jalan_id }}')" class="ml-2 text-xs text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-user-edit"></i>
+                                </button>
+                            </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <code class="text-xs bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ $item->nomor_uang_jalan ?? '-' }}</code>
                             </td>
@@ -527,7 +537,16 @@
                             <td class="px-3 py-2 text-xs text-gray-600">
                                 <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $tandaTerima->no_kontainer ?: '-' }}</code>
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">{{ $tandaTerima->supir ?: '-' }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                @if($tandaTerima->surat_jalan_id)
+                                    <span id="supir-sj-{{ $tandaTerima->surat_jalan_id }}">{{ $tandaTerima->supir ?: '-' }}</span>
+                                    <button type="button" title="Ubah Supir" onclick="updateSupir('{{ $tandaTerima->surat_jalan_id }}','{{ $tandaTerima->no_surat_jalan }}','{{ addslashes($tandaTerima->supir) }}','supir-sj-{{ $tandaTerima->surat_jalan_id }}')" class="ml-2 text-xs text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-user-edit"></i>
+                                    </button>
+                                @else
+                                    <span>{{ $tandaTerima->supir ?: '-' }}</span>
+                                @endif
+                            </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                     {{ Str::limit($tandaTerima->pengirim ?: '-', 20) }}
@@ -1026,6 +1045,48 @@
             
             form.submit();
         }
+    }
+
+    // Function to update supir on surat_jalans table
+    function updateSupir(suratJalanId, noSuratJalan, currentSupir, elementId) {
+        let newSupir = prompt(`Masukkan nama supir untuk Surat Jalan ${noSuratJalan}:`, currentSupir || '');
+        if (newSupir === null) return; // cancelled
+        newSupir = newSupir.trim();
+
+        if (newSupir === '' && !confirm('Anda memasukkan nama kosong. Ini akan mengosongkan kolom supir. Lanjutkan?')) {
+            return;
+        }
+
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const url = '/surat-jalan/' + suratJalanId;
+
+        fetch(url, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ supir: newSupir, redirect_to: 'tanda-terima' })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.text();
+        })
+        .then(text => {
+            // try parse JSON, otherwise treat as success
+            try { return JSON.parse(text); } catch (e) { return { success: true }; }
+        })
+        .then(data => {
+            // Update UI
+            const el = document.getElementById(elementId);
+            if (el) el.textContent = newSupir || '-';
+            alert('Supir berhasil diperbarui.');
+        })
+        .catch(err => {
+            console.error('Error updating supir:', err);
+            alert('Gagal memperbarui supir.');
+        });
     }
 
     // Initialize
