@@ -1286,6 +1286,19 @@ Route::middleware([
              'destroy' => 'can:master-vendor-bengkel-delete'
          ]);
 
+    // 🚐 Master Vendor Supir
+    Route::resource('master/vendor-supir', \App\Http\Controllers\VendorSupirController::class)
+         ->names('master.vendor-supir')
+         ->middleware([
+             'index' => 'can:master-vendor-supir-view',
+             'show' => 'can:master-vendor-supir-view',
+             'create' => 'can:master-vendor-supir-create',
+             'store' => 'can:master-vendor-supir-create',
+             'edit' => 'can:master-vendor-supir-update',
+             'update' => 'can:master-vendor-supir-update',
+             'destroy' => 'can:master-vendor-supir-delete'
+         ]);
+
     // 🔢 Kode Nomor (Number Code) Management with permissions
     Route::resource('master/kode-nomor', \App\Http\Controllers\KodeNomorController::class)
          ->names('master.kode-nomor')

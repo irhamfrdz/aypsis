@@ -678,8 +678,8 @@
 
                         {{-- Master Pemasok Sub-Dropdown --}}
                         @php
-                            $isPemasokRoute = Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('container-trip.*');
-                            $hasPemasokPermissions = $user && ($user->can('master-vendor-bengkel.view') || $user->can('vendor-kontainer-sewa-view') || $user->can('container-trip-view'));
+                            $isPemasokRoute = Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.vendor-supir.*');
+                            $hasPemasokPermissions = $user && ($user->can('master-vendor-bengkel.view') || $user->can('vendor-kontainer-sewa-view') || $user->can('master-vendor-supir-view'));
                         @endphp
 
                         @if($hasPemasokPermissions)
@@ -700,6 +700,11 @@
                                     <a href="{{ route('vendor-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('vendor-kontainer-sewa.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Vendor Kontainer Sewa</span>
                                     </a>
+                                @endif
+                                @if($user && $user->can('master-vendor-supir-view'))
+                                <a href="{{ route('master.vendor-supir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('master.vendor-supir.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <span class="text-xs">Vendor Supir</span>
+                                </a>
                                 @endif
 
                             </div>

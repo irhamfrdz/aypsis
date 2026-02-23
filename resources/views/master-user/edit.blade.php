@@ -650,6 +650,24 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Vendor Supir --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Vendor Supir</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][view]" value="1" class="permission-checkbox master-vendor-supir-permission" @if(isset($userMatrixPermissions['master-vendor-supir']['view']) && $userMatrixPermissions['master-vendor-supir']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][create]" value="1" class="permission-checkbox master-vendor-supir-permission" @if(isset($userMatrixPermissions['master-vendor-supir']['create']) && $userMatrixPermissions['master-vendor-supir']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][update]" value="1" class="permission-checkbox master-vendor-supir-permission" @if(isset($userMatrixPermissions['master-vendor-supir']['update']) && $userMatrixPermissions['master-vendor-supir']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][delete]" value="1" class="permission-checkbox master-vendor-supir-permission" @if(isset($userMatrixPermissions['master-vendor-supir']['delete']) && $userMatrixPermissions['master-vendor-supir']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][approve]" value="1" class="permission-checkbox master-vendor-supir-permission" @if(isset($userMatrixPermissions['master-vendor-supir']['approve']) && $userMatrixPermissions['master-vendor-supir']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][mark-paid]" value="1" class="permission-checkbox master-vendor-supir-permission" @if(isset($userMatrixPermissions['master-vendor-supir']['mark-paid']) && $userMatrixPermissions['master-vendor-supir']['mark-paid']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][print]" value="1" class="permission-checkbox master-vendor-supir-permission" @if(isset($userMatrixPermissions['master-vendor-supir']['print']) && $userMatrixPermissions['master-vendor-supir']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][export]" value="1" class="permission-checkbox master-vendor-supir-permission" @if(isset($userMatrixPermissions['master-vendor-supir']['export']) && $userMatrixPermissions['master-vendor-supir']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Karyawan Tidak Tetap --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
@@ -1612,6 +1630,23 @@
                                 <td class="empty-cell"></td>
                                 <td><input type="checkbox" name="permissions[vendor-kontainer-sewa][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['vendor-kontainer-sewa']['print']) && $userMatrixPermissions['vendor-kontainer-sewa']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[vendor-kontainer-sewa][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['vendor-kontainer-sewa']['export']) && $userMatrixPermissions['vendor-kontainer-sewa']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Master Vendor Supir --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Vendor Supir</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-supir']['view']) && $userMatrixPermissions['master-vendor-supir']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-supir']['create']) && $userMatrixPermissions['master-vendor-supir']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-supir']['update']) && $userMatrixPermissions['master-vendor-supir']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-supir']['delete']) && $userMatrixPermissions['master-vendor-supir']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
                             </tr>
 
                             {{-- Data Stock Kontainer --}}
@@ -3126,7 +3161,8 @@
                 });
 
                 // Handle sub-module checkbox changes to update header checkboxes
-                document.querySelectorAll('[data-parent="master"] .permission-checkbox').forEach(function(subCheckbox) {
+                // Include vendor supir checkboxes
+                document.querySelectorAll('[data-parent="master"] .permission-checkbox, .master-vendor-supir-permission').forEach(function(subCheckbox) {
                     subCheckbox.addEventListener('change', function() {
                         updateMasterHeaderCheckboxes();
                     });
@@ -3141,7 +3177,8 @@
 
                 permissions.forEach(function(permission) {
                     const headerCheckbox = document.querySelector(`.master-header-checkbox[data-permission="${permission}"]`);
-                    const masterCheckboxes = document.querySelectorAll(`[data-parent="master"] input[name*="[${permission}]"]`);
+                    // Include vendor supir checkboxes in master group
+                    const masterCheckboxes = document.querySelectorAll(`[data-parent="master"] input[name*="[${permission}]"], .master-vendor-supir-permission[name*="[${permission}]"]`);
 
                     if (headerCheckbox && masterCheckboxes.length > 0) {
                         const allChecked = Array.from(masterCheckboxes).every(cb => cb.checked);
