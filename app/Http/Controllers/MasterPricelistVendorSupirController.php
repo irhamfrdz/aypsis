@@ -14,7 +14,11 @@ class MasterPricelistVendorSupirController extends Controller
      */
     public function index(Request $request)
     {
-        $query = MasterPricelistVendorSupir::with(['creator', 'updater']);
+        $query = MasterPricelistVendorSupir::with(['vendor', 'creator', 'updater']);
+
+        if ($request->filled('vendor_id')) {
+            $query->where('vendor_id', $request->vendor_id);
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -24,7 +28,10 @@ class MasterPricelistVendorSupirController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('dari', 'like', "%{$search}%")
-                  ->orWhere('ke', 'like', "%{$search}%");
+                  ->orWhere('ke', 'like', "%{$search}%")
+                  ->orWhereHas('vendor', function($vq) use ($search) {
+                      $vq->where('nama_vendor', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -33,8 +40,9 @@ class MasterPricelistVendorSupirController extends Controller
         }
 
         $pricelists = $query->orderBy('created_at', 'desc')->paginate(20);
+        $vendors = \App\Models\VendorSupir::orderBy('nama_vendor')->get();
         
-        return view('master-tarif.pricelist-vendor-supir.index', compact('pricelists'));
+        return view('master-tarif.pricelist-vendor-supir.index', compact('pricelists', 'vendors'));
     }
 
     /**
@@ -42,7 +50,8 @@ class MasterPricelistVendorSupirController extends Controller
      */
     public function create()
     {
-        return view('master-tarif.pricelist-vendor-supir.create');
+        $vendors = \App\Models\VendorSupir::orderBy('nama_vendor')->get();
+        return view('master-tarif.pricelist-vendor-supir.create', compact('vendors'));
     }
 
     /**
@@ -51,6 +60,7 @@ class MasterPricelistVendorSupirController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'vendor_id' => 'nullable|exists:vendor_supirs,id',
             'dari' => 'required|string|max:255',
             'ke' => 'required|string|max:255',
             'jenis_kontainer' => 'required|in:20,40,45',
@@ -86,7 +96,8 @@ class MasterPricelistVendorSupirController extends Controller
      */
     public function edit(MasterPricelistVendorSupir $pricelistVendorSupir)
     {
-        return view('master-tarif.pricelist-vendor-supir.edit', compact('pricelistVendorSupir'));
+        $vendors = \App\Models\VendorSupir::orderBy('nama_vendor')->get();
+        return view('master-tarif.pricelist-vendor-supir.edit', compact('pricelistVendorSupir', 'vendors'));
     }
 
     /**
@@ -95,6 +106,7 @@ class MasterPricelistVendorSupirController extends Controller
     public function update(Request $request, MasterPricelistVendorSupir $pricelistVendorSupir)
     {
         $validated = $request->validate([
+            'vendor_id' => 'nullable|exists:vendor_supirs,id',
             'dari' => 'required|string|max:255',
             'ke' => 'required|string|max:255',
             'jenis_kontainer' => 'required|in:20,40,45',

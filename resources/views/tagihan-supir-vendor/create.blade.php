@@ -108,36 +108,6 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran<span class="text-red-500 ml-1">*</span></label>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <!-- Belum Dibayar -->
-                            <div>
-                                <input type="radio" name="status_pembayaran" id="status_belum_dibayar" value="belum_dibayar" class="peer hidden" {{ old('status_pembayaran', 'belum_dibayar') == 'belum_dibayar' ? 'checked' : '' }} required>
-                                <label for="status_belum_dibayar" class="block cursor-pointer select-none rounded-lg border border-gray-200 p-3 text-center transition-all peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:ring-1 peer-checked:ring-red-500">
-                                    <div class="text-sm font-medium text-gray-900 peer-checked:text-red-700">Belum Dibayar</div>
-                                </label>
-                            </div>
-                            <!-- Sebagian -->
-                            <div>
-                                <input type="radio" name="status_pembayaran" id="status_sebagian" value="sebagian" class="peer hidden" {{ old('status_pembayaran') == 'sebagian' ? 'checked' : '' }} required>
-                                <label for="status_sebagian" class="block cursor-pointer select-none rounded-lg border border-gray-200 p-3 text-center transition-all peer-checked:border-yellow-500 peer-checked:bg-yellow-50 peer-checked:ring-1 peer-checked:ring-yellow-500">
-                                    <div class="text-sm font-medium text-gray-900 peer-checked:text-yellow-700">Sebagian</div>
-                                </label>
-                            </div>
-                            <!-- Lunas -->
-                            <div>
-                                <input type="radio" name="status_pembayaran" id="status_lunas" value="lunas" class="peer hidden" {{ old('status_pembayaran') == 'lunas' ? 'checked' : '' }} required>
-                                <label for="status_lunas" class="block cursor-pointer select-none rounded-lg border border-gray-200 p-3 text-center transition-all peer-checked:border-green-500 peer-checked:bg-green-50 peer-checked:ring-1 peer-checked:ring-green-500">
-                                    <div class="text-sm font-medium text-gray-900 peer-checked:text-green-700">Lunas</div>
-                                </label>
-                            </div>
-                        </div>
-                        @error('status_pembayaran')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
                         <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan Tambahan</label>
                         <textarea name="keterangan" id="keterangan" rows="3" 
                             class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow @error('keterangan') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror" 

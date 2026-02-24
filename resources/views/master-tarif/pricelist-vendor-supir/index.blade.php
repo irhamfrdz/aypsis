@@ -29,14 +29,23 @@
     @endif
 
     <div class="bg-white rounded-lg shadow p-4 mb-6">
-        <form action="{{ route('master.pricelist-vendor-supir.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form action="{{ route('master.pricelist-vendor-supir.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
                 <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari (Asal/Tujuan)</label>
                 <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari..."
                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
             </div>
             <div>
-                <label for="jenis_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Jenis Kontainer</label>
+                <label for="vendor_id" class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                <select name="vendor_id" id="vendor_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                    <option value="">Semua Vendor</option>
+                    @foreach($vendors as $vendor)
+                        <option value="{{ $vendor->id }}" {{ request('vendor_id') == $vendor->id ? 'selected' : '' }}>{{ $vendor->nama_vendor }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="jenis_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Ukuran</label>
                 <select name="jenis_kontainer" id="jenis_kontainer" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                     <option value="">Semua Ukuran</option>
                     <option value="20" {{ request('jenis_kontainer') == '20' ? 'selected' : '' }}>20 Feet</option>
@@ -66,6 +75,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kontainer</th>
@@ -80,6 +90,9 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ ($pricelists->currentPage() - 1) * $pricelists->perPage() + $index + 1 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-bold">
+                            {{ $pricelist->vendor->nama_vendor ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                             {{ $pricelist->dari ?? '-' }}
@@ -132,7 +145,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center">
                                 <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

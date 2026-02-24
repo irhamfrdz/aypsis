@@ -20,6 +20,18 @@
                 @csrf
                 @method('PUT')
                 <div class="space-y-4">
+                    <div>
+                        <label for="vendor_id" class="block text-sm font-medium text-gray-700 mb-1">Vendor Supir <span class="text-gray-400 text-xs">(Opsional)</span></label>
+                        <select name="vendor_id" id="vendor_id"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                            <option value="">-- Pilih Vendor (Opsional) --</option>
+                            @foreach($vendors as $vendor)
+                                <option value="{{ $vendor->id }}" {{ old('vendor_id', $pricelistVendorSupir->vendor_id) == $vendor->id ? 'selected' : '' }}>{{ $vendor->nama_vendor }}</option>
+                            @endforeach
+                        </select>
+                        @error('vendor_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="dari" class="block text-sm font-medium text-gray-700 mb-1">Dari (Asal) <span class="text-red-500">*</span></label>

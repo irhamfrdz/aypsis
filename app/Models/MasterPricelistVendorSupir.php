@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class MasterPricelistVendorSupir extends Model
 {
     protected $fillable = [
+        'vendor_id',
         'dari',
         'ke',
         'jenis_kontainer',
@@ -16,6 +17,11 @@ class MasterPricelistVendorSupir extends Model
         'created_by',
         'updated_by',
     ];
+
+    public function vendor()
+    {
+        return $this->belongsTo(VendorSupir::class, 'vendor_id');
+    }
 
     public function creator()
     {

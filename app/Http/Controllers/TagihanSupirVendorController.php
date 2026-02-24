@@ -95,7 +95,6 @@ class TagihanSupirVendorController extends Controller
             'surat_jalan_id' => 'required|exists:surat_jalans,id',
             'nominal' => 'required|numeric',
             'adjustment' => 'nullable|numeric',
-            'status_pembayaran' => 'required|in:belum_dibayar,sebagian,lunas',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -120,7 +119,7 @@ class TagihanSupirVendorController extends Controller
             'jenis_kontainer' => $suratJalan->size ?? 20,
             'nominal' => $request->nominal,
             'adjustment' => $request->adjustment ?? 0,
-            'status_pembayaran' => $request->status_pembayaran,
+            'status_pembayaran' => 'belum_dibayar',
             'keterangan' => $request->keterangan,
             'created_by' => \Illuminate\Support\Facades\Auth::id(),
             'updated_by' => \Illuminate\Support\Facades\Auth::id(),
