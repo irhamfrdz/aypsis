@@ -1242,13 +1242,7 @@
     var typeAirInput = document.getElementById('type_air');
     var kuantitasAirWrapper = document.getElementById('kuantitas_air_wrapper');
     var kuantitasAirInput = document.getElementById('kuantitas_air');
-    var jasaAirWrapper = document.getElementById('jasa_air_wrapper');
     var operasionalWrapper = document.getElementById('operasional_wrapper');
-    var jasaAirInput = document.getElementById('jasa_air');
-    var pphAirWrapper = document.getElementById('pph_air_wrapper');
-    var pphAirInput = document.getElementById('pph_air');
-    var grandTotalAirWrapper = document.getElementById('grand_total_air_wrapper');
-    var grandTotalAirInput = document.getElementById('grand_total_air');
     
     // Standard field wrappers
     var nominalWrapper = document.getElementById('nominal_wrapper');
@@ -1666,9 +1660,7 @@
             initializeAirSections();
             
             // Show summary fields (with null checks)
-            if (jasaAirWrapper) jasaAirWrapper.classList.remove('hidden');
-            if (pphAirWrapper) pphAirWrapper.classList.remove('hidden');
-            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.remove('hidden');
+            // Removed jasa_air, pph_air, grand_total_air as requested
             
             // Hide standard kapal/voyage/bl fields (already in air sections)
             kapalWrapper.classList.add('hidden');
@@ -1718,9 +1710,7 @@
             pphDokumenInput.value = '0';
             grandTotalDokumenInput.value = '0';
             nominalInput.value = '';
-            if (jasaAirInput) jasaAirInput.value = '0';
-            if (pphAirInput) pphAirInput.value = '0';
-            if (grandTotalAirInput) grandTotalAirInput.value = '0';
+            // Removed global summary input resets
             
             // Hide TKBM wrapper
             if (document.getElementById('tkbm_wrapper')) {
@@ -1768,9 +1758,7 @@
             // Hide Biaya Air fields for Biaya Buruh
             if (airWrapper) airWrapper.classList.add('hidden');
             clearAllAirSections();
-            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
-            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
-            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
+            // Removed jasa_air, pph_air, grand_total_air as requested
             
             // Show DP fields for Biaya Buruh
             dpWrapper.classList.remove('hidden');
@@ -1827,9 +1815,7 @@
             // Hide Biaya Air fields for Biaya TKBM
             if (airWrapper) airWrapper.classList.add('hidden');
             clearAllAirSections();
-            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
-            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
-            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
+            // Removed jasa_air, pph_air, grand_total_air as requested
             
             // Hide Biaya Buruh fields for Biaya TKBM
             barangWrapper.classList.add('hidden');
@@ -1882,9 +1868,7 @@
             // Hide Biaya Air fields
             if (airWrapper) airWrapper.classList.add('hidden');
             clearAllAirSections();
-            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
-            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
-            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
+            // Removed jasa_air, pph_air, grand_total_air as requested
             
             // Hide TKBM wrapper
             if (document.getElementById('tkbm_wrapper')) {
@@ -1980,9 +1964,7 @@
             // Hide Biaya Air fields for Biaya Penumpukan
             if (airWrapper) airWrapper.classList.add('hidden');
             clearAllAirSections();
-            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
-            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
-            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
+            // Removed jasa_air, pph_air, grand_total_air as requested
             
             // Auto-calculate PPN (11%) and PPH (2% dari nominal) for Biaya Penumpukan
             calculatePpnPenumpukan();
@@ -2054,12 +2036,7 @@
             if (vendorAirWrapper) vendorAirWrapper.classList.add('hidden');
             if (typeAirWrapper) typeAirWrapper.classList.add('hidden');
             if (kuantitasAirWrapper) kuantitasAirWrapper.classList.add('hidden');
-            if (jasaAirWrapper) jasaAirWrapper.classList.add('hidden');
-            if (pphAirWrapper) pphAirWrapper.classList.add('hidden');
-            if (grandTotalAirWrapper) grandTotalAirWrapper.classList.add('hidden');
-            if (jasaAirInput) jasaAirInput.value = '0';
-            if (pphAirInput) pphAirInput.value = '0';
-            if (grandTotalAirInput) grandTotalAirInput.value = '0';
+            // Removed jasa_air, pph_air, grand_total_air summary references
             
             // Clear calculated total when switching away from Biaya Buruh
             nominalInput.value = '';
@@ -2897,9 +2874,7 @@
         if (airSectionsContainer) airSectionsContainer.innerHTML = '';
         airSectionCounter = 0;
         if (nominalInput) nominalInput.value = '';
-        if (jasaAirInput) jasaAirInput.value = '0';
-        if (pphAirInput) pphAirInput.value = '0';
-        if (grandTotalAirInput) grandTotalAirInput.value = '0';
+        // Removed global summary input resets
     }
     
     addAirSectionBtn.addEventListener('click', function() {
@@ -3088,7 +3063,7 @@
                         ${lokasiOptions}
                     </select>
                 </div>
-                <div>
+                <div class="hidden">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Input)</label>
                     <input type="number" name="air[${sectionIndex}][jasa_air]" class="jasa-air-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="0" placeholder="0">
                 </div>
@@ -3140,13 +3115,15 @@
         const vendorSelect = section.querySelector('.vendor-select-air');
         vendorSelect.addEventListener('change', function() {
             loadTypesForVendor(sectionIndex, this.value);
-            // Check for Abqori on vendor change
+            // Jasa air logic removed as per request
+            /*
             const jasaAirInput = section.querySelector('.jasa-air-input');
             if (this.value && this.value.toLowerCase().includes('abqori')) {
                 jasaAirInput.value = 100000;
             } else {
                 jasaAirInput.value = 0;
             }
+            */
             calculateAirSectionTotal(sectionIndex);
         });
         
@@ -3182,11 +3159,7 @@
             updateVendorsForLokasi(sectionIndex, lokasiSelect.value);
         }
 
-        // Setup jasa air input change listener
-        const jasaAirInput = section.querySelector('.jasa-air-input');
-        jasaAirInput.addEventListener('input', function() {
-            calculateAirSectionTotal(sectionIndex);
-        });
+        // Jasa air input listener removed
         
 
 
@@ -3479,7 +3452,7 @@
 
         let waterCost = Math.round(totalCost); // This is now the calculated base cost
         
-        let jasaAir = parseFloat(jasaAirInput.value) || 0;
+        let jasaAir = 0; // Jasa Air removed as per request
         
         // Sub Total = (Price * Qty) + Jasa Air
         let subTotal = waterCost + jasaAir;
@@ -3528,14 +3501,7 @@
             nominalInput.value = '';
         }
         
-        // Calculate Jasa Air / Total Base summary
-        if (jasaAirInput) jasaAirInput.value = totalBase > 0 ? totalBase.toLocaleString('id-ID') : '0';
-         
-        // Calculate PPH total
-        if (pphAirInput) pphAirInput.value = totalPph > 0 ? totalPph.toLocaleString('id-ID') : '0';
-        
-        // Calculate Grand Total
-        if (grandTotalAirInput) grandTotalAirInput.value = totalGrandTotal > 0 ? totalGrandTotal.toLocaleString('id-ID') : '0';
+        // Summary calculations for Biaya Air (jasa_air, pph_air, grand_total_air summary fields removed)
     }
     window.addTypeToAirSectionWithValue = function(sectionIndex, typeId, typeKeterangan, isLumpsum, kuantitas, harga) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);
