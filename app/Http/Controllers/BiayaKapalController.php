@@ -40,7 +40,12 @@ class BiayaKapalController extends Controller
                 $q->where('nama_kapal', 'like', "%{$search}%")
                   ->orWhere('nomor_invoice', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%")
-                  ->orWhere('nominal', 'like', "%{$search}%");
+                  ->orWhere('nominal', 'like', "%{$search}%")
+                  ->orWhere('jenis_biaya', 'like', "%{$search}%")
+                  ->orWhereHas('klasifikasiBiaya', function($subQ) use ($search) {
+                      $subQ->where('nama', 'like', "%{$search}%")
+                           ->orWhere('kode', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -53,8 +58,11 @@ class BiayaKapalController extends Controller
         $query->orderBy('tanggal', 'desc');
 
         $biayaKapals = $query->paginate(10)->withQueryString();
+        
+        // Get all active klasifikasi biaya for filter dropdown
+        $klasifikasiBiayas = KlasifikasiBiaya::where('is_active', true)->orderBy('nama')->get();
 
-        return view('biaya-kapal.index', compact('biayaKapals'));
+        return view('biaya-kapal.index', compact('biayaKapals', 'klasifikasiBiayas'));
     }
 
     /**

@@ -59,32 +59,32 @@
         <div class="p-6">
             <!-- Filter & Search -->
             <form method="GET" action="{{ route('biaya-kapal.index') }}" class="mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div class="md:col-span-4">
+                        <label for="search" class="block text-xs font-medium text-gray-700 mb-1">Cari Data</label>
                         <input type="text"
                                name="search"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Cari nama kapal, no invoice, jenis biaya..."
+                               id="search"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               placeholder="Kapal, invoice, jenis biaya, ket..."
                                value="{{ request('search') }}">
                     </div>
-                    <div class="md:col-span-3">
-                        <select name="jenis_biaya" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="md:col-span-4">
+                        <label for="jenis_biaya_select" class="block text-xs font-medium text-gray-700 mb-1">Jenis Biaya</label>
+                        <select name="jenis_biaya" id="jenis_biaya_select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
                             <option value="">Semua Jenis Biaya</option>
-                            <option value="bahan_bakar" {{ request('jenis_biaya') == 'bahan_bakar' ? 'selected' : '' }}>Bahan Bakar</option>
-                            <option value="pelabuhan" {{ request('jenis_biaya') == 'pelabuhan' ? 'selected' : '' }}>Pelabuhan</option>
-                            <option value="perbaikan" {{ request('jenis_biaya') == 'perbaikan' ? 'selected' : '' }}>Perbaikan</option>
-                            <option value="awak_kapal" {{ request('jenis_biaya') == 'awak_kapal' ? 'selected' : '' }}>Awak Kapal</option>
-                            <option value="asuransi" {{ request('jenis_biaya') == 'asuransi' ? 'selected' : '' }}>Asuransi</option>
-                            <option value="lainnya" {{ request('jenis_biaya') == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
+                            @foreach($klasifikasiBiayas as $kb)
+                                <option value="{{ $kb->kode }}" {{ request('jenis_biaya') == $kb->kode ? 'selected' : '' }}>
+                                    {{ $kb->nama }} ({{ $kb->kode }})
+                                </option>
+                            @endforeach
                         </select>
                     </div>
-                    <div class="md:col-span-2">
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                    <div class="md:col-span-4 flex items-end gap-2">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center">
                             <i class="fas fa-search mr-2"></i> Cari
                         </button>
-                    </div>
-                    <div class="md:col-span-3">
-                        <a href="{{ route('biaya-kapal.index') }}" class="block text-center w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200">
+                        <a href="{{ route('biaya-kapal.index') }}" class="flex-1 text-center bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center">
                             <i class="fas fa-redo mr-2"></i> Reset
                         </a>
                     </div>
@@ -290,15 +290,43 @@
 
 @push('scripts')
 <script>
-    // Auto-hide alerts after 5 seconds
-    setTimeout(function() {
-        const alerts = document.querySelectorAll('.bg-green-50, .bg-red-50');
-        alerts.forEach(alert => {
-            alert.style.transition = 'opacity 0.5s ease-out';
-            alert.style.opacity = '0';
-            setTimeout(() => alert.remove(), 500);
+    $(document).ready(function() {
+        // Initialize Select2 for jenis_biaya
+        $('#jenis_biaya_select').select2({
+            placeholder: "-- Semua Jenis Biaya --",
+            allowClear: true,
+            width: '100%'
         });
-    }, 5000);
+
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.bg-green-50, .bg-red-50');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s ease-out';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    });
 </script>
+@endpush
+
+@push('styles')
+<style>
+    /* Select2 Tweaks for Tailwind */
+    .select2-container .select2-selection--single {
+        height: 42px !important;
+        padding-top: 6px !important;
+        border-color: #d1d5db !important;
+        border-radius: 0.5rem !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 28px !important;
+        color: #374151 !important;
+    }
+</style>
 @endpush
 @endsection
