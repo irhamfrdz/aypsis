@@ -50,6 +50,47 @@ class TagihanSupirVendorController extends Controller
     }
 
     /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'surat_jalan_id' => 'required|exists:surat_jalans,id',
+        ]);
+
+        $suratJalanId = $request->surat_jalan_id;
+
+        // Cek apakah sudah ada
+        $existing = \App\Models\TagihanSupirVendor::where('surat_jalan_id', $suratJalanId)->exists();
+        if ($existing) {
+            return redirect()->back()->with('error', 'Tagihan Supir Vendor untuk Surat Jalan ini sudah ada.');
+        }
+
+        $suratJalan = \App\Models\SuratJalan::with(['order', 'tujuanPengambilanRelation', 'tujuanPengirimanRelation'])->findOrFail($suratJalanId);
+
+        $dari = $suratJalan->tujuanPengambilanRelation->nama ?? ($suratJalan->order->tujuan_ambil ?? null);
+        $ke = $suratJalan->tujuanPengirimanRelation->nama ?? ($suratJalan->order->tujuan_kirim ?? null);
+
+        $tagihan = \App\Models\TagihanSupirVendor::create([
+            'surat_jalan_id' => $suratJalan->id,
+            'nama_supir' => $suratJalan->supir,
+            'dari' => $dari,
+            'ke' => $ke,
+            'jenis_kontainer' => $suratJalan->tipe_kontainer,
+            'nominal' => 0,
+            'status_pembayaran' => 'belum_dibayar',
+            'created_by' => \Illuminate\Support\Facades\Auth::id(),
+            'updated_by' => \Illuminate\Support\Facades\Auth::id(),
+        ]);
+
+        return redirect()->route('tagihan-supir-vendor.edit', $tagihan->id)
+            ->with('success', 'Tagihan Supir Vendor berhasil dibuat. Silakan input nominal.');
+    }
+
+    /**
      * Display the specified resource.
      *
      * @param  int  $id

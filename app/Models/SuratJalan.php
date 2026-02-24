@@ -599,4 +599,12 @@ class SuratJalan extends Model
     {
         return $this->pranotaLemburs()->exists();
     }
+
+    /**
+     * Relationship with TagihanSupirVendor
+     */
+    public function tagihanSupirVendor()
+    {
+        return $this->hasOne(TagihanSupirVendor::class, 'surat_jalan_id');
+    }
 }
