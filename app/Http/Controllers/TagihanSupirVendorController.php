@@ -15,7 +15,7 @@ class TagihanSupirVendorController extends Controller
     public function index(Request $request)
     {
         // Add basic query with pagination and eager loading related suratJalan
-        $query = \App\Models\TagihanSupirVendor::with(['suratJalan', 'vendor', 'creator', 'updater']);
+        $query = \App\Models\TagihanSupirVendor::with(['suratJalan', 'vendor', 'invoice', 'creator', 'updater']);
 
         // Handle search filter
         if ($request->has('search') && $request->search != '') {

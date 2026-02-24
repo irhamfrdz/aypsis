@@ -2035,6 +2035,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Invoice Tagihan Vendor --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Invoice Tagihan Vendor</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[invoice-tagihan-vendor][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-tagihan-vendor']['view']) && $userMatrixPermissions['invoice-tagihan-vendor']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[invoice-tagihan-vendor][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-tagihan-vendor']['create']) && $userMatrixPermissions['invoice-tagihan-vendor']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[invoice-tagihan-vendor][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-tagihan-vendor']['update']) && $userMatrixPermissions['invoice-tagihan-vendor']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[invoice-tagihan-vendor][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-tagihan-vendor']['delete']) && $userMatrixPermissions['invoice-tagihan-vendor']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Daftar Tagihan Perbaikan Kontainer --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">

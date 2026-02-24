@@ -591,7 +591,9 @@ class UserController extends Controller
                 'uang-jalan' => 'uang-jalan',
                 'pranota-uang-jalan' => 'pranota-uang-jalan',
                 'pranota-uang-jalan-bongkaran' => 'pranota-uang-jalan-bongkaran',
-                'pranota-lembur' => 'pranota-lembur'
+                'pranota-lembur' => 'pranota-lembur',
+                'tagihan-supir-vendor' => 'tagihan-supir-vendor',
+                'invoice-tagihan-vendor' => 'invoice-tagihan-vendor'
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -3631,6 +3633,44 @@ class UserController extends Controller
                             'approve' => 'pranota-lembur-approve',
                             'print' => 'pranota-lembur-print',
                             'export' => 'pranota-lembur-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle tagihan-supir-vendor permissions explicitly
+                    if ($module === 'tagihan-supir-vendor' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'tagihan-supir-vendor-view',
+                            'create' => 'tagihan-supir-vendor-create',
+                            'update' => 'tagihan-supir-vendor-update',
+                            'delete' => 'tagihan-supir-vendor-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle invoice-tagihan-vendor permissions explicitly
+                    if ($module === 'invoice-tagihan-vendor' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'invoice-tagihan-vendor-view',
+                            'create' => 'invoice-tagihan-vendor-create',
+                            'update' => 'invoice-tagihan-vendor-update',
+                            'delete' => 'invoice-tagihan-vendor-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

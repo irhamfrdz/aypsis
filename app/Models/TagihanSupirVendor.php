@@ -30,4 +30,9 @@ class TagihanSupirVendor extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function invoice()
+    {
+        return $this->belongsTo(InvoiceTagihanVendor::class, 'invoice_tagihan_vendor_id');
+    }
 }

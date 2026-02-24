@@ -2703,6 +2703,17 @@ Route::middleware(['auth'])->group(function () {
              'destroy' => 'can:tagihan-supir-vendor-delete'
          ]);
 
+    Route::resource('invoice-tagihan-vendor', \App\Http\Controllers\InvoiceTagihanVendorController::class)
+         ->middleware([
+             'index' => 'can:invoice-tagihan-vendor-view',
+             'create' => 'can:invoice-tagihan-vendor-create',
+             'store' => 'can:invoice-tagihan-vendor-create',
+             'show' => 'can:invoice-tagihan-vendor-view',
+             'edit' => 'can:invoice-tagihan-vendor-update',
+             'update' => 'can:invoice-tagihan-vendor-update',
+             'destroy' => 'can:invoice-tagihan-vendor-delete'
+         ]);
+
     // Debug route untuk surat jalan
     Route::get('/debug-surat-jalan', function() {
         $data = [];
