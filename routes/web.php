@@ -2696,7 +2696,7 @@ Route::middleware(['auth'])->group(function () {
              'edit' => 'can:tagihan-supir-vendor-update',
              'update' => 'can:tagihan-supir-vendor-update',
              'destroy' => 'can:tagihan-supir-vendor-delete'
-         ])->except(['create', 'store']);
+         ])->except(['create']);
 
     // Debug route untuk surat jalan
     Route::get('/debug-surat-jalan', function() {
