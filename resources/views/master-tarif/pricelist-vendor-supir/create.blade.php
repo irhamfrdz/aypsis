@@ -2,24 +2,6 @@
 
 @section('page_title', 'Tambah Pricelist Vendor Supir')
 
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<style>
-    .select2-container .select2-selection--single {
-        height: 38px !important;
-        border: 1px solid #d1d5db !important;
-        border-radius: 0.375rem !important;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 38px !important;
-        color: #374151 !important;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 36px !important;
-    }
-</style>
-@endpush
-
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto">
@@ -37,17 +19,21 @@
             <form action="{{ route('pricelist-vendor-supir.store') }}" method="POST">
                 @csrf
                 <div class="space-y-4">
-                    <div>
-                        <label for="tujuan_id" class="block text-sm font-medium text-gray-700 mb-1">Tujuan <span class="text-red-500">*</span></label>
-                        <select name="tujuan_id" id="tujuan_id" required class="select2 w-full">
-                            <option value="">Pilih Tujuan</option>
-                            @foreach($tujuans as $tujuan)
-                                <option value="{{ $tujuan->id }}" {{ old('tujuan_id') == $tujuan->id ? 'selected' : '' }}>
-                                    {{ $tujuan->nama_tujuan }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('tujuan_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="dari" class="block text-sm font-medium text-gray-700 mb-1">Dari (Asal) <span class="text-red-500">*</span></label>
+                            <input type="text" name="dari" id="dari" value="{{ old('dari') }}" required
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                   placeholder="Asal Lokasi">
+                            @error('dari') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+                        <div>
+                            <label for="ke" class="block text-sm font-medium text-gray-700 mb-1">Ke (Tujuan) <span class="text-red-500">*</span></label>
+                            <input type="text" name="ke" id="ke" value="{{ old('ke') }}" required
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                   placeholder="Tujuan Lokasi">
+                            @error('ke') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
                     </div>
 
                     <div>
@@ -103,16 +89,4 @@
 </div>
 @endsection
 
-@push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('.select2').select2({
-            width: '100%',
-            placeholder: "Pilih Tujuan",
-            allowClear: true
-        });
-    });
-</script>
-@endpush
+@endsection

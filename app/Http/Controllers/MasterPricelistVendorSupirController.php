@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasterPricelistVendorSupir;
-use App\Models\Tujuan;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,14 +14,18 @@ class MasterPricelistVendorSupirController extends Controller
      */
     public function index(Request $request)
     {
-        $query = MasterPricelistVendorSupir::with(['tujuan', 'creator', 'updater']);
+        $query = MasterPricelistVendorSupir::with(['creator', 'updater']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('tujuan_id')) {
-            $query->where('tujuan_id', $request->tujuan_id);
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('dari', 'like', "%{$search}%")
+                  ->orWhere('ke', 'like', "%{$search}%");
+            });
         }
 
         if ($request->filled('jenis_kontainer')) {
@@ -29,9 +33,8 @@ class MasterPricelistVendorSupirController extends Controller
         }
 
         $pricelists = $query->orderBy('created_at', 'desc')->paginate(20);
-        $tujuans = Tujuan::where('status', 'aktif')->orderBy('nama_tujuan')->get();
         
-        return view('master-tarif.pricelist-vendor-supir.index', compact('pricelists', 'tujuans'));
+        return view('master-tarif.pricelist-vendor-supir.index', compact('pricelists'));
     }
 
     /**
@@ -39,8 +42,7 @@ class MasterPricelistVendorSupirController extends Controller
      */
     public function create()
     {
-        $tujuans = Tujuan::where('status', 'aktif')->orderBy('nama_tujuan')->get();
-        return view('master-tarif.pricelist-vendor-supir.create', compact('tujuans'));
+        return view('master-tarif.pricelist-vendor-supir.create');
     }
 
     /**
@@ -49,13 +51,15 @@ class MasterPricelistVendorSupirController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'tujuan_id' => 'required|exists:tujuans,id',
+            'dari' => 'required|string|max:255',
+            'ke' => 'required|string|max:255',
             'jenis_kontainer' => 'required|in:20,40,45',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,non-aktif',
         ], [
-            'tujuan_id.required' => 'Tujuan harus dipilih.',
+            'dari.required' => 'Asal (Dari) harus diisi.',
+            'ke.required' => 'Tujuan (Ke) harus diisi.',
             'jenis_kontainer.required' => 'Jenis kontainer harus dipilih.',
             'nominal.required' => 'Nominal harus diisi.',
             'status.required' => 'Status harus dipilih.',
@@ -82,8 +86,7 @@ class MasterPricelistVendorSupirController extends Controller
      */
     public function edit(MasterPricelistVendorSupir $pricelistVendorSupir)
     {
-        $tujuans = Tujuan::where('status', 'aktif')->orderBy('nama_tujuan')->get();
-        return view('master-tarif.pricelist-vendor-supir.edit', compact('pricelistVendorSupir', 'tujuans'));
+        return view('master-tarif.pricelist-vendor-supir.edit', compact('pricelistVendorSupir'));
     }
 
     /**
@@ -92,13 +95,15 @@ class MasterPricelistVendorSupirController extends Controller
     public function update(Request $request, MasterPricelistVendorSupir $pricelistVendorSupir)
     {
         $validated = $request->validate([
-            'tujuan_id' => 'required|exists:tujuans,id',
+            'dari' => 'required|string|max:255',
+            'ke' => 'required|string|max:255',
             'jenis_kontainer' => 'required|in:20,40,45',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,non-aktif',
         ], [
-            'tujuan_id.required' => 'Tujuan harus dipilih.',
+            'dari.required' => 'Asal (Dari) harus diisi.',
+            'ke.required' => 'Tujuan (Ke) harus diisi.',
             'jenis_kontainer.required' => 'Jenis kontainer harus dipilih.',
             'nominal.required' => 'Nominal harus diisi.',
             'status.required' => 'Status harus dipilih.',

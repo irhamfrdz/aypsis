@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('master_pricelist_vendor_supirs', function (Blueprint $table) {
+            $table->dropForeign(['tujuan_id']);
+            $table->dropColumn('tujuan_id');
+            $table->string('dari')->nullable()->after('id');
+            $table->string('ke')->nullable()->after('dari');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('master_pricelist_vendor_supirs', function (Blueprint $table) {
+            $table->unsignedBigInteger('tujuan_id')->nullable()->after('id');
+            $table->foreign('tujuan_id')->references('id')->on('tujuans')->onDelete('set null');
+            $table->dropColumn(['dari', 'ke']);
+        });
+    }
+};

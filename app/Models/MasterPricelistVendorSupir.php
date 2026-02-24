@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class MasterPricelistVendorSupir extends Model
 {
     protected $fillable = [
-        'tujuan_id',
+        'dari',
+        'ke',
         'jenis_kontainer',
         'nominal',
         'status',
@@ -15,11 +16,6 @@ class MasterPricelistVendorSupir extends Model
         'created_by',
         'updated_by',
     ];
-
-    public function tujuan()
-    {
-        return $this->belongsTo(Tujuan::class, 'tujuan_id');
-    }
 
     public function creator()
     {
