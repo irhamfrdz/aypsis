@@ -6,10 +6,21 @@
 
 @section('content')
 <div class="space-y-8">
-    <!-- Welcome Message -->
-    <div>
-        <h2 class="text-2xl font-semibold text-gray-800">Selamat Datang, {{ Auth::user()->name }}!</h2>
-        <p class="text-gray-500">Berikut adalah ringkasan aktivitas sistem Anda.</p>
+    <!-- Welcome Message & Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-semibold text-gray-800">Selamat Datang, {{ Auth::user()->name }}!</h2>
+            <p class="text-gray-500">Berikut adalah ringkasan aktivitas sistem Anda.</p>
+        </div>
+        
+        @if(auth()->check() && auth()->user()->username === 'kiky')
+        <div class="mt-4 sm:mt-0">
+            <a href="{{ route('backup.database') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                <i class="fas fa-database mr-2"></i>
+                Backup Database
+            </a>
+        </div>
+        @endif
     </div>
 
     <!-- Data Prospek Berdasarkan Tujuan dan Ukuran Kontainer -->

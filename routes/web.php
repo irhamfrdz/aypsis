@@ -185,6 +185,11 @@ Route::middleware([
         return redirect()->route('dashboard');
     });
 
+    // Backup database route
+    Route::get('/backup-database', [\App\Http\Controllers\BackupController::class, 'download'])
+         ->name('backup.database')
+         ->middleware(['auth']);
+
     // Dashboard utama untuk admin/staff - controller handles permission logic
     Route::get('/dashboard', [DashboardController::class, 'index'])
          ->name('dashboard');
