@@ -1002,8 +1002,8 @@ class TandaTerimaController extends Controller
             ->orderBy('nama_lengkap')
             ->get();
 
-        // Get keneks for dropdown - from karyawan with divisi kenek
-        $keneks = \App\Models\Karyawan::where('divisi', 'kenek')
+        // Get keneks for dropdown - from karyawan with divisi krani (requested by user)
+        $keneks = \App\Models\Karyawan::where('divisi', 'krani')
             ->orderBy('nama_lengkap')
             ->get();
 
@@ -1363,16 +1363,19 @@ class TandaTerimaController extends Controller
                         }
                     }
                     
-                    // Update kenek pengganti jika ada perubahan
-                    if (isset($updateData['kenek_pengganti']) && $updateData['kenek_pengganti'] != $suratJalan->kenek_pengganti) {
-                        $suratJalanUpdateData['kenek_pengganti'] = $updateData['kenek_pengganti'];
+                    // Update kenek jika ada perubahan di dropdown kenek
+                    if ($request->filled('kenek')) {
+                        $suratJalanUpdateData['kenek'] = $request->kenek;
+                    }
+
+                    // Update kenek pengganti jika ada (ini akan meng-override field kenek di surat jalan)
+                    if ($request->filled('kenek_pengganti')) {
+                        $suratJalanUpdateData['kenek_pengganti'] = $request->kenek_pengganti;
                         
-                        // Update the kenek field in surat jalan when kenek pengganti is changed
-                        if (!empty($updateData['kenek_pengganti'])) {
-                            $karyawanKenek = \App\Models\Karyawan::where('nama_lengkap', $updateData['kenek_pengganti'])->first();
-                            if ($karyawanKenek) {
-                                $suratJalanUpdateData['kenek'] = $karyawanKenek->nama_lengkap;
-                            }
+                        // Update the kenek field in surat jalan when kenek pengganti is provided
+                        $karyawanKenek = \App\Models\Karyawan::where('nama_lengkap', $request->kenek_pengganti)->first();
+                        if ($karyawanKenek) {
+                            $suratJalanUpdateData['kenek'] = $karyawanKenek->nama_lengkap;
                         }
                     }
                     

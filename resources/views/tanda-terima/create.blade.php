@@ -544,14 +544,19 @@
                                     <label for="kenek" class="block text-xs font-medium text-gray-500 mb-2">
                                         Nama Kenek
                                     </label>
-                                    <input type="text"
-                                           name="kenek"
-                                           id="kenek"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm cursor-not-allowed"
-                                           value="{{ old('kenek', $suratJalan->kenek) }}"
-                                           placeholder="Nama kenek"
-                                           readonly
-                                           disabled>
+                                    <select name="kenek" id="kenek"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm select2-kenek @error('kenek') border-red-500 @enderror">
+                                        <option value="">-- Pilih Kenek --</option>
+                                        @foreach($kranisKenek as $k)
+                                            <option value="{{ $k->nama_lengkap }}"
+                                                    {{ old('kenek', $suratJalan->kenek) == $k->nama_lengkap ? 'selected' : '' }}>
+                                                {{ $k->nama_lengkap }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('kenek')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
                                 </div>
                                 <div>
                                     <label for="kenek_pengganti" class="block text-xs font-medium text-gray-500 mb-2">

@@ -403,8 +403,7 @@ class SuratJalanController extends Controller
             if ($request->filled('is_supir_vendor') && $request->is_supir_vendor == 1) {
                 try {
                     $nominal = 0;
-                    $pricelist = \App\Models\MasterPricelistVendorSupir::where('dari', $suratJalan->tujuan_pengambilan)
-                        ->where('ke', $suratJalan->tujuan_pengiriman)
+                    $pricelist = \App\Models\MasterPricelistVendorSupir::where('ke', $suratJalan->tujuan_pengambilan)
                         ->where('jenis_kontainer', $suratJalan->size)
                         ->where('status', 'aktif')
                         ->first();

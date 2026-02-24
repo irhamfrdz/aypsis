@@ -74,13 +74,23 @@ class TagihanSupirVendorController extends Controller
         $dari = $suratJalan->tujuanPengambilanRelation->nama ?? ($suratJalan->order->tujuan_ambil ?? null);
         $ke = $suratJalan->tujuanPengirimanRelation->nama ?? ($suratJalan->order->tujuan_kirim ?? null);
 
+        $pricelist = \App\Models\MasterPricelistVendorSupir::where('ke', $suratJalan->tujuan_pengambilan)
+            ->where('jenis_kontainer', $suratJalan->size ?? 20)
+            ->where('status', 'aktif')
+            ->first();
+
+        $nominal = 0;
+        if ($pricelist) {
+            $nominal = $pricelist->nominal;
+        }
+
         $tagihan = \App\Models\TagihanSupirVendor::create([
             'surat_jalan_id' => $suratJalan->id,
             'nama_supir' => $suratJalan->supir,
-            'dari' => $dari,
-            'ke' => $ke,
-            'jenis_kontainer' => $suratJalan->tipe_kontainer,
-            'nominal' => 0,
+            'dari' => $suratJalan->tujuan_pengambilan ?? $dari,
+            'ke' => $suratJalan->tujuan_pengiriman ?? $ke,
+            'jenis_kontainer' => $suratJalan->size ?? 20,
+            'nominal' => $nominal,
             'status_pembayaran' => 'belum_dibayar',
             'created_by' => \Illuminate\Support\Facades\Auth::id(),
             'updated_by' => \Illuminate\Support\Facades\Auth::id(),
