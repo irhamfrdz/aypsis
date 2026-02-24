@@ -11,7 +11,7 @@
                 <p class="text-gray-600 mt-1">Kelola data harga vendor supir berdasarkan tujuan dan jenis kontainer</p>
             </div>
             @can('master-pricelist-vendor-supir-create')
-            <a href="{{ route('pricelist-vendor-supir.create') }}" 
+            <a href="{{ route('master.pricelist-vendor-supir.create') }}" 
                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -29,7 +29,7 @@
     @endif
 
     <div class="bg-white rounded-lg shadow p-4 mb-6">
-        <form action="{{ route('pricelist-vendor-supir.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form action="{{ route('master.pricelist-vendor-supir.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari (Asal/Tujuan)</label>
                 <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari..."
@@ -106,7 +106,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                             <div class="flex justify-center gap-2">
                                 @can('master-pricelist-vendor-supir-update')
-                                <a href="{{ route('pricelist-vendor-supir.edit', $pricelist) }}" 
+                                <a href="{{ route('master.pricelist-vendor-supir.edit', $pricelist) }}" 
                                    class="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50" title="Edit">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -115,7 +115,7 @@
                                 @endcan
                                 
                                 @can('master-pricelist-vendor-supir-delete')
-                                <form action="{{ route('pricelist-vendor-supir.destroy', $pricelist) }}" 
+                                <form action="{{ route('master.pricelist-vendor-supir.destroy', $pricelist) }}" 
                                       method="POST" 
                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                                     @csrf

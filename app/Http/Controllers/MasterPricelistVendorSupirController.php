@@ -69,7 +69,7 @@ class MasterPricelistVendorSupirController extends Controller
 
         MasterPricelistVendorSupir::create($validated);
 
-        return redirect()->route('pricelist-vendor-supir.index')
+        return redirect()->route('master.pricelist-vendor-supir.index')
             ->with('success', 'Pricelist vendor supir berhasil ditambahkan.');
     }
 
@@ -113,7 +113,7 @@ class MasterPricelistVendorSupirController extends Controller
 
         $pricelistVendorSupir->update($validated);
 
-        return redirect()->route('pricelist-vendor-supir.index')
+        return redirect()->route('master.pricelist-vendor-supir.index')
             ->with('success', 'Pricelist vendor supir berhasil diperbarui.');
     }
 
@@ -124,7 +124,7 @@ class MasterPricelistVendorSupirController extends Controller
     {
         $pricelistVendorSupir->delete();
 
-        return redirect()->route('pricelist-vendor-supir.index')
+        return redirect()->route('master.pricelist-vendor-supir.index')
             ->with('success', 'Pricelist vendor supir berhasil dihapus.');
     }
 }

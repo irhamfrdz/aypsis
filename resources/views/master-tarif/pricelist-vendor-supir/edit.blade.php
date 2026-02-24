@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto">
         <div class="mb-6">
-            <a href="{{ route('pricelist-vendor-supir.index') }}" class="text-blue-600 hover:text-blue-800 flex items-center gap-2">
+            <a href="{{ route('master.pricelist-vendor-supir.index') }}" class="text-blue-600 hover:text-blue-800 flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -16,7 +16,7 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6">
-            <form action="{{ route('pricelist-vendor-supir.update', $pricelistVendorSupir) }}" method="POST">
+            <form action="{{ route('master.pricelist-vendor-supir.update', $pricelistVendorSupir) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="space-y-4">
