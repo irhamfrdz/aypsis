@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class InvoiceTagihanVendor extends Model
+class PranotaInvoiceVendorSupir extends Model
 {
     protected $fillable = [
-        'no_invoice',
+        'no_pranota',
         'vendor_id',
-        'pranota_invoice_vendor_supir_id',
-        'tanggal_invoice',
+        'tanggal_pranota',
         'total_nominal',
         'status_pembayaran',
         'keterangan',
@@ -19,7 +18,7 @@ class InvoiceTagihanVendor extends Model
     ];
 
     protected $casts = [
-        'tanggal_invoice' => 'date',
+        'tanggal_pranota' => 'date',
     ];
 
     public function vendor()
@@ -27,14 +26,9 @@ class InvoiceTagihanVendor extends Model
         return $this->belongsTo(VendorSupir::class, 'vendor_id');
     }
 
-    public function pranota()
+    public function invoiceTagihanVendors()
     {
-        return $this->belongsTo(PranotaInvoiceVendorSupir::class, 'pranota_invoice_vendor_supir_id');
-    }
-
-    public function tagihanSupirVendors()
-    {
-        return $this->hasMany(TagihanSupirVendor::class, 'invoice_tagihan_vendor_id');
+        return $this->hasMany(InvoiceTagihanVendor::class, 'pranota_invoice_vendor_supir_id');
     }
 
     public function creator()

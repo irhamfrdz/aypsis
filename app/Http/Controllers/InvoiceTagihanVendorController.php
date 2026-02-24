@@ -15,7 +15,7 @@ class InvoiceTagihanVendorController extends Controller
 {
     public function index(Request $request)
     {
-        $query = InvoiceTagihanVendor::with(['vendor']);
+        $query = InvoiceTagihanVendor::with(['vendor', 'pranota']);
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
