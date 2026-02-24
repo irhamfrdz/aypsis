@@ -238,20 +238,43 @@
         <thead>
             <tr>
                 <th style="width: 5%;">No</th>
-                <th style="width: 15%;">Tanggal</th>
+                <th style="width: 20%;">Tanggal</th>
                 <th style="width: 20%;">Referensi</th>
                 <th>Jenis Biaya</th>
                 <th style="width: 20%;">Total</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($biayaKapal->airDetails as $index => $detail)
+            @php
+                $perKapal = $biayaKapal->airDetails->groupBy(function($item) {
+                    return ($item->kapal ?? '-') . ($item->voyage ? ' ('.$item->voyage.')' : '');
+                });
+            @endphp
+            
+            @forelse($perKapal as $kapalName => $details)
+            @php
+                $firstDate = $details->min('tanggal_invoice_vendor');
+                $lastDate = $details->max('tanggal_invoice_vendor');
+                $isSameDate = $firstDate == $lastDate;
+                $formattedDate = $firstDate ? \Carbon\Carbon::parse($firstDate)->format('d/M/Y') : '-';
+                if (!$isSameDate && $firstDate && $lastDate) {
+                    $formattedDate = \Carbon\Carbon::parse($firstDate)->format('d/M/Y') . ' - ' . \Carbon\Carbon::parse($lastDate)->format('d/M/Y');
+                }
+                
+                $references = $details->pluck('nomor_referensi')->filter()->unique()->values();
+            @endphp
             <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td class="text-center">{{ $detail->tanggal_invoice_vendor ? \Carbon\Carbon::parse($detail->tanggal_invoice_vendor)->format('d/M/Y') : '-' }}</td>
-                <td>{{ $detail->nomor_referensi ?? '-' }}</td>
-                <td>Biaya Air {{ $detail->kapal ?? '' }} {{ $detail->voyage ? '('.$detail->voyage.')' : '' }} {{ $detail->type_keterangan ? '- '.$detail->type_keterangan : '' }}</td>
-                <td class="text-right">Rp {{ number_format($detail->grand_total, 0, ',', '.') }}</td>
+                <td class="text-center">{{ $loop->iteration }}</td>
+                <td class="text-center">{{ $formattedDate }}</td>
+                <td>
+                    @foreach($references as $ref)
+                        {{ $ref }}{{ !$loop->last ? ',' : '' }}
+                        @if(!$loop->last && $loop->iteration % 2 == 0) <br> @endif
+                    @endforeach
+                    @if($references->isEmpty()) - @endif
+                </td>
+                <td>Biaya Air {{ $kapalName }}</td>
+                <td class="text-right">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</td>
             </tr>
             @empty
             <tr>
