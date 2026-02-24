@@ -295,7 +295,11 @@ class BiayaKapalController extends Controller
             'air.*.voyage' => 'nullable|string|max:255',
             'air.*.vendor' => 'nullable|string|max:255',
             'air.*.types' => 'nullable|array',
-            'air.*.types.*' => 'integer|exists:master_pricelist_air_tawar,id',
+            'air.*.types.*' => function ($attribute, $value, $fail) {
+                if ($value !== 'MANUAL' && !\Illuminate\Support\Facades\DB::table('master_pricelist_air_tawar')->where('id', $value)->exists()) {
+                    $fail('Tipe air tawar yang dipilih tidak valid.');
+                }
+            },
             'air.*.type_is_lumpsum' => 'nullable|array',
             'air.*.type_tonase' => 'nullable|array',
             'air.*.kuantitas' => 'nullable|numeric|min:0',
@@ -1365,6 +1369,11 @@ class BiayaKapalController extends Controller
             'air.*.voyage' => 'nullable|string|max:255',
             'air.*.vendor' => 'nullable|string|max:255',
             'air.*.types' => 'nullable|array',
+            'air.*.types.*' => function ($attribute, $value, $fail) {
+                if ($value !== 'MANUAL' && !\Illuminate\Support\Facades\DB::table('master_pricelist_air_tawar')->where('id', $value)->exists()) {
+                    $fail('Tipe air tawar yang dipilih tidak valid.');
+                }
+            },
             'air.*.type_is_lumpsum' => 'nullable|array',
             'air.*.type_tonase' => 'nullable|array',
             'air.*.kuantitas' => 'nullable|numeric|min:0',
