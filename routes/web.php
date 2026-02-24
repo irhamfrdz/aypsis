@@ -2684,6 +2684,20 @@ Route::middleware(['auth'])->group(function () {
          ->name('pranota-uang-kenek.print')
          ->middleware('can:pranota-uang-kenek-view');
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🏷️ TAGIHAN SUPIR VENDOR MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════
+    Route::resource('tagihan-supir-vendor', \App\Http\Controllers\TagihanSupirVendorController::class)
+         ->middleware([
+             'index' => 'can:tagihan-supir-vendor-view',
+             'create' => 'can:tagihan-supir-vendor-create',
+             'store' => 'can:tagihan-supir-vendor-create',
+             'show' => 'can:tagihan-supir-vendor-view',
+             'edit' => 'can:tagihan-supir-vendor-update',
+             'update' => 'can:tagihan-supir-vendor-update',
+             'destroy' => 'can:tagihan-supir-vendor-delete'
+         ])->except(['create', 'store']);
+
     // Debug route untuk surat jalan
     Route::get('/debug-surat-jalan', function() {
         $data = [];
