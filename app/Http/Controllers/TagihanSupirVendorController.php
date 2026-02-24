@@ -15,7 +15,7 @@ class TagihanSupirVendorController extends Controller
     public function index(Request $request)
     {
         // Add basic query with pagination and eager loading related suratJalan
-        $query = \App\Models\TagihanSupirVendor::with(['suratJalan', 'creator', 'updater']);
+        $query = \App\Models\TagihanSupirVendor::with(['suratJalan', 'vendor', 'creator', 'updater']);
 
         // Handle search filter
         if ($request->has('search') && $request->search != '') {
@@ -70,17 +70,26 @@ class TagihanSupirVendorController extends Controller
 
         $suratJalan = \App\Models\SuratJalan::with(['order', 'tujuanPengambilanRelation', 'tujuanPengirimanRelation'])->findOrFail($suratJalanId);
 
-        $pricelist = \App\Models\MasterPricelistVendorSupir::where('ke', $suratJalan->tujuan_pengambilan)
-            ->where('jenis_kontainer', $suratJalan->size ?? 20)
-            ->where('status', 'aktif')
-            ->first();
+        $dariRaw = $suratJalan->tujuanPengambilanRelation->nama ?? ($suratJalan->order->tujuan_ambil ?? null);
+        $keRaw = $suratJalan->tujuanPengirimanRelation->nama ?? ($suratJalan->order->tujuan_kirim ?? null);
+        $dari = $suratJalan->tujuan_pengambilan ?? $dariRaw;
+        $ke = $suratJalan->tujuan_pengiriman ?? $keRaw;
+        $jenis_kontainer = $suratJalan->size ?? 20;
 
-        $nominal = 0;
-        if ($pricelist) {
-            $nominal = $pricelist->nominal;
-        }
+        $pricelists = \App\Models\MasterPricelistVendorSupir::where('status', 'aktif')
+            ->where(function($q) use ($dari, $ke) {
+                // Match the strings exactly or loosely
+                $q->where('ke', $ke)
+                  ->orWhere('ke', $dari);
+                  // using original logic of checking 'ke' against tujuan_pengambilan (dari) 
+                  // or tujuan_pengiriman (ke) if they just match 'ke' text in pricelist.
+            })
+            ->where('jenis_kontainer', $jenis_kontainer)
+            ->get();
 
-        return view('tagihan-supir-vendor.create', compact('suratJalan', 'nominal'));
+        $vendors = \App\Models\VendorSupir::orderBy('nama_vendor')->get();
+
+        return view('tagihan-supir-vendor.create', compact('suratJalan', 'vendors', 'pricelists', 'dari', 'ke', 'jenis_kontainer'));
     }
 
     /**
@@ -93,6 +102,7 @@ class TagihanSupirVendorController extends Controller
     {
         $request->validate([
             'surat_jalan_id' => 'required|exists:surat_jalans,id',
+            'vendor_id' => 'required|exists:vendor_supirs,id',
             'nominal' => 'required|numeric',
             'adjustment' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
@@ -113,6 +123,7 @@ class TagihanSupirVendorController extends Controller
 
         $tagihan = \App\Models\TagihanSupirVendor::create([
             'surat_jalan_id' => $suratJalan->id,
+            'vendor_id' => $request->vendor_id,
             'nama_supir' => $suratJalan->supir,
             'dari' => $suratJalan->tujuan_pengambilan ?? $dari,
             'ke' => $suratJalan->tujuan_pengiriman ?? $ke,
@@ -151,8 +162,9 @@ class TagihanSupirVendorController extends Controller
     public function edit($id)
     {
         $tagihanSupirVendor = \App\Models\TagihanSupirVendor::findOrFail($id);
+        $vendors = \App\Models\VendorSupir::orderBy('nama_vendor')->get();
         
-        return view('tagihan-supir-vendor.edit', compact('tagihanSupirVendor'));
+        return view('tagihan-supir-vendor.edit', compact('tagihanSupirVendor', 'vendors'));
     }
 
     /**
@@ -165,6 +177,7 @@ class TagihanSupirVendorController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'vendor_id' => 'required|exists:vendor_supirs,id',
             'nominal' => 'required|numeric',
             'adjustment' => 'nullable|numeric',
             'status_pembayaran' => 'required|in:belum_dibayar,sebagian,lunas',
@@ -174,6 +187,7 @@ class TagihanSupirVendorController extends Controller
         $tagihanSupirVendor = \App\Models\TagihanSupirVendor::findOrFail($id);
         
         $tagihanSupirVendor->update([
+            'vendor_id' => $request->vendor_id,
             'nominal' => $request->nominal,
             'adjustment' => $request->adjustment ?? 0,
             'status_pembayaran' => $request->status_pembayaran,

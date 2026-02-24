@@ -69,7 +69,7 @@
                 <thead class="bg-gray-50 text-gray-600 font-medium border-b border-gray-100">
                     <tr>
                         <th class="px-6 py-4 whitespace-nowrap">No Surat Jalan</th>
-                        <th class="px-6 py-4">Nama Supir</th>
+                        <th class="px-6 py-4">Vendor & Supir</th>
                         <th class="px-6 py-4">Rute & Kontainer</th>
                         <th class="px-6 py-4">Nominal</th>
                         <th class="px-6 py-4 text-center">Status</th>
@@ -83,7 +83,10 @@
                             {{ $tagihan->suratJalan->no_surat_jalan ?? '-' }}
                             <div class="text-xs text-gray-500 font-normal mt-1">{{ optional($tagihan->created_at)->format('d/m/Y H:i') }}</div>
                         </td>
-                        <td class="px-6 py-4 font-medium">{{ $tagihan->nama_supir }}</td>
+                        <td class="px-6 py-4">
+                            <span class="font-medium text-gray-900 block">{{ $tagihan->vendor->nama_vendor ?? '-' }}</span>
+                            <span class="text-sm text-gray-500 block">{{ $tagihan->nama_supir }}</span>
+                        </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center text-gray-600">
                                 <span class="truncate max-w-[100px]">{{ $tagihan->dari }}</span>

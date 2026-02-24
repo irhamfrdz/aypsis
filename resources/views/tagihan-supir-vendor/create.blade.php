@@ -72,6 +72,21 @@
                 <!-- Input Section -->
                 <div class="space-y-5">
                     
+                    <div class="form-group mb-4">
+                        <label for="vendor_id" class="block text-sm font-medium text-gray-700 mb-1.5">Pilih Vendor<span class="text-red-500 ml-1">*</span></label>
+                        <select name="vendor_id" id="vendor_id" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow @error('vendor_id') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror">
+                            <option value="">-- Pilih Vendor --</option>
+                            @foreach($vendors as $vendor)
+                                <option value="{{ $vendor->id }}" {{ old('vendor_id') == $vendor->id ? 'selected' : '' }}>
+                                    {{ $vendor->nama_vendor }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('vendor_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="nominal" class="block text-sm font-medium text-gray-700 mb-1.5">Nominal Tagihan<span class="text-red-500 ml-1">*</span></label>
@@ -79,11 +94,12 @@
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 sm:text-sm font-medium pointer-events-none">Rp</span>
                                 <input type="number" name="nominal" id="nominal" required
                                     class="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow @error('nominal') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror"
-                                    value="{{ old('nominal', $nominal) }}">
+                                    value="{{ old('nominal', 0) }}">
                             </div>
                             @error('nominal')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
+                            <p class="mt-1 text-xs text-gray-500" id="nominal_helpText">Akan otomatis terisi jika vendor memiliki pricelist aktif.</p>
                         </div>
 
                         <div class="form-group">
@@ -102,12 +118,12 @@
                     </div>
 
                     <!-- Total Display -->
-                    <div class="p-3 bg-blue-50 border border-blue-100 rounded-lg flex justify-between items-center px-4">
+                    <div class="p-3 bg-blue-50 border border-blue-100 rounded-lg flex justify-between items-center px-4 mt-4">
                         <span class="text-sm font-medium text-blue-800">Total Akhir:</span>
                         <span class="text-lg font-bold text-blue-900" id="total_display">Rp 0</span>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group mt-4">
                         <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-1.5">Keterangan Tambahan</label>
                         <textarea name="keterangan" id="keterangan" rows="3" 
                             class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow @error('keterangan') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror" 
@@ -136,22 +152,48 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const vendorSelect = document.getElementById('vendor_id');
         const nominalInput = document.getElementById('nominal');
-        const adjustmentInput = document.getElementById('adjustment'); // Corrected ID from ajaxInput to adjustmentInput
+        const adjustmentInput = document.getElementById('adjustment');
         const totalDisplay = document.getElementById('total_display');
+
+        // Prepare pricelist mapping for frontend
+        const pricelists = @json($pricelists);
+
+        // Function allowing search via JS by vendor_id
+        function updateNominalByVendor() {
+            const vendorId = vendorSelect.value;
+            if(!vendorId) {
+                // If want to reset when empty
+                // nominalInput.value = 0;
+            } else {
+                // Find matching pricelist
+                const found = pricelists.find(p => p.vendor_id == vendorId);
+                if(found) {
+                    nominalInput.value = found.nominal;
+                } else {
+                    nominalInput.value = 0; // or leave old value
+                }
+            }
+            updateTotal();
+        }
 
         function updateTotal() {
             const nominal = parseFloat(nominalInput.value) || 0;
-            const adjustment = parseFloat(adjustmentInput.value) || 0; // Corrected ID
+            const adjustment = parseFloat(adjustmentInput.value) || 0;
             const total = nominal + adjustment;
             
             totalDisplay.textContent = 'Rp ' + total.toLocaleString('id-ID');
         }
 
+        vendorSelect.addEventListener('change', updateNominalByVendor);
         nominalInput.addEventListener('input', updateTotal);
-        adjustmentInput.addEventListener('input', updateTotal); // Corrected ID
+        adjustmentInput.addEventListener('input', updateTotal);
         
-        // Initial calculation
+        // Initial setup
+        @if(!old('nominal'))
+            updateNominalByVendor(); 
+        @endif
         updateTotal();
     });
 </script>

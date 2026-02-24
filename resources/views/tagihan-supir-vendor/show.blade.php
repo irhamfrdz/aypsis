@@ -49,8 +49,13 @@
                     </div>
                     
                     <div>
-                        <div class="text-sm text-gray-500">Nama Supir</div>
-                        <div class="font-medium text-gray-900 mt-1">{{ $tagihanSupirVendor->nama_supir }}</div>
+                        <div class="text-sm text-gray-500">Nama Supir / Vendor</div>
+                        <div class="font-medium text-gray-900 mt-1">
+                            {{ $tagihanSupirVendor->nama_supir }} 
+                            @if($tagihanSupirVendor->vendor)
+                                <span class="text-gray-500 text-sm">({{ $tagihanSupirVendor->vendor->nama_vendor }})</span>
+                            @endif
+                        </div>
                     </div>
 
                     <div>

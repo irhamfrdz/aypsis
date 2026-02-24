@@ -74,6 +74,21 @@
                 <!-- Input Section -->
                 <div class="space-y-5">
                     
+                    <div class="form-group mb-4">
+                        <label for="vendor_id" class="block text-sm font-medium text-gray-700 mb-1.5">Pilih Vendor<span class="text-red-500 ml-1">*</span></label>
+                        <select name="vendor_id" id="vendor_id" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm transition-shadow @error('vendor_id') border-red-500 focus:ring-red-500 focus:border-red-500 @enderror">
+                            <option value="">-- Pilih Vendor --</option>
+                            @foreach($vendors as $vendor)
+                                <option value="{{ $vendor->id }}" {{ old('vendor_id', $tagihanSupirVendor->vendor_id) == $vendor->id ? 'selected' : '' }}>
+                                    {{ $vendor->nama_vendor }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('vendor_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="form-group">
                             <label for="nominal" class="block text-sm font-medium text-gray-700 mb-1.5">Nominal Tagihan<span class="text-red-500 ml-1">*</span></label>

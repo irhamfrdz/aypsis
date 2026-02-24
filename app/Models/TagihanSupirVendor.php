@@ -16,6 +16,11 @@ class TagihanSupirVendor extends Model
         return $this->belongsTo(SuratJalan::class);
     }
 
+    public function vendor()
+    {
+        return $this->belongsTo(VendorSupir::class, 'vendor_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
