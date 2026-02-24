@@ -450,9 +450,15 @@
                 <div>
                     <div class="flex justify-between items-center mb-1">
                         <label class="block text-sm font-medium text-gray-700">Supir</label>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="checkbox-supir-customer" class="mr-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" onchange="toggleSupirCustomer(this)">
-                            <label for="checkbox-supir-customer" class="text-xs text-gray-500 cursor-pointer">Supir Customer</label>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="checkbox-supir-customer" class="mr-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" onchange="toggleSupirCustomer(this)">
+                                <label for="checkbox-supir-customer" class="text-xs text-gray-500 cursor-pointer">Supir Customer</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="checkbox-supir-vendor" class="mr-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <label for="checkbox-supir-vendor" class="text-xs text-gray-500 cursor-pointer">Supir Vendor</label>
+                            </div>
                         </div>
                     </div>
                         <select name="supir"
