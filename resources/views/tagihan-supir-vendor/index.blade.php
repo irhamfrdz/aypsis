@@ -95,7 +95,15 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 font-medium">
-                            Rp {{ number_format($tagihan->nominal, 0, ',', '.') }}
+                            <div class="text-gray-900">Rp {{ number_format($tagihan->nominal + $tagihan->adjustment, 0, ',', '.') }}</div>
+                            @if($tagihan->adjustment != 0)
+                                <div class="text-[10px] text-gray-500 mt-0.5">
+                                    {{ number_format($tagihan->nominal, 0, ',', '.') }} 
+                                    <span class="{{ $tagihan->adjustment > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $tagihan->adjustment > 0 ? '+' : '' }}{{ number_format($tagihan->adjustment, 0, ',', '.') }}
+                                    </span>
+                                </div>
+                            @endif
                         </td>
                         <td class="px-6 py-4 text-center">
                             @if($tagihan->status_pembayaran == 'lunas')

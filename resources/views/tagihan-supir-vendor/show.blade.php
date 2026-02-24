@@ -72,7 +72,21 @@
                 <div class="space-y-4">
                     <div>
                         <div class="text-sm text-gray-500">Nominal Tagihan</div>
-                        <div class="text-2xl font-bold text-gray-900 mt-1">Rp {{ number_format($tagihanSupirVendor->nominal, 0, ',', '.') }}</div>
+                        <div class="font-medium text-gray-900 mt-1">Rp {{ number_format($tagihanSupirVendor->nominal, 0, ',', '.') }}</div>
+                    </div>
+
+                    @if($tagihanSupirVendor->adjustment != 0)
+                    <div>
+                        <div class="text-sm text-gray-500">Adjustment</div>
+                        <div class="font-medium {{ $tagihanSupirVendor->adjustment > 0 ? 'text-green-600' : 'text-red-600' }} mt-1">
+                            {{ $tagihanSupirVendor->adjustment > 0 ? '+' : '' }}Rp {{ number_format($tagihanSupirVendor->adjustment, 0, ',', '.') }}
+                        </div>
+                    </div>
+                    @endif
+                    
+                    <div class="pt-2 border-t border-gray-100">
+                        <div class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Total Akhir</div>
+                        <div class="text-2xl font-bold text-blue-600 mt-1">Rp {{ number_format($tagihanSupirVendor->nominal + $tagihanSupirVendor->adjustment, 0, ',', '.') }}</div>
                     </div>
                     
                     <div>

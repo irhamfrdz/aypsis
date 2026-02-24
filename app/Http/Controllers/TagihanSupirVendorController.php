@@ -50,12 +50,11 @@ class TagihanSupirVendorController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Show the form for creating a new resource.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function create(Request $request)
     {
         $request->validate([
             'surat_jalan_id' => 'required|exists:surat_jalans,id',
@@ -71,9 +70,6 @@ class TagihanSupirVendorController extends Controller
 
         $suratJalan = \App\Models\SuratJalan::with(['order', 'tujuanPengambilanRelation', 'tujuanPengirimanRelation'])->findOrFail($suratJalanId);
 
-        $dari = $suratJalan->tujuanPengambilanRelation->nama ?? ($suratJalan->order->tujuan_ambil ?? null);
-        $ke = $suratJalan->tujuanPengirimanRelation->nama ?? ($suratJalan->order->tujuan_kirim ?? null);
-
         $pricelist = \App\Models\MasterPricelistVendorSupir::where('ke', $suratJalan->tujuan_pengambilan)
             ->where('jenis_kontainer', $suratJalan->size ?? 20)
             ->where('status', 'aktif')
@@ -84,20 +80,54 @@ class TagihanSupirVendorController extends Controller
             $nominal = $pricelist->nominal;
         }
 
+        return view('tagihan-supir-vendor.create', compact('suratJalan', 'nominal'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'surat_jalan_id' => 'required|exists:surat_jalans,id',
+            'nominal' => 'required|numeric',
+            'adjustment' => 'nullable|numeric',
+            'status_pembayaran' => 'required|in:belum_dibayar,sebagian,lunas',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        $suratJalanId = $request->surat_jalan_id;
+
+        // Cek apakah sudah ada
+        $existing = \App\Models\TagihanSupirVendor::where('surat_jalan_id', $suratJalanId)->exists();
+        if ($existing) {
+            return redirect()->back()->with('error', 'Tagihan Supir Vendor untuk Surat Jalan ini sudah ada.');
+        }
+
+        $suratJalan = \App\Models\SuratJalan::with(['order', 'tujuanPengambilanRelation', 'tujuanPengirimanRelation'])->findOrFail($suratJalanId);
+
+        $dari = $suratJalan->tujuanPengambilanRelation->nama ?? ($suratJalan->order->tujuan_ambil ?? null);
+        $ke = $suratJalan->tujuanPengirimanRelation->nama ?? ($suratJalan->order->tujuan_kirim ?? null);
+
         $tagihan = \App\Models\TagihanSupirVendor::create([
             'surat_jalan_id' => $suratJalan->id,
             'nama_supir' => $suratJalan->supir,
             'dari' => $suratJalan->tujuan_pengambilan ?? $dari,
             'ke' => $suratJalan->tujuan_pengiriman ?? $ke,
             'jenis_kontainer' => $suratJalan->size ?? 20,
-            'nominal' => $nominal,
-            'status_pembayaran' => 'belum_dibayar',
+            'nominal' => $request->nominal,
+            'adjustment' => $request->adjustment ?? 0,
+            'status_pembayaran' => $request->status_pembayaran,
+            'keterangan' => $request->keterangan,
             'created_by' => \Illuminate\Support\Facades\Auth::id(),
             'updated_by' => \Illuminate\Support\Facades\Auth::id(),
         ]);
 
-        return redirect()->route('tagihan-supir-vendor.edit', $tagihan->id)
-            ->with('success', 'Tagihan Supir Vendor berhasil dibuat. Silakan input nominal.');
+        return redirect()->route('tagihan-supir-vendor.index')
+            ->with('success', 'Tagihan Supir Vendor berhasil dibuat.');
     }
 
     /**
@@ -137,6 +167,7 @@ class TagihanSupirVendorController extends Controller
     {
         $request->validate([
             'nominal' => 'required|numeric',
+            'adjustment' => 'nullable|numeric',
             'status_pembayaran' => 'required|in:belum_dibayar,sebagian,lunas',
             'keterangan' => 'nullable|string',
         ]);
@@ -145,6 +176,7 @@ class TagihanSupirVendorController extends Controller
         
         $tagihanSupirVendor->update([
             'nominal' => $request->nominal,
+            'adjustment' => $request->adjustment ?? 0,
             'status_pembayaran' => $request->status_pembayaran,
             'keterangan' => $request->keterangan,
             'updated_by' => \Illuminate\Support\Facades\Auth::id(),
