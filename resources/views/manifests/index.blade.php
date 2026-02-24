@@ -563,9 +563,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-        });
-    });
-
     // Satuan functionality
     const satuanInputs = document.querySelectorAll('.satuan-input');
     satuanInputs.forEach(input => {
