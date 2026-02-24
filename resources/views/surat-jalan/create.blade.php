@@ -456,7 +456,7 @@
                                 <label for="checkbox-supir-customer" class="text-xs text-gray-500 cursor-pointer">Supir Customer</label>
                             </div>
                             <div class="flex items-center">
-                                <input type="checkbox" id="checkbox-supir-vendor" class="mr-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <input type="checkbox" id="checkbox-supir-vendor" name="is_supir_vendor" value="1" {{ old('is_supir_vendor') ? 'checked' : '' }} class="mr-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                                 <label for="checkbox-supir-vendor" class="text-xs text-gray-500 cursor-pointer">Supir Vendor</label>
                             </div>
                         </div>

@@ -399,6 +399,38 @@ class SuratJalanController extends Controller
                 'status_pembayaran_uang_jalan' => $suratJalan->status_pembayaran_uang_jalan
             ]);
 
+            // Create tagihan_supir_vendors record if is_supir_vendor is checked
+            if ($request->filled('is_supir_vendor') && $request->is_supir_vendor == 1) {
+                try {
+                    $nominal = 0;
+                    $pricelist = \App\Models\MasterPricelistVendorSupir::where('dari', $suratJalan->tujuan_pengambilan)
+                        ->where('ke', $suratJalan->tujuan_pengiriman)
+                        ->where('jenis_kontainer', $suratJalan->size)
+                        ->where('status', 'aktif')
+                        ->first();
+
+                    if ($pricelist) {
+                        $nominal = $pricelist->nominal;
+                    }
+
+                    \App\Models\TagihanSupirVendor::create([
+                        'surat_jalan_id' => $suratJalan->id,
+                        'nama_supir' => $suratJalan->supir,
+                        'dari' => $suratJalan->tujuan_pengambilan,
+                        'ke' => $suratJalan->tujuan_pengiriman,
+                        'jenis_kontainer' => $suratJalan->size,
+                        'nominal' => $nominal,
+                        'status_pembayaran' => 'belum_dibayar',
+                        'keterangan' => 'Tagihan otomatis dari Surat Jalan ' . $suratJalan->no_surat_jalan,
+                        'created_by' => Auth::id(),
+                        'updated_by' => Auth::id(),
+                    ]);
+                    Log::info('Tagihan Supir Vendor created for Surat Jalan', ['surat_jalan_id' => $suratJalan->id, 'nominal' => $nominal]);
+                } catch (\Exception $e) {
+                    Log::error('Error creating tagihan supir vendor: ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
+                }
+            }
+
             // Langsung buat approval record untuk surat jalan
             \App\Models\SuratJalanApproval::create([
                 'surat_jalan_id' => $suratJalan->id,
