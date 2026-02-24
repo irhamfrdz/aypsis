@@ -27,6 +27,13 @@
                         </svg>
                         Update No. Urut
                     </button>
+                    <button onclick="autoUpdateSize('{{ $namaKapal }}', '{{ $noVoyage }}')"
+                       class="inline-flex items-center justify-center px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        Update Size
+                    </button>
                     @can('manifest-edit')
                     <button type="button" onclick="updateManifestData(true)" 
                             class="inline-flex items-center px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-lg hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500">
@@ -618,6 +625,39 @@ document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
         fetch('{{ route("report.manifests.auto-update-nomor-urut") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ 
+                nama_kapal: namaKapal,
+                no_voyage: noVoyage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Terjadi kesalahan network');
+        });
+    }
+
+    window.autoUpdateSize = function(namaKapal, noVoyage) {
+        if (!confirm('Apakah Anda yakin ingin mengupdate size kontainer secara otomatis berdasarkan master data?')) {
+            return;
+        }
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        fetch('{{ route("report.manifests.auto-update-size") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

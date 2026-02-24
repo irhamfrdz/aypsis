@@ -345,6 +345,59 @@ class ManifestController extends Controller
     }
 
     /**
+     * Auto update size kontainer based on kontainers and stock_kontainers
+     */
+    public function autoUpdateSize(Request $request)
+    {
+        $namaKapal = $request->input('nama_kapal');
+        $noVoyage = $request->input('no_voyage');
+
+        if (!$namaKapal || !$noVoyage) {
+            return response()->json(['success' => false, 'message' => 'Data kapal dan voyage tidak valid'], 400);
+        }
+
+        $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+        $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+        $noVoyage = trim($noVoyage);
+
+        $manifests = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            ->where('no_voyage', $noVoyage)
+            ->where(function($query) {
+                $query->whereNull('size_kontainer')
+                      ->orWhere('size_kontainer', '');
+            })
+            ->where('nomor_kontainer', '!=', 'Cargo')
+            ->get();
+
+        $updatedCount = 0;
+        foreach ($manifests as $manifest) {
+            $cleanNomor = str_replace([' ', '-'], '', $manifest->nomor_kontainer);
+            $foundUkuran = null;
+
+            $kontainer = \App\Models\Kontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
+            if ($kontainer && !empty($kontainer->ukuran)) {
+                $foundUkuran = $kontainer->ukuran;
+            } else {
+                $stockKontainer = \App\Models\StockKontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
+                if ($stockKontainer && !empty($stockKontainer->ukuran)) {
+                    $foundUkuran = $stockKontainer->ukuran;
+                }
+            }
+
+            if ($foundUkuran) {
+                $manifest->size_kontainer = $foundUkuran;
+                $manifest->save();
+                $updatedCount++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Berhasil update size kontainer untuk {$updatedCount} manifest.",
+        ]);
+    }
+
+    /**
      * Auto update nomor urut for ALL voyages
      */
     public function autoUpdateNomorUrutAll(Request $request)
