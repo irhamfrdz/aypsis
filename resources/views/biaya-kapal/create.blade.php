@@ -3494,8 +3494,14 @@
         const pphValue = section.querySelector('.pph-value');
         const grandTotalDisplay = section.querySelector('.grand-total-display');
         const grandTotalValue = section.querySelector('.grand-total-value');
+
+        // Vendor check for Abqori PPH logic
+        const vendorSelect = section.querySelector('.vendor-select-air');
+        const vendorName = vendorSelect ? (vendorSelect.options[vendorSelect.selectedIndex]?.text || '').toLowerCase() : '';
+        const isAbqori = vendorName.includes('abqori');
         
         let totalCost = 0;
+        let taxableCost = 0;
 
         // Iterate through each type container to calculate individual costs
         typeContainers.forEach(container => {
@@ -3514,24 +3520,39 @@
                 }
                 
                 const isLumpsum = checkbox ? checkbox.checked : false;
+                let currentItemCost = 0;
 
                 if (isLumpsum) {
-                    totalCost += harga; // Fixed price
+                    currentItemCost = harga; // Fixed price
                 } else {
-                    totalCost += (harga * selectedKuantitas); // Price * Qty
+                    currentItemCost = (harga * selectedKuantitas); // Price * Qty
+                }
+
+                totalCost += currentItemCost;
+
+                // For Abqori, only "Biaya Agency" and "Jasa Air" are taxable
+                if (isAbqori) {
+                    const typeText = (select.options[select.selectedIndex]?.text || '').toLowerCase();
+                    if (typeText.includes('agency') || typeText.includes('jasa air')) {
+                        taxableCost += currentItemCost;
+                    }
+                } else {
+                    taxableCost += currentItemCost;
                 }
             }
         });
 
         let waterCost = Math.round(totalCost); // This is now the calculated base cost
         
-        let jasaAir = 0; // Jasa Air removed as per request
+        let jasaAir = parseFloat(jasaAirInput ? jasaAirInput.value : 0) || 0; 
         
         // Sub Total = (Price * Qty) + Jasa Air
         let subTotal = waterCost + jasaAir;
         
-        // PPH = Sub Total * 2%
-        const pph = Math.round(subTotal * 0.02);
+        // PPH calculation adjusted for Abqori
+        // jasaAir (the hidden input) is always taxable if Abqori is chosen (it's Jasa Air Jakarta)
+        let finalTaxableBase = isAbqori ? (taxableCost + jasaAir) : subTotal;
+        const pph = Math.round(finalTaxableBase * 0.02);
         const grandTotal = subTotal - pph;
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';

@@ -679,8 +679,25 @@ class BiayaKapalController extends Controller
                                 
                                 $currentSubTotal = $waterCost + $currentJasaAir;
                                 
-                                // PPH is on Sub Total
-                                $currentPph = round($currentSubTotal * 0.02);
+                                // PPH Logic for Abqori: only Agency and Jasa Air are taxable
+                                $isAbqori = str_contains(strtoupper($section['vendor'] ?? ''), 'ABQORI');
+                                $isTypeTaxable = true;
+                                if ($isAbqori) {
+                                    $taxableTerms = ['AGENCY', 'JASA AIR'];
+                                    $isTypeTaxable = false;
+                                    foreach ($taxableTerms as $term) {
+                                        if (str_contains(strtoupper($typeKeterangan ?? ''), $term)) {
+                                            $isTypeTaxable = true;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                // If type is taxable, tax the whole subtotal. 
+                                // Otherwise, if it's the first record, tax only the jasaAir part (Jasa Air Jakarta)
+                                $pphBase = $isTypeTaxable ? $currentSubTotal : $currentJasaAir;
+                                $currentPph = round($pphBase * 0.02);
+                                
                                 $currentGrandTotal = $currentSubTotal - $currentPph;
 
                                 // Create BiayaKapalAir record
@@ -727,7 +744,24 @@ class BiayaKapalController extends Controller
                         // Recalculate if lumpsum
                         if ($isLumpsum) {
                             $subTotal = $harga + $jasaAir;
-                            $pph = round($jasaAir * 0.02);
+                            
+                            // PPH calculation for Abqori
+                            $isAbqori = str_contains(strtoupper($section['vendor'] ?? ''), 'ABQORI');
+                            $isTypeTaxable = true;
+                            if ($isAbqori) {
+                                $taxableTerms = ['AGENCY', 'JASA AIR'];
+                                $isTypeTaxable = false;
+                                foreach ($taxableTerms as $term) {
+                                    if (str_contains(strtoupper($typeKeterangan ?? ''), $term)) {
+                                        $isTypeTaxable = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            $pphBase = $isTypeTaxable ? $subTotal : $jasaAir;
+                            $pph = round($pphBase * 0.02);
+                            
                             $grandTotal = $subTotal - $pph;
                         }
 
