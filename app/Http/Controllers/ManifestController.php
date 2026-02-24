@@ -654,6 +654,30 @@ class ManifestController extends Controller
                     $tipeKontainer = 'Cargo';
                 }
 
+                // Jika size_kontainer kosong, cari di kontainers dan stock_kontainers
+                if (empty($sizeKontainer) && $nomorKontainer !== 'Cargo') {
+                    $cleanNomor = str_replace([' ', '-'], '', $nomorKontainer);
+                    $foundUkuran = null;
+
+                    $kontainer = \App\Models\Kontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
+                    if ($kontainer && !empty($kontainer->ukuran)) {
+                        $foundUkuran = $kontainer->ukuran;
+                    } else {
+                        $stockKontainer = \App\Models\StockKontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
+                        if ($stockKontainer && !empty($stockKontainer->ukuran)) {
+                            $foundUkuran = $stockKontainer->ukuran;
+                        }
+                    }
+
+                    if ($foundUkuran) {
+                        $sizeKontainer = $foundUkuran;
+                        if (!isset($autoFilledWarnings)) {
+                            $autoFilledWarnings = [];
+                        }
+                        $autoFilledWarnings[] = "Baris {$rowNumber}: Size otomatis diisi {$foundUkuran} untuk kontainer {$nomorKontainer}";
+                    }
+                }
+
                 // Validate required fields
                 if (empty($namaKapal) || empty($noVoyage) || empty($nomorBl)) {
                     $errors[] = "Baris {$rowNumber}: Nama Kapal, No Voyage, dan No BL wajib diisi";
@@ -754,16 +778,29 @@ class ManifestController extends Controller
             if ($successCount > 0 && empty($errors)) {
                 // Redirect to first ship's manifest page
                 $firstShip = reset($shipsProcessed);
+                
+                if (!empty($autoFilledWarnings)) {
+                    return redirect()->route('report.manifests.index', [
+                        'nama_kapal' => $firstShip['nama_kapal'],
+                        'no_voyage' => $firstShip['no_voyage']
+                    ])->with('warning', "Berhasil import {$successCount} data manifest{$shipSummary}. Namun terdapat " . count($autoFilledWarnings) . " autofill size kontainer.")
+                      ->with('errors_list', array_slice($autoFilledWarnings, 0, 15));
+                }
+
                 return redirect()->route('report.manifests.index', [
                     'nama_kapal' => $firstShip['nama_kapal'],
                     'no_voyage' => $firstShip['no_voyage']
                 ])->with('success', "Berhasil import {$successCount} data manifest{$shipSummary}");
             } elseif ($successCount > 0 && !empty($errors)) {
                 $firstShip = reset($shipsProcessed);
+                
+                $allWarningsAndErrors = array_merge($errors, $autoFilledWarnings ?? []);
+                
                 return redirect()->route('report.manifests.index', [
                     'nama_kapal' => $firstShip['nama_kapal'],
                     'no_voyage' => $firstShip['no_voyage']
-                ])->with('warning', "Import selesai dengan {$successCount} data berhasil{$shipSummary}, namun ada " . count($errors) . " error");
+                ])->with('warning', "Import selesai dengan {$successCount} data berhasil{$shipSummary}, namun ada " . count($errors) . " error dan " . (!empty($autoFilledWarnings) ? count($autoFilledWarnings) : 0) . " peringatan autofill.")
+                  ->with('errors_list', array_slice($allWarningsAndErrors, 0, 15));
             } else {
                 return redirect()->back()
                     ->with('error', 'Import gagal: ' . implode('; ', array_slice($errors, 0, 5)));
