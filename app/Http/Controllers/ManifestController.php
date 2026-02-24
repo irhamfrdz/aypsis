@@ -1003,5 +1003,27 @@ class ManifestController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update satuan via AJAX
+     */
+    public function updateSatuan(Request $request, string $id)
+    {
+        $manifest = Manifest::findOrFail($id);
+
+        $validated = $request->validate([
+            'satuan' => 'nullable|string|max:255',
+        ]);
+
+        $validated['updated_by'] = Auth::id();
+
+        $manifest->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Satuan berhasil diperbarui',
+            'satuan' => $manifest->satuan
+        ]);
+    }
 }
 

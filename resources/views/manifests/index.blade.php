@@ -193,6 +193,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe & Size</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Satuan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SHIPPER</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CONSIGNEE</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -270,6 +271,28 @@
                             <td class="px-6 py-4 text-sm text-gray-900">
                                 {{ $manifest->nama_barang }}
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @can('manifest-edit')
+                                <div class="flex items-center gap-2">
+                                    <input type="text" 
+                                           class="text-sm font-medium text-gray-900 border border-gray-300 rounded px-2 py-1 w-20 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 satuan-input" 
+                                           data-manifest-id="{{ $manifest->id }}"
+                                           data-original-value="{{ $manifest->satuan }}"
+                                           value="{{ $manifest->satuan }}"
+                                           title="Edit satuan, lalu klik Simpan">
+                                    <button type="button" 
+                                            class="save-satuan-btn px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded transition-colors hidden"
+                                            data-manifest-id="{{ $manifest->id }}"
+                                            title="Simpan">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                @else
+                                <div class="text-sm text-gray-900">{{ $manifest->satuan ?? '-' }}</div>
+                                @endcan
+                            </td>
                             <td class="px-6 py-4 text-sm text-gray-900">
                                 {{ $manifest->pengirim }}
                             </td>
@@ -312,7 +335,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-12 text-center">
+                            <td colspan="10" class="px-6 py-12 text-center">
                                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
@@ -539,6 +562,76 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+        });
+    });
+
+    // Satuan functionality
+    const satuanInputs = document.querySelectorAll('.satuan-input');
+    satuanInputs.forEach(input => {
+        const manifestId = input.dataset.manifestId;
+        const saveBtn = document.querySelector(`.save-satuan-btn[data-manifest-id="${manifestId}"]`);
+
+        input.addEventListener('focus', function() {
+            saveBtn.classList.remove('hidden');
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                updateSatuan(manifestId, this.value, this);
+            }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.value = this.dataset.originalValue;
+                saveBtn.classList.add('hidden');
+            }
+        });
+    });
+
+    document.querySelectorAll('.save-satuan-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const manifestId = this.dataset.manifestId;
+            const input = document.querySelector(`.satuan-input[data-manifest-id="${manifestId}"]`);
+            updateSatuan(manifestId, input.value, input);
+        });
+    });
+
+    function updateSatuan(manifestId, newValue, element) {
+        element.classList.add('opacity-50');
+        const saveBtn = document.querySelector(`.save-satuan-btn[data-manifest-id="${manifestId}"]`);
+        
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        
+        fetch(`/report/manifests/${manifestId}/update-satuan`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ satuan: newValue })
+        })
+        .then(response => response.json())
+        .then(data => {
+            element.classList.remove('opacity-50');
+            if (data.success) {
+                element.dataset.originalValue = data.satuan;
+                saveBtn.classList.add('hidden');
+                showToast('success', data.message);
+                element.classList.add('bg-green-100');
+                setTimeout(() => element.classList.remove('bg-green-100'), 1000);
+            } else {
+                showToast('error', data.message);
+                element.value = element.dataset.originalValue;
+            }
+        })
+        .catch(error => {
+            element.classList.remove('opacity-50');
+            element.value = element.dataset.originalValue;
+            showToast('error', 'Terjadi kesalahan');
+        });
+    }
 
     document.querySelectorAll('.save-urut-btn').forEach(btn => {
         btn.addEventListener('click', function() {

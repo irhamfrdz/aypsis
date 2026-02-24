@@ -4386,6 +4386,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::post('manifests/auto-update-size', [App\Http\Controllers\ManifestController::class, 'autoUpdateSize'])->name('manifests.auto-update-size');
     Route::post('manifests/{id}/update-nomor-bl', [App\Http\Controllers\ManifestController::class, 'updateNomorBl'])->name('manifests.update-nomor-bl');
     Route::post('manifests/{id}/update-nomor-urut', [App\Http\Controllers\ManifestController::class, 'updateNomorUrut'])->name('manifests.update-nomor-urut');
+    Route::post('manifests/{id}/update-satuan', [App\Http\Controllers\ManifestController::class, 'updateSatuan'])->name('manifests.update-satuan');
     Route::get('manifests/export', [App\Http\Controllers\ManifestController::class, 'export'])->name('manifests.export');
     Route::resource('manifests', App\Http\Controllers\ManifestController::class);
 });
