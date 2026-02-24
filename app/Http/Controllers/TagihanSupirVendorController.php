@@ -36,6 +36,15 @@ class TagihanSupirVendorController extends Controller
             $query->where('status_pembayaran', $request->status);
         }
 
+        // Handle invoice status filter
+        if ($request->has('status_invoice') && $request->status_invoice != '') {
+            if ($request->status_invoice == 'sudah') {
+                $query->whereNotNull('invoice_tagihan_vendor_id');
+            } elseif ($request->status_invoice == 'belum') {
+                $query->whereNull('invoice_tagihan_vendor_id');
+            }
+        }
+
         // Handle date range filter
         if ($request->has('start_date') && $request->start_date != '') {
             $query->whereDate('created_at', '>=', $request->start_date);

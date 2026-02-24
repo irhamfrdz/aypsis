@@ -11,7 +11,7 @@
 
     <!-- Filter & Search -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <form action="{{ route('tagihan-supir-vendor.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <form action="{{ route('tagihan-supir-vendor.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             
             <!-- Search Input -->
             <div class="col-span-1 md:col-span-2 relative">
@@ -28,10 +28,19 @@
             <!-- Status Pembayaran Filter -->
             <div class="col-span-1">
                 <select name="status" class="w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 py-2 px-3 text-sm">
-                    <option value="">Semua Status Pembayaran</option>
+                    <option value="">Status Pembayaran</option>
                     <option value="belum_dibayar" {{ request('status') == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
                     <option value="sebagian" {{ request('status') == 'sebagian' ? 'selected' : '' }}>Sebagian</option>
                     <option value="lunas" {{ request('status') == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                </select>
+            </div>
+
+            <!-- Status Invoice Filter -->
+            <div class="col-span-1">
+                <select name="status_invoice" class="w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 py-2 px-3 text-sm">
+                    <option value="">Status Invoice</option>
+                    <option value="sudah" {{ request('status_invoice') == 'sudah' ? 'selected' : '' }}>Sudah di-invoice</option>
+                    <option value="belum" {{ request('status_invoice') == 'belum' ? 'selected' : '' }}>Belum di-invoice</option>
                 </select>
             </div>
 
@@ -72,7 +81,7 @@
                         <th class="px-6 py-4">Vendor & Supir</th>
                         <th class="px-6 py-4">Rute & Kontainer</th>
                         <th class="px-6 py-4">Nominal</th>
-                        <th class="px-6 py-4">Invoice</th>
+                        <th class="px-6 py-4">Status Invoice</th>
                         <th class="px-6 py-4 text-center">Status</th>
                         <th class="px-6 py-4 text-center">Aksi</th>
                     </tr>
@@ -111,11 +120,18 @@
                         </td>
                         <td class="px-6 py-4">
                             @if($tagihan->invoice)
-                                <a href="{{ route('invoice-tagihan-vendor.show', $tagihan->invoice_tagihan_vendor_id) }}" class="text-blue-600 hover:text-blue-800 font-medium">
-                                    {{ $tagihan->invoice->no_invoice }}
-                                </a>
+                                <div class="flex flex-col">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 mb-1 w-fit">
+                                        Sudah di-invoice
+                                    </span>
+                                    <a href="{{ route('invoice-tagihan-vendor.show', $tagihan->invoice_tagihan_vendor_id) }}" class="text-blue-600 hover:text-blue-800 font-medium text-xs">
+                                        {{ $tagihan->invoice->no_invoice }}
+                                    </a>
+                                </div>
                             @else
-                                <span class="text-gray-400 text-xs italic">Belum di-invoice</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                                    Belum di-invoice
+                                </span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-center">
