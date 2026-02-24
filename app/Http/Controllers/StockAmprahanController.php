@@ -82,12 +82,8 @@ class StockAmprahanController extends Controller
 
         $data['created_by'] = Auth::id();
         
-        // Manual validation for mobil/alat_berat if is_langsung_pakai
+        // Manual validation for jumlah_pakai if is_langsung_pakai
         if ($request->is_langsung_pakai == '1') {
-            if (empty($request->mobil_id) && empty($request->alat_berat_id) && empty($request->kapal_id)) {
-                return redirect()->back()->withErrors(['mobil_id' => 'Pilih mobil, kapal, atau alat berat jika langsung pakai.'])->withInput();
-            }
-            
             if ($request->jumlah_pakai > $request->jumlah) {
                 return redirect()->back()->withErrors(['jumlah_pakai' => 'Jumlah pakai tidak boleh lebih besar dari jumlah stock.'])->withInput();
             }
@@ -192,11 +188,6 @@ class StockAmprahanController extends Controller
         $validator->after(function ($validator) use ($request) {
             $mobilId = $request->mobil_id;
             $alatBeratId = $request->alat_berat_id;
-
-            if (empty($mobilId) && empty($alatBeratId)) {
-                $validator->errors()->add('mobil_id', 'Pilih mobil atau alat berat.');
-                $validator->errors()->add('alat_berat_id', 'Pilih mobil atau alat berat.');
-            }
 
             if (!empty($mobilId) && !empty($alatBeratId)) {
                 $validator->errors()->add('mobil_id', 'Pilih salah satu: mobil atau alat berat.');
