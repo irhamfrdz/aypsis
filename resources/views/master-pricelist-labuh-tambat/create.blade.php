@@ -41,20 +41,60 @@
                 {{-- Nama Kapal --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nama Kapal <span class="text-red-500">*</span></label>
-                    <select name="nama_kapal" 
-                            class="w-full px-3 py-2 border @error('nama_kapal') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required>
-                        <option value="" disabled {{ old('nama_kapal') ? '' : 'selected' }}>Pilih Kapal</option>
-                        @foreach($kapals as $kapal)
-                            <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
-                                {{ $kapal->nama_kapal }} ({{ $kapal->nickname ?? '-' }})
-                            </option>
-                        @endforeach
-                    </select>
+                    <div class="relative" id="kapal-select-container">
+                        <input type="text" 
+                               id="search-kapal" 
+                               placeholder="Cari kapal..." 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-t-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-b-0"
+                               autocomplete="off">
+                        <select name="nama_kapal" 
+                                id="select-kapal"
+                                class="w-full px-3 py-2 border @error('nama_kapal') border-red-500 @else border-gray-300 @enderror rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                size="5"
+                                required>
+                            <option value="" disabled {{ old('nama_kapal') ? '' : 'selected' }}>Pilih Kapal</option>
+                            @foreach($kapals as $kapal)
+                                <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
+                                    {{ $kapal->nama_kapal }} ({{ $kapal->nickname ?? '-' }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     @error('nama_kapal')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const searchInput = document.getElementById('search-kapal');
+                        const selectKapal = document.getElementById('select-kapal');
+                        const originalOptions = Array.from(selectKapal.options);
+
+                        searchInput.addEventListener('input', function() {
+                            const searchTerm = this.value.toLowerCase();
+                            
+                            // Clear current options
+                            selectKapal.innerHTML = '';
+                            
+                            // Filter and add matching options
+                            const filteredOptions = originalOptions.filter(option => {
+                                return option.text.toLowerCase().includes(searchTerm) || option.value === "";
+                            });
+                            
+                            filteredOptions.forEach(option => {
+                                selectKapal.appendChild(option);
+                            });
+
+                            // If only one option plus placeholder, maybe select it? No, keep it manual.
+                        });
+
+                        // Make it look like a normal select when closed? 
+                        // Actually, using size="5" makes it an open list which might be better for search results.
+                        // If they want a real dropdown that opens/closes, that's more complex vanilla JS.
+                        // Let's stick to a simple filterable list for now.
+                    });
+                </script>
 
                 {{-- Biaya --}}
                 <div class="mb-4">
