@@ -42,24 +42,28 @@
                 {{-- Nama Kapal --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nama Kapal <span class="text-red-500">*</span></label>
-                    <div class="relative" id="kapal-select-container">
+                    <div class="relative" id="kapal-combobox">
                         <input type="text" 
-                               id="search-kapal" 
-                               placeholder="Cari kapal..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-t-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-b-0"
+                               id="kapal-search" 
+                               value="{{ old('nama_kapal', $pricelist->nama_kapal) }}"
+                               placeholder="Cari dan pilih kapal..." 
+                               class="w-full px-3 py-2 border @error('nama_kapal') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                autocomplete="off">
-                        <select name="nama_kapal" 
-                                id="select-kapal"
-                                class="w-full px-3 py-2 border @error('nama_kapal') border-red-500 @else border-gray-300 @enderror rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                size="5"
-                                required>
-                            <option value="" disabled>Pilih Kapal</option>
+                        
+                        {{-- Hidden input for the actual value to be submitted --}}
+                        <input type="hidden" name="nama_kapal" id="kapal-value" value="{{ old('nama_kapal', $pricelist->nama_kapal) }}">
+                        
+                        {{-- Results List --}}
+                        <div id="kapal-results" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                             @foreach($kapals as $kapal)
-                                <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal', $pricelist->nama_kapal) == $kapal->nama_kapal ? 'selected' : '' }}>
+                                <div class="kapal-item px-4 py-2 cursor-pointer hover:bg-blue-600 hover:text-white" 
+                                     data-value="{{ $kapal->nama_kapal }}" 
+                                     data-text="{{ $kapal->nama_kapal }} ({{ $kapal->nickname ?? '-' }})">
                                     {{ $kapal->nama_kapal }} ({{ $kapal->nickname ?? '-' }})
-                                </option>
+                                </div>
                             @endforeach
-                        </select>
+                            <div id="no-kapal-found" class="hidden px-4 py-2 text-gray-500">Tidak ada kapal ditemukan</div>
+                        </div>
                     </div>
                     @error('nama_kapal')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -68,28 +72,58 @@
 
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        const searchInput = document.getElementById('search-kapal');
-                        const selectKapal = document.getElementById('select-kapal');
-                        const originalOptions = Array.from(selectKapal.options);
+                        const searchInput = document.getElementById('kapal-search');
+                        const hiddenInput = document.getElementById('kapal-value');
+                        const resultsList = document.getElementById('kapal-results');
+                        const items = resultsList.querySelectorAll('.kapal-item');
+                        const noFound = document.getElementById('no-kapal-found');
 
+                        // Show results when focused
+                        searchInput.addEventListener('focus', function() {
+                            resultsList.classList.remove('hidden');
+                        });
+
+                        // Filter results as user types
                         searchInput.addEventListener('input', function() {
-                            const searchTerm = this.value.toLowerCase();
-                            const currentValue = selectKapal.value;
+                            const query = this.value.toLowerCase();
+                            let count = 0;
                             
-                            // Clear current options
-                            selectKapal.innerHTML = '';
-                            
-                            // Filter and add matching options
-                            const filteredOptions = originalOptions.filter(option => {
-                                return option.text.toLowerCase().includes(searchTerm) || option.value === "";
-                            });
-                            
-                            filteredOptions.forEach(option => {
-                                selectKapal.appendChild(option);
+                            items.forEach(item => {
+                                const text = item.getAttribute('data-text').toLowerCase();
+                                if (text.includes(query)) {
+                                    item.classList.remove('hidden');
+                                    count++;
+                                } else {
+                                    item.classList.add('hidden');
+                                }
                             });
 
-                            // Restore current value if it's still in the filtered list
-                            selectKapal.value = currentValue;
+                            if (count === 0) {
+                                noFound.classList.remove('hidden');
+                            } else {
+                                noFound.classList.add('hidden');
+                            }
+                            
+                            resultsList.classList.remove('hidden');
+                        });
+
+                        // Select item
+                        items.forEach(item => {
+                            item.addEventListener('click', function() {
+                                const val = this.getAttribute('data-value');
+                                const text = this.getAttribute('data-text');
+                                
+                                searchInput.value = val;
+                                hiddenInput.value = val;
+                                resultsList.classList.add('hidden');
+                            });
+                        });
+
+                        // Hide results when clicking outside
+                        document.addEventListener('click', function(e) {
+                            if (!document.getElementById('kapal-combobox').contains(e.target)) {
+                                resultsList.classList.add('hidden');
+                            }
                         });
                     });
                 </script>
