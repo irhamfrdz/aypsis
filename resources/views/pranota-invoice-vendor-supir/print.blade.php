@@ -13,21 +13,21 @@
         
         body {
             font-family: Arial, sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             color: #333;
-            padding: 20px;
+            padding: 10px;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         
         .header h1 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
         
         .header p {
@@ -36,8 +36,8 @@
         }
         
         .info-section {
-            margin-bottom: 20px;
-            font-size: 11px;
+            margin-bottom: 10px;
+            font-size: 10px;
         }
         
         .info-table {
@@ -56,21 +56,21 @@
         
         .section-header {
             font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 11px;
+            margin-bottom: 3px;
+            font-size: 10px;
         }
         
         .custom-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 11px;
+            margin-bottom: 10px;
+            font-size: 10px;
         }
         
         .custom-table th, 
         .custom-table td {
             border: 1px solid #000;
-            padding: 5px 8px;
+            padding: 3px 5px;
             vertical-align: middle;
         }
         
@@ -94,8 +94,8 @@
         .keterangan-box {
             border: 2px solid #000;
             padding: 10px;
-            margin-top: 20px;
-            min-height: 60px;
+            margin-top: 10px;
+            min-height: 40px;
         }
         
         .keterangan-title {
@@ -104,7 +104,7 @@
         }
         
         .footer {
-            margin-top: 30px;
+            margin-top: 15px;
         }
         
         .signature-table {
@@ -121,7 +121,7 @@
         }
         
         .signature-space {
-            height: 60px;
+            height: 40px;
         }
         
         @page {
