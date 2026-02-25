@@ -115,19 +115,19 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
         }
     }
 
-    public function show($id)
+    public function show($pembayaran)
     {
-        $pembayaran = PembayaranPranotaVendorSupir::with(['vendor', 'items.pranota', 'creator'])->findOrFail($id);
+        $pembayaran = PembayaranPranotaVendorSupir::with(['vendor', 'items.pranota', 'creator'])->findOrFail($pembayaran);
         return view('pembayaran-pranota-invoice-vendor-supir.show', compact('pembayaran'));
     }
 
-    public function destroy($id)
+    public function destroy($pembayaran)
     {
         DB::beginTransaction();
         try {
-            $pembayaran = PembayaranPranotaVendorSupir::with('items')->findOrFail($id);
+            $pembayaranRecord = PembayaranPranotaVendorSupir::with('items')->findOrFail($pembayaran);
             
-            foreach ($pembayaran->items as $item) {
+            foreach ($pembayaranRecord->items as $item) {
                 $pranotaId = $item->pranota_id;
                 $item->delete();
 
@@ -145,7 +145,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                 $pranota->save();
             }
 
-            $pembayaran->delete();
+            $pembayaranRecord->delete();
             DB::commit();
             return redirect()->route('pembayaran-pranota-invoice-vendor-supir.index')->with('success', 'Pembayaran berhasil dihapus.');
         } catch (\Exception $e) {

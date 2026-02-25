@@ -2744,6 +2744,9 @@ Route::middleware(['auth'])->group(function () {
          ]);
 
     Route::resource('pembayaran-pranota-invoice-vendor-supir', \App\Http\Controllers\PembayaranPranotaInvoiceVendorSupirController::class)
+         ->parameters([
+             'pembayaran-pranota-invoice-vendor-supir' => 'pembayaran'
+         ])
          ->middleware([
              'index' => 'can:pembayaran-pranota-invoice-vendor-supir-view',
              'create' => 'can:pembayaran-pranota-invoice-vendor-supir-create',
