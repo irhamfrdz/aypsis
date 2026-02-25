@@ -10,6 +10,7 @@ class MasterPricelistLabuhTambatController extends Controller
 {
     public function index(Request $request)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         if (!($user instanceof \App\Models\User) || !$user->can('master-pricelist-labuh-tambat-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat master pricelist labuh tambat.');

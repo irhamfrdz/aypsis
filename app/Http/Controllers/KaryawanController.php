@@ -1068,6 +1068,9 @@ class KaryawanController extends Controller
             'atas_nama' => 'nullable|string|max:255',
             'jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'no_sim' => 'nullable|string|max:255',
+            'sim_berlaku_mulai' => 'nullable|date',
+            'sim_berlaku_sampai' => 'nullable|date',
             'cabang' => 'nullable|string|max:255',
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
@@ -1190,7 +1193,6 @@ class KaryawanController extends Controller
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
             'tanggal_berhenti_sebelumnya' => 'nullable|date',
-            'catatan' => 'nullable|string|max:1000',
             'status_pajak' => 'nullable|string|max:255',
             'nama_bank' => 'nullable|string|max:255',
             'bank_cabang' => 'nullable|string|max:255',
@@ -1198,7 +1200,8 @@ class KaryawanController extends Controller
             'atas_nama' => 'nullable|string|max:255',
             'jkn' => 'nullable|string|max:255',
             'no_ketenagakerjaan' => 'nullable|string|max:255',
-            'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'catatan' => 'nullable|string|max:1000',
+            'catatan_pekerjaan' => 'nullable|string|max:1000',
             'no_sim' => 'nullable|string|max:255',
             'sim_berlaku_mulai' => 'nullable|date',
             'sim_berlaku_sampai' => 'nullable|date',
@@ -1224,6 +1227,7 @@ class KaryawanController extends Controller
         $karyawan->update($validated);
 
         // Set user status to approved after successful onboarding
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         if ($user && $user->status !== 'approved') {
             $user->status = 'approved';
