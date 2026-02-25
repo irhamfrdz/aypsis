@@ -3848,7 +3848,7 @@
                                 <div class="flex items-center gap-2 mt-1">
                                     <div class="flex-grow">
                                         <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                                        <input type="number" name="labuh_tambat[${sectionIndex}][custom_prices][]" class="price-input-labuh-tambat w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-slate-500 bg-gray-100" placeholder="0" readonly oninput="calculateLabuhTambatSectionTotal(${sectionIndex})">
+                                        <input type="number" name="labuh_tambat[${sectionIndex}][custom_prices][]" class="price-input-labuh-tambat w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-slate-500" oninput="calculateLabuhTambatSectionTotal(${sectionIndex})">
                                     </div>
                                     <div class="w-1/4">
                                         <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
@@ -3881,9 +3881,13 @@
                     <input type="hidden" name="labuh_tambat[${sectionIndex}][sub_total]" class="sub-total-value" value="0">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">PPH (2%)</label>
-                    <input type="text" class="pph-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
-                    <input type="hidden" name="labuh_tambat[${sectionIndex}][pph]" class="pph-value" value="0">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PPN (12%)</label>
+                    <input type="text" class="ppn-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="hidden" name="labuh_tambat[${sectionIndex}][ppn]" class="ppn-value" value="0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Materai</label>
+                    <input type="text" name="labuh_tambat[${sectionIndex}][biaya_materai]" class="biaya-materai-input-labuh-tambat w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500" placeholder="0" oninput="this.value = this.value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); calculateLabuhTambatSectionTotal(${sectionIndex})">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Grand Total</label>
@@ -3915,6 +3919,12 @@
         const kapalSelect = section.querySelector('.kapal-select-labuh-tambat');
         kapalSelect.addEventListener('change', function() {
             loadVoyagesForLabuhTambatSection(sectionIndex, this.value);
+            
+            // Refresh types when kapal changes
+            const vendorSelect = section.querySelector('.vendor-select-labuh-tambat');
+            if(vendorSelect && vendorSelect.value) {
+                loadTypesForLabuhTambatVendor(sectionIndex, vendorSelect.value);
+            }
         });
         
         const vendorSelect = section.querySelector('.vendor-select-labuh-tambat');
@@ -4025,7 +4035,15 @@
         const lokasiSelect = section.querySelector('.lokasi-select-labuh-tambat');
         const selectedLokasi = lokasiSelect ? (lokasiSelect.value || '') : '';
 
-        const vendorTypes = pricelistLabuhTambatData.filter(item => item.nama_agen === vendorName && (selectedLokasi === '' || item.lokasi === selectedLokasi));
+        // Get selected kapal in this section
+        const kapalSelect = section.querySelector('.kapal-select-labuh-tambat');
+        const selectedKapal = kapalSelect ? (kapalSelect.value || '') : '';
+
+        const vendorTypes = pricelistLabuhTambatData.filter(item => 
+            item.nama_agen === vendorName && 
+            (selectedLokasi === '' || item.lokasi === selectedLokasi) &&
+            (selectedKapal === '' || item.nama_kapal === selectedKapal || !item.nama_kapal)
+        );
         
         let options = '<option value="">-- Pilih Type --</option>';
         if (vendorTypes.length > 0) {
@@ -4080,7 +4098,7 @@
             <div class="flex items-center gap-2 mt-1">
                 <div class="flex-grow">
                     <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                    <input type="number" name="labuh_tambat[${sectionIndex}][custom_prices][]" class="price-input-labuh-tambat w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-slate-500 bg-gray-100" placeholder="0" readonly oninput="calculateLabuhTambatSectionTotal(${sectionIndex})">
+                    <input type="number" name="labuh_tambat[${sectionIndex}][custom_prices][]" class="price-input-labuh-tambat w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-slate-500" placeholder="0" oninput="calculateLabuhTambatSectionTotal(${sectionIndex})">
                 </div>
                 <div class="w-1/4">
                     <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
@@ -4138,14 +4156,17 @@
         const typeContainers = section.querySelectorAll('.types-list-labuh-tambat > div');
         const subTotalDisplay = section.querySelector('.sub-total-display');
         const subTotalValue = section.querySelector('.sub-total-value');
-        const pphDisplay = section.querySelector('.pph-display');
-        const pphValue = section.querySelector('.pph-value');
+        const ppnDisplay = section.querySelector('.ppn-display');
+        const ppnValue = section.querySelector('.ppn-value');
+        const materaiInput = section.querySelector('.biaya-materai-input-labuh-tambat');
         const grandTotalDisplay = section.querySelector('.grand-total-display');
         const grandTotalValue = section.querySelector('.grand-total-value');
         
         let totalCost = 0;
+        let taxableCost = 0;
         typeContainers.forEach(container => {
             const select = container.querySelector('.type-select-labuh-tambat');
+            const manualInput = container.querySelector('.type-manual-input-labuh-tambat');
             const checkbox = container.querySelector('.lumpsum-checkbox');
             if (select) {
                 const priceInput = container.querySelector('.price-input-labuh-tambat');
@@ -4156,18 +4177,32 @@
                     selectedKuantitas = parseFloat(tonaseInput.value) || 0;
                 }
                 const isLumpsum = checkbox ? checkbox.checked : false;
-                totalCost += isLumpsum ? harga : (harga * selectedKuantitas);
+                const itemCost = isLumpsum ? harga : (harga * selectedKuantitas);
+                totalCost += itemCost;
+
+                // Identify if this is a taxable Fuel Surcharge item
+                let typeName = "";
+                if (!select.classList.contains('hidden')) {
+                    typeName = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : "";
+                } else if (manualInput) {
+                    typeName = manualInput.value;
+                }
+
+                if (typeName.toLowerCase().includes('fuel surcharge')) {
+                    taxableCost += itemCost;
+                }
             }
         });
 
         let subTotal = Math.round(totalCost);
-        const pph = Math.round(subTotal * 0.02);
-        const grandTotal = subTotal - pph;
+        const ppn = Math.round(taxableCost * 0.12);
+        const materai = materaiInput ? (parseFloat(materaiInput.value.replace(/\./g, '')) || 0) : 0;
+        const grandTotal = subTotal + ppn + materai;
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
         subTotalValue.value = subTotal;
-        if (pphDisplay) pphDisplay.value = pph > 0 ? `Rp ${pph.toLocaleString('id-ID')}` : 'Rp 0';
-        if (pphValue) pphValue.value = pph;
+        if (ppnDisplay) ppnDisplay.value = ppn > 0 ? `Rp ${ppn.toLocaleString('id-ID')}` : 'Rp 0';
+        if (ppnValue) ppnValue.value = ppn;
         if (grandTotalDisplay) grandTotalDisplay.value = grandTotal > 0 ? `Rp ${grandTotal.toLocaleString('id-ID')}` : 'Rp 0';
         if (grandTotalValue) grandTotalValue.value = grandTotal;
         

@@ -262,7 +262,7 @@ class BiayaKapalController extends Controller
         // Labuh Tambat Sections
         if (isset($data['labuh_tambat']) && is_array($data['labuh_tambat'])) {
             foreach ($data['labuh_tambat'] as &$section) {
-                $numericLabuh = ['kuantitas', 'harga', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
+                $numericLabuh = ['kuantitas', 'harga', 'sub_total', 'ppn', 'biaya_materai', 'grand_total', 'sub_total_value', 'ppn_value', 'biaya_materai_value', 'grand_total_value'];
                 foreach ($numericLabuh as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         if (str_contains($section[$f], ',') && !str_contains($section[$f], '.')) {
@@ -409,7 +409,8 @@ class BiayaKapalController extends Controller
             'labuh_tambat.*.type_is_lumpsum' => 'nullable|array',
             'labuh_tambat.*.type_tonase' => 'nullable|array',
             'labuh_tambat.*.sub_total' => 'nullable|numeric|min:0',
-            'labuh_tambat.*.pph' => 'nullable|numeric|min:0',
+            'labuh_tambat.*.ppn' => 'nullable|numeric|min:0',
+            'labuh_tambat.*.biaya_materai' => 'nullable|numeric|min:0',
             'labuh_tambat.*.grand_total' => 'nullable|numeric|min:0',
             'labuh_tambat.*.lokasi' => 'nullable|string|max:255',
             'labuh_tambat.*.penerima' => 'nullable|string|max:255',
@@ -540,8 +541,15 @@ class BiayaKapalController extends Controller
                             }
 
                             $subTotal = $isLumpsum ? $harga : ($harga * $kuantitas);
-                            $pph = round($subTotal * 0.02);
-                            $grandTotal = $subTotal - $pph;
+                            
+                            // Identification of Fuel Surcharge for PPN
+                            $ppn = 0;
+                            if (str_contains(strtolower($typeKeterangan), 'fuel surcharge')) {
+                                $ppn = round($subTotal * 0.12);
+                            }
+                            
+                            $biayaMaterai = $typeIndex === 0 ? ($section['biaya_materai'] ?? 0) : 0; // Add materai only to the first item in section
+                            $grandTotal = $subTotal + $ppn + $biayaMaterai;
 
                             BiayaKapalLabuhTambat::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
@@ -555,7 +563,8 @@ class BiayaKapalController extends Controller
                                 'kuantitas' => $kuantitas,
                                 'harga' => $harga,
                                 'sub_total' => $subTotal,
-                                'pph' => $pph,
+                                'ppn' => $ppn,
+                                'biaya_materai' => $biayaMaterai,
                                 'grand_total' => $grandTotal,
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
@@ -1469,7 +1478,7 @@ class BiayaKapalController extends Controller
         // Labuh Tambat Sections Cleaning
         if (isset($data['labuh_tambat']) && is_array($data['labuh_tambat'])) {
             foreach ($data['labuh_tambat'] as &$section) {
-                $numericLabuh = ['kuantitas', 'harga', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
+                $numericLabuh = ['kuantitas', 'harga', 'sub_total', 'ppn', 'biaya_materai', 'grand_total', 'sub_total_value', 'ppn_value', 'biaya_materai_value', 'grand_total_value'];
                 foreach ($numericLabuh as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         if (str_contains($section[$f], ',') && !str_contains($section[$f], '.')) {
@@ -1848,8 +1857,15 @@ class BiayaKapalController extends Controller
                                 }
 
                                 $subTotal = $isLumpsum ? $harga : ($harga * $kuantitas);
-                                $pph = round($subTotal * 0.02);
-                                $grandTotal = $subTotal - $pph;
+                                
+                                // Identification of Fuel Surcharge for PPN
+                                $ppn = 0;
+                                if (str_contains(strtolower($typeKeterangan), 'fuel surcharge')) {
+                                    $ppn = round($subTotal * 0.12);
+                                }
+                                
+                                $biayaMaterai = $typeIndex === 0 ? ($section['biaya_materai'] ?? 0) : 0;
+                                $grandTotal = $subTotal + $ppn + $biayaMaterai;
 
                                 BiayaKapalLabuhTambat::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
@@ -1863,7 +1879,8 @@ class BiayaKapalController extends Controller
                                     'kuantitas' => $kuantitas,
                                     'harga' => $harga,
                                     'sub_total' => $subTotal,
-                                    'pph' => $pph,
+                                    'ppn' => $ppn,
+                                    'biaya_materai' => $biayaMaterai,
                                     'grand_total' => $grandTotal,
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,

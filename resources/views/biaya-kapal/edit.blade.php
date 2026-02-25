@@ -936,7 +936,8 @@
                 'kuantitas' => $labuh->kuantitas,
                 'harga' => $labuh->harga,
                 'sub_total' => $labuh->sub_total,
-                'pph' => $labuh->pph,
+                'ppn' => $labuh->ppn,
+                'biaya_materai' => $labuh->biaya_materai,
                 'grand_total' => $labuh->grand_total,
                 'penerima' => $labuh->penerima,
                 'nomor_rekening' => $labuh->nomor_rekening,
@@ -1158,6 +1159,10 @@
                     if (myData.penerima) section.querySelector('.penerima-input-labuh-tambat').value = myData.penerima;
                     if (myData.nomor_rekening) section.querySelector('.nomor-rekening-input-labuh-tambat').value = myData.nomor_rekening;
                     if (myData.tanggal_invoice_vendor) section.querySelector('.tanggal-invoice-vendor-input-labuh-tambat').value = myData.tanggal_invoice_vendor;
+                    if (myData.biaya_materai) {
+                        const materaiField = section.querySelector('.biaya-materai-input-labuh-tambat');
+                        if (materaiField) materaiField.value = parseInt(myData.biaya_materai).toLocaleString('id-ID');
+                    }
                     
                     const typesList = section.querySelector('.types-list-labuh-tambat');
                     typesList.innerHTML = '';
@@ -5586,9 +5591,13 @@
                     <input type="hidden" name="labuh_tambat[${sectionIndex}][sub_total]" class="sub-total-value" value="0">
                 </div>
                 <div class="md:col-span-1">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">PPh 2% (Rp)</label>
-                    <input type="text" class="pph-display w-full px-3 py-1.5 border border-transparent bg-transparent font-bold text-red-600" readonly value="Rp 0">
-                    <input type="hidden" name="labuh_tambat[${sectionIndex}][pph]" class="pph-value" value="0">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">PPN 12% (Rp)</label>
+                    <input type="text" class="ppn-display w-full px-3 py-1.5 border border-transparent bg-transparent font-bold text-red-600" readonly value="Rp 0">
+                    <input type="hidden" name="labuh_tambat[${sectionIndex}][ppn]" class="ppn-value" value="0">
+                </div>
+                <div class="md:col-span-1">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Biaya Materai (Rp)</label>
+                    <input type="text" name="labuh_tambat[${sectionIndex}][biaya_materai]" class="biaya-materai-input-labuh-tambat w-full px-3 py-1.5 border border-gray-300 rounded focus:ring-2 focus:ring-cyan-500 text-sm" placeholder="0" oninput="this.value = this.value.replace(/\\D/g, '').replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.'); calculateLabuhTambatSectionTotal(\${sectionIndex})">
                 </div>
                 <div class="md:col-span-1">
                     <label class="block text-xs font-medium text-gray-600 mb-1">Grand Total (Rp)</label>
@@ -5715,7 +5724,7 @@
                 <button type="button" class="text-red-500 hover:text-red-700 ml-1" onclick="this.closest('.flex-col').remove(); calculateLabuhTambatSectionTotal(${sectionIndex})"><i class="fas fa-trash"></i></button>
             </div>
             <div class="flex items-center gap-2 mt-1">
-                <div class="flex-grow"><input type="number" name="labuh_tambat[${sectionIndex}][custom_prices][]" class="price-input-labuh-tambat w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-slate-500 bg-gray-100" readonly oninput="calculateLabuhTambatSectionTotal(${sectionIndex})"></div>
+                <div class="flex-grow"><input type="number" name="labuh_tambat[${sectionIndex}][custom_prices][]" class="price-input-labuh-tambat w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-slate-500" oninput="calculateLabuhTambatSectionTotal(${sectionIndex})"></div>
                 <div class="w-1/4"><input type="number" step="0.01" name="labuh_tambat[${sectionIndex}][type_tonase][]" class="tonase-input-labuh-tambat w-full px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-slate-500" oninput="calculateLabuhTambatSectionTotal(${sectionIndex})"></div>
                 <div class="flex items-center gap-2"><input type="hidden" name="labuh_tambat[${sectionIndex}][type_is_lumpsum][]" value="0" class="lumpsum-hidden"><input type="checkbox" class="lumpsum-checkbox h-5 w-5" onchange="this.previousElementSibling.value = this.checked ? 1 : 0; calculateLabuhTambatSectionTotal(${sectionIndex})"><label class="text-xs">Lumpsum</label></div>
             </div>
@@ -5726,18 +5735,41 @@
     function calculateLabuhTambatSectionTotal(sectionIndex) {
         const section = document.querySelector(`.labuh-tambat-section[data-section-index="${sectionIndex}"]`);
         let sub = 0;
+        let taxable = 0;
         section.querySelectorAll('.types-list-labuh-tambat > div').forEach(c => {
             const h = parseFloat(c.querySelector('.price-input-labuh-tambat').value) || 0;
             const q = parseFloat(c.querySelector('.tonase-input-labuh-tambat').value) || 0;
-            sub += c.querySelector('.lumpsum-checkbox').checked ? h : (h * q);
+            const isLumpsum = c.querySelector('.lumpsum-checkbox').checked;
+            const cost = isLumpsum ? h : (h * q);
+            sub += cost;
+            
+            // Identify if this is a taxable Fuel Surcharge item
+            const sel = c.querySelector('.type-select-labuh-tambat');
+            const man = c.querySelector('.type-manual-input-labuh-tambat');
+            let name = "";
+            if (sel && !sel.classList.contains('hidden')) {
+                name = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : "";
+            } else if (man) {
+                name = man.value;
+            }
+            
+            if (name.toLowerCase().includes('fuel surcharge')) {
+                taxable += cost;
+            }
         });
         sub = Math.round(sub);
-        const pph = Math.round(sub * 0.02);
-        const g = sub - pph;
+        const ppn = Math.round(taxable * 0.12);
+        const materaiField = section.querySelector('.biaya-materai-input-labuh-tambat');
+        const materai = materaiField ? (parseFloat(materaiField.value.replace(/\./g, '')) || 0) : 0;
+        const g = sub + ppn + materai;
         section.querySelector('.sub-total-display').value = `Rp ${sub.toLocaleString('id-ID')}`;
         section.querySelector('.sub-total-value').value = sub;
-        section.querySelector('.pph-display').value = `Rp ${pph.toLocaleString('id-ID')}`;
-        section.querySelector('.pph-value').value = pph;
+        
+        const ppnDisplay = section.querySelector('.ppn-display');
+        const ppnValue = section.querySelector('.ppn-value');
+        if (ppnDisplay) ppnDisplay.value = `Rp ${ppn.toLocaleString('id-ID')}`;
+        if (ppnValue) ppnValue.value = ppn;
+        
         section.querySelector('.grand-total-display').value = `Rp ${g.toLocaleString('id-ID')}`;
         section.querySelector('.grand-total-value').value = g;
         calculateTotalFromAllLabuhTambatSections();

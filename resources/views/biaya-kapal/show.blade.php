@@ -428,9 +428,15 @@
                                         <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('sub_total'), 0, ',', '.') }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="px-4 py-2 text-sm text-right">PPh (2%)</td>
-                                        <td class="px-4 py-2 text-sm text-right text-red-600">- Rp {{ number_format($details->sum('pph'), 0, ',', '.') }}</td>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">PPN (12%)</td>
+                                        <td class="px-4 py-2 text-sm text-right text-gray-600">Rp {{ number_format($details->sum('ppn'), 0, ',', '.') }}</td>
                                     </tr>
+                                    @if($details->sum('biaya_materai') > 0)
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">Biaya Materai</td>
+                                        <td class="px-4 py-2 text-sm text-right text-gray-600">Rp {{ number_format($details->sum('biaya_materai'), 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endif
                                     <tr class="bg-indigo-100 uppercase">
                                         <td colspan="3" class="px-4 py-2 text-base text-right font-black">Grand Total Section</td>
                                         <td class="px-4 py-2 text-base text-right font-black text-indigo-900">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</td>

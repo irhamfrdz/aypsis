@@ -21,7 +21,8 @@ class BiayaKapalLabuhTambat extends Model
         'kuantitas',
         'harga',
         'sub_total',
-        'pph',
+        'ppn',
+        'biaya_materai',
         'grand_total',
         'penerima',
         'nomor_rekening',
@@ -32,7 +33,8 @@ class BiayaKapalLabuhTambat extends Model
         'kuantitas' => 'decimal:2',
         'harga' => 'decimal:2',
         'sub_total' => 'decimal:2',
-        'pph' => 'decimal:2',
+        'ppn' => 'decimal:2',
+        'biaya_materai' => 'decimal:2',
         'grand_total' => 'decimal:2',
         'tanggal_invoice_vendor' => 'date',
         'is_lumpsum' => 'boolean',
@@ -63,10 +65,18 @@ class BiayaKapalLabuhTambat extends Model
     }
 
     /**
-     * Accessor for formatted pph
+     * Accessor for formatted ppn
      */
-    public function getFormattedPphAttribute()
+    public function getFormattedPpnAttribute()
     {
-        return 'Rp ' . number_format($this->pph, 0, ',', '.');
+        return 'Rp ' . number_format($this->ppn, 0, ',', '.');
+    }
+
+    /**
+     * Accessor for formatted biaya_materai
+     */
+    public function getFormattedBiayaMateraiAttribute()
+    {
+        return 'Rp ' . number_format($this->biaya_materai, 0, ',', '.');
     }
 }
