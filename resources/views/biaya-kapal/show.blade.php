@@ -352,6 +352,122 @@
     </div>
     @endif
 
+    @if($biayaKapal->labuhTambatDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Labuh Tambat</h3>
+        <div class="space-y-6">
+            @php
+                $groupedLabuh = $biayaKapal->labuhTambatDetails->groupBy(function($item) {
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->vendor ?? '-') . '|' . ($item->lokasi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
+                });
+            @endphp
+            @foreach($groupedLabuh as $groupKey => $details)
+                @php
+                    $parts = explode('|', $groupKey);
+                    $kapal = $parts[0] ?? '-';
+                    $voyage = $parts[1] ?? '-';
+                    $vendor = $parts[2] ?? '-';
+                    $lokasi = $parts[3] ?? '-';
+                    $tglVendor = $parts[4] ?? '-';
+                    $first = $details->first();
+                @endphp
+                <div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $kapal }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $voyage }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Vendor</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $vendor }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Lokasi</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $lokasi }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Tgl Vendor</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $tglVendor != '-' ? \Carbon\Carbon::parse($tglVendor)->format('d/m/Y') : '-' }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Item Labuh Tambat</span>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tipe / Keterangan</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Kuantitas (GT)</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Harga</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($details as $item)
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900">
+                                                {{ $item->type_keterangan }}
+                                                @if($item->is_lumpsum)
+                                                    <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded">LUMPSUM</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ $item->is_lumpsum ? '-' : number_format($item->kuantitas, 2, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->sub_total, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-gray-50 font-bold">
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">Subtotal Section</td>
+                                        <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('sub_total'), 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">PPh (2%)</td>
+                                        <td class="px-4 py-2 text-sm text-right text-red-600">- Rp {{ number_format($details->sum('pph'), 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr class="bg-indigo-100 uppercase">
+                                        <td colspan="3" class="px-4 py-2 text-base text-right font-black">Grand Total Section</td>
+                                        <td class="px-4 py-2 text-base text-right font-black text-indigo-900">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    @if($first->penerima || $first->nomor_rekening || $first->nomor_referensi)
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        @if($first->penerima)
+                        <div>
+                            <span class="text-gray-500">Penerima:</span>
+                            <span class="font-semibold">{{ $first->penerima }}</span>
+                        </div>
+                        @endif
+                        @if($first->nomor_rekening)
+                        <div>
+                            <span class="text-gray-500">No. Rekening:</span>
+                            <span class="font-semibold">{{ $first->nomor_rekening }}</span>
+                        </div>
+                        @endif
+                        @if($first->nomor_referensi)
+                        <div>
+                            <span class="text-gray-500">Ref Vendor:</span>
+                            <span class="font-semibold">{{ $first->nomor_referensi }}</span>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     @can('biaya-kapal-delete')
     <div class="mt-8 pt-6 border-t border-gray-200">
         <form action="{{ route('biaya-kapal.destroy', $biayaKapal->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');" class="inline">

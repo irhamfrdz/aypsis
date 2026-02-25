@@ -15,6 +15,7 @@ use App\Models\BiayaKapalOperasionalItem;
 use App\Models\BiayaKapalTrucking;
 use App\Models\BiayaKapalStuffing;
 use App\Models\BiayaKapalPerlengkapan;
+use App\Models\BiayaKapalLabuhTambat;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaTanpaSuratJalan;
 use App\Models\TandaTerimaLcl;
@@ -137,13 +138,23 @@ class BiayaKapalController extends Controller
         // Get active pricelist TKBM for biaya TKBM barang selection
         $pricelistTkbm = \App\Models\PricelistTkbm::where('status', 'active')->orderBy('nama_barang')->get();
 
-        // Get active pricelist biaya trucking for vendor selection
-        $pricelistBiayaTrucking = DB::table('master_pricelist_biaya_trucking')
-            ->where('status', 'aktif')
-            ->orderBy('nama_vendor')
-            ->get();
+        // Get active pricelist biaya trucking
+        $pricelistBiayaTrucking = \App\Models\MasterPricelistBiayaTrucking::where('status', 'aktif')->orderBy('nama_vendor')->get();
 
-        return view('biaya-kapal.create', compact('kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar', 'pricelistTkbm', 'pricelistBiayaTrucking'));
+        // Get active pricelist labuh tambat
+        $pricelistLabuhTambat = \App\Models\MasterPricelistLabuhTambat::where('is_active', true)->orderBy('nama_agen')->get();
+
+        return view('biaya-kapal.create', compact(
+            'kapals', 
+            'klasifikasiBiayas', 
+            'pricelistBuruh', 
+            'karyawans', 
+            'pricelistBiayaDokumen', 
+            'pricelistAirTawar', 
+            'pricelistTkbm', 
+            'pricelistBiayaTrucking',
+            'pricelistLabuhTambat'
+        ));
     }
 
     /**
@@ -244,6 +255,27 @@ class BiayaKapalController extends Controller
                 if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
+        // Labuh Tambat Sections
+        if (isset($data['labuh_tambat']) && is_array($data['labuh_tambat'])) {
+            foreach ($data['labuh_tambat'] as &$section) {
+                $numericLabuh = ['kuantitas', 'harga', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
+                foreach ($numericLabuh as $f) {
+                    if (isset($section[$f]) && is_string($section[$f])) {
+                        if (str_contains($section[$f], ',') && !str_contains($section[$f], '.')) {
+                            $section[$f] = str_replace(',', '.', $section[$f]);
+                        } elseif (str_contains($section[$f], '.') && str_contains($section[$f], ',')) {
+                            $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                        } elseif (str_contains($section[$f], '.') && !str_contains($section[$f], ',')) {
+                            if (preg_match('/\.\d{3}($|\.)/', $section[$f]) || substr_count($section[$f], '.') > 1) {
+                                $section[$f] = str_replace('.', '', $section[$f]);
+                            }
+                        }
+                    }
+                }
             }
             unset($section);
         }
@@ -362,6 +394,28 @@ class BiayaKapalController extends Controller
             'perlengkapan_sections.*.no_voyage'         => 'nullable|string|max:255',
             'perlengkapan_sections.*.keterangan'        => 'nullable|string',
             'perlengkapan_sections.*.jumlah_biaya'      => 'nullable|string',
+
+            // Biaya Labuh Tambat sections structure
+            'labuh_tambat' => 'nullable|array',
+            'labuh_tambat.*.kapal' => 'nullable|string|max:255',
+            'labuh_tambat.*.voyage' => 'nullable|string|max:255',
+            'labuh_tambat.*.vendor' => 'nullable|string|max:255',
+            'labuh_tambat.*.types' => 'nullable|array',
+            'labuh_tambat.*.types.*' => function ($attribute, $value, $fail) {
+                if ($value !== 'MANUAL' && !\Illuminate\Support\Facades\DB::table('master_pricelist_labuh_tambat')->where('id', $value)->exists()) {
+                    $fail('Tipe labuh tambat yang dipilih tidak valid.');
+                }
+            },
+            'labuh_tambat.*.type_is_lumpsum' => 'nullable|array',
+            'labuh_tambat.*.type_tonase' => 'nullable|array',
+            'labuh_tambat.*.sub_total' => 'nullable|numeric|min:0',
+            'labuh_tambat.*.pph' => 'nullable|numeric|min:0',
+            'labuh_tambat.*.grand_total' => 'nullable|numeric|min:0',
+            'labuh_tambat.*.lokasi' => 'nullable|string|max:255',
+            'labuh_tambat.*.penerima' => 'nullable|string|max:255',
+            'labuh_tambat.*.nomor_rekening' => 'nullable|string|max:100',
+            'labuh_tambat.*.nomor_referensi' => 'nullable|string|max:100',
+            'labuh_tambat.*.tanggal_invoice_vendor' => 'nullable|date',
         ]);
 
         try {
@@ -462,6 +516,61 @@ class BiayaKapalController extends Controller
                         'total_biaya' => $section['total_biaya'] ?? 0,
                     ]);
                 }
+            }
+
+            // BIAYA LABUH TAMBAT SECTIONS: Store labuh tambat details
+            if ($request->has('labuh_tambat') && !empty($request->labuh_tambat)) {
+                foreach ($request->labuh_tambat as $sectionIndex => $section) {
+                    if (empty($section['kapal']) && empty($section['vendor'])) {
+                        continue;
+                    }
+
+                    if (isset($section['types']) && is_array($section['types'])) {
+                        foreach ($section['types'] as $typeIndex => $typeId) {
+                            $typeKeterangan = '';
+                            $isLumpsum = $section['type_is_lumpsum'][$typeIndex] ?? 0;
+                            $kuantitas = $section['type_tonase'][$typeIndex] ?? 0;
+                            $harga = $section['custom_prices'][$typeIndex] ?? 0;
+
+                            if ($typeId === 'MANUAL') {
+                                $typeKeterangan = $section['manual_names'][$typeIndex] ?? 'MANUAL';
+                            } else {
+                                $masterType = \App\Models\MasterPricelistLabuhTambat::find($typeId);
+                                $typeKeterangan = $masterType ? $masterType->keterangan : 'N/A';
+                            }
+
+                            $subTotal = $isLumpsum ? $harga : ($harga * $kuantitas);
+                            $pph = round($subTotal * 0.02);
+                            $grandTotal = $subTotal - $pph;
+
+                            BiayaKapalLabuhTambat::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $section['kapal'] ?? null,
+                                'voyage' => $section['voyage'] ?? null,
+                                'vendor' => $section['vendor'] ?? null,
+                                'lokasi' => $section['lokasi'] ?? null,
+                                'type_id' => $typeId === 'MANUAL' ? null : $typeId,
+                                'type_keterangan' => $typeKeterangan,
+                                'is_lumpsum' => $isLumpsum,
+                                'kuantitas' => $kuantitas,
+                                'harga' => $harga,
+                                'sub_total' => $subTotal,
+                                'pph' => $pph,
+                                'grand_total' => $grandTotal,
+                                'penerima' => $section['penerima'] ?? null,
+                                'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // AUTO-CALCULATE NOMINAL FOR LABUH TAMBAT
+            if ($request->has('labuh_tambat') && !empty($request->labuh_tambat)) {
+                $totalLabuh = BiayaKapalLabuhTambat::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
+                $biayaKapal->update(['nominal' => $totalLabuh]);
             }
 
             // Store barang details - Handle both old and new structure
@@ -912,51 +1021,7 @@ class BiayaKapalController extends Controller
                 $biayaKapal->update(['nominal' => $totalOperasional]);
             }
 
-            // STUFFING HANDLING
-            if ($request->has('stuffing_sections') && !empty($request->stuffing_sections)) {
-                foreach ($request->stuffing_sections as $section) {
-                    if (empty($section['kapal']) && empty($section['voyage'])) continue;
-                    
-                    $ttIds = [];
-                    if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
-                        foreach ($section['tanda_terima'] as $tt) {
-                            if (!empty($tt['id'])) {
-                                $ttIds[] = $tt['id'];
-                            }
-                        }
-                    }
 
-                    BiayaKapalStuffing::create([
-                        'biaya_kapal_id' => $biayaKapal->id,
-                        'kapal' => $section['kapal'] ?? null,
-                        'voyage' => $section['voyage'] ?? null,
-                        'tanda_terima_ids' => $ttIds,
-                    ]);
-                }
-            }
-
-            // STUFFING HANDLING
-            if ($request->has('stuffing_sections') && !empty($request->stuffing_sections)) {
-                foreach ($request->stuffing_sections as $section) {
-                    if (empty($section['kapal']) && empty($section['voyage'])) continue;
-                    
-                    $ttIds = [];
-                    if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
-                        foreach ($section['tanda_terima'] as $tt) {
-                            if (!empty($tt['id'])) {
-                                $ttIds[] = $tt['id'];
-                            }
-                        }
-                    }
-
-                    BiayaKapalStuffing::create([
-                        'biaya_kapal_id' => $biayaKapal->id,
-                        'kapal' => $section['kapal'] ?? null,
-                        'voyage' => $section['voyage'] ?? null,
-                        'tanda_terima_ids' => $ttIds,
-                    ]);
-                }
-            }
 
             // BIAYA PERLENGKAPAN: simpan setiap section ke tabel biaya_kapal_perlengkapan
             if (!empty($validated['perlengkapan_sections'])) {
@@ -1015,7 +1080,8 @@ class BiayaKapalController extends Controller
             'operasionalDetails', 
             'truckingDetails', 
             'stuffingDetails',
-            'perlengkapanDetails'
+            'perlengkapanDetails',
+            'labuhTambatDetails'
         ]);
 
         // Resolve container details for trucking if needed
@@ -1187,6 +1253,13 @@ class BiayaKapalController extends Controller
             stripos($biayaKapal->klasifikasiBiaya->nama, 'perlengkapan') !== false) {
             return view('biaya-kapal.print-perlengkapan', compact('biayaKapal'));
         }
+
+        // Check if it's Biaya Labuh Tambat and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'labuh tambat') !== false) {
+            $biayaKapal->load(['labuhTambatDetails']);
+            return view('biaya-kapal.print-labuh-tambat', compact('biayaKapal'));
+        }
         
         return view('biaya-kapal.print', compact('biayaKapal'));
     }
@@ -1318,7 +1391,13 @@ class BiayaKapalController extends Controller
         // Get active pricelist TKBM for biaya TKBM barang selection
         $pricelistTkbm = \App\Models\PricelistTkbm::where('status', 'active')->orderBy('nama_barang')->get();
 
-        return view('biaya-kapal.edit', compact('biayaKapal', 'kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar', 'pricelistTkbm'));
+        // Get active pricelist biaya trucking
+        $pricelistBiayaTrucking = \App\Models\MasterPricelistBiayaTrucking::where('status', 'aktif')->orderBy('nama_vendor')->get();
+
+        // Get active pricelist labuh tambat
+        $pricelistLabuhTambat = \App\Models\MasterPricelistLabuhTambat::where('is_active', true)->orderBy('nama_agen')->get();
+
+        return view('biaya-kapal.edit', compact('biayaKapal', 'kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar', 'pricelistTkbm', 'pricelistBiayaTrucking', 'pricelistLabuhTambat'));
     }
 
     /**
@@ -1373,6 +1452,37 @@ class BiayaKapalController extends Controller
                 if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
+        // Trucking Sections Cleaning
+        if (isset($data['trucking_sections']) && is_array($data['trucking_sections'])) {
+            foreach ($data['trucking_sections'] as &$section) {
+                if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
+        // Labuh Tambat Sections Cleaning
+        if (isset($data['labuh_tambat']) && is_array($data['labuh_tambat'])) {
+            foreach ($data['labuh_tambat'] as &$section) {
+                $numericLabuh = ['kuantitas', 'harga', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
+                foreach ($numericLabuh as $f) {
+                    if (isset($section[$f]) && is_string($section[$f])) {
+                        if (str_contains($section[$f], ',') && !str_contains($section[$f], '.')) {
+                            $section[$f] = str_replace(',', '.', $section[$f]);
+                        } elseif (str_contains($section[$f], '.') && str_contains($section[$f], ',')) {
+                            $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                        } elseif (str_contains($section[$f], '.') && !str_contains($section[$f], ',')) {
+                            if (preg_match('/\.\d{3}($|\.)/', $section[$f]) || substr_count($section[$f], '.') > 1) {
+                                $section[$f] = str_replace('.', '', $section[$f]);
+                            }
+                        }
+                    }
+                }
             }
             unset($section);
         }
@@ -1445,6 +1555,38 @@ class BiayaKapalController extends Controller
             'stuffing_sections.*.subtotal' => 'nullable|numeric|min:0',
             'stuffing_sections.*.pph' => 'nullable|numeric|min:0',
             'stuffing_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // Trucking sections validation
+            'trucking_sections' => 'nullable|array',
+            'trucking_sections.*.kapal' => 'nullable|string|max:255',
+            'trucking_sections.*.voyage' => 'nullable|string|max:255',
+            'trucking_sections.*.nama_vendor' => 'nullable|string|max:255',
+            'trucking_sections.*.no_bl' => 'nullable|array',
+            'trucking_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'trucking_sections.*.pph' => 'nullable|numeric|min:0',
+            'trucking_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // Labuh tambat sections validation
+            'labuh_tambat' => 'nullable|array',
+            'labuh_tambat.*.kapal' => 'nullable|string|max:255',
+            'labuh_tambat.*.voyage' => 'nullable|string|max:255',
+            'labuh_tambat.*.vendor' => 'nullable|string|max:255',
+            'labuh_tambat.*.types' => 'nullable|array',
+            'labuh_tambat.*.types.*' => function ($attribute, $value, $fail) {
+                if ($value !== 'MANUAL' && !\Illuminate\Support\Facades\DB::table('master_pricelist_labuh_tambat')->where('id', $value)->exists()) {
+                    $fail('Tipe labuh tambat yang dipilih tidak valid.');
+                }
+            },
+            'labuh_tambat.*.type_is_lumpsum' => 'nullable|array',
+            'labuh_tambat.*.type_tonase' => 'nullable|array',
+            'labuh_tambat.*.sub_total' => 'nullable|numeric|min:0',
+            'labuh_tambat.*.pph' => 'nullable|numeric|min:0',
+            'labuh_tambat.*.grand_total' => 'nullable|numeric|min:0',
+            'labuh_tambat.*.lokasi' => 'nullable|string|max:255',
+            'labuh_tambat.*.penerima' => 'nullable|string|max:255',
+            'labuh_tambat.*.nomor_rekening' => 'nullable|string|max:100',
+            'labuh_tambat.*.nomor_referensi' => 'nullable|string|max:100',
+            'labuh_tambat.*.tanggal_invoice_vendor' => 'nullable|date',
         ]);
 
         try {
@@ -1660,6 +1802,83 @@ class BiayaKapalController extends Controller
                             'total_biaya' => $section['total_biaya'] ?? 0,
                         ]);
                     }
+                }
+            }
+
+            // TRUCKING UPDATE
+            if ($request->has('trucking_sections')) {
+                BiayaKapalTrucking::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                if (!empty($request->trucking_sections)) {
+                    foreach ($request->trucking_sections as $section) {
+                        if (empty($section['kapal']) && empty($section['nama_vendor'])) continue;
+                        BiayaKapalTrucking::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $section['kapal'] ?? null,
+                            'voyage' => $section['voyage'] ?? null,
+                            'nama_vendor' => $section['nama_vendor'] ?? null,
+                            'no_bl' => $section['no_bl'] ?? [],
+                            'subtotal' => $section['subtotal'] ?? 0,
+                            'pph' => $section['pph'] ?? 0,
+                            'total_biaya' => $section['total_biaya'] ?? 0,
+                        ]);
+                    }
+                }
+            }
+
+            // LABUH TAMBAT UPDATE
+            if ($request->has('labuh_tambat')) {
+                BiayaKapalLabuhTambat::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                if (!empty($request->labuh_tambat)) {
+                    foreach ($request->labuh_tambat as $section) {
+                        if (empty($section['kapal']) && empty($section['vendor'])) continue;
+
+                        if (isset($section['types']) && is_array($section['types'])) {
+                            foreach ($section['types'] as $typeIndex => $typeId) {
+                                $typeKeterangan = '';
+                                $isLumpsum = $section['type_is_lumpsum'][$typeIndex] ?? 0;
+                                $kuantitas = $section['type_tonase'][$typeIndex] ?? 0;
+                                $hargaRaw = $section['custom_prices'][$typeIndex] ?? 0;
+                                $harga = is_string($hargaRaw) ? floatval(str_replace(',', '.', str_replace('.', '', $hargaRaw))) : floatval($hargaRaw);
+
+                                if ($typeId === 'MANUAL') {
+                                    $typeKeterangan = $section['manual_names'][$typeIndex] ?? 'MANUAL';
+                                } else {
+                                    $masterType = \App\Models\MasterPricelistLabuhTambat::find($typeId);
+                                    $typeKeterangan = $masterType ? $masterType->keterangan : 'N/A';
+                                }
+
+                                $subTotal = $isLumpsum ? $harga : ($harga * $kuantitas);
+                                $pph = round($subTotal * 0.02);
+                                $grandTotal = $subTotal - $pph;
+
+                                BiayaKapalLabuhTambat::create([
+                                    'biaya_kapal_id' => $biayaKapal->id,
+                                    'kapal' => $section['kapal'] ?? null,
+                                    'voyage' => $section['voyage'] ?? null,
+                                    'vendor' => $section['vendor'] ?? null,
+                                    'lokasi' => $section['lokasi'] ?? null,
+                                    'type_id' => $typeId === 'MANUAL' ? null : $typeId,
+                                    'type_keterangan' => $typeKeterangan,
+                                    'is_lumpsum' => $isLumpsum,
+                                    'kuantitas' => $kuantitas,
+                                    'harga' => $harga,
+                                    'sub_total' => $subTotal,
+                                    'pph' => $pph,
+                                    'grand_total' => $grandTotal,
+                                    'penerima' => $section['penerima'] ?? null,
+                                    'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                    'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                ]);
+                            }
+                        }
+                    }
+                }
+                
+                // Update nominal from total labuh tambat
+                $totalLabuh = BiayaKapalLabuhTambat::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
+                if ($totalLabuh > 0) {
+                    $biayaKapal->update(['nominal' => $totalLabuh]);
                 }
             }
 

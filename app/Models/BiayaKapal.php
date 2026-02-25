@@ -165,4 +165,9 @@ class BiayaKapal extends Model
     {
         return $this->hasMany(BiayaKapalPerlengkapan::class, 'biaya_kapal_id');
     }
+
+    public function labuhTambatDetails()
+    {
+        return $this->hasMany(BiayaKapalLabuhTambat::class, 'biaya_kapal_id');
+    }
 }
