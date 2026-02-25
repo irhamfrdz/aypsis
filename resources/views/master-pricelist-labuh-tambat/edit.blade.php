@@ -56,14 +56,17 @@
                     @enderror
                 </div>
 
-                {{-- Satuan --}}
+                {{-- Lokasi --}}
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
-                    <input type="text" 
-                           name="lokasi" 
-                           value="{{ old('lokasi', $pricelist->lokasi) }}" 
-                           placeholder="Contoh: Batam, Jakarta, dll"
-                           class="w-full px-3 py-2 border @error('lokasi') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
+                    <select name="lokasi" 
+                            class="w-full px-3 py-2 border @error('lokasi') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required>
+                        <option value="" disabled>Pilih Lokasi</option>
+                        <option value="Jakarta" {{ old('lokasi', $pricelist->lokasi) == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                        <option value="Batam" {{ old('lokasi', $pricelist->lokasi) == 'Batam' ? 'selected' : '' }}>Batam</option>
+                        <option value="Pinang" {{ old('lokasi', $pricelist->lokasi) == 'Pinang' ? 'selected' : '' }}>Pinang</option>
+                    </select>
                     @error('lokasi')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror

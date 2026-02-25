@@ -54,7 +54,7 @@ class MasterPricelistLabuhTambatController extends Controller
         $validated = $request->validate([
             'nama_agen' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
-            'lokasi' => 'nullable|string|max:255',
+            'lokasi' => 'required|string|in:Jakarta,Batam,Pinang',
             'keterangan' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
@@ -92,7 +92,7 @@ class MasterPricelistLabuhTambatController extends Controller
         $validated = $request->validate([
             'nama_agen' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
-            'lokasi' => 'nullable|string|max:255',
+            'lokasi' => 'required|string|in:Jakarta,Batam,Pinang',
             'keterangan' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
