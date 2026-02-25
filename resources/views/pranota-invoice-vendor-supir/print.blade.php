@@ -124,10 +124,17 @@
             height: 60px;
         }
         
+        @page {
+            size: 165mm 215mm;
+            margin: 5mm;
+        }
+
         @media print {
             .no-print { display: none !important; }
-            body { padding: 0; }
-            @page { margin: 1cm; size: auto; }
+            body { 
+                padding: 0; 
+                margin: 0;
+            }
         }
         
         .btn-print {
