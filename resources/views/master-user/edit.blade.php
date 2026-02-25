@@ -2086,6 +2086,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pembayaran Pranota Invoice Vendor Supir --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pembayaran Pranota Vendor Supir</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-invoice-vendor-supir][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-invoice-vendor-supir']['view']) && $userMatrixPermissions['pembayaran-pranota-invoice-vendor-supir']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-invoice-vendor-supir][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-invoice-vendor-supir']['create']) && $userMatrixPermissions['pembayaran-pranota-invoice-vendor-supir']['create']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-invoice-vendor-supir][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-invoice-vendor-supir']['delete']) && $userMatrixPermissions['pembayaran-pranota-invoice-vendor-supir']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Daftar Tagihan Perbaikan Kontainer --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">

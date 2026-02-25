@@ -594,7 +594,8 @@ class UserController extends Controller
                 'pranota-lembur' => 'pranota-lembur',
                 'tagihan-supir-vendor' => 'tagihan-supir-vendor',
                 'invoice-tagihan-vendor' => 'invoice-tagihan-vendor',
-                'pranota-invoice-vendor-supir' => 'pranota-invoice-vendor-supir'
+                'pranota-invoice-vendor-supir' => 'pranota-invoice-vendor-supir',
+                'pembayaran-pranota-invoice-vendor-supir' => 'pembayaran-pranota-invoice-vendor-supir'
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -3691,6 +3692,24 @@ class UserController extends Controller
                             'create' => 'pranota-invoice-vendor-supir-create',
                             'update' => 'pranota-invoice-vendor-supir-update',
                             'delete' => 'pranota-invoice-vendor-supir-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle pembayaran-pranota-invoice-vendor-supir permissions explicitly
+                    if ($module === 'pembayaran-pranota-invoice-vendor-supir' && in_array($action, ['view', 'create', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'pembayaran-pranota-invoice-vendor-supir-view',
+                            'create' => 'pembayaran-pranota-invoice-vendor-supir-create',
+                            'delete' => 'pembayaran-pranota-invoice-vendor-supir-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
