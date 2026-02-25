@@ -192,10 +192,9 @@
         <thead>
             <tr>
                 <th style="width: 5%;">No</th>
-                <th style="width: 20%;">No Invoice</th>
-                <th style="width: 15%;">Tanggal</th>
-                <th>Daftar Surat Jalan</th>
-                <th style="width: 20%;">Total Nominal</th>
+                <th style="width: 30%;">No Invoice</th>
+                <th style="width: 25%;">Tanggal Invoice</th>
+                <th style="text-align: right;">Total Nominal</th>
             </tr>
         </thead>
         <tbody>
@@ -204,19 +203,44 @@
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td class="text-center font-bold">{{ $invoice->no_invoice }}</td>
                 <td class="text-center">{{ $invoice->tanggal_invoice->format('d/M/Y') }}</td>
-                <td>
-                    @foreach($invoice->tagihanSupirVendors as $tagihan)
-                        {{ $tagihan->suratJalan->no_surat_jalan ?? '-' }}{{ !$loop->last ? ',' : '' }}
-                        @if(!$loop->last && $loop->iteration % 3 == 0) <br> @endif
-                    @endforeach
-                </td>
-                <td class="text-right">Rp {{ number_format($invoice->total_nominal, 0, ',', '.') }}</td>
+                <td class="text-right font-bold">Rp {{ number_format($invoice->total_nominal, 0, ',', '.') }}</td>
             </tr>
             @endforeach
             <tr class="total-row">
-                <td colspan="4" class="text-right">TOTAL KESELURUHAN</td>
+                <td colspan="3" class="text-right">TOTAL KESELURUHAN</td>
                 <td class="text-right">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
             </tr>
+        </tbody>
+    </table>
+
+    <div class="section-header" style="margin-top: 20px;">Detail Surat Jalan:</div>
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">No</th>
+                <th style="width: 15%;">No SJ</th>
+                <th style="width: 12%;">Tgl SJ</th>
+                <th style="width: 15%;">Supir</th>
+                <th style="width: 10%;">Kontainer</th>
+                <th>Rute (Dari -> Ke)</th>
+                <th style="width: 15%; text-align: right;">Nominal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $sjNo = 1; @endphp
+            @foreach($pranota->invoiceTagihanVendors as $invoice)
+                @foreach($invoice->tagihanSupirVendors as $tagihan)
+                <tr>
+                    <td class="text-center">{{ $sjNo++ }}</td>
+                    <td class="text-center">{{ $tagihan->suratJalan->no_surat_jalan ?? '-' }}</td>
+                    <td class="text-center">{{ optional($tagihan->suratJalan->tanggal_surat_jalan)->format('d/M/y') ?? '-' }}</td>
+                    <td>{{ $tagihan->nama_supir ?? ($tagihan->suratJalan->supir ?? '-') }}</td>
+                    <td class="text-center">{{ $tagihan->jenis_kontainer ?? ($tagihan->suratJalan->tipe_kontainer ?? '-') }}</td>
+                    <td>{{ $tagihan->dari ?? ($tagihan->suratJalan->dari ?? '-') }} -> {{ $tagihan->ke ?? ($tagihan->suratJalan->ke ?? '-') }}</td>
+                    <td class="text-right">Rp {{ number_format($tagihan->nominal, 0, ',', '.') }}</td>
+                </tr>
+                @endforeach
+            @endforeach
         </tbody>
     </table>
 
