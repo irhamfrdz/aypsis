@@ -9,9 +9,9 @@ class MasterPricelistLabuhTambat extends Model
     protected $table = 'master_pricelist_labuh_tambat';
 
     protected $fillable = [
-        'nama_tarif',
-        'biaya',
-        'satuan',
+        'nama_agen',
+        'lokasi',
+        'harga',
         'keterangan',
         'is_active',
     ];

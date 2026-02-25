@@ -28,43 +28,43 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {{-- Nama Tarif --}}
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Tarif <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Agen <span class="text-red-500">*</span></label>
                     <input type="text" 
-                           name="nama_tarif" 
-                           value="{{ old('nama_tarif', $pricelist->nama_tarif) }}" 
-                           class="w-full px-3 py-2 border @error('nama_tarif') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           name="nama_agen" 
+                           value="{{ old('nama_agen', $pricelist->nama_agen) }}" 
+                           class="w-full px-3 py-2 border @error('nama_agen') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                            required>
-                    @error('nama_tarif')
+                    @error('nama_agen')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 {{-- Biaya --}}
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Biaya <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Harga <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">Rp</span>
                         <input type="number" 
                                step="0.01"
-                               name="biaya" 
-                               value="{{ old('biaya', $pricelist->biaya) }}" 
-                               class="w-full pl-10 pr-3 py-2 border @error('biaya') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               name="harga" 
+                               value="{{ old('harga', $pricelist->harga) }}" 
+                               class="w-full pl-10 pr-3 py-2 border @error('harga') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                required>
                     </div>
-                    @error('biaya')
+                    @error('harga')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
                 {{-- Satuan --}}
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Satuan</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
                     <input type="text" 
-                           name="satuan" 
-                           value="{{ old('satuan', $pricelist->satuan) }}" 
-                           placeholder="Contoh: Per Hari, Per Meter, dll"
-                           class="w-full px-3 py-2 border @error('satuan') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    @error('satuan')
+                           name="lokasi" 
+                           value="{{ old('lokasi', $pricelist->lokasi) }}" 
+                           placeholder="Contoh: Batam, Jakarta, dll"
+                           class="w-full px-3 py-2 border @error('lokasi') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @error('lokasi')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>

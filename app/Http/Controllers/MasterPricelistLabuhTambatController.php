@@ -20,14 +20,14 @@ class MasterPricelistLabuhTambatController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nama_tarif', 'like', '%' . $search . '%')
-                  ->orWhere('satuan', 'like', '%' . $search . '%')
+                $q->where('nama_agen', 'like', '%' . $search . '%')
+                  ->orWhere('lokasi', 'like', '%' . $search . '%')
                   ->orWhere('keterangan', 'like', '%' . $search . '%');
             });
         }
 
         $perPage = $request->get('per_page', 10);
-        $pricelists = $query->orderBy('nama_tarif', 'asc')->paginate($perPage);
+        $pricelists = $query->orderBy('nama_agen', 'asc')->paginate($perPage);
 
         return view('master-pricelist-labuh-tambat.index', compact('pricelists'));
     }
@@ -52,9 +52,9 @@ class MasterPricelistLabuhTambatController extends Controller
         }
 
         $validated = $request->validate([
-            'nama_tarif' => 'required|string|max:255',
-            'biaya' => 'required|numeric|min:0',
-            'satuan' => 'nullable|string|max:255',
+            'nama_agen' => 'required|string|max:255',
+            'harga' => 'required|numeric|min:0',
+            'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
@@ -90,9 +90,9 @@ class MasterPricelistLabuhTambatController extends Controller
         $pricelist = \App\Models\MasterPricelistLabuhTambat::findOrFail($id);
 
         $validated = $request->validate([
-            'nama_tarif' => 'required|string|max:255',
-            'biaya' => 'required|numeric|min:0',
-            'satuan' => 'nullable|string|max:255',
+            'nama_agen' => 'required|string|max:255',
+            'harga' => 'required|numeric|min:0',
+            'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);

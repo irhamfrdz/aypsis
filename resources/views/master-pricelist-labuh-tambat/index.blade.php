@@ -43,7 +43,7 @@
                     <input type="text"
                            name="search"
                            value="{{ request('search') }}"
-                           placeholder="Nama tarif, satuan, keterangan..."
+                           placeholder="Nama agen, lokasi, keterangan..."
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
@@ -77,9 +77,9 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Tarif</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Satuan</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Agen</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -92,13 +92,13 @@
                             {{ $pricelists->firstItem() + $key }}
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                            {{ $pricelist->nama_tarif }}
+                            {{ $pricelist->nama_agen }}
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            Rp {{ number_format($pricelist->biaya, 2, ',', '.') }}
+                            Rp {{ number_format($pricelist->harga, 2, ',', '.') }}
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $pricelist->satuan ?? '-' }}
+                            {{ $pricelist->lokasi ?? '-' }}
                         </td>
                         <td class="px-4 py-4 text-sm text-gray-900">
                             {{ Str::limit($pricelist->keterangan ?? '-', 50) }}
