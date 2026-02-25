@@ -799,6 +799,20 @@ Route::middleware([
              ->middleware('can:master-pricelist-vendor-supir-delete')
              ->only(['destroy']);
 
+        // Master Pricelist Labuh Tambat
+        Route::resource('master-pricelist-labuh-tambat', \App\Http\Controllers\MasterPricelistLabuhTambatController::class)
+             ->middleware('can:master-pricelist-labuh-tambat-create')
+             ->only(['create', 'store']);
+        Route::resource('master-pricelist-labuh-tambat', \App\Http\Controllers\MasterPricelistLabuhTambatController::class)
+             ->middleware('can:master-pricelist-labuh-tambat-view')
+             ->only(['index', 'show']);
+        Route::resource('master-pricelist-labuh-tambat', \App\Http\Controllers\MasterPricelistLabuhTambatController::class)
+             ->middleware('can:master-pricelist-labuh-tambat-update')
+             ->only(['edit', 'update']);
+        Route::resource('master-pricelist-labuh-tambat', \App\Http\Controllers\MasterPricelistLabuhTambatController::class)
+             ->middleware('can:master-pricelist-labuh-tambat-delete')
+             ->only(['destroy']);
+
         // Pricelist Buruh Import/Export routes (must be BEFORE resource routes)
         Route::get('pricelist-buruh/export', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'export'])
              ->name('pricelist-buruh.export')
