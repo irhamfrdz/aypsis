@@ -2743,6 +2743,15 @@ Route::middleware(['auth'])->group(function () {
              'destroy' => 'can:pranota-invoice-vendor-supir-delete'
          ]);
 
+    Route::resource('pembayaran-pranota-invoice-vendor-supir', \App\Http\Controllers\PembayaranPranotaInvoiceVendorSupirController::class)
+         ->middleware([
+             'index' => 'can:pembayaran-pranota-invoice-vendor-supir-view',
+             'create' => 'can:pembayaran-pranota-invoice-vendor-supir-create',
+             'store' => 'can:pembayaran-pranota-invoice-vendor-supir-create',
+             'show' => 'can:pembayaran-pranota-invoice-vendor-supir-view',
+             'destroy' => 'can:pembayaran-pranota-invoice-vendor-supir-delete'
+         ]);
+
     // Debug route untuk surat jalan
     Route::get('/debug-surat-jalan', function() {
         $data = [];

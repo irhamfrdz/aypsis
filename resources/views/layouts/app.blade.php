@@ -1269,6 +1269,13 @@
                     </a>
                 @endif
 
+                {{-- Pembayaran Pranota Invoice Vendor Supir --}}
+                @if($user && $user->can('pembayaran-pranota-invoice-vendor-supir-view'))
+                    <a href="{{ Route::has('pembayaran-pranota-invoice-vendor-supir.index') ? route('pembayaran-pranota-invoice-vendor-supir.index') : '#' }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-invoice-vendor-supir.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pembayaran Pranota Vendor Supir</span>
+                    </a>
+                @endif
+
             </div>
         </div>
         @endif
