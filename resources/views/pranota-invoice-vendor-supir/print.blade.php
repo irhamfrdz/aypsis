@@ -1,113 +1,252 @@
-@extends('layouts.print')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pranota Invoice Vendor Supir - {{ $pranota->no_pranota }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .info-section {
+            margin-bottom: 20px;
+            font-size: 11px;
+        }
+        
+        .info-table {
+            width: 100%;
+        }
+        
+        .info-table td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 130px;
+        }
+        
+        .section-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+        
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 11px;
+        }
+        
+        .custom-table th, 
+        .custom-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            vertical-align: middle;
+        }
+        
+        .custom-table th {
+            text-align: center;
+            font-weight: bold;
+            background-color: #fff;
+            border-bottom: 2px solid #000; /* Thicker border for header */
+        }
+        
+        .custom-table tr.total-row td {
+            background-color: #e9ecef;
+            font-weight: bold;
+            border-top: 2px solid #000;
+        }
+        
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        
+        .keterangan-box {
+            border: 2px solid #000;
+            padding: 10px;
+            margin-top: 20px;
+            min-height: 60px;
+        }
+        
+        .keterangan-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+        }
+        
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+        }
+        
+        .signature-table td {
+            border: none;
+            text-align: center;
+            padding: 5px;
+            width: 33.33%;
+        }
+        
+        .signature-space {
+            height: 60px;
+        }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; }
+            @page { margin: 1cm; size: auto; }
+        }
+        
+        .btn-print {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .btn-back {
+            position: fixed;
+            top: 10px;
+            right: 70px;
+            padding: 5px 10px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <button class="btn-print no-print" onclick="window.print()">Print</button>
+    <a href="{{ route('pranota-invoice-vendor-supir.index') }}" class="btn-back no-print">Kembali</a>
 
-@section('content')
-<style>
-    .pr-container { font-family: Arial, sans-serif; color: #111; padding: 20px; }
-    .pr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-    .pr-title h1 { margin: 0; font-size: 22px; color: #rose-600; }
-    .pr-info { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px; font-size: 13px; }
-    .info-label { color: #666; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
-    .info-value { font-weight: bold; font-size: 14px; }
-    .pr-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
-    .pr-table th, .pr-table td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-    .pr-table th { background: #f9fafb; font-weight: bold; }
-    .pr-summary { margin-top: 20px; display: flex; justify-content: flex-end; }
-    .summary-box { width: 300px; }
-    .summary-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee; }
-    .summary-total { font-size: 16px; font-weight: bold; border-bottom: none; padding-top: 10px; }
-    .pr-footer { margin-top: 50px; display: flex; justify-content: space-between; }
-    .signature-box { width: 200px; text-align: center; }
-    .signature-line { margin-top: 60px; border-top: 1px solid #333; padding-top: 5px; font-weight: bold; }
-</style>
-
-<div class="pr-container">
-    <div class="pr-header">
-        <div class="pr-title">
-            <h1>PRANOTA INVOICE VENDOR SUPIR</h1>
-            <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">{{ $pranota->no_pranota }}</div>
-        </div>
-        <div style="text-align: right;">
-            <div style="font-weight: bold; font-size: 18px; color: #2b3a67;">AYPSIS</div>
-            <div style="font-size: 11px; color: #666;">Sistem Manajemen Logistik Terpadu</div>
-        </div>
+    <div class="header">
+        <h1>PERMOHONAN TRANSFER</h1>
     </div>
 
-    <div class="pr-info">
-        <div>
-            <div class="info-label">VENDOR / PERUSAHAAN</div>
-            <div class="info-value">{{ $pranota->vendor->nama_vendor ?? '-' }}</div>
-            <div style="font-size: 12px; margin-top: 5px; color: #444;">{{ $pranota->vendor->alamat ?? '-' }}</div>
-        </div>
-        <div style="text-align: right;">
-            <div class="info-label">TANGGAL PRANOTA</div>
-            <div class="info-value">{{ $pranota->tanggal_pranota->format('d F Y') }}</div>
-            <div class="info-label" style="margin-top: 10px;">STATUS</div>
-            <div class="info-value" style="text-transform: uppercase;">{{ str_replace('_', ' ', $pranota->status_pembayaran) }}</div>
-        </div>
+    <div class="info-section">
+        <table class="info-table">
+            <tr>
+                <td class="info-label">Nomor Pranota</td>
+                <td>: <strong>{{ $pranota->no_pranota }}</strong></td>
+                <td class="info-label">Tanggal</td>
+                <td>: {{ $pranota->tanggal_pranota->format('d/M/Y') }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Penerima</td>
+                <td>: {{ $pranota->vendor->nama_vendor ?? '-' }}</td>
+                <td class="info-label">Vendor</td>
+                <td>: {{ $pranota->vendor->nama_vendor ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="info-label">Status</td>
+                <td>: {{ strtoupper(str_replace('_', ' ', $pranota->status_pembayaran)) }}</td>
+                <td class="info-label">Dibuat Oleh</td>
+                <td>: {{ optional($pranota->creator)->name ?? '-' }}</td>
+            </tr>
+        </table>
     </div>
 
-    @if($pranota->keterangan)
-    <div style="margin-bottom: 20px; padding: 10px; background: #f9fafb; border: 1px solid #eee; font-size: 12px;">
-        <div class="info-label">KETERANGAN</div>
-        <div>{{ $pranota->keterangan }}</div>
-    </div>
-    @endif
-
-    <table class="pr-table">
+    <div class="section-header">Detail Invoice:</div>
+    <table class="custom-table">
         <thead>
             <tr>
-                <th style="width: 50px;">No</th>
-                <th>No Invoice</th>
-                <th>Tanggal</th>
-                <th>Surat Jalan Relasi</th>
-                <th style="text-align: right;">Nominal</th>
+                <th style="width: 5%;">No</th>
+                <th style="width: 20%;">No Invoice</th>
+                <th style="width: 15%;">Tanggal</th>
+                <th>Daftar Surat Jalan</th>
+                <th style="width: 20%;">Total Nominal</th>
             </tr>
         </thead>
         <tbody>
             @foreach($pranota->invoiceTagihanVendors as $index => $invoice)
             <tr>
-                <td style="text-align: center;">{{ $index + 1 }}</td>
-                <td style="font-weight: bold;">{{ $invoice->no_invoice }}</td>
-                <td>{{ $invoice->tanggal_invoice->format('d/m/Y') }}</td>
+                <td class="text-center">{{ $index + 1 }}</td>
+                <td class="text-center font-bold">{{ $invoice->no_invoice }}</td>
+                <td class="text-center">{{ $invoice->tanggal_invoice->format('d/M/Y') }}</td>
                 <td>
-                    <div style="font-size: 10px; color: #555;">
-                        @foreach($invoice->tagihanSupirVendors as $tagihan)
-                            {{ $tagihan->suratJalan->no_surat_jalan ?? '-' }}@if(!$loop->last), @endif
-                        @endforeach
-                    </div>
+                    @foreach($invoice->tagihanSupirVendors as $tagihan)
+                        {{ $tagihan->suratJalan->no_surat_jalan ?? '-' }}{{ !$loop->last ? ',' : '' }}
+                        @if(!$loop->last && $loop->iteration % 3 == 0) <br> @endif
+                    @endforeach
                 </td>
-                <td style="text-align: right; font-weight: bold;">
-                    Rp {{ number_format($invoice->total_nominal, 0, ',', '.') }}
-                </td>
+                <td class="text-right">Rp {{ number_format($invoice->total_nominal, 0, ',', '.') }}</td>
             </tr>
             @endforeach
+            <tr class="total-row">
+                <td colspan="4" class="text-right">TOTAL KESELURUHAN</td>
+                <td class="text-right">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
+            </tr>
         </tbody>
     </table>
 
-    <div class="pr-summary">
-        <div class="summary-box">
-            <div class="summary-row summary-total">
-                <span>TOTAL KESELURUHAN</span>
-                <span style="color: #rose-600;">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</span>
-            </div>
+    @if($pranota->keterangan)
+    <div class="keterangan-box">
+        <div class="keterangan-title">Keterangan:</div>
+        <div>
+            {!! nl2br(e($pranota->keterangan)) !!}
         </div>
     </div>
+    @endif
 
-    <div class="pr-footer">
-        <div class="signature-box">
-            <div>Dibuat Oleh,</div>
-            <div class="signature-line">{{ optional($pranota->creator)->name ?? 'Admin' }}</div>
-            <div style="font-size: 10px;">{{ now()->format('d/m/Y H:i') }}</div>
-        </div>
-        <div class="signature-box">
-            <div>Vendor / Penerima,</div>
-            <div class="signature-line">{{ $pranota->vendor->nama_vendor ?? '-' }}</div>
-        </div>
-        <div class="signature-box">
-            <div>Disetujui Oleh,</div>
-            <div class="signature-line">&nbsp;</div>
-            <div>Manager Keuangan</div>
-        </div>
+    <div class="footer">
+        <table class="signature-table">
+            <tr>
+                <td><strong>Dibuat Oleh:</strong></td>
+                <td><strong>Diperiksa Oleh:</strong></td>
+                <td><strong>Disetujui Oleh:</strong></td>
+            </tr>
+            <tr>
+                <td class="signature-space"></td>
+                <td class="signature-space"></td>
+                <td class="signature-space"></td>
+            </tr>
+            <tr>
+                <td>___________</td>
+                <td>___________</td>
+                <td>___________</td>
+            </tr>
+        </table>
     </div>
-</div>
-@endsection
+</body>
+</html>
