@@ -26,7 +26,7 @@
             @csrf
             @method('PUT')
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {{-- Nama Tarif --}}
+                {{-- Nama Agen --}}
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nama Agen <span class="text-red-500">*</span></label>
                     <input type="text" 
@@ -35,6 +35,24 @@
                            class="w-full px-3 py-2 border @error('nama_agen') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                            required>
                     @error('nama_agen')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Nama Kapal --}}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nama Kapal <span class="text-red-500">*</span></label>
+                    <select name="nama_kapal" 
+                            class="w-full px-3 py-2 border @error('nama_kapal') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required>
+                        <option value="" disabled>Pilih Kapal</option>
+                        @foreach($kapals as $kapal)
+                            <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal', $pricelist->nama_kapal) == $kapal->nama_kapal ? 'selected' : '' }}>
+                                {{ $kapal->nama_kapal }} ({{ $kapal->nickname ?? '-' }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('nama_kapal')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>

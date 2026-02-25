@@ -10,6 +10,7 @@ class MasterPricelistLabuhTambat extends Model
 
     protected $fillable = [
         'nama_agen',
+        'nama_kapal',
         'lokasi',
         'harga',
         'keterangan',

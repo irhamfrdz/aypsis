@@ -21,6 +21,7 @@ class MasterPricelistLabuhTambatController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_agen', 'like', '%' . $search . '%')
+                  ->orWhere('nama_kapal', 'like', '%' . $search . '%')
                   ->orWhere('lokasi', 'like', '%' . $search . '%')
                   ->orWhere('keterangan', 'like', '%' . $search . '%');
             });
@@ -40,7 +41,8 @@ class MasterPricelistLabuhTambatController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk membuat master pricelist labuh tambat.');
         }
 
-        return view('master-pricelist-labuh-tambat.create');
+        $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
+        return view('master-pricelist-labuh-tambat.create', compact('kapals'));
     }
 
     public function store(Request $request)
@@ -53,6 +55,7 @@ class MasterPricelistLabuhTambatController extends Controller
 
         $validated = $request->validate([
             'nama_agen' => 'required|string|max:255',
+            'nama_kapal' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
             'lokasi' => 'required|string|in:Jakarta,Batam,Pinang',
             'keterangan' => 'nullable|string',
@@ -76,7 +79,8 @@ class MasterPricelistLabuhTambatController extends Controller
         }
 
         $pricelist = \App\Models\MasterPricelistLabuhTambat::findOrFail($id);
-        return view('master-pricelist-labuh-tambat.edit', compact('pricelist'));
+        $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
+        return view('master-pricelist-labuh-tambat.edit', compact('pricelist', 'kapals'));
     }
 
     public function update(Request $request, $id)
@@ -91,6 +95,7 @@ class MasterPricelistLabuhTambatController extends Controller
 
         $validated = $request->validate([
             'nama_agen' => 'required|string|max:255',
+            'nama_kapal' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
             'lokasi' => 'required|string|in:Jakarta,Batam,Pinang',
             'keterangan' => 'nullable|string',

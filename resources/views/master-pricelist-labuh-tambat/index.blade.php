@@ -78,6 +78,7 @@
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Agen</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kapal</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
@@ -93,6 +94,9 @@
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                             {{ $pricelist->nama_agen }}
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $pricelist->nama_kapal }}
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                             Rp {{ number_format($pricelist->harga, 2, ',', '.') }}
