@@ -607,4 +607,12 @@ class SuratJalan extends Model
     {
         return $this->hasOne(TagihanSupirVendor::class, 'surat_jalan_id');
     }
+
+    /**
+     * Relationship with Prospek
+     */
+    public function prospeks()
+    {
+        return $this->hasMany(Prospek::class, 'surat_jalan_id');
+    }
 }

@@ -217,11 +217,12 @@
     <table class="custom-table">
         <thead>
             <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 15%;">No SJ</th>
-                <th style="width: 12%;">Tgl SJ</th>
-                <th style="width: 15%;">Supir</th>
-                <th style="width: 10%;">Kontainer</th>
+                <th style="width: 3%;">No</th>
+                <th style="width: 13%;">No SJ</th>
+                <th style="width: 10%;">Tgl SJ</th>
+                <th style="width: 15%;">No Kontainer</th>
+                <th style="width: 12%;">Voyage</th>
+                <th style="width: 7%;">Size</th>
                 <th>Rute (Dari -> Ke)</th>
                 <th style="width: 15%; text-align: right;">Nominal</th>
             </tr>
@@ -234,8 +235,9 @@
                     <td class="text-center">{{ $sjNo++ }}</td>
                     <td class="text-center">{{ $tagihan->suratJalan->no_surat_jalan ?? '-' }}</td>
                     <td class="text-center">{{ optional($tagihan->suratJalan->tanggal_surat_jalan)->format('d/M/y') ?? '-' }}</td>
-                    <td>{{ $tagihan->nama_supir ?? ($tagihan->suratJalan->supir ?? '-') }}</td>
-                    <td class="text-center">{{ $tagihan->jenis_kontainer ?? ($tagihan->suratJalan->tipe_kontainer ?? '-') }}</td>
+                    <td class="text-center">{{ $tagihan->suratJalan->no_kontainer ?? '-' }}</td>
+                    <td class="text-center">{{ optional($tagihan->suratJalan->prospeks->first())->no_voyage ?? '-' }}</td>
+                    <td class="text-center">{{ $tagihan->jenis_kontainer ?? ($tagihan->suratJalan->size ?? '-') }}</td>
                     <td>{{ $tagihan->dari ?? ($tagihan->suratJalan->dari ?? '-') }} -> {{ $tagihan->ke ?? ($tagihan->suratJalan->ke ?? '-') }}</td>
                     <td class="text-right">Rp {{ number_format($tagihan->nominal, 0, ',', '.') }}</td>
                 </tr>

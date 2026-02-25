@@ -160,7 +160,7 @@ class PranotaInvoiceVendorSupirController extends Controller
 
     public function print($id)
     {
-        $pranota = PranotaInvoiceVendorSupir::with(['vendor', 'invoiceTagihanVendors.tagihanSupirVendors.suratJalan'])->findOrFail($id);
+        $pranota = PranotaInvoiceVendorSupir::with(['vendor', 'invoiceTagihanVendors.tagihanSupirVendors.suratJalan.prospeks'])->findOrFail($id);
         return view('pranota-invoice-vendor-supir.print', compact('pranota'));
     }
 }
