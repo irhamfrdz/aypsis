@@ -157,4 +157,10 @@ class PranotaInvoiceVendorSupirController extends Controller
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function print($id)
+    {
+        $pranota = PranotaInvoiceVendorSupir::with(['vendor', 'invoiceTagihanVendors.tagihanSupirVendors.suratJalan'])->findOrFail($id);
+        return view('pranota-invoice-vendor-supir.print', compact('pranota'));
+    }
 }

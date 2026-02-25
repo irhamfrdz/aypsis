@@ -2728,6 +2728,10 @@ Route::middleware(['auth'])->group(function () {
              'destroy' => 'can:invoice-tagihan-vendor-delete'
          ]);
 
+    Route::get('pranota-invoice-vendor-supir/{id}/print', [\App\Http\Controllers\PranotaInvoiceVendorSupirController::class, 'print'])
+         ->name('pranota-invoice-vendor-supir.print')
+         ->middleware('can:pranota-invoice-vendor-supir-view');
+
     Route::resource('pranota-invoice-vendor-supir', \App\Http\Controllers\PranotaInvoiceVendorSupirController::class)
          ->middleware([
              'index' => 'can:pranota-invoice-vendor-supir-view',
