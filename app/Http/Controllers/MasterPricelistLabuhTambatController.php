@@ -28,8 +28,12 @@ class MasterPricelistLabuhTambatController extends Controller
             });
         }
 
+        if ($request->filled('lokasi')) {
+            $query->where('lokasi', $request->lokasi);
+        }
+
         $perPage = $request->get('per_page', 10);
-        $pricelists = $query->orderBy('nama_agen', 'asc')->paginate($perPage);
+        $pricelists = $query->orderBy('nama_agen', 'asc')->paginate($perPage)->withQueryString();
 
         return view('master-pricelist-labuh-tambat.index', compact('pricelists'));
     }
