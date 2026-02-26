@@ -3001,6 +3001,10 @@ Route::middleware(['auth'])->group(function () {
          ]);
 
     // Sync penerima dan pengirim (must be after resource or wait, it's specific POST with {id}, so after is fine if it does not conflict but better before so it's not caught by show method. Let's put it before)
+    Route::post('tanda-terima-tanpa-surat-jalan/{id}/sync-penerima-pengirim', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'syncPenerimaPengirim'])
+         ->name('tanda-terima-tanpa-surat-jalan.sync-penerima-pengirim')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
     Route::resource('tanda-terima-tanpa-surat-jalan', \App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class)
          ->middleware([
              'index' => 'can:tanda-terima-tanpa-surat-jalan-view',
