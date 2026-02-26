@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    $paperSize = request('paper_size', 'Half-A4');
+    $paperSize = request('paper_size', 'Half-Folio');
     $paperMap = [
         'Folio' => [
             'size' => '215.9mm 330.2mm',

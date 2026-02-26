@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    $paperSize = request('paper_size', 'Half-A4');
+    $defaultSize = 'Half-A4';
+    if (isset($biayaKapal) && $biayaKapal->jenis_biaya === 'KB024') {
+        $defaultSize = 'Half-Folio';
+    }
+    $paperSize = request('paper_size', $defaultSize);
     $paperMap = [
         'Folio' => [
             'size' => '215.9mm 330.2mm',
