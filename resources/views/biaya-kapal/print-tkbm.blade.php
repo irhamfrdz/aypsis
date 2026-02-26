@@ -18,7 +18,7 @@
             'height' => '165.1mm',
             'containerWidth' => '215.9mm',
             'fontSize' => '11px',
-            'headerH1' => '18px',
+            'headerH1' => '16px',
             'tableFont' => '10px',
         ],
         'A4' => [
@@ -77,7 +77,6 @@
             padding: 0 5mm;
             margin: 0 auto;
             box-sizing: border-box;
-            min-height: calc({{ $currentPaper['height'] }} - 10mm);
         }
 
         .header {
@@ -122,7 +121,7 @@
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12mm;
+            margin-bottom: 5mm;
             table-layout: fixed;
         }
 
