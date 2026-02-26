@@ -54,10 +54,18 @@
                     </div>
 
                     <div>
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Keterangan</h3>
-                        <div class="p-3 bg-gray-50 rounded border border-gray-100 min-h-[100px]">
-                            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $master_sertifikat_kapal->keterangan ?? 'Tidak ada keterangan.' }}</p>
-                        </div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Name Certificate</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ $master_sertifikat_kapal->name_certificate ?? '-' }}</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Nickname</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ $master_sertifikat_kapal->nickname ?? '-' }}</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Jenis Dokumen</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ $master_sertifikat_kapal->jenis_dokumen ?? '-' }}</p>
                     </div>
                 </div>
 

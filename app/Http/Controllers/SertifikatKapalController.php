@@ -43,7 +43,9 @@ class SertifikatKapalController extends Controller
     {
         $request->validate([
             'nama_sertifikat' => 'required|string|max:255',
-            'keterangan' => 'nullable|string',
+            'name_certificate' => 'nullable|string|max:255',
+            'nickname' => 'nullable|string|max:255',
+            'jenis_dokumen' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,nonaktif'
         ]);
 
@@ -76,7 +78,9 @@ class SertifikatKapalController extends Controller
     {
         $request->validate([
             'nama_sertifikat' => 'required|string|max:255',
-            'keterangan' => 'nullable|string',
+            'name_certificate' => 'nullable|string|max:255',
+            'nickname' => 'nullable|string|max:255',
+            'jenis_dokumen' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,nonaktif'
         ]);
 

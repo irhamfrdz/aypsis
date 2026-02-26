@@ -56,7 +56,9 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">No</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Sertifikat</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name Certificate</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nickname</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Dokumen</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Aksi</th>
                     </tr>
@@ -70,8 +72,14 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-semibold text-gray-900">{{ $sertifikat->nama_sertifikat }}</div>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ $sertifikat->name_certificate ?? '-' }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ $sertifikat->nickname ?? '-' }}</div>
+                        </td>
                         <td class="px-6 py-4">
-                            <div class="text-sm text-gray-600 truncate max-w-xs">{{ $sertifikat->keterangan ?? '-' }}</div>
+                            <div class="text-sm text-gray-600 truncate max-w-xs">{{ $sertifikat->jenis_dokumen ?? '-' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($sertifikat->status == 'aktif')
@@ -106,7 +114,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-certificate text-4xl mb-3 text-gray-300"></i>
                                 <p>Tidak ada data sertifikat ditemukan.</p>

@@ -14,7 +14,9 @@ class SertifikatKapal extends Model
 
     protected $fillable = [
         'nama_sertifikat',
-        'keterangan',
+        'name_certificate',
+        'nickname',
+        'jenis_dokumen',
         'status'
     ];
 
