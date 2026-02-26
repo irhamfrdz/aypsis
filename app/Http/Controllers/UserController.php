@@ -1002,6 +1002,24 @@ class UserController extends Controller
                             $action = str_replace('pricelist-sewa-kontainer-', '', $action);
                             $module = 'master-pricelist-sewa-kontainer';
                         }
+                        // Special handling for master-pelabuhan permissions
+                        elseif (strpos($action, 'pelabuhan-') === 0) {
+                            // For master-pelabuhan-view, extract the action
+                            $action = str_replace('pelabuhan-', '', $action);
+                            $module = 'master-pelabuhan';
+                        }
+                        // Special handling for master-dokumen-perijinan-kapal permissions
+                        elseif (strpos($action, 'dokumen-perijinan-kapal-') === 0) {
+                            // For master-dokumen-perijinan-kapal-view, extract the action
+                            $action = str_replace('dokumen-perijinan-kapal-', '', $action);
+                            $module = 'master-dokumen-perijinan-kapal';
+                        }
+                        // Special handling for master-sertifikat-kapal permissions
+                        elseif (strpos($action, 'sertifikat-kapal-') === 0) {
+                            // For master-sertifikat-kapal-view, extract the action
+                            $action = str_replace('sertifikat-kapal-', '', $action);
+                            $module = 'master-sertifikat-kapal';
+                        }
                         // Special handling for master-pricelist-cat permissions
                         elseif (strpos($action, 'pricelist-cat-') === 0) {
                             // For master-pricelist-cat-view, extract the action
@@ -1055,6 +1073,12 @@ class UserController extends Controller
                             // For master-term-view, extract the action
                             $action = str_replace('term-', '', $action);
                             $module = 'master-term';
+                        }
+                        // Special handling for master-vendor-supir permissions
+                        elseif (strpos($action, 'vendor-supir-') === 0) {
+                            // For master-vendor-supir-view, extract the action
+                            $action = str_replace('vendor-supir-', '', $action);
+                            $module = 'master-vendor-supir';
                         } else {
                             // For master-* patterns, split using last hyphen so submodules can contain hyphens
                             $lastPos = strrpos($action, '-');
@@ -1856,6 +1880,92 @@ class UserController extends Controller
                                     'delete' => 'master-kode-nomor-delete',
                                     'print' => 'master-kode-nomor-print',
                                     'export' => 'master-kode-nomor-export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-pelabuhan permissions explicitly
+                            if ($module === 'master-pelabuhan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-pelabuhan-view',
+                                    'create' => 'master-pelabuhan-create',
+                                    'update' => 'master-pelabuhan-update',
+                                    'delete' => 'master-pelabuhan-delete',
+                                    'print' => 'master-pelabuhan-print',
+                                    'export' => 'master-pelabuhan-export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-dokumen-perijinan-kapal permissions explicitly
+                            if ($module === 'master-dokumen-perijinan-kapal' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-dokumen-perijinan-kapal-view',
+                                    'create' => 'master-dokumen-perijinan-kapal-create',
+                                    'update' => 'master-dokumen-perijinan-kapal-update',
+                                    'delete' => 'master-dokumen-perijinan-kapal-delete'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-sertifikat-kapal permissions explicitly
+                            if ($module === 'master-sertifikat-kapal' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-sertifikat-kapal-view',
+                                    'create' => 'master-sertifikat-kapal-create',
+                                    'update' => 'master-sertifikat-kapal-update',
+                                    'delete' => 'master-sertifikat-kapal-delete'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-vendor-supir permissions explicitly
+                            if ($module === 'master-vendor-supir' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-vendor-supir-view',
+                                    'create' => 'master-vendor-supir-create',
+                                    'update' => 'master-vendor-supir-update',
+                                    'delete' => 'master-vendor-supir-delete'
                                 ];
 
                                 if (isset($actionMap[$action])) {

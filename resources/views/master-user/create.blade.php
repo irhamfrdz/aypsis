@@ -594,6 +594,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Vendor Supir --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Vendor Supir</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-supir][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Aktivitas Supir --}}
                             <tr class="module-row" data-module="aktivitas-supir">
                                 <td class="module-header">

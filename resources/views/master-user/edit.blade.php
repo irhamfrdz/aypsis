@@ -531,6 +531,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Pelabuhan --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pelabuhan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pelabuhan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pelabuhan']['view']) && $userMatrixPermissions['master-pelabuhan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pelabuhan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pelabuhan']['create']) && $userMatrixPermissions['master-pelabuhan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pelabuhan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pelabuhan']['update']) && $userMatrixPermissions['master-pelabuhan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pelabuhan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pelabuhan']['delete']) && $userMatrixPermissions['master-pelabuhan']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Pengirim --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
@@ -1410,6 +1427,40 @@
                                 <td><input type="checkbox" name="permissions[biaya-kapal][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['approve']) && $userMatrixPermissions['biaya-kapal']['approve']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[biaya-kapal][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['print']) && $userMatrixPermissions['biaya-kapal']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[biaya-kapal][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['export']) && $userMatrixPermissions['biaya-kapal']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Master Dokumen Perijinan Kapal --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Dokumen Perijinan Kapal</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-perijinan-kapal][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-perijinan-kapal']['view']) && $userMatrixPermissions['master-dokumen-perijinan-kapal']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-perijinan-kapal][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-perijinan-kapal']['create']) && $userMatrixPermissions['master-dokumen-perijinan-kapal']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-perijinan-kapal][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-perijinan-kapal']['update']) && $userMatrixPermissions['master-dokumen-perijinan-kapal']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-perijinan-kapal][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-perijinan-kapal']['delete']) && $userMatrixPermissions['master-dokumen-perijinan-kapal']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Master Sertifikat Kapal --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Sertifikat Kapal</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-sertifikat-kapal][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-sertifikat-kapal']['view']) && $userMatrixPermissions['master-sertifikat-kapal']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-sertifikat-kapal][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-sertifikat-kapal']['create']) && $userMatrixPermissions['master-sertifikat-kapal']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-sertifikat-kapal][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-sertifikat-kapal']['update']) && $userMatrixPermissions['master-sertifikat-kapal']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-sertifikat-kapal][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-sertifikat-kapal']['delete']) && $userMatrixPermissions['master-sertifikat-kapal']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
                             </tr>
 
                             {{-- Master Kendaraan --}}
