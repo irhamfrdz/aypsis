@@ -1277,6 +1277,13 @@ class BiayaKapalController extends Controller
             return view('biaya-kapal.print-perlengkapan', compact('biayaKapal'));
         }
 
+        // Check if it's Biaya Stuffing and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'stuffing') !== false) {
+            $biayaKapal->load(['stuffingDetails']);
+            return view('biaya-kapal.print-stuffing', compact('biayaKapal'));
+        }
+
         // Check if it's Biaya Labuh Tambat and use specific print template
         if ($biayaKapal->klasifikasiBiaya && 
             stripos($biayaKapal->klasifikasiBiaya->nama, 'labuh tambat') !== false) {
@@ -1378,6 +1385,16 @@ class BiayaKapalController extends Controller
         }
 
         return view('biaya-kapal.print-trucking', compact('biayaKapal', 'blDetails'));
+    }
+
+    /**
+     * Print biaya stuffing specifically.
+     */
+    public function printStuffing(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'stuffingDetails']);
+
+        return view('biaya-kapal.print-stuffing', compact('biayaKapal'));
     }
 
     /**
