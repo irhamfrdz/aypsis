@@ -85,9 +85,9 @@
 
         .header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             border-bottom: 2px solid #333;
-            padding-bottom: 8px;
+            padding-bottom: 4px;
         }
 
         .header h1 {
@@ -98,7 +98,7 @@
         }
 
         .info-section {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             font-size: 9px;
         }
 
@@ -128,7 +128,7 @@
         .table th,
         .table td {
             border: 1px solid #333;
-            padding: 2mm 3mm;
+            padding: 1mm 2mm;
             text-align: left;
             vertical-align: middle;
         }
@@ -161,20 +161,20 @@
         }
 
         .signature-section {
-            margin-top: 15px;
+            margin-top: 5px;
             page-break-inside: avoid;
         }
 
         .footer {
-            margin-top: 15px;
-            padding-top: 10px;
+            margin-top: 5px;
+            padding-top: 5px;
         }
         
         .signatures {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 12px;
+            gap: 10px;
+            margin-top: 5px;
         }
         
         .signature-box {
@@ -183,7 +183,7 @@
         }
         
         .signature-line {
-            margin-top: 50px;
+            margin-top: 35px;
             border-top: 1px solid #333;
             padding-top: 3px;
             font-weight: bold;
@@ -396,13 +396,8 @@
                     $overallTotal = $combinedBarang->sum('subtotal');
                 @endphp
 
-                <div style="margin-top:6px; margin-bottom:6px; font-size:{{ $currentPaper['tableFont'] }};">
+                <div style="margin-top:2px; margin-bottom:2px; font-size:{{ $currentPaper['tableFont'] }};">
                     <strong>Detail Barang (Gabungan Semua Kapal)</strong>
-                    <!-- DEBUG COMPARISON: 
-                         Total from Groups: Rp {{ number_format($allSubtotalFromGroups, 0, ',', '.') }} 
-                         Total from Combined: Rp {{ number_format($overallTotal, 0, ',', '.') }} 
-                         Nominal Biaya Kapal: Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}
-                    -->
                 </div>
 
                 <table class="table" style="margin-top: 6px; margin-bottom: 0;">
@@ -482,9 +477,8 @@
         @endif
 
         <!-- Keterangan -->
-        <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
-            <strong>Keterangan:</strong><br>
-            {{-- Kosong untuk ditulis manual --}}
+        <div style="margin-bottom: 5px; border: 2px solid #333; padding: 4px; min-height: 25px;">
+            <strong style="font-size: 9px;">Keterangan:</strong><br>
         </div>
 
         <!-- Signature Section -->

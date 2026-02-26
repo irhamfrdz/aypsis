@@ -81,9 +81,9 @@
 
         .header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             border-bottom: 2px solid #333;
-            padding-bottom: 8px;
+            padding-bottom: 4px;
         }
 
         .header h1 {
@@ -128,7 +128,7 @@
         .table th,
         .table td {
             border: 1px solid #333;
-            padding: 2mm 3mm;
+            padding: 1mm 2mm;
             text-align: left;
             vertical-align: middle;
         }
@@ -162,20 +162,20 @@
         }
 
         .signature-section {
-            margin-top: 15px;
+            margin-top: 5px;
             page-break-inside: avoid;
         }
 
         .footer {
-            margin-top: 15px;
-            padding-top: 10px;
+            margin-top: 5px;
+            padding-top: 5px;
         }
         
         .signatures {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 12px;
+            gap: 10px;
+            margin-top: 5px;
         }
         
         .signature-box {
@@ -185,7 +185,7 @@
         }
         
         .signature-line {
-            margin-top: 50px;
+            margin-top: 35px;
             border-top: 1px solid #333;
             padding-top: 3px;
             font-weight: bold;
@@ -466,9 +466,8 @@
         @endif
 
         <!-- Keterangan -->
-        <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
-            <strong>Keterangan:</strong><br>
-            {{-- Kosong untuk ditulis manual --}}
+        <div style="margin-bottom: 5px; border: 2px solid #333; padding: 4px; min-height: 25px;">
+            <strong style="font-size: 9px;">Keterangan:</strong><br>
         </div>
 
         <!-- Signature Section -->
