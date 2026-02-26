@@ -5591,7 +5591,7 @@
                     <input type="hidden" name="labuh_tambat[${sectionIndex}][sub_total]" class="sub-total-value" value="0">
                 </div>
                 <div class="md:col-span-1">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">PPN 12% (Rp)</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">PPN 11% (Rp)</label>
                     <input type="text" class="ppn-display w-full px-3 py-1.5 border border-transparent bg-transparent font-bold text-red-600" readonly value="Rp 0">
                     <input type="hidden" name="labuh_tambat[${sectionIndex}][ppn]" class="ppn-value" value="0">
                 </div>
@@ -5758,7 +5758,7 @@
             }
         });
         sub = Math.round(sub);
-        const ppn = Math.round(taxable * 0.12);
+        const ppn = Math.round(taxable * 0.11);
         const materaiField = section.querySelector('.biaya-materai-input-labuh-tambat');
         const materai = materaiField ? (parseFloat(materaiField.value.replace(/\./g, '')) || 0) : 0;
         const g = sub + ppn + materai;

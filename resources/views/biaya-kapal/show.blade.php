@@ -428,7 +428,7 @@
                                         <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('sub_total'), 0, ',', '.') }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="px-4 py-2 text-sm text-right">PPN (12%)</td>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">PPN (11%)</td>
                                         <td class="px-4 py-2 text-sm text-right text-gray-600">Rp {{ number_format($details->sum('ppn'), 0, ',', '.') }}</td>
                                     </tr>
                                     @if($details->sum('biaya_materai') > 0)

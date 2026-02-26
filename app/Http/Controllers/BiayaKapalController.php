@@ -545,7 +545,7 @@ class BiayaKapalController extends Controller
                             // Identification of Fuel Surcharge for PPN
                             $ppn = 0;
                             if (str_contains(strtolower($typeKeterangan), 'fuel surcharge')) {
-                                $ppn = round($subTotal * 0.12);
+                                $ppn = round($subTotal * 0.11);
                             }
                             
                             $biayaMaterai = $typeIndex === 0 ? ($section['biaya_materai'] ?? 0) : 0; // Add materai only to the first item in section
@@ -1861,7 +1861,7 @@ class BiayaKapalController extends Controller
                                 // Identification of Fuel Surcharge for PPN
                                 $ppn = 0;
                                 if (str_contains(strtolower($typeKeterangan), 'fuel surcharge')) {
-                                    $ppn = round($subTotal * 0.12);
+                                    $ppn = round($subTotal * 0.11);
                                 }
                                 
                                 $biayaMaterai = $typeIndex === 0 ? ($section['biaya_materai'] ?? 0) : 0;

@@ -3881,7 +3881,7 @@
                     <input type="hidden" name="labuh_tambat[${sectionIndex}][sub_total]" class="sub-total-value" value="0">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">PPN (12%)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PPN (11%)</label>
                     <input type="text" class="ppn-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="labuh_tambat[${sectionIndex}][ppn]" class="ppn-value" value="0">
                 </div>
@@ -4195,7 +4195,7 @@
         });
 
         let subTotal = Math.round(totalCost);
-        const ppn = Math.round(taxableCost * 0.12);
+        const ppn = Math.round(taxableCost * 0.11);
         const materai = materaiInput ? (parseFloat(materaiInput.value.replace(/\./g, '')) || 0) : 0;
         const grandTotal = subTotal + ppn + materai;
         
