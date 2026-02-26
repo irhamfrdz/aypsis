@@ -17,10 +17,10 @@
             'tableFont' => '13px', // Increased from 11px
         ],
         'Half-Folio' => [
-            'size' => '165mm 215.9mm',
-            'width' => '165mm',
-            'height' => '215.9mm',
-            'containerWidth' => '165mm',
+            'size' => '215.9mm 165.1mm',
+            'width' => '215.9mm',
+            'height' => '165.1mm',
+            'containerWidth' => '215.9mm',
             'fontSize' => '11px', 
             'headerH1' => '18px', 
             'tableFont' => '10px', 
@@ -77,11 +77,11 @@
 
         .container {
             width: 100%;
-            max-width: calc({{ $currentPaper['containerWidth'] }} - 20mm);
-            padding: 0 10mm;
+            max-width: calc({{ $currentPaper['containerWidth'] }} - 10mm);
+            padding: 0 5mm;
             margin: 0 auto;
             box-sizing: border-box;
-            min-height: calc({{ $currentPaper['height'] }} - 20mm);
+            min-height: calc({{ $currentPaper['height'] }} - 10mm);
         }
 
         .header {
