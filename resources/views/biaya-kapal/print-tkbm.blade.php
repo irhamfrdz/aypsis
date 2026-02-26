@@ -13,13 +13,13 @@
             'tableFont' => '11px',
         ],
         'Half-Folio' => [
-            'size' => '215.9mm 165.1mm',
-            'width' => '215.9mm',
-            'height' => '165.1mm',
-            'containerWidth' => '215.9mm',
-            'fontSize' => '14px',
-            'headerH1' => '20px',
-            'tableFont' => '12px',
+            'size' => '165mm 215.9mm',
+            'width' => '165mm',
+            'height' => '215.9mm',
+            'containerWidth' => '165mm',
+            'fontSize' => '11px',
+            'headerH1' => '18px',
+            'tableFont' => '10px',
         ],
         'A4' => [
             'size' => 'A4',
@@ -54,8 +54,8 @@
         }
 
         @page {
-            size: {{ $currentPaper['size'] }} portrait;
-            margin: 10mm;
+            size: {{ $currentPaper['size'] }};
+            margin: 5mm;
         }
 
         html, body {

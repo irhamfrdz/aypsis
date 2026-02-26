@@ -17,13 +17,13 @@
             'tableFont' => '13px', // Increased from 11px
         ],
         'Half-Folio' => [
-            'size' => '215.9mm 165.1mm',
-            'width' => '215.9mm',
-            'height' => '165.1mm',
-            'containerWidth' => '215.9mm',
-            'fontSize' => '14px', // Increased from 13px
-            'headerH1' => '22px', // Increased from 20px
-            'tableFont' => '12px', // Increased from 11px
+            'size' => '165mm 215.9mm',
+            'width' => '165mm',
+            'height' => '215.9mm',
+            'containerWidth' => '165mm',
+            'fontSize' => '11px', 
+            'headerH1' => '18px', 
+            'tableFont' => '10px', 
         ],
         'A4' => [
             'size' => 'A4',
@@ -58,8 +58,8 @@
         }
 
         @page {
-            size: {{ $currentPaper['size'] }} portrait;
-            margin: 10mm;
+            size: {{ $currentPaper['size'] }};
+            margin: 5mm;
         }
 
         html, body {
