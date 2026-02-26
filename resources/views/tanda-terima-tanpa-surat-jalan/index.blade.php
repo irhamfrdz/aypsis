@@ -75,6 +75,23 @@
                     <div class="text-gray-500 text-xs">Selesai</div>
                 </div>
                 <div class="flex items-center gap-2">
+                    @can('tanda-terima-tanpa-surat-jalan-update')
+                        <button type="button" onclick="updateManifest(true)" 
+                                class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition shadow">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            Preview Update Manifest
+                        </button>
+                        <button type="button" onclick="updateManifest(false)" 
+                                class="inline-flex items-center px-3 py-1 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition shadow">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Update Manifest
+                        </button>
+                    @endcan
                     @can('tanda-terima-tanpa-surat-jalan-view')
                         <a href="{{ route('tanda-terima-tanpa-surat-jalan.export', request()->query()) }}" class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow text-sm">
                             <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -1573,6 +1590,92 @@
     $(document).ready(function() {
         initResizableTable('tandaTerimaTanpaSJTable');
     });
+
+    // Function to update manifest
+    function updateManifest(isDryRun) {
+        var actionText = isDryRun ? 'Preview Update' : 'Update Data';
+        var confirmText = isDryRun ? 
+            'Anda akan melihat preview data Manifest yang akan diupdate. Lanjutkan?' : 
+            'Anda akan mengupdate data penerima dan alamat pada Manifest. Lanjutkan?';
+        
+        if (!confirm(confirmText)) {
+            return;
+        }
+        
+        // Show loading
+        var loadingHtml = '<div id="loading-overlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center">' +
+            '<div class="bg-white rounded-lg p-6 shadow-xl flex items-center gap-4">' +
+            '<svg class="animate-spin h-8 w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">' +
+            '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>' +
+            '<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>' +
+            '</svg>' +
+            '<span class="text-lg font-medium">' + actionText + '...</span>' +
+            '</div></div>';
+        document.body.insertAdjacentHTML('beforeend', loadingHtml);
+        
+        // Call API - using the same route as tanda-terima
+        fetch('/tanda-terima/update-manifest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                dry_run: isDryRun
+            })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            document.getElementById('loading-overlay').remove();
+            
+            if (data.success) {
+                showManifestResultModal(data, isDryRun);
+            } else {
+                alert('Error: ' + (data.message || 'Terjadi kesalahan'));
+            }
+        })
+        .catch(function(error) {
+            document.getElementById('loading-overlay').remove();
+            alert('Error: ' + error.message);
+        });
+    }
+
+    function showManifestResultModal(data, isDryRun) {
+        var modalTitle = isDryRun ? 'Preview Update Manifest & Prospek' : 'Hasil Update Manifest & Prospek';
+        var hasAnyChanges = (data.total_with_changes > 0) || (data.total_prospek_with_changes > 0);
+        var hasAnyUpdates = (data.total_updated > 0) || (data.total_prospek_updated > 0);
+
+        var noteHtml = '';
+        if (isDryRun && hasAnyChanges) {
+            noteHtml = '<div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"><p class="text-sm text-yellow-800"><strong>Catatan:</strong> Ini adalah preview. Data belum diupdate.</p></div>';
+        } else if (!isDryRun && hasAnyUpdates) {
+            noteHtml = '<div class="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg"><p class="text-sm text-green-800"><strong>Berhasil!</strong> Data Manifest dan Prospek telah diupdate.</p></div>';
+        } else if (!hasAnyChanges && !hasAnyUpdates) {
+            noteHtml = '<div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"><p class="text-sm text-blue-800"><strong>Info:</strong> Semua data sudah sinkron.</p></div>';
+        }
+
+        var modalHtml = '<div id="manifest-result-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center p-4">' +
+            '<div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">' +
+            '<div class="p-6 border-b border-gray-200">' +
+            '<div class="flex items-center justify-between">' +
+            '<h3 class="text-xl font-bold text-gray-900">' + modalTitle + '</h3>' +
+            '<button onclick="document.getElementById(\'manifest-result-modal\').remove()" class="text-gray-400 hover:text-gray-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>' +
+            '</div></div>' +
+            '<div class="p-6">' +
+            '<div class="grid grid-cols-2 gap-4">' +
+            '<div class="bg-blue-50 rounded-lg p-4 text-center"><div class="text-2xl font-bold text-blue-600">' + (data.total_prospek || 0) + '</div><div class="text-xs text-blue-800">Total Prospek</div></div>' +
+            '<div class="bg-purple-50 rounded-lg p-4 text-center"><div class="text-2xl font-bold text-purple-600">' + (data.total_prospek_with_changes || data.total_prospek_updated || 0) + '</div><div class="text-xs text-purple-800">Prospek ' + (isDryRun ? 'Perlu Update' : 'Updated') + '</div></div>' +
+            '<div class="bg-indigo-50 rounded-lg p-4 text-center"><div class="text-2xl font-bold text-indigo-600">' + (data.total_manifests || 0) + '</div><div class="text-xs text-indigo-800">Total Manifest</div></div>' +
+            '<div class="bg-green-50 rounded-lg p-4 text-center"><div class="text-2xl font-bold text-green-600">' + (data.total_with_changes || data.total_updated || 0) + '</div><div class="text-xs text-green-800">Manifest ' + (isDryRun ? 'Perlu Update' : 'Updated') + '</div></div>' +
+            '</div>' +
+            noteHtml +
+            '</div>' +
+            '<div class="p-4 border-t border-gray-200 flex justify-end">' +
+            '<button onclick="document.getElementById(\'manifest-result-modal\').remove()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm">Tutup</button>' +
+            '</div></div></div>';
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
 </script>
 @endpush
 
