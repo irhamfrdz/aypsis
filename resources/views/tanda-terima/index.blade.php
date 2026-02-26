@@ -670,6 +670,11 @@
                                                         class="block w-full px-4 py-2 text-left text-xs text-purple-600 hover:bg-purple-50">
                                                     <i class="fas fa-history mr-2"></i>Riwayat
                                                 </button>
+                                                <button type="button"
+                                                        onclick="updateJenisBarang('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}')"
+                                                        class="block w-full px-4 py-2 text-left text-xs text-amber-600 hover:bg-amber-50">
+                                                    <i class="fas fa-sync-alt mr-2"></i>Update Jenis Barang
+                                                </button>
                                                 <form action="{{ route('tanda-terima.destroy', $tandaTerima->id) }}"
                                                       method="POST"
                                                       class="block"
@@ -1236,6 +1241,39 @@
             }
         }
     });
+
+    // Function to update jenis barang from surat_jalans
+    function updateJenisBarang(tandaTerimaId, noSuratJalan) {
+        if (!confirm('Update jenis barang untuk Tanda Terima ' + noSuratJalan + ' dari data Surat Jalan?')) {
+            return;
+        }
+
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const url = '/tanda-terima/' + tandaTerimaId + '/update-jenis-barang';
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json'
+            }
+        })
+        .then(async function(res) {
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || 'Gagal memperbarui jenis barang.');
+            }
+            return data;
+        })
+        .then(function(data) {
+            alert(data.message || 'Jenis barang berhasil diperbarui.');
+            location.reload();
+        })
+        .catch(function(err) {
+            alert('Gagal: ' + err.message);
+        });
+    }
 </script>
 @endpush
 

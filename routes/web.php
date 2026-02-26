@@ -2839,6 +2839,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima.add-to-prospek')
          ->middleware('can:tanda-terima-update');
 
+    // Route untuk update jenis barang dari surat jalan
+    Route::post('tanda-terima/{tandaTerima}/update-jenis-barang', [\App\Http\Controllers\TandaTerimaController::class, 'updateJenisBarang'])
+         ->name('tanda-terima.update-jenis-barang')
+         ->middleware('can:tanda-terima-update');
+
     // Route untuk bulk add to prospek
     Route::post('tanda-terima/bulk-add-to-prospek', [\App\Http\Controllers\TandaTerimaController::class, 'bulkAddToProspek'])
          ->name('tanda-terima.bulk-add-to-prospek')

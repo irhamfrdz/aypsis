@@ -2100,5 +2100,63 @@ class TandaTerimaController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update jenis barang pada tanda terima dari surat_jalans
+     */
+    public function updateJenisBarang(TandaTerima $tandaTerima)
+    {
+        try {
+            if (!$tandaTerima->surat_jalan_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tanda terima ini tidak terhubung dengan surat jalan.'
+                ], 422);
+            }
+
+            $suratJalan = SuratJalan::find($tandaTerima->surat_jalan_id);
+            if (!$suratJalan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Surat jalan tidak ditemukan.'
+                ], 404);
+            }
+
+            if (!$suratJalan->jenis_barang) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jenis barang di surat jalan kosong.'
+                ], 422);
+            }
+
+            // Resolve jenis_barang ID to nama_barang
+            $jenisBarang = \App\Models\JenisBarang::find($suratJalan->jenis_barang);
+            $jenisBarangNama = $jenisBarang ? $jenisBarang->nama_barang : $suratJalan->jenis_barang;
+
+            $oldValue = $tandaTerima->jenis_barang;
+            $tandaTerima->update(['jenis_barang' => $jenisBarangNama]);
+
+            Log::info('Jenis barang updated from surat jalan', [
+                'tanda_terima_id' => $tandaTerima->id,
+                'no_surat_jalan' => $tandaTerima->no_surat_jalan,
+                'old_value' => $oldValue,
+                'new_value' => $jenisBarangNama,
+                'surat_jalan_jenis_barang_id' => $suratJalan->jenis_barang,
+                'updated_by' => Auth::user()->name ?? 'system',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Jenis barang berhasil diperbarui: '{$oldValue}' → '{$jenisBarangNama}'"
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating jenis barang: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui jenis barang: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 
