@@ -466,6 +466,12 @@ class BiayaKapalController extends Controller
                 $validated['nominal'] = $grandTotalPerlengkapan;
             }
 
+            // Ensure nominal is not null for section-based jenis biaya (stuffing, trucking)
+            // These types derive nominal from their sections, so default to 0 to avoid null constraint
+            if (!isset($validated['nominal']) || $validated['nominal'] === null || $validated['nominal'] === '') {
+                $validated['nominal'] = 0;
+            }
+
             // Create BiayaKapal record
             $biayaKapal = BiayaKapal::create($validated);
 
@@ -488,6 +494,10 @@ class BiayaKapalController extends Controller
                         'total_biaya' => $section['total_biaya'] ?? 0,
                     ]);
                 }
+
+                // Auto-calculate nominal for trucking from section totals
+                $totalTrucking = BiayaKapalTrucking::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalTrucking]);
             }
 
             // BIAYA STUFFING SECTIONS: Store stuffing details
@@ -517,6 +527,10 @@ class BiayaKapalController extends Controller
                         'total_biaya' => $section['total_biaya'] ?? 0,
                     ]);
                 }
+
+                // Auto-calculate nominal for stuffing from section totals
+                $totalStuffing = BiayaKapalStuffing::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalStuffing]);
             }
 
             // BIAYA LABUH TAMBAT SECTIONS: Store labuh tambat details
