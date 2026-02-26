@@ -78,6 +78,7 @@ class StockAmprahanController extends Controller
             'tanggal_pengambilan' => 'nullable|required_if:is_langsung_pakai,1|date',
             'jumlah_pakai' => 'nullable|required_if:is_langsung_pakai,1|numeric|min:0',
             'keterangan_pakai' => 'nullable|required_if:is_langsung_pakai,1|string',
+            'kilometer' => 'nullable|numeric|min:0',
         ]);
 
         $data['created_by'] = Auth::id();
@@ -120,6 +121,7 @@ class StockAmprahanController extends Controller
                 'jumlah' => $request->jumlah_pakai,
                 'tanggal_pengambilan' => $request->tanggal_pengambilan,
                 'keterangan' => $request->keterangan_pakai,
+                'kilometer' => $request->kilometer,
                 'created_by' => Auth::id(),
             ]);
         }
@@ -183,6 +185,7 @@ class StockAmprahanController extends Controller
             'mobil_id' => 'nullable|exists:mobils,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
+            'kilometer' => 'nullable|numeric|min:0',
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -219,6 +222,7 @@ class StockAmprahanController extends Controller
             'jumlah' => $request->jumlah,
             'tanggal_pengambilan' => $request->tanggal,
             'keterangan' => $request->keterangan,
+            'kilometer' => $request->kilometer,
             'created_by' => Auth::id(),
         ]);
 
@@ -250,6 +254,7 @@ class StockAmprahanController extends Controller
                     'mobil' => $mobilInfo,
                     'kapal' => $kapalInfo,
                     'alat_berat' => $alatBeratInfo,
+                    'kilometer' => $usage->kilometer ?? '-',
                     'keterangan' => $usage->keterangan,
                     'created_by' => $usage->createdBy->name ?? '-',
                 ];

@@ -79,6 +79,7 @@
                         <th class="px-6 py-4 text-left">Mobil</th>
                         <th class="px-6 py-4 text-left">Kapal</th>
                         <th class="px-6 py-4 text-left">Alat Berat</th>
+                        <th class="px-6 py-4 text-left">KM</th>
                         <th class="px-6 py-4 text-left">Keterangan</th>
                         <th class="px-6 py-4 text-left">Oleh</th>
                     </tr>
@@ -122,6 +123,9 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $usage->alatBerat ? ($usage->alatBerat->kode_alat . ' - ' . $usage->alatBerat->nama) : '-' }}
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ $usage->kilometer ?? '-' }}
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title="{{ $usage->keterangan }}">
                             {{ $usage->keterangan }}
                         </td>
@@ -132,7 +136,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="{{ isset($item) ? 9 : 10 }}" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="{{ isset($item) ? 10 : 11 }}" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>

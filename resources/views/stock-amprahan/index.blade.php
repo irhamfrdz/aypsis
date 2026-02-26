@@ -324,9 +324,13 @@
                                                     <div id="kapal_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada kapal yang cocok</div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <label for="jumlah_ambil" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Ambil</label>
+                                         </div>
+                                         <div>
+                                             <label for="kilometer" class="block text-sm font-medium text-gray-700 mb-1">Kilometer (Opsional)</label>
+                                             <input type="number" step="0.01" name="kilometer" id="kilometer" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out" placeholder="Masukkan kilometer...">
+                                         </div>
+                                         <div>
+                                             <label for="jumlah_ambil" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Ambil</label>
                                             <input type="number" name="jumlah" id="jumlah_ambil" required min="1" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out" placeholder="Masukkan jumlah barang...">
                                             <p class="text-xs text-red-500 mt-1 hidden" id="stockError">
                                                 <span class="flex items-center">
@@ -398,14 +402,15 @@
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alat Berat</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
+                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alat Berat</th>
+                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM</th>
+                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
                                             </tr>
                                         </thead>
                                         <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
                                             <tr>
-                                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
+                                                <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -430,6 +435,7 @@
         document.getElementById('modalItemName').textContent = name;
         document.getElementById('modalCurrentStock').textContent = stock;
         document.getElementById('modalUnit').textContent = unit;
+        document.getElementById('kilometer').value = '';
         
         // Set form action
         const form = document.getElementById('usageForm');
@@ -473,7 +479,7 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat pengambilan</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat pengambilan</td></tr>';
                     return;
                 }
 
@@ -486,6 +492,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.mobil || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kapal || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.alat_berat || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kilometer || '-'}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">${item.keterangan || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.created_by}</td>
                     `;
@@ -494,7 +501,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-sm text-red-500">Gagal memuat data</td></tr>';
+                document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="9" class="px-6 py-4 text-center text-sm text-red-500">Gagal memuat data</td></tr>';
             });
     }
 

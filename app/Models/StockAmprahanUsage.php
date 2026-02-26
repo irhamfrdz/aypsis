@@ -18,6 +18,7 @@ class StockAmprahanUsage extends Model
         'mobil_id',
         'kapal_id',
         'alat_berat_id',
+        'kilometer',
         'jumlah',
         'tanggal_pengambilan',
         'keterangan',

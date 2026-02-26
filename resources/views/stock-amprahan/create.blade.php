@@ -350,6 +350,19 @@
                                 </div>
                             </div>
 
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {{-- Kilometer --}}
+                                <div class="group">
+                                    <label for="kilometer" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                        Kilometer (Opsional)
+                                    </label>
+                                    <input type="number" step="0.01" name="kilometer" id="kilometer" value="{{ old('kilometer') }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                    @error('kilometer')
+                                        <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
                             {{-- Keterangan Pakai --}}
                             <div class="group">
                                 <label for="keterangan_pakai" class="block text-sm font-bold text-gray-700 mb-2">Keterangan Pakai <span class="text-red-500">*</span></label>
