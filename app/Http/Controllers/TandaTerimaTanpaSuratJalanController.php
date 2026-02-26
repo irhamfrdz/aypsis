@@ -15,11 +15,12 @@ use App\Models\Prospek;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\TandaTerimaTanpaSuratJalanExport;
 
@@ -198,7 +199,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         $master_kapals = MasterKapal::where('status', 'aktif')->get();
         
         // Debug: pastikan data tujuan ada
-        \Log::info('Tujuan Kirims Data:', ['count' => $tujuan_kirims->count(), 'data' => $tujuan_kirims->toArray()]);
+        Log::info('Tujuan Kirims Data:', ['count' => $tujuan_kirims->count(), 'data' => $tujuan_kirims->toArray()]);
 
         // Fetch container options from Kontainer and StockKontainer, prefer Kontainer when duplicated
         // Include all non-inactive containers (many records use 'available'/'rented' etc.)
@@ -470,14 +471,14 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             DB::beginTransaction();
 
             // Debug: Log request data untuk troubleshooting
-            \Log::info('=== TANDA TERIMA STORE - RAW REQUEST ===');
-            \Log::info('panjang[]:', ['data' => $request->input('panjang'), 'count' => count($request->input('panjang', []))]);
-            \Log::info('lebar[]:', ['data' => $request->input('lebar'), 'count' => count($request->input('lebar', []))]);
-            \Log::info('tinggi[]:', ['data' => $request->input('tinggi'), 'count' => count($request->input('tinggi', []))]);
-            \Log::info('meter_kubik[]:', ['data' => $request->input('meter_kubik'), 'count' => count($request->input('meter_kubik', []))]);
-            \Log::info('tonase[]:', ['data' => $request->input('tonase'), 'count' => count($request->input('tonase', []))]);
-            \Log::info('nama_barang[]:', ['data' => $request->input('nama_barang'), 'count' => count($request->input('nama_barang', []))]);
-            \Log::info('dimensi_items (should be empty):', ['data' => $request->input('dimensi_items')]);
+            Log::info('=== TANDA TERIMA STORE - RAW REQUEST ===');
+            Log::info('panjang[]:', ['data' => $request->input('panjang'), 'count' => count($request->input('panjang', []))]);
+            Log::info('lebar[]:', ['data' => $request->input('lebar'), 'count' => count($request->input('lebar', []))]);
+            Log::info('tinggi[]:', ['data' => $request->input('tinggi'), 'count' => count($request->input('tinggi', []))]);
+            Log::info('meter_kubik[]:', ['data' => $request->input('meter_kubik'), 'count' => count($request->input('meter_kubik', []))]);
+            Log::info('tonase[]:', ['data' => $request->input('tonase'), 'count' => count($request->input('tonase', []))]);
+            Log::info('nama_barang[]:', ['data' => $request->input('nama_barang'), 'count' => count($request->input('nama_barang', []))]);
+            Log::info('dimensi_items (should be empty):', ['data' => $request->input('dimensi_items')]);
 
             // Set created_by and handle nomor_tanda_terima
             $validated['created_by'] = Auth::user()->name;
@@ -525,7 +526,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             }
 
             // Debug: Log extracted arrays (sanitized)
-            \Log::info('Extracted Arrays Debug:', [
+            Log::info('Extracted Arrays Debug:', [
                 'namaBarangArray' => $namaBarangArray,
                 'panjangArray' => $panjangArray,
                 'lebarArray' => $lebarArray,
@@ -535,7 +536,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             ]);
 
             // Debug: lengths
-            \Log::info('Dimensi arrays count', [
+            Log::info('Dimensi arrays count', [
                 'nama_count' => count($namaBarangArray),
                 'panjang_count' => count($panjangArray),
                 'lebar_count' => count($lebarArray),
@@ -575,7 +576,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 if (!empty($uploadedImages)) {
                     $validated['gambar_tanda_terima'] = json_encode($uploadedImages);
                     
-                    \Log::info('Images uploaded for tanda terima tanpa surat jalan', [
+                    Log::info('Images uploaded for tanda terima tanpa surat jalan', [
                         'images_count' => count($uploadedImages),
                         'uploaded_by' => Auth::user() ? Auth::user()->name : null,
                     ]);
@@ -584,7 +585,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
             // Create main record
             $tandaTerima = TandaTerimaTanpaSuratJalan::create($validated);
-            \Log::info('Tanda Terima created', ['id' => $tandaTerima->id, 'no_tanda_terima' => $tandaTerima->no_tanda_terima]);
+            Log::info('Tanda Terima created', ['id' => $tandaTerima->id, 'no_tanda_terima' => $tandaTerima->no_tanda_terima]);
 
             // Create dimensi items from array data
             $itemCount = $maxCount;
@@ -601,7 +602,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
                 // Only create if at least one field has meaningful data (not all nulls)
                 if (!is_null($namaBarang) || !is_null($panjang) || !is_null($lebar) || !is_null($tinggi) || !is_null($meterKubik) || !is_null($tonase)) {
-                    \Log::info('Creating dimensi item', [
+                    Log::info('Creating dimensi item', [
                         'index' => $i,
                         'namaBarang' => $namaBarang,
                         'jumlah' => $jumlah,
@@ -626,7 +627,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 }
             }
 
-            \Log::info('Dimensi items count after creation', ['count' => $tandaTerima->dimensiItems()->count()]);
+            Log::info('Dimensi items count after creation', ['count' => $tandaTerima->dimensiItems()->count()]);
 
             // UPDATE STOCK KONTAINER LOCATION
             if ($request->filled('gudang_id') && $request->filled('no_kontainer')) {
@@ -893,7 +894,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 if (!empty($newUploads)) {
                     
                     
-                    \Log::info('New image uploads during update', ['count' => count($newUploads), 'uploaded_by' => Auth::user() ? Auth::user()->name : null]);
+                    Log::info('New image uploads during update', ['count' => count($newUploads), 'uploaded_by' => Auth::user() ? Auth::user()->name : null]);
                 }
             }
 
@@ -1087,7 +1088,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     if ($path) {
                         $imagePaths[] = $path;
                         
-                        \Log::info('Tanda terima image uploaded successfully', [
+                        Log::info('Tanda terima image uploaded successfully', [
                             'original_name' => $file->getClientOriginalName(),
                             'stored_path' => $path,
                             'filename' => $filename,
@@ -1097,14 +1098,14 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         ]);
                     }
                 } else {
-                    \Log::warning('Invalid file uploaded for tanda terima', [
+                    Log::warning('Invalid file uploaded for tanda terima', [
                         'file_name' => $file->getClientOriginalName(),
                         'error' => $file->getErrorMessage(),
                     ]);
                 }
             }
         } catch (\Exception $e) {
-            \Log::error('Error uploading tanda terima images: ' . $e->getMessage(), [
+            Log::error('Error uploading tanda terima images: ' . $e->getMessage(), [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -1164,7 +1165,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     public function syncPenerimaPengirim($id)
     {
         try {
-            \DB::beginTransaction();
+            DB::beginTransaction();
             $tt = TandaTerimaTanpaSuratJalan::findOrFail($id);
             $penerima = $tt->penerima;
             $pengirim = $tt->pengirim;
@@ -1181,7 +1182,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                  if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'pt_pengirim')) $updateData['pt_pengirim'] = $pengirim;
                  if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'penerima')) $updateData['penerima'] = $penerima;
                  if (!empty($updateData)) {
-                      \DB::table('prospek')->where('id', $prospek->id)->update($updateData);
+                      DB::table('prospek')->where('id', $prospek->id)->update($updateData);
                       $prospekCounts++;
                  }
             }
@@ -1193,7 +1194,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'penerima')) $updateData['penerima'] = $penerima;
                 if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'pengirim')) $updateData['pengirim'] = $pengirim;
                 if (!empty($updateData)) {
-                    $naikKapalCounts = \DB::table('naik_kapal')->whereIn('prospek_id', $prospekIds)->update($updateData);
+                    $naikKapalCounts = DB::table('naik_kapal')->whereIn('prospek_id', $prospekIds)->update($updateData);
                 }
             }
 
@@ -1203,7 +1204,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'penerima')) $updateData['penerima'] = $penerima;
             if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'pengirim')) $updateData['pengirim'] = $pengirim;
             if (!empty($updateData)) {
-                $q = \DB::table('manifests')->where('nomor_tanda_terima', $tt->no_tanda_terima);
+                $q = DB::table('manifests')->where('nomor_tanda_terima', $tt->no_tanda_terima);
                 if (!empty($prospekIds)) {
                     $q->orWhereIn('prospek_id', $prospekIds);
                 }
@@ -1216,13 +1217,13 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'penerima')) $updateData['penerima'] = $penerima;
             if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'pengirim')) $updateData['pengirim'] = $pengirim;
             if (!empty($updateData) && !empty($prospekIds)) {
-                $blCounts = \DB::table('bls')->whereIn('prospek_id', $prospekIds)->update($updateData);
+                $blCounts = DB::table('bls')->whereIn('prospek_id', $prospekIds)->update($updateData);
             }
 
-            \DB::commit();
+            DB::commit();
             return redirect()->back()->with('success', "Data penerima dan pengirim berhasil disinkronisasi: Prospek ($prospekCounts), Naik Kapal ($naikKapalCounts), Manifest ($manifestCounts), BL ($blCounts).");
         } catch (\Exception $e) {
-            \DB::rollBack();
+            DB::rollBack();
             return redirect()->back()->with('error', 'Gagal melakukan sinkronisasi: ' . $e->getMessage());
         }
     }
