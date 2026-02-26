@@ -81,6 +81,7 @@ use App\Http\Controllers\MasterPelayananPelabuhanController;
 use App\Http\Controllers\MasterNamaBarangAmprahanController;
 use App\Http\Controllers\MasterGudangAmprahanController;
 use App\Http\Controllers\MasterLwbpLamaController;
+use App\Http\Controllers\SertifikatKapalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -4814,6 +4815,31 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                  ->name('master.pricelist-lembur.destroy')
                  ->middleware('can:master-pricelist-lembur-delete');
 
+
+           // ═══════════════════════════════════════════════════════════════════════
+           // 📜 MASTER SERTIFIKAT KAPAL
+           // ═══════════════════════════════════════════════════════════════════════
+           Route::get('master-sertifikat-kapal', [SertifikatKapalController::class, 'index'])
+                ->name('master-sertifikat-kapal.index')
+                ->middleware('can:master-sertifikat-kapal-view');
+           Route::get('master-sertifikat-kapal/create', [SertifikatKapalController::class, 'create'])
+                ->name('master-sertifikat-kapal.create')
+                ->middleware('can:master-sertifikat-kapal-create');
+           Route::post('master-sertifikat-kapal', [SertifikatKapalController::class, 'store'])
+                ->name('master-sertifikat-kapal.store')
+                ->middleware('can:master-sertifikat-kapal-create');
+           Route::get('master-sertifikat-kapal/{master_sertifikat_kapal}', [SertifikatKapalController::class, 'show'])
+                ->name('master-sertifikat-kapal.show')
+                ->middleware('can:master-sertifikat-kapal-view');
+           Route::get('master-sertifikat-kapal/{master_sertifikat_kapal}/edit', [SertifikatKapalController::class, 'edit'])
+                ->name('master-sertifikat-kapal.edit')
+                ->middleware('can:master-sertifikat-kapal-update');
+           Route::put('master-sertifikat-kapal/{master_sertifikat_kapal}', [SertifikatKapalController::class, 'update'])
+                ->name('master-sertifikat-kapal.update')
+                ->middleware('can:master-sertifikat-kapal-update');
+           Route::delete('master-sertifikat-kapal/{master_sertifikat_kapal}', [SertifikatKapalController::class, 'destroy'])
+                ->name('master-sertifikat-kapal.destroy')
+                ->middleware('can:master-sertifikat-kapal-delete');
 
            // ═══════════════════════════════════════════════════════════════════════
            // 📋 MONITORING CEK KENDARAAN (ADMIN)
