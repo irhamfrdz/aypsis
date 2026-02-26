@@ -843,6 +843,26 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         try {
             $validated['updated_by'] = Auth::user()->name;
 
+            // Map edit blade inputs to correct database fields
+            if (!empty($validated['nama_penerima']) && empty($validated['penerima'])) {
+                $validated['penerima'] = $validated['nama_penerima'];
+            }
+            if (!empty($validated['nama_pengirim']) && empty($validated['pengirim'])) {
+                $validated['pengirim'] = $validated['nama_pengirim'];
+            }
+            if (!empty($validated['pic_penerima']) && empty($validated['pic'])) {
+                $validated['pic'] = $validated['pic_penerima'];
+            }
+            // For pic we might prefer pic_pengirim or just use pic_penerima. If edit form uses pic_penerima mostly, this is fine.
+            if (!empty($validated['telepon_penerima']) && empty($validated['telepon'])) {
+                $validated['telepon'] = $validated['telepon_penerima'];
+            }
+            if (!empty($validated['nomor_tanda_terima'])) {
+                $validated['no_tanda_terima'] = $validated['nomor_tanda_terima'];
+            }
+            // Clean up non-fillable variables
+            unset($validated['nama_penerima'], $validated['nama_pengirim'], $validated['pic_penerima'], $validated['pic_pengirim'], $validated['telepon_penerima'], $validated['telepon_pengirim']);
+
             // Handle image deletions (existing images removed by user)
             $existingImages = $tandaTerimaTanpaSuratJalan->gambar_tanda_terima ?: [];
             if (is_string($existingImages)) {
@@ -869,11 +889,11 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Handle gambar uploads
             $newUploads = [];
             if ($request->hasFile('gambar_tanda_terima')) {
-                $newUploads = $this->handleImageUpload($request->file('gambar_tanda_terima'), $validated['nomor_tanda_terima'] ?? $tandaTerima->nomor_tanda_terima);
+                $newUploads = $this->handleImageUpload($request->file('gambar_tanda_terima'), $validated['nomor_tanda_terima'] ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima);
                 if (!empty($newUploads)) {
                     
                     
-                    Log::info('New image uploads during update', ['count' => count($newUploads), 'uploaded_by' => Auth::user() ? Auth::user()->name : null]);
+                    \Log::info('New image uploads during update', ['count' => count($newUploads), 'uploaded_by' => Auth::user() ? Auth::user()->name : null]);
                 }
             }
 
@@ -1067,7 +1087,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     if ($path) {
                         $imagePaths[] = $path;
                         
-                        Log::info('Tanda terima image uploaded successfully', [
+                        \Log::info('Tanda terima image uploaded successfully', [
                             'original_name' => $file->getClientOriginalName(),
                             'stored_path' => $path,
                             'filename' => $filename,
@@ -1077,14 +1097,14 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         ]);
                     }
                 } else {
-                    Log::warning('Invalid file uploaded for tanda terima', [
+                    \Log::warning('Invalid file uploaded for tanda terima', [
                         'file_name' => $file->getClientOriginalName(),
                         'error' => $file->getErrorMessage(),
                     ]);
                 }
             }
         } catch (\Exception $e) {
-            Log::error('Error uploading tanda terima images: ' . $e->getMessage(), [
+            \Log::error('Error uploading tanda terima images: ' . $e->getMessage(), [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -1134,7 +1154,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             return response()->download($fullPath, $downloadName);
 
         } catch (\Exception $e) {
-            Log::error('Error downloading tanda terima image: ' . $e->getMessage(), [
+            \Log::error('Error downloading tanda terima image: ' . $e->getMessage(), [
                 'tanda_terima_id' => $tandaTerimaTanpaSuratJalan->id,
                 'image_index' => $imageIndex,
                 'error' => $e->getMessage()
