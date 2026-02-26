@@ -2951,6 +2951,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('tanda-terima-lcl/{id}/remove-from-container', [\App\Http\Controllers\TandaTerimaLclController::class, 'removeFromContainer'])
          ->name('tanda-terima-lcl.remove-from-container');
 
+    Route::post('tanda-terima-lcl/{id}/sync-penerima-pengirim', [\App\Http\Controllers\TandaTerimaLclController::class, 'syncPenerimaPengirim'])
+         ->name('tanda-terima-lcl.sync-penerima-pengirim')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
     // Download image route for LCL (must be before resource route)
     Route::get('tanda-terima-lcl/{tandaTerimaTanpaSuratJalan}/download-image/{imageIndex}', 
                [\App\Http\Controllers\TandaTerimaLclController::class, 'downloadImage'])
@@ -2985,6 +2989,18 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-tanpa-surat-jalan.download-image')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
 
+    Route::resource('tanda-terima-tanpa-surat-jalan', \App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class)
+         ->middleware([
+             'index' => 'can:tanda-terima-tanpa-surat-jalan-view',
+             'create' => 'can:tanda-terima-tanpa-surat-jalan-create',
+             'store' => 'can:tanda-terima-tanpa-surat-jalan-create',
+             'show' => 'can:tanda-terima-tanpa-surat-jalan-view',
+             'edit' => 'can:tanda-terima-tanpa-surat-jalan-update',
+             'update' => 'can:tanda-terima-tanpa-surat-jalan-update',
+             'destroy' => 'can:tanda-terima-tanpa-surat-jalan-delete'
+         ]);
+
+    // Sync penerima dan pengirim (must be after resource or wait, it's specific POST with {id}, so after is fine if it does not conflict but better before so it's not caught by show method. Let's put it before)
     Route::resource('tanda-terima-tanpa-surat-jalan', \App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class)
          ->middleware([
              'index' => 'can:tanda-terima-tanpa-surat-jalan-view',

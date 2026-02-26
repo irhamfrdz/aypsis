@@ -2045,6 +2045,75 @@ class TandaTerimaLclController extends Controller
         }
     }
     /**
+     * Sync penerima and pengirim data to related tables.
+     */
+    public function syncPenerimaPengirim($id)
+    {
+        try {
+            \DB::beginTransaction();
+            $tt = TandaTerimaLcl::findOrFail($id);
+            $penerima = $tt->nama_penerima;
+            $pengirim = $tt->nama_pengirim;
+
+            $updatedCounts = [];
+
+            // 1. Prospek
+            $prospeks = \App\Models\Prospek::where('keterangan', 'like', '%Tanda Terima Tanpa Surat Jalan: ' . $tt->nomor_tanda_terima . '%')->get();
+            $prospekIds = $prospeks->pluck('id')->toArray();
+
+            $prospekCounts = 0;
+            foreach ($prospeks as $prospek) {
+                 $updateData = [];
+                 if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'pt_pengirim')) $updateData['pt_pengirim'] = $pengirim;
+                 if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'penerima')) $updateData['penerima'] = $penerima;
+                 if (!empty($updateData)) {
+                      \DB::table('prospek')->where('id', $prospek->id)->update($updateData);
+                      $prospekCounts++;
+                 }
+            }
+
+            // 2. Naik Kapal
+            $naikKapalCounts = 0;
+            if (!empty($prospekIds)) {
+                $updateData = [];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'penerima')) $updateData['penerima'] = $penerima;
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'pengirim')) $updateData['pengirim'] = $pengirim;
+                if (!empty($updateData)) {
+                    $naikKapalCounts = \DB::table('naik_kapal')->whereIn('prospek_id', $prospekIds)->update($updateData);
+                }
+            }
+
+            // 3. Manifests
+            $manifestCounts = 0;
+            $updateData = [];
+            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'penerima')) $updateData['penerima'] = $penerima;
+            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'pengirim')) $updateData['pengirim'] = $pengirim;
+            if (!empty($updateData)) {
+                $q = \DB::table('manifests')->where('nomor_tanda_terima', $tt->nomor_tanda_terima);
+                if (!empty($prospekIds)) {
+                    $q->orWhereIn('prospek_id', $prospekIds);
+                }
+                $manifestCounts = $q->update($updateData);
+            }
+
+            // 4. BLs
+            $blCounts = 0;
+            $updateData = [];
+            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'penerima')) $updateData['penerima'] = $penerima;
+            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'pengirim')) $updateData['pengirim'] = $pengirim;
+            if (!empty($updateData) && !empty($prospekIds)) {
+                $blCounts = \DB::table('bls')->whereIn('prospek_id', $prospekIds)->update($updateData);
+            }
+
+            \DB::commit();
+            return redirect()->back()->with('success', "Data penerima dan pengirim berhasil disinkronisasi: Prospek ($prospekCounts), Naik Kapal ($naikKapalCounts), Manifest ($manifestCounts), BL ($blCounts).");
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal melakukan sinkronisasi: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Sync sealed container to Prospek
      */
     public function syncProspek(Request $request)
