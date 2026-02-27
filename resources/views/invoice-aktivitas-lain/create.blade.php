@@ -1789,9 +1789,13 @@ console.log('Akun COAs data:', akunCoasData);
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
                 
-                // Ensure Surat Jalan is required
+                // Ensure Surat Jalan is required if wrapper is visible
                 if (suratJalanSelect) {
-                    suratJalanSelect.setAttribute('required', 'required');
+                    if (suratJalanWrapper && !suratJalanWrapper.classList.contains('hidden')) {
+                        suratJalanSelect.setAttribute('required', 'required');
+                    } else {
+                        suratJalanSelect.removeAttribute('required');
+                    }
                 }
 
                 // Set total from surat jalan
@@ -1801,26 +1805,38 @@ console.log('Akun COAs data:', akunCoasData);
                     totalInput.value = parseInt(uangJalan).toLocaleString('id-ID');
                 }
             } else if (jenisPenyesuaian === 'pengembalian sebagian') {
-                // Ensure Surat Jalan is required
+                // Ensure Surat Jalan is required if wrapper is visible
                 if (suratJalanSelect) {
-                    suratJalanSelect.setAttribute('required', 'required');
+                    if (suratJalanWrapper && !suratJalanWrapper.classList.contains('hidden')) {
+                        suratJalanSelect.setAttribute('required', 'required');
+                    } else {
+                        suratJalanSelect.removeAttribute('required');
+                    }
                 }
                 
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
                 // Total can be entered manually
             } else if (jenisPenyesuaian === 'penambahan') {
-                // Ensure Surat Jalan is required
+                // Ensure Surat Jalan is required if wrapper is visible
                 if (suratJalanSelect) {
-                    suratJalanSelect.setAttribute('required', 'required');
+                    if (suratJalanWrapper && !suratJalanWrapper.classList.contains('hidden')) {
+                        suratJalanSelect.setAttribute('required', 'required');
+                    } else {
+                        suratJalanSelect.removeAttribute('required');
+                    }
                 }
                 
                 tipePenyesuaianWrapper.classList.remove('hidden');
                 initializeTipePenyesuaianInputs();
             } else {
-                // Ensure Surat Jalan is required if no type selected yet
+                // Ensure Surat Jalan is required if wrapper is visible
                 if (suratJalanSelect) {
-                    suratJalanSelect.setAttribute('required', 'required');
+                    if (suratJalanWrapper && !suratJalanWrapper.classList.contains('hidden')) {
+                        suratJalanSelect.setAttribute('required', 'required');
+                    } else {
+                        suratJalanSelect.removeAttribute('required');
+                    }
                 }
 
                 tipePenyesuaianWrapper.classList.add('hidden');
