@@ -13,13 +13,13 @@
             'tableFont' => '11px',
         ],
         'Half-Folio' => [
-            'size' => '215.9mm 165.1mm',
-            'width' => '215.9mm',
-            'height' => '165.1mm',
-            'containerWidth' => '215.9mm',
-            'fontSize' => '10px',
-            'headerH1' => '16px',
-            'tableFont' => '9px',
+            'size' => '165.1mm 215.9mm',
+            'width' => '165.1mm',
+            'height' => '215.9mm',
+            'containerWidth' => '165.1mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
         ],
         'A4' => [
             'size' => 'A4',
@@ -31,13 +31,13 @@
             'tableFont' => '11px',
         ],
         'Half-A4' => [
-            'size' => '210mm 148.5mm',
-            'width' => '210mm',
-            'height' => '148.5mm',
-            'containerWidth' => '210mm',
-            'fontSize' => '11px',
-            'headerH1' => '16px',
-            'tableFont' => '9px',
+            'size' => '148.5mm 210mm',
+            'width' => '148.5mm',
+            'height' => '210mm',
+            'containerWidth' => '148.5mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
         ]
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
@@ -103,17 +103,10 @@
         }
 
         .info-table td {
-            padding: 4px 8px;
+            padding: 2px 4px;
             font-size: {{ $currentPaper['tableFont'] }};
             vertical-align: top;
-        }
-
-        .info-table td:first-child {
             font-weight: bold;
-        }
-
-        .info-table td {
-             font-weight: bold;
         }
 
         .table {
@@ -249,127 +242,74 @@
 
         <!-- Info Section -->
         <div class="info-section">
-            <div style="display: flex; gap: 20px; align-items: flex-start;">
-                <div style="flex: 1;">
-                    <table class="info-table">
-                        <tr>
-                            <td style="width: 35%;">Tanggal</td>
-                            <td>: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
-                        </tr>
-                        <tr>
-                            <td>Nomor</td>
-                            <td>: {{ $biayaKapal->nomor_invoice }}</td>
-                        </tr>
-                        <tr>
-                            <td>Nomor Referensi</td>
-                            <td>: {{ $biayaKapal->nomor_referensi ?? $biayaKapal->nomor_invoice }}</td>
-                        </tr>
-                    </table>
-                </div>
-                <div style="flex: 1;">
-                    <table class="info-table">
-                        @if($biayaKapal->penerima)
-                        <tr>
-                            <td style="width: 35%;">Penerima</td>
-                            <td>: {{ $biayaKapal->penerima }}</td>
-                        </tr>
-                        @endif
-                        @if($biayaKapal->nama_vendor)
-                        <tr>
-                            <td>Nama Vendor</td>
-                            <td>: {{ $biayaKapal->nama_vendor }}</td>
-                        </tr>
-                        @endif
-                        @if($biayaKapal->nomor_rekening)
-                        <tr>
-                            <td>Nomor Rekening</td>
-                            <td>: {{ $biayaKapal->nomor_rekening }}</td>
-                        </tr>
-                        @endif
-                    </table>
-                </div>
-            </div>
+            <table class="info-table" style="width: 100%;">
+                <tr>
+                    <td style="width: 15%;">Tanggal</td>
+                    <td style="width: 35%;">: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
+                    <td style="width: 15%;">Penerima</td>
+                    <td>: {{ $biayaKapal->penerima ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td>Nomor</td>
+                    <td>: {{ $biayaKapal->nomor_invoice }}</td>
+                    <td>Nama Vendor</td>
+                    <td>: {{ $biayaKapal->nama_vendor ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td>No. Ref</td>
+                    <td>: {{ $biayaKapal->nomor_referensi ?? $biayaKapal->nomor_invoice }}</td>
+                    <td>No. Rekening</td>
+                    <td>: {{ $biayaKapal->nomor_rekening ?? '-' }}</td>
+                </tr>
+            </table>
         </div>
 
         <!-- Detail Biaya Kapal -->
-        <div style="margin-bottom: 12px;">
+        <div style="margin-bottom: 8px;">
             <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Biaya KTKBM:</strong>
-            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+            <table class="table" style="margin-top: 4px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 5%;">No</th>
-                        <th style="width: 11%;">Tgl Invoice</th>
-                        <th style="width: 10%;">No. Voyage</th>
-                        <th style="width: 10%;">No. Ref</th>
-                        <th style="width: 12%;">Biaya (Items)</th>
-                        <th style="width: 10%;">Adjustment</th>
-                        <th style="width: 12%;">Total Biaya</th>
-                        <th style="width: 10%;">PPH (2%)</th>
-                        <th style="width: 20%;">Grand Total</th>
+                        <th style="width: 8%;">No</th>
+                        <th style="width: 15%;">Tgl Inv</th>
+                        <th style="width: 15%;">Voyage</th>
+                        <th style="width: 27%;">Biaya</th>
+                        <th style="width: 35%;">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     @php
-                        // Untuk biaya TKBM, ambil kapal dan voyage dari tkbmDetails
                         if ($biayaKapal->tkbmDetails && $biayaKapal->tkbmDetails->count() > 0) {
                             $groupedDetails = $biayaKapal->tkbmDetails->groupBy(function($item) {
                                  return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->no_referensi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
                             });
                         } else {
-                            $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
-                            $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : ($biayaKapal->no_voyage ? [$biayaKapal->no_voyage] : []);
                             $groupedDetails = null;
                         }
                     @endphp
                     
                     @if($groupedDetails)
-                        {{-- Biaya TKBM: Tampilkan per grup kapal + voyage --}}
                         @php $rowNumber = 0; @endphp
                         @foreach($groupedDetails as $groupKey => $details)
                             @php
                                 $rowNumber++;
                                 list($groupKapal, $groupVoyage) = explode('|', $groupKey);
                                 $groupSubtotal = $details->sum('subtotal');
-                                // Ambil no_referensi, pph, dan grand_total dari item pertama di group (asumsi sama per group)
                                 $firstItem = $details->first();
-                                $groupRef = $firstItem->no_referensi ?? '-';
-                                $groupPph = $firstItem->pph ?? 0;
-                                $groupAdjustment = $firstItem->adjustment ?? 0;
-                                $groupTotalBiaya = $groupSubtotal + $groupAdjustment;
                                 $groupGrandTotal = $firstItem->grand_total ?? 0;
                             @endphp
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
                                 <td class="text-center">{{ $firstItem->tanggal_invoice_vendor ? \Carbon\Carbon::parse($firstItem->tanggal_invoice_vendor)->format('d/M/y') : '-' }}</td>
                                 <td class="text-center">{{ $groupVoyage }}</td>
-                                <td class="text-center">{{ $groupRef }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($groupAdjustment, 0, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($groupTotalBiaya, 0, ',', '.') }}</td>
-                                <td class="text-right">Rp {{ number_format($groupPph, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupGrandTotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
-                    @else
-                        {{-- Jika tidak ada detail TKBM, tampilkan per kapal/voyage --}}
-                        @php $maxCount = max(count($namaKapals ?? []), count($noVoyages ?? []), 1); @endphp
-                        @for($i = 0; $i < $maxCount; $i++)
-                        <tr>
-                            <td class="text-center">{{ $i + 1 }}</td>
-                            <td class="text-center">-</td>
-                            <td class="text-center">{{ $noVoyages[$i] ?? '-' }}</td>
-                            <td class="text-center">-</td>
-                            <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
-                            <td class="text-right">-</td>
-                            <td class="text-right">-</td>
-                            <td class="text-right">-</td>
-                            <td class="text-right">{{ $i == 0 ? 'Rp ' . number_format($biayaKapal->nominal, 0, ',', '.') : '' }}</td>
-                        </tr>
-                        @endfor
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="8" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
@@ -378,11 +318,10 @@
 
         @if($biayaKapal->tkbmDetails && $biayaKapal->tkbmDetails->count() > 0)
         <!-- Detail Barang TKBM -->
-        <div style="margin-bottom: 12px;">
+        <div style="margin-bottom: 8px;">
             <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Barang KTKBM:</strong>
             
             @php
-                // Combine all barang across groups into one list
                 $combinedBarang = $biayaKapal->tkbmDetails->groupBy('pricelist_tkbm_id')->map(function($items) {
                     $first = $items->first();
                     return [
@@ -393,35 +332,21 @@
                     ];
                 })->values();
                 $overallTotal = $combinedBarang->sum('subtotal');
-                
-                // Calculate total PPH and adjustment from unique groups
                 $groups = $biayaKapal->tkbmDetails->groupBy(function($item) {
                      return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->no_referensi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
                 });
-                
-                $totalPph = $groups->sum(function($group) {
-                     return $group->first()->pph ?? 0;
-                });
-                
-                $totalAdjustment = $groups->sum(function($group) {
-                     return $group->first()->adjustment ?? 0;
-                });
-                
+                $totalPph = $groups->sum(function($group) { return $group->first()->pph ?? 0; });
+                $totalAdjustment = $groups->sum(function($group) { return $group->first()->adjustment ?? 0; });
                 $finalTotal = $overallTotal - $totalPph + $totalAdjustment;
             @endphp
 
-            <div style="margin-top:6px; margin-bottom:6px; font-size:{{ $currentPaper['tableFont'] }};">
-                <strong>Detail Barang (Gabungan Semua Kapal)</strong>
-            </div>
-
-            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+            <table class="table" style="margin-top: 4px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 6%;">No</th>
-                        <th style="width: 37%;">Jenis Barang</th>
-                        <th style="width: 12%;">Jumlah</th>
-                        <th style="width: 17%;">Harga Satuan</th>
-                        <th style="width: 18%;">Subtotal</th>
+                        <th style="width: 8%;">No</th>
+                        <th style="width: 42%;">Jenis Barang</th>
+                        <th style="width: 15%;">Qty</th>
+                        <th style="width: 35%;">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -430,32 +355,11 @@
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td>{{ $item['barang'] }}</td>
                         <td class="text-center">{{ number_format($item['jumlah'], 2, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
-                    <tr>
-                        <td colspan="4" class="text-right"><strong>TOTAL BIAYA</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($overallTotal, 0, ',', '.') }}</strong></td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" class="text-right"><strong>BIAYA (ITEMS)</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($overallTotal, 0, ',', '.') }}</strong></td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" class="text-right"><strong>ADJUSTMENT</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</strong></td>
-                    </tr>
-                    <tr class="bg-blue-50">
-                        <td colspan="4" class="text-right"><strong>TOTAL BIAYA</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($overallTotal + $totalAdjustment, 0, ',', '.') }}</strong></td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" class="text-right"><strong>PPH (2%)</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($totalPph, 0, ',', '.') }}</strong></td>
-                    </tr>
                     <tr class="total-row">
-                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="3" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($finalTotal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
@@ -470,30 +374,25 @@
 
         <!-- Signature Section -->
         <div class="footer">
-            <div class="signatures">
-                <div class="signature-box">
-                    <div>Dibuat Oleh</div>
-                    <div class="signature-line">
-                        {{ $biayaKapal->creator->name ?? '-' }}
-                    </div>
-                </div>
-                
-                <div class="signature-box">
-                    <div>Diperiksa Oleh</div>
-                    <div class="signature-line">
-                        &nbsp;
-                    </div>
-                </div>
-                
-                <div class="signature-box">
-                    <div>Disetujui Oleh</div>
-                    <div class="signature-line">
-                        {{ $biayaKapal->approver->name ?? '-' }}
-                    </div>
-                </div>
-            </div>
+            <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                <tr>
+                    <td style="width: 33.33%;"><strong>Dibuat Oleh:</strong></td>
+                    <td style="width: 33.33%;"><strong>Diperiksa Oleh:</strong></td>
+                    <td style="width: 33.33%;"><strong>Disetujui Oleh:</strong></td>
+                </tr>
+                <tr>
+                    <td style="height: 40px;"></td>
+                    <td style="height: 40px;"></td>
+                    <td style="height: 40px;"></td>
+                </tr>
+                <tr>
+                    <td>( {{ $biayaKapal->creator->name ?? '__________' }} )</td>
+                    <td>( __________ )</td>
+                    <td>( {{ $biayaKapal->approver->name ?? '__________' }} )</td>
+                </tr>
+            </table>
             
-            <div style="text-align: center; margin-top: 5px; font-size: 8px; color: #999;">
+            <div style="text-align: center; margin-top: 8px; font-size: 8px; color: #999;">
                 Dicetak: {{ now()->format('d/m/Y H:i') }}
             </div>
         </div>
