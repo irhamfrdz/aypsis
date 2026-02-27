@@ -197,11 +197,12 @@
         @php
             $firstItem = $biayaKapal->labuhTambatDetails->first();
             $vendorDisplay = $firstItem->vendor ?? ($biayaKapal->nama_vendor ?? '-');
-            $penerimaDisplay = $biayaKapal->penerima ?? '-';
+            $penerimaDisplay = $biayaKapal->penerima ?: ($firstItem->penerima ?? '-');
             $rekeningDisplay = $firstItem->nomor_rekening ?? ($biayaKapal->nomor_rekening ?? '-');
 
             $subtotal = $biayaKapal->labuhTambatDetails->sum('sub_total');
-            $pph = $biayaKapal->labuhTambatDetails->sum('pph');
+            $ppnTotal = $biayaKapal->labuhTambatDetails->sum('ppn');
+            $materaiTotal = $biayaKapal->labuhTambatDetails->sum('biaya_materai');
             $grandTotal = $biayaKapal->labuhTambatDetails->sum('grand_total');
         @endphp
 
@@ -236,7 +237,7 @@
                 <thead>
                     <tr>
                         <th style="width: 8%;">No</th>
-                        <th style="width: 20%;">Tanggal</th>
+                        <th style="width: 20%;">Tanggal Referensi</th>
                         <th style="width: 47%;">Jenis Biaya</th>
                         <th style="width: 25%;">Total</th>
                     </tr>
@@ -254,10 +255,13 @@
                             list($kapal, $voyage) = explode('|', $key);
                             $groupTotal = $details->sum('grand_total');
                             $firstDetail = $details->first();
+                            
+                            $firstDate = $details->min('tanggal_invoice_vendor');
+                            $formattedDate = $firstDate ? \Carbon\Carbon::parse($firstDate)->format('d/M/Y') : '-';
                         @endphp
                         <tr>
                             <td class="text-center">{{ $rowNumber }}</td>
-                            <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
+                            <td class="text-center">{{ $formattedDate }}</td>
                             <td>Biaya Labuh Tambat {{ $kapal }} ({{ $voyage }})</td>
                             <td class="text-right">Rp {{ number_format($groupTotal, 0, ',', '.') }}</td>
                         </tr>
@@ -304,12 +308,21 @@
                         </tr>
                     @endforeach
                     
-                    @if($pph > 0)
+                    @if($ppnTotal > 0)
                     <tr>
                         <td class="text-center">{{ $no++ }}</td>
-                        <td>PPH (2%)</td>
+                        <td>PPN (11%)</td>
                         <td class="text-center">1</td>
-                        <td class="text-right font-bold text-red-600">(Rp {{ number_format($pph, 0, ',', '.') }})</td>
+                        <td class="text-right text-blue-600">Rp {{ number_format($ppnTotal, 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
+
+                    @if($materaiTotal > 0)
+                    <tr>
+                        <td class="text-center">{{ $no++ }}</td>
+                        <td>BIAYA MATERAI</td>
+                        <td class="text-center">1</td>
+                        <td class="text-right">Rp {{ number_format($materaiTotal, 0, ',', '.') }}</td>
                     </tr>
                     @endif
                     
