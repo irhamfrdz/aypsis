@@ -120,21 +120,17 @@ class TandaTerimaApprovalController extends Controller
         $model = $this->getModel($sourceType, $id);
         
         if ($request->hasFile('asuransi_file')) {
-            // Check existing and delete
+            // Keep existing files
             $existingPathArray = [];
             if ($model->asuransi_path) {
-                if (is_string($model->asuransi_path) && str_starts_with($model->asuransi_path, '[') && str_ends_with($model->asuransi_path, ']')) {
+                if (is_string($model->asuransi_path) && str_starts_with($model->asuransi_path, '[')) {
                     $existingPathArray = json_decode($model->asuransi_path, true) ?? [];
-                } else {
+                } elseif (!empty($model->asuransi_path)) {
                     $existingPathArray = [$model->asuransi_path];
                 }
             }
 
-            foreach ($existingPathArray as $oldPath) {
-                if ($oldPath) Storage::disk('public')->delete($oldPath);
-            }
-
-            $paths = [];
+            $paths = $existingPathArray;
             foreach ($request->file('asuransi_file') as $file) {
                  $paths[] = $file->store('asuransi_tanda_terima', 'public');
             }
