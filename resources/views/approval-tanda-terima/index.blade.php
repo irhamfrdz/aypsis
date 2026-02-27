@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Approval Tanda Terima (Asuransi)')
+@section('title', 'Upload Dokumen Tanda Terima')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -10,11 +10,11 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
                     <div class="p-2 bg-indigo-100 rounded-lg">
-                        <i class="fas fa-shield-alt text-indigo-600"></i>
+                        <i class="fas fa-file-upload text-indigo-600"></i>
                     </div>
-                    Approval Tanda Terima (Asuransi)
+                    Upload Dokumen Tanda Terima
                 </h1>
-                <p class="text-gray-600 mt-1">Verifikasi dan setujui dokumen asuransi untuk Tanda Terima FCL, LCL, dan Tanpa Surat Jalan.</p>
+                <p class="text-gray-600 mt-1">Upload dokumen untuk Tanda Terima FCL, LCL, dan Tanpa Surat Jalan.</p>
             </div>
             <div class="flex items-center gap-2">
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">
@@ -93,7 +93,7 @@
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sumber</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Identitas</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Penerima / Pengirim</th>
-                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Asuransi</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Dokumen</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -158,7 +158,7 @@
                                     <button type="button" 
                                             onclick="openUploadModal('{{ $item['source_type'] }}', '{{ $item['id'] }}', '{{ $item['number'] }}')"
                                             class="p-2 bg-white border border-gray-200 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all"
-                                            title="Upload Asuransi">
+                                            title="Upload Dokumen">
                                         <i class="fas fa-upload"></i>
                                     </button>
                                     @endcan
@@ -193,7 +193,7 @@
                 <div class="flex items-center justify-between">
                     <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
                         <i class="fas fa-upload text-indigo-600"></i>
-                        Upload Dokumen Asuransi
+                        Upload Dokumen
                     </h3>
                     <button onclick="closeModal('uploadModal')" class="text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times"></i>
