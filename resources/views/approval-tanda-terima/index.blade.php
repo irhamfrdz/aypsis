@@ -381,6 +381,8 @@
 </style>
 
 <script>
+    let selectedFiles = new DataTransfer();
+
     function openModal(id) {
         document.getElementById(id).classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
@@ -392,31 +394,63 @@
     }
 
     function updateFileName(input) {
-        const display = document.getElementById('file_name_display');
+        if (input.files && input.files.length > 0) {
+            for (let i = 0; i < input.files.length; i++) {
+                selectedFiles.items.add(input.files[i]);
+            }
+            input.files = selectedFiles.files;
+        }
+        renderFileList();
+    }
+
+    function removeFile(index) {
+        const input = document.querySelector('input[name="asuransi_file[]"]');
+        const dt = new DataTransfer();
+        const files = input.files;
         
-        // Reset old content
+        for (let i = 0; i < files.length; i++) {
+            if (i !== index) {
+                dt.items.add(files[i]);
+            }
+        }
+        
+        input.files = dt.files;
+        selectedFiles = dt;
+        
+        if (input.files.length === 0) {
+            input.value = ''; // to trigger 'required' validation properly
+        }
+        
+        renderFileList();
+    }
+
+    function renderFileList() {
+        const input = document.querySelector('input[name="asuransi_file[]"]');
+        const display = document.getElementById('file_name_display');
         display.innerHTML = '';
         display.classList.remove('text-indigo-600', 'font-bold');
 
         if (input.files && input.files.length > 0) {
-            display.classList.add('flex', 'flex-col', 'gap-1', 'items-center', 'mt-2', 'w-full');
+            display.classList.add('flex', 'flex-col', 'gap-1', 'items-center', 'mt-2', 'w-full', 'relative', 'z-20');
             
             for (let i = 0; i < input.files.length; i++) {
                 const fileItem = document.createElement('div');
-                fileItem.className = 'text-xs text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-md border border-indigo-100 flex items-center justify-between w-full max-w-xs truncate';
+                fileItem.className = 'text-xs text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-md border border-indigo-100 flex items-center justify-between w-full max-w-xs truncate relative z-30 shadow-sm';
                 
-                // Add icon and text
+                // We use button to stop event propagation so it doesn't trigger file dialog again
                 fileItem.innerHTML = `
                     <div class="flex items-center gap-2 truncate">
                         <i class="fas fa-file text-indigo-400"></i>
                         <span class="truncate font-semibold" title="${input.files[i].name}">${input.files[i].name}</span>
                     </div>
+                    <button type="button" onclick="event.preventDefault(); event.stopPropagation(); removeFile(${i});" class="text-rose-500 hover:text-rose-700 p-1 flex-shrink-0 z-40 relative ml-2 bg-rose-50 rounded-md">
+                        <i class="fas fa-times"></i>
+                    </button>
                 `;
                 display.appendChild(fileItem);
             }
         } else {
-            // Revert back to default layout
-            display.classList.remove('flex', 'flex-col', 'gap-1', 'items-center', 'mt-2', 'w-full');
+            display.classList.remove('flex', 'flex-col', 'gap-1', 'items-center', 'mt-2', 'w-full', 'relative', 'z-20');
             display.textContent = 'Klik atau seret file ke sini';
         }
     }
@@ -425,6 +459,15 @@
         const form = document.getElementById('uploadForm');
         form.action = `/approval-tanda-terima/${sourceType}/${id}/upload`;
         document.getElementById('upload_identity').value = identity;
+        
+        // Reset file input and display
+        const input = document.querySelector('input[name="asuransi_file[]"]');
+        if (input) {
+            input.value = '';
+            selectedFiles = new DataTransfer();
+            renderFileList();
+        }
+
         openModal('uploadModal');
     }
 
