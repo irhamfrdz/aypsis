@@ -868,6 +868,14 @@ Route::middleware([
         Route::put('pricelist-tkbm/{id}', [\App\Http\Controllers\PricelistTkbmController::class, 'update'])->name('pricelist-tkbm.update');
         Route::delete('pricelist-tkbm/{id}', [\App\Http\Controllers\PricelistTkbmController::class, 'destroy'])->name('pricelist-tkbm.destroy');
 
+        // Pricelist OPP/OPT Routes
+        Route::get('pricelist-opp-opt', [\App\Http\Controllers\PricelistOppOptController::class, 'index'])->name('pricelist-opp-opt.index');
+        Route::get('pricelist-opp-opt/create', [\App\Http\Controllers\PricelistOppOptController::class, 'create'])->name('pricelist-opp-opt.create');
+        Route::post('pricelist-opp-opt', [\App\Http\Controllers\PricelistOppOptController::class, 'store'])->name('pricelist-opp-opt.store');
+        Route::get('pricelist-opp-opt/{id}/edit', [\App\Http\Controllers\PricelistOppOptController::class, 'edit'])->name('pricelist-opp-opt.edit');
+        Route::put('pricelist-opp-opt/{id}', [\App\Http\Controllers\PricelistOppOptController::class, 'update'])->name('pricelist-opp-opt.update');
+        Route::delete('pricelist-opp-opt/{id}', [\App\Http\Controllers\PricelistOppOptController::class, 'destroy'])->name('pricelist-opp-opt.destroy');
+
         // Master pricelist biaya dokumen routes - granular permissions
         Route::get('pricelist-biaya-dokumen', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'index'])
              ->name('pricelist-biaya-dokumen.index')
