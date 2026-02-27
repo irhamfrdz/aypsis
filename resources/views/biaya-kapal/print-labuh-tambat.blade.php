@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    $paperSize = request('paper_size', 'Half-A4');
+    $paperSize = request('paper_size', 'Half-Folio');
     $paperMap = [
         'Folio' => [
             'size' => '215.9mm 330.2mm',
@@ -13,13 +13,13 @@
             'tableFont' => '11px',
         ],
         'Half-Folio' => [
-            'size' => '215.9mm 165.1mm',
-            'width' => '215.9mm',
-            'height' => '165.1mm',
-            'containerWidth' => '215.9mm',
-            'fontSize' => '14px',
-            'headerH1' => '20px',
-            'tableFont' => '12px',
+            'size' => '165.1mm 215.9mm',
+            'width' => '165.1mm',
+            'height' => '215.9mm',
+            'containerWidth' => '165.1mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
         ],
         'A4' => [
             'size' => 'A4',
@@ -31,13 +31,13 @@
             'tableFont' => '11px',
         ],
         'Half-A4' => [
-            'size' => '210mm 148.5mm',
-            'width' => '210mm',
-            'height' => '148.5mm',
-            'containerWidth' => '210mm',
-            'fontSize' => '11px',
-            'headerH1' => '16px',
-            'tableFont' => '9px',
+            'size' => '148.5mm 210mm',
+            'width' => '148.5mm',
+            'height' => '210mm',
+            'containerWidth' => '148.5mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
         ]
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
@@ -54,13 +54,12 @@
         }
 
         @page {
-            size: {{ $currentPaper['size'] }} portrait;
-            margin: 10mm;
+            size: {{ $currentPaper['size'] }};
+            margin: 5mm;
         }
 
         html, body {
             width: {{ $currentPaper['width'] }};
-            height: {{ $currentPaper['height'] }};
             font-family: Arial, sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
             line-height: 1.2;
@@ -68,23 +67,21 @@
             background: white;
             margin: 0;
             padding: 0;
-            font-weight: bold;
         }
 
         .container {
             width: 100%;
-            max-width: calc({{ $currentPaper['containerWidth'] }} - 20mm);
-            padding: 0 10mm;
+            max-width: calc({{ $currentPaper['containerWidth'] }} - 10mm);
+            padding: 0 5mm;
             margin: 0 auto;
             box-sizing: border-box;
-            min-height: calc({{ $currentPaper['height'] }} - 20mm);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
             border-bottom: 2px solid #333;
-            padding-bottom: 8px;
+            padding-bottom: 2px;
         }
 
         .header h1 {
@@ -106,30 +103,23 @@
         }
 
         .info-table td {
-            padding: 4px 8px;
+            padding: 2px 4px;
             font-size: {{ $currentPaper['tableFont'] }};
             vertical-align: top;
-        }
-
-        .info-table td:first-child {
             font-weight: bold;
-        }
-
-        .info-table td {
-             font-weight: bold;
         }
 
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12mm;
+            margin-bottom: 5mm;
             table-layout: fixed;
         }
 
         .table th,
         .table td {
             border: 1px solid #333;
-            padding: 2mm 3mm;
+            padding: 1px 4px;
             text-align: left;
             vertical-align: middle;
         }
@@ -140,7 +130,7 @@
             font-weight: bold;
             font-size: {{ $currentPaper['tableFont'] }};
             text-align: center;
-            border: 2px solid #333;
+            border: 1.5px solid #333;
         }
 
         .table td {
@@ -157,39 +147,9 @@
         }
 
         .total-row td {
-            background-color: #e9ecef !important;
+            background-color: #f0f0f0 !important;
             font-weight: bold !important;
-            border: 2px solid #333 !important;
-        }
-
-        .signature-section {
-            margin-top: 15px;
-            page-break-inside: avoid;
-        }
-
-        .footer {
-            margin-top: 15px;
-            padding-top: 10px;
-        }
-        
-        .signatures {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 12px;
-        }
-        
-        .signature-box {
-            text-align: center;
-            font-size: {{ $currentPaper['fontSize'] }};
-            font-weight: bold;
-        }
-        
-        .signature-line {
-            margin-top: 50px;
-            border-top: 1px solid #333;
-            padding-top: 3px;
-            font-weight: bold;
+            border: 1.5px solid #333 !important;
         }
 
         @media print {
@@ -229,135 +189,165 @@
     </div>
 
     <div class="container">
+        <!-- Header -->
         <div class="header">
             <h1>PERMOHONAN TRANSFER</h1>
         </div>
 
+        @php
+            $firstItem = $biayaKapal->labuhTambatDetails->first();
+            $vendorDisplay = $firstItem->vendor ?? ($biayaKapal->nama_vendor ?? '-');
+            $penerimaDisplay = $biayaKapal->penerima ?? '-';
+            $rekeningDisplay = $firstItem->nomor_rekening ?? ($biayaKapal->nomor_rekening ?? '-');
+
+            $subtotal = $biayaKapal->labuhTambatDetails->sum('sub_total');
+            $pph = $biayaKapal->labuhTambatDetails->sum('pph');
+            $grandTotal = $biayaKapal->labuhTambatDetails->sum('grand_total');
+        @endphp
+
+        <!-- Info Section -->
         <div class="info-section">
-            <div style="display: flex; gap: 20px; align-items: flex-start;">
-                <div style="flex: 1;">
-                    <table class="info-table">
-                        <tr>
-                            <td style="width: 35%;">Tanggal</td>
-                            <td>: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
-                        </tr>
-                        <tr>
-                            <td>Nomor</td>
-                            <td>: {{ $biayaKapal->nomor_invoice }}</td>
-                        </tr>
-                        <tr>
-                            <td>Nomor Referensi</td>
-                            <td>: {{ $biayaKapal->nomor_referensi ?? $biayaKapal->nomor_invoice }}</td>
-                        </tr>
-                    </table>
-                </div>
-                <div style="flex: 1;">
-                    <table class="info-table">
-                        @if($biayaKapal->penerima)
-                        <tr>
-                            <td style="width: 35%;">Penerima</td>
-                            <td>: {{ $biayaKapal->penerima }}</td>
-                        </tr>
-                        @endif
-                        @php $firstItem = $biayaKapal->labuhTambatDetails->first(); @endphp
-                        @if($firstItem && $firstItem->vendor)
-                        <tr>
-                            <td>Nama Vendor</td>
-                            <td>: {{ $firstItem->vendor }}</td>
-                        </tr>
-                        @endif
-                        @if($firstItem && $firstItem->nomor_rekening)
-                        <tr>
-                            <td>Nomor Rekening</td>
-                            <td>: {{ $firstItem->nomor_rekening }}</td>
-                        </tr>
-                        @endif
-                    </table>
-                </div>
-            </div>
+            <table class="info-table" style="width: 100%;">
+                <tr>
+                    <td style="width: 15%;">Tanggal</td>
+                    <td style="width: 35%;">: {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
+                    <td style="width: 15%;">Penerima</td>
+                    <td>: {{ $penerimaDisplay }}</td>
+                </tr>
+                <tr>
+                    <td>Nomor</td>
+                    <td>: {{ $biayaKapal->nomor_invoice }}</td>
+                    <td>Nama Vendor</td>
+                    <td>: {{ $vendorDisplay }}</td>
+                </tr>
+                <tr>
+                    <td>No. Ref</td>
+                    <td>: {{ $biayaKapal->nomor_referensi ?? $biayaKapal->nomor_invoice }}</td>
+                    <td>No. Rekening</td>
+                    <td>: {{ $rekeningDisplay }}</td>
+                </tr>
+            </table>
         </div>
 
-        <div style="margin-bottom: 12px;">
+        <!-- Table 1: Detail Biaya Kapal -->
+        <div style="margin-bottom: 8px;">
             <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Biaya Labuh Tambat:</strong>
-            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+            <table class="table" style="margin-top: 4px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 5%;">No</th>
-                        <th style="width: 15%;">Kapal</th>
-                        <th style="width: 10%;">Voyage</th>
-                        <th style="width: 15%;">Lokasi</th>
-                        <th style="width: 20%;">Keterangan</th>
-                        <th style="width: 10%;">GT</th>
-                        <th style="width: 12%;">Harga</th>
-                        <th style="width: 13%;">Total</th>
+                        <th style="width: 8%;">No</th>
+                        <th style="width: 20%;">Tanggal</th>
+                        <th style="width: 47%;">Jenis Biaya</th>
+                        <th style="width: 25%;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($biayaKapal->labuhTambatDetails as $index => $item)
-                    <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td>{{ $item->kapal }}</td>
-                        <td class="text-center">{{ $item->voyage }}</td>
-                        <td>{{ $item->lokasi }}</td>
-                        <td>{{ $item->type_keterangan }}</td>
-                        <td class="text-right">{{ $item->is_lumpsum ? '-' : number_format($item->kuantitas, 2, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format($item->sub_total, 0, ',', '.') }}</td>
-                    </tr>
-                    @endforeach
-                    
                     @php
-                        $subtotal = $biayaKapal->labuhTambatDetails->sum('sub_total');
-                        $pph = $biayaKapal->labuhTambatDetails->sum('pph');
-                        $grandTotal = $biayaKapal->labuhTambatDetails->sum('grand_total');
+                        $perKapal = $biayaKapal->labuhTambatDetails->groupBy(function($item) {
+                            return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                        });
+                        $rowNumber = 0;
                     @endphp
-                    
+                    @foreach($perKapal as $key => $details)
+                        @php
+                            $rowNumber++;
+                            list($kapal, $voyage) = explode('|', $key);
+                            $groupTotal = $details->sum('grand_total');
+                            $firstDetail = $details->first();
+                        @endphp
+                        <tr>
+                            <td class="text-center">{{ $rowNumber }}</td>
+                            <td class="text-center">{{ \Carbon\Carbon::parse($biayaKapal->tanggal)->format('d/M/Y') }}</td>
+                            <td>Biaya Labuh Tambat {{ $kapal }} ({{ $voyage }})</td>
+                            <td class="text-right">Rp {{ number_format($groupTotal, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
                     <tr class="total-row">
-                        <td colspan="7" class="text-right"><strong>SUBTOTAL</strong></td>
-                        <td class="text-right"><strong>Rp {{ number_format($subtotal, 0, ',', '.') }}</strong></td>
-                    </tr>
-                    <tr>
-                        <td colspan="7" class="text-right"><strong>PPH (2%)</strong></td>
-                        <td class="text-right"><strong>- Rp {{ number_format($pph, 0, ',', '.') }}</strong></td>
-                    </tr>
-                    <tr class="total-row">
-                        <td colspan="7" class="text-right"><strong>TOTAL MERUPAKAN PEMBAYARAN</strong></td>
+                        <td colspan="3" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
-            <strong>Keterangan:</strong><br>
-            {{ $biayaKapal->keterangan }}
+        <!-- Table 2: Detail Barang (Gabungan) -->
+        <div style="margin-bottom: 8px;">
+            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Barang Labuh Tambat:</strong>
+            <table class="table" style="margin-top: 4px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">No</th>
+                        <th style="width: 42%;">Jenis Barang</th>
+                        <th style="width: 15%;">Qty / GT</th>
+                        <th style="width: 35%;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $no = 1; @endphp
+                    @foreach($biayaKapal->labuhTambatDetails->groupBy('type_keterangan') as $typeName => $items)
+                        @php
+                             $typeQty = $items->sum(function($i) { return $i->is_lumpsum ? 0 : $i->kuantitas; });
+                             $typeCount = $items->count();
+                             $typeSubtotal = $items->sum('sub_total');
+                        @endphp
+                        <tr>
+                            <td class="text-center">{{ $no++ }}</td>
+                            <td>{{ strtoupper($typeName) }}</td>
+                            <td class="text-center">
+                                @if($typeQty > 0)
+                                    {{ number_format($typeQty, 2, ',', '.') }}
+                                @else
+                                    {{ $typeCount }} Lumpsum
+                                @endif
+                            </td>
+                            <td class="text-right">Rp {{ number_format($typeSubtotal, 0, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                    
+                    @if($pph > 0)
+                    <tr>
+                        <td class="text-center">{{ $no++ }}</td>
+                        <td>PPH (2%)</td>
+                        <td class="text-center">1</td>
+                        <td class="text-right font-bold text-red-600">(Rp {{ number_format($pph, 0, ',', '.') }})</td>
+                    </tr>
+                    @endif
+                    
+                    <tr class="total-row">
+                        <td colspan="3" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td class="text-right"><strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
+        <!-- Keterangan -->
+        <div style="margin-bottom: 2px; border: 1.5px solid #333; padding: 2px; min-height: 20px;">
+            <strong style="font-size: 8px;">Keterangan:</strong><br>
+            <span style="font-size: 8px;">{{ $biayaKapal->keterangan }}</span>
+        </div>
+
+        <!-- Signature Section -->
         <div class="footer">
-            <div class="signatures">
-                <div class="signature-box">
-                    <div>Dibuat Oleh</div>
-                    <div class="signature-line">
-                        {{ $biayaKapal->creator->name ?? '-' }}
-                    </div>
-                </div>
-                
-                <div class="signature-box">
-                    <div>Diperiksa Oleh</div>
-                    <div class="signature-line">
-                        &nbsp;
-                    </div>
-                </div>
-                
-                <div class="signature-box">
-                    <div>Disetujui Oleh</div>
-                    <div class="signature-line">
-                        {{ $biayaKapal->approver->name ?? '-' }}
-                    </div>
-                </div>
-            </div>
+            <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                <tr>
+                    <td style="width: 33.33%;"><strong>Dibuat Oleh:</strong></td>
+                    <td style="width: 33.33%;"><strong>Diperiksa Oleh:</strong></td>
+                    <td style="width: 33.33%;"><strong>Disetujui Oleh:</strong></td>
+                </tr>
+                <tr>
+                    <td style="height: 40px;"></td>
+                    <td style="height: 40px;"></td>
+                    <td style="height: 40px;"></td>
+                </tr>
+                <tr>
+                    <td>( {{ $biayaKapal->creator->name ?? '__________' }} )</td>
+                    <td>( __________ )</td>
+                    <td>( {{ $biayaKapal->approver->name ?? '__________' }} )</td>
+                </tr>
+            </table>
             
-            <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #999;">
+            <div style="text-align: center; margin-top: 8px; font-size: 8px; color: #999;">
                 Dicetak: {{ now()->format('d/m/Y H:i') }}
             </div>
         </div>
