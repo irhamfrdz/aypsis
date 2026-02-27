@@ -123,6 +123,34 @@
                         <p class="text-gray-700 whitespace-pre-wrap">{{ $tandaTerimaBongkaran->keterangan ?: 'Tidak ada keterangan' }}</p>
                     </div>
                 </div>
+
+                <!-- Dokumen Asuransi -->
+                @php
+                    $__asuransiDataBongkaran = [];
+                    // Using null coalesce/optional in case asuransi_path doesn't exist on this model yet
+                    $__path = $tandaTerimaBongkaran->asuransi_path ?? null;
+                    if (!empty($__path)) {
+                        if (is_string($__path) && str_starts_with($__path, '[')) {
+                            $__asuransiDataBongkaran = json_decode($__path, true) ?? [];
+                        } else {
+                            $__asuransiDataBongkaran = [$__path];
+                        }
+                    }
+                @endphp
+                @if(!empty($__asuransiDataBongkaran))
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Dokumen Asuransi</h3>
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            @foreach($__asuransiDataBongkaran as $index => $asuransi)
+                                <div class="bg-gray-50 rounded-lg border border-gray-200 p-4 flex flex-col items-center justify-center hover:border-indigo-300 transition-colors">
+                                    <i class="fas fa-file-pdf text-4xl text-emerald-500 mb-3 block text-center"></i>
+                                    <p class="text-sm font-semibold text-gray-700 text-center mb-1">Dokumen {{ $index + 1 }}</p>
+                                    <a href="{{ asset('storage/' . $asuransi) }}" target="_blank" class="mt-2 text-xs font-bold px-4 py-2 bg-white border border-gray-200 rounded-lg text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-all">Lihat File</a>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

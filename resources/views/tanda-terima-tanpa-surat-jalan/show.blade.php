@@ -501,6 +501,37 @@
                         </div>
                     </div>
                 @endif
+
+                <!-- Dokumen Asuransi -->
+                @php
+                    $__asuransiDataTtsj = [];
+                    if (!empty($tandaTerimaTanpaSuratJalan->asuransi_path)) {
+                        $__isAsuransiStringTtsj = is_string($tandaTerimaTanpaSuratJalan->asuransi_path);
+                        if ($__isAsuransiStringTtsj && str_starts_with($tandaTerimaTanpaSuratJalan->asuransi_path, '[')) {
+                            $__asuransiDataTtsj = json_decode($tandaTerimaTanpaSuratJalan->asuransi_path, true) ?? [];
+                        } else {
+                            $__asuransiDataTtsj = [$tandaTerimaTanpaSuratJalan->asuransi_path];
+                        }
+                    }
+                @endphp
+                @if(!empty($__asuransiDataTtsj))
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
+                        <div class="border-b border-gray-200 p-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Dokumen Asuransi</h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                @foreach($__asuransiDataTtsj as $index => $asuransi)
+                                    <div class="relative group bg-gray-50 rounded-lg border border-gray-200 p-4 flex flex-col items-center justify-center hover:border-indigo-300 transition-colors">
+                                        <i class="fas fa-file-pdf text-4xl text-emerald-500 mb-3 block text-center"></i>
+                                        <p class="text-sm font-semibold text-gray-700 text-center mb-1">Dokumen {{ $index + 1 }}</p>
+                                        <a href="{{ asset('storage/' . $asuransi) }}" target="_blank" class="mt-2 text-xs font-bold px-4 py-2 bg-white border border-gray-200 rounded-lg text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-all">Lihat File</a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- Sidebar -->

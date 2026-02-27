@@ -621,6 +621,37 @@
                 </div>
             </div>
             @endif
+
+            <!-- Dokumen Asuransi -->
+            @php
+                $__asuransiDataFcl = [];
+                if (!empty($tandaTerima->asuransi_path)) {
+                    $__isAsuransiStringFcl = is_string($tandaTerima->asuransi_path);
+                    if ($__isAsuransiStringFcl && str_starts_with($tandaTerima->asuransi_path, '[')) {
+                        $__asuransiDataFcl = json_decode($tandaTerima->asuransi_path, true) ?? [];
+                    } else {
+                        $__asuransiDataFcl = [$tandaTerima->asuransi_path];
+                    }
+                }
+            @endphp
+            @if(!empty($__asuransiDataFcl))
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">Dokumen Asuransi</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($__asuransiDataFcl as $index => $asuransi)
+                                <div class="relative group bg-gray-50 rounded-lg border border-gray-200 p-4 flex flex-col items-center justify-center hover:border-indigo-300 transition-colors">
+                                    <i class="fas fa-file-pdf text-4xl text-emerald-500 mb-3 block text-center"></i>
+                                    <p class="text-sm font-semibold text-gray-700 text-center mb-1">Dokumen {{ $index + 1 }}</p>
+                                    <a href="{{ asset('storage/' . $asuransi) }}" target="_blank" class="mt-2 text-xs font-bold px-4 py-2 bg-white border border-gray-200 rounded-lg text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-all">Lihat File</a>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <!-- Sidebar (Right - 1/3) -->

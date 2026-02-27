@@ -205,6 +205,37 @@
                     </div>
                 @endif
 
+                <!-- Dokumen Asuransi -->
+                @php
+                    $__asuransiDataLcl = [];
+                    if (!empty($tandaTerima->asuransi_path)) {
+                        $__isAsuransiStringLcl = is_string($tandaTerima->asuransi_path);
+                        if ($__isAsuransiStringLcl && str_starts_with($tandaTerima->asuransi_path, '[')) {
+                            $__asuransiDataLcl = json_decode($tandaTerima->asuransi_path, true) ?? [];
+                        } else {
+                            $__asuransiDataLcl = [$tandaTerima->asuransi_path];
+                        }
+                    }
+                @endphp
+                @if(!empty($__asuransiDataLcl))
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="border-b border-gray-200 p-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Dokumen Asuransi</h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                @foreach($__asuransiDataLcl as $index => $asuransi)
+                                    <div class="relative group bg-gray-50 rounded-lg border border-gray-200 p-4 flex flex-col items-center justify-center hover:border-indigo-300 transition-colors">
+                                        <i class="fas fa-file-pdf text-4xl text-emerald-500 mb-3 block text-center"></i>
+                                        <p class="text-sm font-semibold text-gray-700 text-center mb-1">Dokumen {{ $index + 1 }}</p>
+                                        <a href="{{ asset('storage/' . $asuransi) }}" target="_blank" class="mt-2 text-xs font-bold px-4 py-2 bg-white border border-gray-200 rounded-lg text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-all">Lihat File</a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Dimensi dan Volume -->
                 @if($tandaTerima->items && $tandaTerima->items->count() > 0)
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
