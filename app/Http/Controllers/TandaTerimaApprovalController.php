@@ -59,7 +59,7 @@ class TandaTerimaApprovalController extends Controller
                     'date' => $item->tanggal ?: $item->tanggal_surat_jalan,
                     'penerima' => $item->penerima,
                     'pengirim' => $item->pengirim,
-                    'asuransi_path' => $item->asuransi_path,
+                    'asuransi_paths' => is_string($item->asuransi_path) && str_starts_with($item->asuransi_path, '[') ? json_decode($item->asuransi_path, true) : ($item->asuransi_path ? [$item->asuransi_path] : []),
                     'is_approved' => $item->is_asuransi_approved,
                     'approved_at' => $item->asuransi_approved_at,
                     'keterangan' => $item->asuransi_keterangan,
@@ -77,7 +77,7 @@ class TandaTerimaApprovalController extends Controller
                     'date' => $item->tanggal_tanda_terima,
                     'penerima' => $item->penerima,
                     'pengirim' => $item->pengirim,
-                    'asuransi_path' => $item->asuransi_path,
+                    'asuransi_paths' => is_string($item->asuransi_path) && str_starts_with($item->asuransi_path, '[') ? json_decode($item->asuransi_path, true) : ($item->asuransi_path ? [$item->asuransi_path] : []),
                     'is_approved' => $item->is_asuransi_approved,
                     'approved_at' => $item->asuransi_approved_at,
                     'keterangan' => $item->asuransi_keterangan,
@@ -95,7 +95,7 @@ class TandaTerimaApprovalController extends Controller
                     'date' => $item->tanggal_tanda_terima,
                     'penerima' => $item->nama_penerima,
                     'pengirim' => $item->nama_pengirim,
-                    'asuransi_path' => $item->asuransi_path,
+                    'asuransi_paths' => is_string($item->asuransi_path) && str_starts_with($item->asuransi_path, '[') ? json_decode($item->asuransi_path, true) : ($item->asuransi_path ? [$item->asuransi_path] : []),
                     'is_approved' => $item->is_asuransi_approved,
                     'approved_at' => $item->asuransi_approved_at,
                     'keterangan' => $item->asuransi_keterangan,
@@ -113,19 +113,34 @@ class TandaTerimaApprovalController extends Controller
     public function upload(Request $request, $sourceType, $id)
     {
         $request->validate([
-            'asuransi_file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'asuransi_file' => 'required|array',
+            'asuransi_file.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         $model = $this->getModel($sourceType, $id);
         
         if ($request->hasFile('asuransi_file')) {
+            // Check existing and delete
+            $existingPathArray = [];
             if ($model->asuransi_path) {
-                Storage::disk('public')->delete($model->asuransi_path);
+                if (is_string($model->asuransi_path) && str_starts_with($model->asuransi_path, '[') && str_ends_with($model->asuransi_path, ']')) {
+                    $existingPathArray = json_decode($model->asuransi_path, true) ?? [];
+                } else {
+                    $existingPathArray = [$model->asuransi_path];
+                }
             }
 
-            $path = $request->file('asuransi_file')->store('asuransi_tanda_terima', 'public');
+            foreach ($existingPathArray as $oldPath) {
+                if ($oldPath) Storage::disk('public')->delete($oldPath);
+            }
+
+            $paths = [];
+            foreach ($request->file('asuransi_file') as $file) {
+                 $paths[] = $file->store('asuransi_tanda_terima', 'public');
+            }
+
             $model->update([
-                'asuransi_path' => $path,
+                'asuransi_path' => json_encode($paths),
                 'asuransi_uploaded_at' => now(),
                 'asuransi_uploaded_by' => Auth::id(),
             ]);

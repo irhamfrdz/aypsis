@@ -135,17 +135,21 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                @if($item['asuransi_path'])
+                                @if(!empty($item['asuransi_paths']))
                                     <div class="flex items-center gap-3">
                                         <div class="p-2 bg-emerald-50 rounded-lg border border-emerald-100">
                                             <i class="fas fa-file-pdf text-emerald-600 text-lg"></i>
                                         </div>
-                                        <div class="flex flex-col">
-                                            <span class="text-[10px] font-bold text-emerald-700 uppercase">Tersedia</span>
-                                            <a href="{{ asset('storage/' . $item['asuransi_path']) }}" target="_blank" 
-                                               class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline">
-                                                Lihat Dokumen
-                                            </a>
+                                        <div class="flex flex-col gap-1">
+                                            <span class="text-[10px] font-bold text-emerald-700 uppercase">{{ count($item['asuransi_paths']) }} Dokumen Tersedia</span>
+                                            <div class="flex flex-col gap-0.5">
+                                                @foreach($item['asuransi_paths'] as $index => $path)
+                                                <a href="{{ asset('storage/' . $path) }}" target="_blank" 
+                                                   class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline">
+                                                    Dokumen {{ $index + 1 }}
+                                                </a>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
                                 @else
@@ -185,7 +189,7 @@
                                     @endcan
 
                                     @can('approval-tanda-terima-approve')
-                                    @if(!$item['is_approved'] && $item['asuransi_path'])
+                                    @if(!$item['is_approved'] && !empty($item['asuransi_paths']))
                                         <button type="button"
                                                 onclick="openApproveModal('{{ $item['source_type'] }}', '{{ $item['id'] }}', '{{ $item['number'] }}')"
                                                 class="p-2 bg-emerald-600 rounded-lg text-white hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200"
@@ -251,7 +255,7 @@
                     <div class="mb-2">
                         <label class="block text-sm font-bold text-gray-700 mb-2">Pilih File Dokumen</label>
                         <div class="relative group">
-                            <input type="file" name="asuransi_file" required accept=".pdf,.jpg,.jpeg,.png"
+                            <input type="file" name="asuransi_file[]" multiple required accept=".pdf,.jpg,.jpeg,.png"
                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                    onchange="updateFileName(this)">
                             <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center group-hover:border-indigo-400 transition-colors">
@@ -389,8 +393,12 @@
 
     function updateFileName(input) {
         const display = document.getElementById('file_name_display');
-        if (input.files && input.files[0]) {
-            display.textContent = input.files[0].name;
+        if (input.files && input.files.length > 0) {
+            if (input.files.length === 1) {
+                display.textContent = input.files[0].name;
+            } else {
+                display.textContent = `${input.files.length} file dipilih`;
+            }
             display.classList.add('text-indigo-600', 'font-bold');
         } else {
             display.textContent = 'Klik atau seret file ke sini';
