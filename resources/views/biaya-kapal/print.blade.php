@@ -1,47 +1,43 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    $defaultSize = 'Half-A4';
-    if (isset($biayaKapal) && $biayaKapal->jenis_biaya === 'KB024') {
-        $defaultSize = 'Half-Folio';
-    }
-    $paperSize = request('paper_size', $defaultSize);
+    $paperSize = request('paper_size', 'Half-Folio');
     $paperMap = [
         'Folio' => [
             'size' => '215.9mm 330.2mm',
             'width' => '215.9mm',
             'height' => '330.2mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '15px', // Increased from 13px
-            'headerH1' => '24px', // Increased from 20px
-            'tableFont' => '13px', // Increased from 11px
+            'fontSize' => '13px',
+            'headerH1' => '20px',
+            'tableFont' => '11px',
         ],
         'Half-Folio' => [
-            'size' => '215.9mm 165.1mm',
-            'width' => '215.9mm',
-            'height' => '165.1mm',
-            'containerWidth' => '215.9mm',
-            'fontSize' => '11px', 
-            'headerH1' => '16px', 
-            'tableFont' => '10px', 
+            'size' => '165.1mm 215.9mm',
+            'width' => '165.1mm',
+            'height' => '215.9mm',
+            'containerWidth' => '165.1mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
         ],
         'A4' => [
             'size' => 'A4',
             'width' => '210mm',
             'height' => '297mm',
             'containerWidth' => '210mm',
-            'fontSize' => '15px', // Increased from 13px
-            'headerH1' => '24px', // Increased from 20px
-            'tableFont' => '13px', // Increased from 11px
+            'fontSize' => '13px',
+            'headerH1' => '20px',
+            'tableFont' => '11px',
         ],
         'Half-A4' => [
-            'size' => '210mm 148.5mm',
-            'width' => '210mm',
-            'height' => '148.5mm',
-            'containerWidth' => '210mm',
-            'fontSize' => '13px', // Increased from 11px
-            'headerH1' => '18px', // Increased from 16px
-            'tableFont' => '11px', // Increased from 9px
+            'size' => '148.5mm 210mm',
+            'width' => '148.5mm',
+            'height' => '210mm',
+            'containerWidth' => '148.5mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
         ]
     ];
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
