@@ -74,14 +74,6 @@
                         <option value="ttsj" {{ $type == 'ttsj' ? 'selected' : '' }}>Tanpa Surat Jalan (TTSJ)</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Status Approval</label>
-                    <select name="status" class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
-                        <option value="pending" {{ $status == 'pending' ? 'selected' : '' }}>Menunggu Approval</option>
-                        <option value="approved" {{ $status == 'approved' ? 'selected' : '' }}>Sudah Disetujui</option>
-                        <option value="all" {{ $status == 'all' ? 'selected' : '' }}>Semua Status</option>
-                    </select>
-                </div>
                 <div class="flex items-end gap-2">
                     <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg transition-colors shadow-sm shadow-indigo-200">
                         <i class="fas fa-filter mr-2"></i> Filter
@@ -102,7 +94,6 @@
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Identitas</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Penerima / Pengirim</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Asuransi</th>
-                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -161,22 +152,6 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
-                                @if($item['is_approved'])
-                                    <div class="flex flex-col gap-1">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 w-fit">
-                                            <i class="fas fa-check-circle mr-1"></i> APPROVED
-                                        </span>
-                                        <span class="text-[9px] text-gray-400 font-medium">
-                                            {{ \Carbon\Carbon::parse($item['approved_at'])->format('d/m/Y H:i') }}
-                                        </span>
-                                    </div>
-                                @else
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 w-fit">
-                                        <i class="fas fa-clock mr-1"></i> PENDING
-                                    </span>
-                                @endif
-                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-2">
                                     @can('approval-tanda-terima-upload')
@@ -186,26 +161,6 @@
                                             title="Upload Asuransi">
                                         <i class="fas fa-upload"></i>
                                     </button>
-                                    @endcan
-
-                                    @can('approval-tanda-terima-approve')
-                                    @if(!$item['is_approved'] && !empty($item['asuransi_paths']))
-                                        <button type="button"
-                                                onclick="openApproveModal('{{ $item['source_type'] }}', '{{ $item['id'] }}', '{{ $item['number'] }}')"
-                                                class="p-2 bg-emerald-600 rounded-lg text-white hover:bg-emerald-700 transition-all shadow-sm shadow-emerald-200"
-                                                title="Approve">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                    @endif
-
-                                    @if($item['is_approved'])
-                                        <button type="button"
-                                                onclick="openRejectModal('{{ $item['source_type'] }}', '{{ $item['id'] }}', '{{ $item['number'] }}')"
-                                                class="p-2 bg-rose-50 border border-rose-200 rounded-lg text-rose-600 hover:bg-rose-100 transition-all"
-                                                title="Batalkan Approval">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    @endif
                                     @endcan
                                 </div>
                             </td>
@@ -270,92 +225,6 @@
                     <button type="button" onclick="closeModal('uploadModal')" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700">Batal</button>
                     <button type="submit" class="px-6 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all">
                         Unggah Dokumen
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Approve Modal -->
-<div id="approveModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal('approveModal')"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-modal-enter">
-            <div class="p-6 border-b border-gray-100">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <i class="fas fa-check-circle text-emerald-600"></i>
-                        Approve Asuransi
-                    </h3>
-                    <button onclick="closeModal('approveModal')" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            <form id="approveForm" method="POST">
-                @csrf
-                <div class="p-6">
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Identitas</label>
-                        <input type="text" id="approve_identity" readonly class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-600 font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Keterangan (Opsional)</label>
-                        <textarea name="keterangan" rows="3" placeholder="Tambahkan catatan jika diperlukan..."
-                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-sm"></textarea>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 flex items-center justify-end gap-3 rounded-b-2xl">
-                    <button type="button" onclick="closeModal('approveModal')" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700">Tutup</button>
-                    <button type="submit" class="px-6 py-2 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 shadow-sm shadow-emerald-200 transition-all">
-                        Approve Sekarang
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Reject (Cancel Approval) Modal -->
-<div id="rejectModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal('rejectModal')"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-modal-enter">
-            <div class="p-6 border-b border-gray-100">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <i class="fas fa-exclamation-triangle text-rose-600"></i>
-                        Batalkan Approval
-                    </h3>
-                    <button onclick="closeModal('rejectModal')" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-            <form id="rejectForm" method="POST">
-                @csrf
-                <div class="p-6">
-                    <div class="p-4 bg-rose-50 border border-rose-100 rounded-xl mb-4">
-                        <p class="text-xs font-semibold text-rose-800 leading-relaxed">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Anda akan membatalkan status approval untuk data ini. Dokumen asuransi yang sudah diunggah tidak akan dihapus.
-                        </p>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Identitas</label>
-                        <input type="text" id="reject_identity" readonly class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-600 font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Alasan Pembatalan</label>
-                        <textarea name="keterangan" rows="3" required placeholder="Tuliskan alasan pembatalan status approval..."
-                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all text-sm"></textarea>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 flex items-center justify-end gap-3 rounded-b-2xl">
-                    <button type="button" onclick="closeModal('rejectModal')" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700">Batal</button>
-                    <button type="submit" class="px-6 py-2 bg-rose-600 text-white text-sm font-bold rounded-lg hover:bg-rose-700 shadow-sm shadow-rose-200 transition-all">
-                        Ya, Batalkan Approval
                     </button>
                 </div>
             </form>
@@ -469,20 +338,6 @@
         }
 
         openModal('uploadModal');
-    }
-
-    function openApproveModal(sourceType, id, identity) {
-        const form = document.getElementById('approveForm');
-        form.action = `/approval-tanda-terima/${sourceType}/${id}/approve`;
-        document.getElementById('approve_identity').value = identity;
-        openModal('approveModal');
-    }
-
-    function openRejectModal(sourceType, id, identity) {
-        const form = document.getElementById('rejectForm');
-        form.action = `/approval-tanda-terima/${sourceType}/${id}/reject`;
-        document.getElementById('reject_identity').value = identity;
-        openModal('rejectModal');
     }
 </script>
 @endsection
