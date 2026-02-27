@@ -288,6 +288,21 @@
                             <tr class="submodule-row" data-parent="user">
                                 <td class="submodule">
                                     <div class="flex items-center">
+                                        <span class="text-blue-600 font-bold">Data Karyawan (ABK)</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
                                         <span>Data Divisi</span>
                                     </div>
                                 </td>

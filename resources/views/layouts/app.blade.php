@@ -529,9 +529,14 @@
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-karyawan-view'))
-                                    <a href="{{ route('master.karyawan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.karyawan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Data Karyawan</span>
                                     </a>
+                                    @if($user && $user->can('master-karyawan-abk-view'))
+                                        <a href="{{ route('master.karyawan.abk-index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.abk-index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                            <span class="text-xs text-blue-600 font-bold">Data Karyawan (ABK)</span>
+                                        </a>
+                                    @endif
                                 @endif
                                 @if($user && $user->can('karyawan-tidak-tetap-view'))
                                     <!-- Karyawan Tidak Tetap -->

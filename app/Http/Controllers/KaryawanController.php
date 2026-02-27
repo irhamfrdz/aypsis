@@ -207,6 +207,99 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Display a listing of ABK employees.
+     */
+    public function abkIndex(Request $request)
+    {
+        // Query builder untuk karyawan ABK
+        $query = Karyawan::where(function($q) {
+            $q->where('divisi', 'ABK')
+              ->orWhere('pekerjaan', 'ABK');
+        });
+
+        // Precompute counts for header summary (filtered for ABK)
+        $totalCount = (clone $query)->count();
+        $aktifCount = (clone $query)->whereNull('tanggal_berhenti')->count();
+        $berhentiCount = (clone $query)->whereNotNull('tanggal_berhenti')->count();
+        $counts = [
+            'total' => $totalCount,
+            'aktif' => $aktifCount,
+            'berhenti' => $berhentiCount,
+        ];
+
+        // Prepare filter options
+        $divisiOptions = Karyawan::whereNotNull('divisi')->distinct()->orderBy('divisi')->pluck('divisi');
+        $cabangOptions = Karyawan::whereNotNull('cabang')->distinct()->orderBy('cabang')->pluck('cabang');
+
+        // Filter Status Logic
+        if ($request->filled('show_all')) {
+            // Tampilkan semua (tidak ada filter status)
+        } elseif ($request->filled('show_berhenti')) {
+            // Tampilkan hanya yang berhenti
+            $query->whereNotNull('tanggal_berhenti');
+        } elseif ($request->filled('search')) {
+            // Jika mencari tanpa tombol status diklik, cari di semua data (Aktif & Berhenti)
+        } else {
+            // Default: hanya tampilkan karyawan aktif
+            $query->whereNull('tanggal_berhenti');
+        }
+
+        if ($request->filled('cabang')) {
+            $query->where('cabang', $request->cabang);
+        }
+
+        // Filter: Tanggal Masuk range
+        if ($request->filled('tanggal_masuk_start')) {
+            $query->whereDate('tanggal_masuk', '>=', $request->tanggal_masuk_start);
+        }
+        if ($request->filled('tanggal_masuk_end')) {
+            $query->whereDate('tanggal_masuk', '<=', $request->tanggal_masuk_end);
+        }
+
+        // Filter: Tanggal Berhenti range
+        if ($request->filled('tanggal_berhenti_start')) {
+            $query->whereDate('tanggal_berhenti', '>=', $request->tanggal_berhenti_start);
+            $request->merge(['show_berhenti' => '1']);
+        }
+        if ($request->filled('tanggal_berhenti_end')) {
+            $query->whereDate('tanggal_berhenti', '<=', $request->tanggal_berhenti_end);
+            $request->merge(['show_berhenti' => '1']);
+        }
+
+        // Search logic
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nik', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
+                  ->orWhere('no_hp', 'LIKE', "%{$search}%")
+                  ->orWhere('alamat', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Handle sorting
+        $sortField = $request->get('sort', 'nama_lengkap');
+        $sortDirection = $request->get('direction', 'asc');
+
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'tanggal_masuk', 'tanggal_berhenti'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'nama_lengkap';
+        }
+
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+
+        $query->orderBy($sortField, $sortDirection);
+
+        $perPage = (int) $request->get('per_page', 15);
+        $karyawans = $query->paginate($perPage)->appends($request->query());
+
+        return view('master-karyawan.abk-index', compact('karyawans', 'counts', 'divisiOptions', 'cabangOptions'));
+    }
+
+    /**
      * Export all karyawans as CSV download.
      */
     public function export(\Illuminate\Http\Request $request)

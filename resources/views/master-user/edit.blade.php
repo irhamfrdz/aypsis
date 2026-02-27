@@ -663,8 +663,25 @@
                                 <td><input type="checkbox" name="permissions[master-karyawan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan']['update']) && $userMatrixPermissions['master-karyawan']['update']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[master-karyawan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan']['delete']) && $userMatrixPermissions['master-karyawan']['delete']) checked @endif></td>
                                 <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan']['print']) && $userMatrixPermissions['master-karyawan']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan']['export']) && $userMatrixPermissions['master-karyawan']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Data Karyawan (ABK) --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-blue-600 font-bold">Data Karyawan (ABK)</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan-abk']['view']) && $userMatrixPermissions['master-karyawan-abk']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan-abk']['create']) && $userMatrixPermissions['master-karyawan-abk']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan-abk']['update']) && $userMatrixPermissions['master-karyawan-abk']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan-abk']['delete']) && $userMatrixPermissions['master-karyawan-abk']['delete']) checked @endif></td>
                                 <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan-abk']['print']) && $userMatrixPermissions['master-karyawan-abk']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-abk][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan-abk']['export']) && $userMatrixPermissions['master-karyawan-abk']['export']) checked @endif></td>
                             </tr>
 
                             {{-- Master Vendor Supir --}}

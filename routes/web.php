@@ -303,9 +303,10 @@ Route::middleware([
         ]);
 
 
-        // ═══════════════════════════════════════════════════════════════════════
-        // 👥 KARYAWAN (EMPLOYEE) MANAGEMENT
-        // ═══════════════════════════════════════════════════════════════════════
+        // Dedicated ABK Karyawan Page
+        Route::get('karyawan-abk', [KaryawanController::class, 'abkIndex'])
+             ->name('karyawan.abk-index')
+             ->middleware('can:master-karyawan-abk-view');
 
         // Print all karyawan (print-friendly)
         Route::get('karyawan/print', [KaryawanController::class, 'print'])
