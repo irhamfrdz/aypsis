@@ -552,6 +552,30 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for approval-tanda-terima permissions (dash notation)
+            if (strpos($permissionName, 'approval-tanda-terima-') === 0) {
+                $module = 'approval-tanda-terima';
+                $action = str_replace('approval-tanda-terima-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'upload' => 'create',
+                    'approve' => 'approve'
+                ];
+
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
+
             // Special handling for tanda-terima-tanpa-surat-jalan permissions (dash notation)
             if (strpos($permissionName, 'tanda-terima-tanpa-surat-jalan-') === 0) {
                 $module = 'tanda-terima-tanpa-surat-jalan';
@@ -3875,6 +3899,26 @@ class UserController extends Controller
                         }
                     }
 
+                    // Handle approval-tanda-terima permissions explicitly
+                    if ($module === 'approval-tanda-terima' && in_array($action, ['view', 'create', 'approve'])) {
+                        $actionMap = [
+                            'view' => 'approval-tanda-terima-view',
+                            'create' => 'approval-tanda-terima-upload',
+                            'approve' => 'approval-tanda-terima-approve'
+                        ];
+
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+
                     // Handle BL (Bill of Lading) permissions explicitly
                     if ($module === 'bl' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export', 'approve'])) {
                         $actionMap = [
@@ -4097,6 +4141,15 @@ class UserController extends Controller
                 }
             }
         }
+        if (!$hasApprovalTugasPermission && isset($matrixPermissions['approval-tanda-terima']) && is_array($matrixPermissions['approval-tanda-terima'])) {
+            foreach ($matrixPermissions['approval-tanda-terima'] as $action => $value) {
+                if ($value == '1' || $value === true) {
+                    $hasApprovalTugasPermission = true;
+                    break;
+                }
+            }
+        }
+
 
         // If user has any approval-tugas permission, also give them approval-dashboard
         if ($hasApprovalTugasPermission) {

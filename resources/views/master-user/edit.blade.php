@@ -2564,6 +2564,22 @@
                                 <td><input type="checkbox" name="permissions[approval-order][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-order']['export']) && $userMatrixPermissions['approval-order']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Approval Tanda Terima --}}
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">
+                                    <span class="module-icon">🛡️</span>
+                                    Approval Tanda Terima (Asuransi)
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval-tanda-terima][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tanda-terima']['view']) && $userMatrixPermissions['approval-tanda-terima']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-tanda-terima][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tanda-terima']['create']) && $userMatrixPermissions['approval-tanda-terima']['create']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[approval-tanda-terima][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tanda-terima']['approve']) && $userMatrixPermissions['approval-tanda-terima']['approve']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">
                                 <td class="module-header">

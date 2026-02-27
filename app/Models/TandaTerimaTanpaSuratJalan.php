@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\AsuransiManageable;
 
 class TandaTerimaTanpaSuratJalan extends Model
 {
-    use HasFactory;
+    use HasFactory, AsuransiManageable;
 
     protected $table = 'tanda_terima_tanpa_surat_jalan';
 
@@ -51,6 +52,13 @@ class TandaTerimaTanpaSuratJalan extends Model
         'gambar_tanda_terima',
         'created_by',
         'updated_by',
+        'asuransi_path',
+        'asuransi_uploaded_at',
+        'asuransi_uploaded_by',
+        'is_asuransi_approved',
+        'asuransi_approved_at',
+        'asuransi_approved_by',
+        'asuransi_keterangan',
     ];
 
     protected $casts = [
@@ -64,6 +72,9 @@ class TandaTerimaTanpaSuratJalan extends Model
         'tonase' => 'decimal:2',
         'jumlah_barang' => 'integer',
         'gambar_tanda_terima' => 'array',
+        'asuransi_uploaded_at' => 'datetime',
+        'asuransi_approved_at' => 'datetime',
+        'is_asuransi_approved' => 'boolean',
     ];
 
     /**

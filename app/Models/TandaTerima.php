@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use App\Traits\AsuransiManageable;
 
 class TandaTerima extends Model
 {
-    use HasFactory, Auditable;
+    use HasFactory, Auditable, AsuransiManageable;
     protected $fillable = [
         'surat_jalan_id',
         'no_surat_jalan',
@@ -56,6 +57,13 @@ class TandaTerima extends Model
         'created_by',
         'updated_by',
         'dimensi_items',
+        'asuransi_path',
+        'asuransi_uploaded_at',
+        'asuransi_uploaded_by',
+        'is_asuransi_approved',
+        'asuransi_approved_at',
+        'asuransi_approved_by',
+        'asuransi_keterangan',
     ];
 
     protected $casts = [
@@ -81,6 +89,9 @@ class TandaTerima extends Model
         'lembur' => 'boolean',
         'nginap' => 'boolean',
         'tidak_lembur_nginap' => 'boolean',
+        'asuransi_uploaded_at' => 'datetime',
+        'asuransi_approved_at' => 'datetime',
+        'is_asuransi_approved' => 'boolean',
     ];
 
     /**

@@ -4883,5 +4883,21 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                    ->middleware('can:master-mobil-view');
            });
 
+    // 🛡️ APPROVAL TANDA TERIMA (INSURANCE)
+    Route::prefix('approval-tanda-terima')->name('approval-tanda-terima.')->group(function() {
+        Route::get('/', [\App\Http\Controllers\TandaTerimaApprovalController::class, 'index'])
+            ->name('index')
+            ->middleware('can:approval-tanda-terima-view');
+        Route::post('{sourceType}/{id}/upload', [\App\Http\Controllers\TandaTerimaApprovalController::class, 'upload'])
+            ->name('upload')
+            ->middleware('can:approval-tanda-terima-upload');
+        Route::post('{sourceType}/{id}/approve', [\App\Http\Controllers\TandaTerimaApprovalController::class, 'approve'])
+            ->name('approve')
+            ->middleware('can:approval-tanda-terima-approve');
+        Route::post('{sourceType}/{id}/reject', [\App\Http\Controllers\TandaTerimaApprovalController::class, 'reject'])
+            ->name('reject')
+            ->middleware('can:approval-tanda-terima-approve');
+    });
+
 });
 
