@@ -868,16 +868,16 @@ class ObController extends Controller
                 
                 // Copy data dari naik_kapal ke BLS
                 $bl->nomor_kontainer = $naikKapal->nomor_kontainer;
-                $bl->no_seal = $naikKapal->no_seal;
-                $bl->nama_barang = $naikKapal->jenis_barang;
+                $bl->no_seal = mb_substr($naikKapal->no_seal ?? '', 0, 255);
+                $bl->nama_barang = mb_substr($naikKapal->jenis_barang ?? '', 0, 255);
                 $bl->tipe_kontainer = $naikKapal->tipe_kontainer;
                 $bl->size_kontainer = $naikKapal->size_kontainer;
-                $bl->nama_kapal = $naikKapal->nama_kapal;
-                $bl->no_voyage = $naikKapal->no_voyage;
-                $bl->asal_kontainer = $naikKapal->asal_kontainer;
-                $bl->ke = $naikKapal->ke;
-                $bl->pelabuhan_asal = $naikKapal->pelabuhan_asal;
-                $bl->pelabuhan_tujuan = $naikKapal->pelabuhan_tujuan;
+                $bl->nama_kapal = mb_substr($naikKapal->nama_kapal ?? '', 0, 255);
+                $bl->no_voyage = mb_substr($naikKapal->no_voyage ?? '', 0, 255);
+                $bl->asal_kontainer = mb_substr($naikKapal->asal_kontainer ?? '', 0, 255);
+                $bl->ke = mb_substr($naikKapal->ke ?? '', 0, 255);
+                $bl->pelabuhan_asal = mb_substr($naikKapal->pelabuhan_asal ?? '', 0, 255);
+                $bl->pelabuhan_tujuan = mb_substr($naikKapal->pelabuhan_tujuan ?? '', 0, 255);
                 $bl->tonnage = $naikKapal->total_tonase;
                 $bl->volume = $naikKapal->total_volume;
                 $bl->kuantitas = $naikKapal->kuantitas;
@@ -888,17 +888,17 @@ class ObController extends Controller
                     
                     // Ambil data lengkap dari prospek
                     $prospek = $naikKapal->prospek;
-                    $bl->pengirim = $prospek->pt_pengirim;
+                    $bl->pengirim = mb_substr($prospek->pt_pengirim ?? '', 0, 255);
                     // Ambil penerima dari tanda terima jika ada, jika tidak gunakan tujuan pengiriman
                     $penerima = null;
                     if ($prospek->tandaTerima) {
                         $penerima = $prospek->tandaTerima->penerima;
                     }
-                    $bl->penerima = $penerima ?? $prospek->tujuan_pengiriman;
+                    $bl->penerima = mb_substr($penerima ?? $prospek->tujuan_pengiriman ?? '', 0, 255);
                     
                     // Jika no_seal belum ada, ambil dari prospek
                     if (empty($bl->no_seal) && !empty($prospek->no_seal)) {
-                        $bl->no_seal = $prospek->no_seal;
+                        $bl->no_seal = mb_substr($prospek->no_seal, 0, 255);
                     }
                     // Ambil data lain dari prospek jika belum ada
                     if (empty($bl->tonnage) && !empty($prospek->total_ton)) {
@@ -921,10 +921,10 @@ class ObController extends Controller
                         $suratJalan = \App\Models\SuratJalan::find($prospek->surat_jalan_id);
                         if ($suratJalan) {
                             if (!empty($suratJalan->alamat_tujuan)) {
-                                $bl->alamat_pengiriman = $suratJalan->alamat_tujuan;
+                                $bl->alamat_pengiriman = mb_substr($suratJalan->alamat_tujuan, 0, 255);
                             }
                             if (!empty($suratJalan->contact_person)) {
-                                $bl->contact_person = $suratJalan->contact_person;
+                                $bl->contact_person = mb_substr($suratJalan->contact_person, 0, 255);
                             }
                         }
                     }
@@ -934,10 +934,10 @@ class ObController extends Controller
                          $tandaTerima = \App\Models\TandaTerima::find($prospek->tanda_terima_id);
                          if ($tandaTerima) {
                              if (!empty($tandaTerima->alamat_penerima)) {
-                                 $bl->alamat_pengiriman = $tandaTerima->alamat_penerima;
+                                 $bl->alamat_pengiriman = mb_substr($tandaTerima->alamat_penerima, 0, 255);
                              }
                              if (!empty($tandaTerima->contact_person)) {
-                                 $bl->contact_person = $tandaTerima->contact_person;
+                                 $bl->contact_person = mb_substr($tandaTerima->contact_person, 0, 255);
                              }
                          }
                     }
@@ -947,11 +947,11 @@ class ObController extends Controller
                         $suratJalan = \App\Models\SuratJalan::find($prospek->surat_jalan_id);
                         if ($suratJalan) {
                             if (!empty($suratJalan->alamat_tujuan)) {
-                                $bl->alamat_pengiriman = $suratJalan->alamat_tujuan;
+                                $bl->alamat_pengiriman = mb_substr($suratJalan->alamat_tujuan, 0, 255);
                             }
                             // Jika contact person kosong, ambil dari SJ
                             if (empty($bl->contact_person) && !empty($suratJalan->contact_person)) {
-                                $bl->contact_person = $suratJalan->contact_person;
+                                $bl->contact_person = mb_substr($suratJalan->contact_person, 0, 255);
                             }
                         }
                     }
