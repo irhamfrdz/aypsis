@@ -17,9 +17,9 @@
             'width' => '215.9mm',
             'height' => '165.1mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '11px',
+            'fontSize' => '10px',
             'headerH1' => '16px',
-            'tableFont' => '10px',
+            'tableFont' => '9px',
         ],
         'A4' => [
             'size' => 'A4',
@@ -60,7 +60,6 @@
 
         html, body {
             width: {{ $currentPaper['width'] }};
-            height: {{ $currentPaper['height'] }};
             font-family: Arial, sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
             line-height: 1.2;
@@ -68,7 +67,6 @@
             background: white;
             margin: 0;
             padding: 0;
-            font-weight: bold;
         }
 
         .container {
@@ -81,9 +79,9 @@
 
         .header {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             border-bottom: 2px solid #333;
-            padding-bottom: 4px;
+            padding-bottom: 2px;
         }
 
         .header h1 {
@@ -128,7 +126,7 @@
         .table th,
         .table td {
             border: 1px solid #333;
-            padding: 1mm 2mm;
+            padding: 1px 4px;
             text-align: left;
             vertical-align: middle;
         }
@@ -139,7 +137,7 @@
             font-weight: bold;
             font-size: {{ $currentPaper['tableFont'] }};
             text-align: center;
-            border: 2px solid #333;
+            border: 1.5px solid #333;
         }
 
         .table td {
@@ -156,9 +154,9 @@
         }
 
         .total-row td {
-            background-color: #e9ecef !important;
+            background-color: #f0f0f0 !important;
             font-weight: bold !important;
-            border: 2px solid #333 !important;
+            border: 1.5px solid #333 !important;
         }
 
         .signature-section {
@@ -185,9 +183,9 @@
         }
         
         .signature-line {
-            margin-top: 35px;
+            margin-top: 25px;
             border-top: 1px solid #333;
-            padding-top: 3px;
+            padding-top: 2px;
             font-weight: bold;
         }
 
@@ -466,8 +464,8 @@
         @endif
 
         <!-- Keterangan -->
-        <div style="margin-bottom: 5px; border: 2px solid #333; padding: 4px; min-height: 25px;">
-            <strong style="font-size: 9px;">Keterangan:</strong><br>
+        <div style="margin-bottom: 2px; border: 1.5px solid #333; padding: 2px; min-height: 20px;">
+            <strong style="font-size: 8px;">Keterangan:</strong><br>
         </div>
 
         <!-- Signature Section -->
@@ -495,7 +493,7 @@
                 </div>
             </div>
             
-            <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #999;">
+            <div style="text-align: center; margin-top: 5px; font-size: 8px; color: #999;">
                 Dicetak: {{ now()->format('d/m/Y H:i') }}
             </div>
         </div>
