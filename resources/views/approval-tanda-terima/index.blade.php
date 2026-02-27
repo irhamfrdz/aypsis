@@ -393,16 +393,31 @@
 
     function updateFileName(input) {
         const display = document.getElementById('file_name_display');
+        
+        // Reset old content
+        display.innerHTML = '';
+        display.classList.remove('text-indigo-600', 'font-bold');
+
         if (input.files && input.files.length > 0) {
-            if (input.files.length === 1) {
-                display.textContent = input.files[0].name;
-            } else {
-                display.textContent = `${input.files.length} file dipilih`;
+            display.classList.add('flex', 'flex-col', 'gap-1', 'items-center', 'mt-2', 'w-full');
+            
+            for (let i = 0; i < input.files.length; i++) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'text-xs text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-md border border-indigo-100 flex items-center justify-between w-full max-w-xs truncate';
+                
+                // Add icon and text
+                fileItem.innerHTML = `
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fas fa-file text-indigo-400"></i>
+                        <span class="truncate font-semibold" title="${input.files[i].name}">${input.files[i].name}</span>
+                    </div>
+                `;
+                display.appendChild(fileItem);
             }
-            display.classList.add('text-indigo-600', 'font-bold');
         } else {
+            // Revert back to default layout
+            display.classList.remove('flex', 'flex-col', 'gap-1', 'items-center', 'mt-2', 'w-full');
             display.textContent = 'Klik atau seret file ke sini';
-            display.classList.remove('text-indigo-600', 'font-bold');
         }
     }
 
