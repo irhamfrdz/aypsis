@@ -917,6 +917,40 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist TKBM --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist TKBM</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-tkbm][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-tkbm']['view']) && $userMatrixPermissions['master-pricelist-tkbm']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-tkbm][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-tkbm']['create']) && $userMatrixPermissions['master-pricelist-tkbm']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-tkbm][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-tkbm']['update']) && $userMatrixPermissions['master-pricelist-tkbm']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-tkbm][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-tkbm']['delete']) && $userMatrixPermissions['master-pricelist-tkbm']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Pricelist OPP/OPT --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist OPP/OPT</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-opp-opt][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-opp-opt']['view']) && $userMatrixPermissions['master-pricelist-opp-opt']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-opp-opt][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-opp-opt']['create']) && $userMatrixPermissions['master-pricelist-opp-opt']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-opp-opt][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-opp-opt']['update']) && $userMatrixPermissions['master-pricelist-opp-opt']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-opp-opt][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-opp-opt']['delete']) && $userMatrixPermissions['master-pricelist-opp-opt']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Operational Management --}}
                             <tr class="module-row" data-module="operational">
                                 <td class="module-header">
