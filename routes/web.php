@@ -4891,6 +4891,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         Route::post('{sourceType}/{id}/upload', [\App\Http\Controllers\TandaTerimaApprovalController::class, 'upload'])
             ->name('upload')
             ->middleware('can:approval-tanda-terima-upload');
+        Route::delete('{sourceType}/{id}/delete-document/{index}', [\App\Http\Controllers\TandaTerimaApprovalController::class, 'deleteDocument'])
+            ->name('delete-document')
+            ->middleware('can:approval-tanda-terima-upload');
         Route::post('{sourceType}/{id}/approve', [\App\Http\Controllers\TandaTerimaApprovalController::class, 'approve'])
             ->name('approve')
             ->middleware('can:approval-tanda-terima-approve');

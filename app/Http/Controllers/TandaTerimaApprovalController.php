@@ -142,7 +142,37 @@ class TandaTerimaApprovalController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Dokumen asuransi berhasil diupload.');
+        return back()->with('success', 'Dokumen berhasil diupload.');
+    }
+
+    public function deleteDocument($sourceType, $id, $index)
+    {
+        $model = $this->getModel($sourceType, $id);
+        
+        $existingPathArray = [];
+        if ($model->asuransi_path) {
+            if (is_string($model->asuransi_path) && str_starts_with($model->asuransi_path, '[')) {
+                $existingPathArray = json_decode($model->asuransi_path, true) ?? [];
+            } elseif (!empty($model->asuransi_path)) {
+                $existingPathArray = [$model->asuransi_path];
+            }
+        }
+
+        if (isset($existingPathArray[$index])) {
+            $pathToDelete = $existingPathArray[$index];
+            if (Storage::disk('public')->exists($pathToDelete)) {
+                Storage::disk('public')->delete($pathToDelete);
+            }
+            array_splice($existingPathArray, $index, 1);
+            
+            $model->update([
+                'asuransi_path' => count($existingPathArray) > 0 ? json_encode($existingPathArray) : null,
+            ]);
+
+            return back()->with('success', 'Dokumen berhasil dihapus.');
+        }
+
+        return back()->with('error', 'Dokumen tidak ditemukan.');
     }
 
     public function approve(Request $request, $sourceType, $id)

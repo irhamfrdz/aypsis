@@ -135,10 +135,21 @@
                                             <span class="text-[10px] font-bold text-emerald-700 uppercase">{{ count($item['asuransi_paths']) }} Dokumen Tersedia</span>
                                             <div class="flex flex-col gap-0.5">
                                                 @foreach($item['asuransi_paths'] as $index => $path)
-                                                <a href="{{ asset('storage/' . $path) }}" target="_blank" 
-                                                   class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline">
-                                                    Dokumen {{ $index + 1 }}
-                                                </a>
+                                                <div class="flex items-center gap-2">
+                                                    <a href="{{ asset('storage/' . $path) }}" target="_blank" 
+                                                       class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline">
+                                                        Dokumen {{ $index + 1 }}
+                                                    </a>
+                                                    @can('approval-tanda-terima-upload')
+                                                    <form action="{{ route('approval-tanda-terima.delete-document', ['sourceType' => $item['source_type'], 'id' => $item['id'], 'index' => $index]) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus dokumen ini?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-rose-500 hover:text-rose-700 p-0.5 rounded-md hover:bg-rose-50 transition-colors" title="Hapus Dokumen">
+                                                            <i class="fas fa-trash-alt text-[10px]"></i>
+                                                        </button>
+                                                    </form>
+                                                    @endcan
+                                                </div>
                                                 @endforeach
                                             </div>
                                         </div>
