@@ -22,7 +22,6 @@ return new class extends Migration
         foreach ($permissions as $permission) {
             DB::table('permissions')->insertOrIgnore([
                 'name' => $permission,
-                'guard_name' => 'web',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
