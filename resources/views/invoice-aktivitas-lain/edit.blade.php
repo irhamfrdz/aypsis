@@ -1721,7 +1721,6 @@ console.log('Akun COAs data:', akunCoasData);
             suratJalanSelect.removeAttribute('required');
             $('#surat_jalan_select').val('').trigger('change');
             
-            if (!isInitializing) {
                 jenisPenyesuaianWrapper.classList.add('hidden');
                 jenisPenyesuaianSelect.removeAttribute('required');
                 $('#jenis_penyesuaian_select').val('').trigger('change');
