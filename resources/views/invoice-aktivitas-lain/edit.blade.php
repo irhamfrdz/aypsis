@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
+<script>
+    // Pass latest LWBP value from server to JS
+    const latestLwbpValue = {{ $latestLwbpValue ?? 0 }};
+</script>
 <div class="container mx-auto px-4 py-6">
     <div class="mb-6">
         <div class="flex justify-between items-center">
@@ -443,6 +447,7 @@
                     <label for="surat_jalan_select" class="block text-sm font-medium text-gray-700 mb-2">
                         Surat Jalan <span class="text-red-500">*</span>
                     </label>
+                    <input type="hidden" name="surat_jalan_source" id="surat_jalan_source" value="{{ old('surat_jalan_source', $invoice->surat_jalan_source ?? '') }}">
                     <select name="surat_jalan_id" 
                             id="surat_jalan_select" 
                             class="w-full {{ $errors->has('surat_jalan_id') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -460,6 +465,30 @@
                             </option>
                         @endforeach
                     </select>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const sjSelect = document.getElementById('surat_jalan_select');
+                            const sjSource = document.getElementById('surat_jalan_source');
+                            
+                            function updateSjSource() {
+                                const selectedOption = sjSelect.options[sjSelect.selectedIndex];
+                                if (selectedOption && selectedOption.value) {
+                                    sjSource.value = selectedOption.getAttribute('data-source') || 'regular';
+                                } else {
+                                    sjSource.value = '';
+                                }
+                            }
+                            
+                            if (sjSelect) {
+                                sjSelect.addEventListener('change', updateSjSource);
+                                // Set initial value if already selected
+                                if (sjSelect.value) updateSjSource();
+                                
+                                // Also handle jQuery change if select2 is used
+                                $(sjSelect).on('select2:select', updateSjSource);
+                            }
+                        });
+                    </script>
                     @error('surat_jalan_id')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror

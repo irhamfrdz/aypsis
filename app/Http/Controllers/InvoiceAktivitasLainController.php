@@ -638,6 +638,60 @@ class InvoiceAktivitasLainController extends Controller
     {
         $invoice = InvoiceAktivitasLain::findOrFail($id);
         
+        // Clean up numeric fields - remove currency formatting
+        $inputs = $request->all();
+        $fieldsToClean = [
+            'sub_total_labuh', 
+            'pph_labuh', 
+            'total', 
+            'pph', 
+            'grand_total',
+            'subtotal',
+            'lwbp_baru',
+            'lwbp_lama',
+            'lwbp',
+            'wbp',
+            'lwbp_tarif',
+            'wbp_tarif',
+            'tarif_1',
+            'tarif_2',
+            'biaya_beban',
+            'ppju',
+            'dpp',
+            'nominal'
+        ];
+        
+        foreach ($fieldsToClean as $field) {
+            if (isset($inputs[$field]) && is_string($inputs[$field])) {
+                $inputs[$field] = str_replace(['.', ','], '', $inputs[$field]);
+            }
+        }
+
+        // Handle nested arrays cleaning
+        if (isset($inputs['biaya_listrik']) && is_array($inputs['biaya_listrik'])) {
+            foreach ($inputs['biaya_listrik'] as &$item) {
+                foreach ($item as $key => $value) {
+                    if (is_string($value) && in_array($key, ['nominal_debit', 'nominal_kredit', 'lwbp_baru', 'lwbp_lama', 'lwbp', 'wbp', 'lwbp_tarif', 'wbp_tarif', 'tarif_1', 'tarif_2', 'biaya_beban', 'ppju', 'dpp', 'pph', 'grand_total'])) {
+                        $item[$key] = str_replace(['.', ','], '', $value);
+                    }
+                }
+            }
+        }
+        
+        $request->merge($inputs);
+
+        // Check if this is biaya listrik invoice
+        $isBiayaListrik = false;
+        if ($request->has('klasifikasi_biaya_umum_id')) {
+            $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
+            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'listrik') !== false) {
+                $isBiayaListrik = true;
+            }
+        }
+        
+        // Conditional validation rules
+        $totalValidation = $isBiayaListrik ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
+        
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_id);
@@ -658,7 +712,8 @@ class InvoiceAktivitasLainController extends Controller
             'tanggal_invoice' => 'required|date',
             'jenis_aktivitas' => 'required|string',
             'klasifikasi_biaya_umum_id' => 'nullable|integer|exists:klasifikasi_biayas,id',
-            'referensi' => 'nullable|string|max:255',            'sub_jenis_kendaraan' => 'nullable|string',
+            'referensi' => 'nullable|string|max:255',
+            'sub_jenis_kendaraan' => 'nullable|string',
             'nomor_polisi' => 'nullable|string',
             'nomor_voyage' => 'nullable|string',
             'bl_details' => 'nullable|array',
@@ -679,36 +734,56 @@ class InvoiceAktivitasLainController extends Controller
             'detail_pembayaran.*.tanggal_kas' => 'nullable|date',
             'detail_pembayaran.*.no_bukti' => 'nullable|string',
             'detail_pembayaran.*.penerima' => 'nullable|string',
-            'penerima' => 'nullable|string', // Made nullable since biaya listrik entries have their own penerima
+            'penerima' => 'nullable|string',
+            'vendor_listrik' => 'nullable|string|max:255',
             'vendor_labuh_tambat' => $vendorLabuhTambatValidation,
             'tanggal_invoice_vendor' => 'nullable|date',
             'nomor_rekening_labuh' => 'nullable|string|max:255',
             'sub_total_labuh' => 'nullable|numeric|min:0',
             'pph_labuh' => 'nullable|numeric|min:0',
-            'total' => 'required|numeric|min:0',
+            'total' => $totalValidation,
             'pph' => 'nullable|numeric|min:0',
             'grand_total' => 'nullable|numeric|min:0',
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
+            // Biaya Listrik fields
+            'biaya_listrik' => 'nullable|array',
+            'biaya_listrik.*.referensi' => 'nullable|string|max:255',
+            'biaya_listrik.*.penerima' => 'nullable|string|max:255',
+            'biaya_listrik.*.tanggal' => 'nullable|date',
+            'biaya_listrik.*.akun_coa_id' => 'nullable|exists:akun_coa,id',
+            'biaya_listrik.*.tipe_transaksi' => 'nullable|in:debit,kredit',
+            'biaya_listrik.*.nominal_debit' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.nominal_kredit' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.lwbp_baru' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.lwbp_lama' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.lwbp' => 'nullable|numeric',
+            'biaya_listrik.*.wbp' => 'nullable|numeric',
+            'biaya_listrik.*.lwbp_tarif' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.wbp_tarif' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.tarif_1' => 'nullable|numeric',
+            'biaya_listrik.*.tarif_2' => 'nullable|numeric',
+            'biaya_listrik.*.biaya_beban' => 'nullable|numeric|min:0',
+            'biaya_listrik.*.ppju' => 'nullable|numeric',
+            'biaya_listrik.*.dpp' => 'nullable|numeric',
+            'biaya_listrik.*.pph' => 'nullable|numeric',
+            'biaya_listrik.*.grand_total' => 'nullable|numeric',
         ]);
         
-        // Convert bl_details array to JSON for storage
+        // Convert arrays to JSON
         if (isset($validated['bl_details'])) {
             $validated['bl_details'] = json_encode($validated['bl_details']);
         }
         
-        // Convert barang_detail array to JSON for storage
         if (isset($validated['barang_detail'])) {
             $validated['barang_detail'] = json_encode($validated['barang_detail']);
         }
         
-        // Convert tipe_penyesuaian_detail array to JSON for storage
         if (isset($validated['tipe_penyesuaian_detail'])) {
             $validated['tipe_penyesuaian'] = json_encode($validated['tipe_penyesuaian_detail']);
             unset($validated['tipe_penyesuaian_detail']);
         }
         
-        // Convert detail_pembayaran array to JSON for storage
         if (isset($validated['detail_pembayaran'])) {
             // Clean up biaya values - remove currency formatting
             foreach ($validated['detail_pembayaran'] as &$detail) {
@@ -719,18 +794,89 @@ class InvoiceAktivitasLainController extends Controller
             $validated['detail_pembayaran'] = json_encode($validated['detail_pembayaran']);
         }
 
-        // Map Labuh Tambat fields to database columns
+        // Map Labuh Tambat fields
         if ($isLabuhTambat) {
             $validated['subtotal'] = $request->sub_total_labuh;
             $validated['pph'] = $request->pph_labuh;
             $validated['grand_total'] = $request->total;
-
-            // Remove request-only fields
+            
             unset($validated['sub_total_labuh']);
             unset($validated['pph_labuh']);
         }
 
+        // Extract biaya listrik data array
+        $biayaListrikEntries = [];
+        if (isset($validated['biaya_listrik']) && is_array($validated['biaya_listrik'])) {
+            $biayaListrikEntries = $validated['biaya_listrik'];
+            unset($validated['biaya_listrik']);
+        }
+
         $invoice->update($validated);
+
+        // Update biaya listrik records
+        if (!empty($biayaListrikEntries)) {
+            // Remove existing entries first
+            $invoice->biayaListrik()->delete();
+            
+            foreach ($biayaListrikEntries as $biayaListrikData) {
+                $biayaListrikData['invoice_aktivitas_lain_id'] = $invoice->id;
+                \App\Models\InvoiceAktivitasLainListrik::create($biayaListrikData);
+            }
+        
+            // Update MasterLwbpLama record based on the first entry's lwbp_baru
+            if ($isBiayaListrik) {
+                $firstEntry = reset($biayaListrikEntries);
+                if (isset($firstEntry['lwbp_baru']) && is_numeric($firstEntry['lwbp_baru'])) {
+                    \App\Models\MasterLwbpLama::create([
+                        'tahun' => \Carbon\Carbon::parse($request->tanggal_invoice)->format('Y'),
+                        'bulan' => \Carbon\Carbon::parse($request->tanggal_invoice)->format('m'),
+                        'biaya' => $firstEntry['lwbp_baru'],
+                        'status' => 'active'
+                    ]);
+                }
+            }
+        }
+
+        // Handle "pengembalian penuh" logic similar to store()
+        if ($request->jenis_penyesuaian == 'pengembalian penuh' && $request->surat_jalan_id) {
+            $source = $request->input('surat_jalan_source', 'regular');
+            $suratJalan = null;
+
+            if ($source == 'bongkar') {
+                $suratJalan = \App\Models\SuratJalanBongkaran::find($request->surat_jalan_id);
+            } else {
+                $suratJalan = \App\Models\SuratJalan::find($request->surat_jalan_id);
+            }
+            
+            if ($suratJalan) {
+                // Determine Surat Jalan Number
+                $noSuratJalan = ($source == 'bongkar') ? $suratJalan->nomor_surat_jalan : $suratJalan->no_surat_jalan;
+                
+                // Snapshot data
+                $noAccurate = null;
+                if (isset($suratJalan->pembayaran_pranota_uang_jalan)) {
+                    $noAccurate = $suratJalan->pembayaran_pranota_uang_jalan->nomor_accurate;
+                }
+
+                $invoice->update([
+                    'keterangan' => json_encode([
+                        'snapshot_no_surat_jalan' => $noSuratJalan,
+                        'snapshot_no_accurate' => $noAccurate
+                    ])
+                ]);
+
+                // Update related Prospeks
+                \App\Models\Prospek::where('surat_jalan_id', $request->surat_jalan_id)
+                    ->orWhere('no_surat_jalan', $noSuratJalan)
+                    ->update([
+                        'surat_jalan_id' => null,
+                        'no_surat_jalan' => null
+                    ]);
+
+                // Delete the Surat Jalan record
+                $suratJalan->delete();
+            }
+        }
 
         return redirect()->route('invoice-aktivitas-lain.show', $id)
             ->with('success', 'Invoice berhasil diupdate.');
