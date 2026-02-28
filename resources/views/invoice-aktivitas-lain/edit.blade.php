@@ -2134,10 +2134,15 @@ console.log('Akun COAs data:', akunCoasData);
         }
         
         // Barang management functions
-        function initializeBarangInputs() {
+        function initializeBarangInputs(existingData = []) {
             const container = document.getElementById('barang_container');
+            if (!container) return;
             container.innerHTML = '';
-            addBarangInput();
+            if (existingData && existingData.length > 0) {
+                existingData.forEach(item => addBarangInput(item.pricelist_buruh_id, item.jumlah));
+            } else {
+                addBarangInput();
+            }
         }
         
         function clearBarangInputs() {
@@ -2179,10 +2184,8 @@ console.log('Akun COAs data:', akunCoasData);
                     <input type="number" 
                            name="barang_detail[${index}][jumlah]" 
                            value="${existingJumlah || '1'}"
-                           min="1" 
-                           class="jumlah-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
-                           placeholder="0" 
-                           required>
+                           min="0.01" 
+                           step="0.01"
                            class="jumlah-input w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Contoh: 1.5"
@@ -2291,10 +2294,15 @@ console.log('Akun COAs data:', akunCoasData);
         }
         
         // Biaya Listrik Management Functions
-        function initializeBiayaListrikInputs() {
+        function initializeBiayaListrikInputs(existingData = []) {
             const container = document.getElementById('biaya_listrik_container');
+            if (!container) return;
             container.innerHTML = '';
-            addBiayaListrikInput();
+            if (existingData && existingData.length > 0) {
+                existingData.forEach(item => addBiayaListrikInput(item));
+            } else {
+                addBiayaListrikInput();
+            }
         }
         
         function clearBiayaListrikInputs() {
@@ -2371,7 +2379,7 @@ console.log('Akun COAs data:', akunCoasData);
                     <select name="biaya_listrik[${index}][akun_coa_id]" 
                             class="bl-akun-coa w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Pilih Akun COA</option>
-                        ${akunCoasData.map(akun => `<option value="${akun.id}">${akun.nomor_akun} - ${akun.nama_akun}</option>`).join('')}
+                        ${akunCoasData.map(akun => `<option value="${akun.id}" ${existingData.akun_coa_id == akun.id ? 'selected' : ''}>${akun.nomor_akun} - ${akun.nama_akun}</option>`).join('')}
                     </select>
                 </div>
                 
@@ -2383,8 +2391,8 @@ console.log('Akun COAs data:', akunCoasData);
                     <select name="biaya_listrik[${index}][tipe_transaksi]" 
                             class="bl-tipe-transaksi w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Pilih Tipe</option>
-                        <option value="debit">Debit</option>
-                        <option value="kredit">Kredit</option>
+                        <option value="debit" ${existingData.tipe_transaksi === 'debit' ? 'selected' : ''}>Debit</option>
+                        <option value="kredit" ${existingData.tipe_transaksi === 'kredit' ? 'selected' : ''}>Kredit</option>
                     </select>
                 </div>
                 
@@ -2766,7 +2774,7 @@ console.log('Akun COAs data:', akunCoasData);
                             class="detail-klasifikasi-biaya w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
                         <option value="">--Pilih Klasifikasi Biaya--</option>
                         @foreach($klasifikasiBiayas as $klasifikasi)
-                            <option value="{{ $klasifikasi->id }}" data-selected="${existingData.klasifikasi_biaya_id == {{ $klasifikasi->id }} ? 'selected' : ''}">{{ $klasifikasi->nama }}</option>
+                            <option value="{{ $klasifikasi->id }}" ${existingData.klasifikasi_biaya_id == {{ $klasifikasi->id }} ? 'selected' : ''}>{{ $klasifikasi->nama }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -2811,8 +2819,8 @@ console.log('Akun COAs data:', akunCoasData);
                     <select name="detail_pembayaran[${index}][penerima]" 
                             class="detail-penerima w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
                         <option value="">--Pilih Penerima--</option>
-                        @foreach($penerimaList ?? [] as $penerimaItem)
-                            <option value="{{ $penerimaItem }}">{{ $penerimaItem }}</option>
+                        @foreach($karyawans as $karyawan)
+                            <option value="{{ $karyawan->nama_lengkap }}" ${existingData.penerima == "{{ $karyawan->nama_lengkap }}" ? 'selected' : ''}>{{ $karyawan->nama_lengkap }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -2971,6 +2979,77 @@ console.log('Akun COAs data:', akunCoasData);
         const $ = jqInstance || window.jQuery;
         $(document).ready(function() {
             initializeSelect2AndForm($);
+            
+            // Initialization for edit mode
+            const jenisAktivitas = '{{ $invoice->jenis_aktivitas }}';
+            if (jenisAktivitas) {
+                $('#jenis_aktivitas').val(jenisAktivitas).trigger('change');
+                
+                // If Pembayaran Kapalis selected, handle sub-dropdowns
+                @if($invoice->klasifikasi_biaya_id)
+                    setTimeout(() => {
+                        const klasId = '{{ $invoice->klasifikasi_biaya_id }}';
+                        $('#klasifikasi_biaya_select').val(klasId).trigger('change');
+                        
+                        // Handle Buruh (Barang)
+                        @if($invoice->barang_detail)
+                            initializeBarangInputs(@json($invoice->barang_detail_array));
+                        @endif
+                        
+                        // Handle BL selection
+                        @if($invoice->bl_details)
+                            @php 
+                                $blIds = collect(json_decode($invoice->bl_details, true))->pluck('manifest_id')->toArray();
+                                if (empty($blIds)) {
+                                    $blIds = collect(json_decode($invoice->bl_details, true))->pluck('bl_id')->toArray();
+                                }
+                            @endphp
+                            const selectedBlIds = @json($blIds);
+                            selectedBlIds.forEach(id => {
+                                const option = document.querySelector(`.bl-option[data-id="${id}"]`);
+                                if (option) {
+                                    const kontainer = option.getAttribute('data-kontainer');
+                                    const seal = option.getAttribute('data-seal');
+                                    const voyage = option.getAttribute('data-voyage');
+                                    
+                                    selectedBLs.push({ id, kontainer, seal, voyage });
+                                    addBLChip(id, kontainer, seal);
+                                }
+                            });
+                            updateBLSelectedCount();
+                            updateBLHiddenInputs();
+                        @endif
+                    }, 500);
+                @endif
+
+                // Handle Biaya Listrik
+                @if($invoice->jenis_aktivitas == 'Pembayaran Lain-lain' && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik'))
+                    initializeBiayaListrikInputs(@json($invoice->biayaListrik));
+                @endif
+                
+                // Handle Detail Pembayaran
+                @if($invoice->detail_pembayaran)
+                    const container = document.getElementById('detail_pembayaran_container');
+                    if (container) {
+                        container.innerHTML = '';
+                        const detailData = @json($invoice->detail_pembayaran_array);
+                        detailData.forEach(data => addDetailPembayaranInput(data));
+                    }
+                @endif
+
+                // Handle Tipe Penyesuaian
+                @if($invoice->jenis_penyesuaian == 'penambahan' && $invoice->tipe_penyesuaian)
+                    const tipeContainer = document.getElementById('tipe_penyesuaian_container');
+                    if (tipeContainer) {
+                        tipeContainer.innerHTML = '';
+                        const tipeData = @json(json_decode($invoice->tipe_penyesuaian, true));
+                        if (Array.isArray(tipeData)) {
+                            tipeData.forEach(data => addTipePenyesuaianInput(data.tipe, data.nominal));
+                        }
+                    }
+                @endif
+            }
+            
             generateInvoiceNumber();
         });
     });
@@ -2978,6 +3057,7 @@ console.log('Akun COAs data:', akunCoasData);
     // Generate Invoice Number automatically
     function generateInvoiceNumber() {
         const invoiceInput = document.getElementById('nomor_invoice');
+        if (invoiceInput && invoiceInput.value && invoiceInput.value !== 'Loading...' && invoiceInput.value !== '') return;
         const loader = document.getElementById('invoice_loader');
         
         // Fetch next invoice number from server
