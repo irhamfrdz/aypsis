@@ -1062,6 +1062,12 @@ class UserController extends Controller
                             $action = str_replace('pricelist-ob-', '', $action);
                             $module = 'master-pricelist-ob';
                         }
+                        // Special handling for master-pricelist-freight permissions
+                        elseif (strpos($action, 'pricelist-freight-') === 0) {
+                            // For master-pricelist-freight-view, extract the action
+                            $action = str_replace('pricelist-freight-', '', $action);
+                            $module = 'master-pricelist-freight';
+                        }
                         // Special handling for master-tipe-akun permissions
                         elseif (strpos($action, 'tipe-akun-') === 0) {
                             // For master-tipe-akun-view, extract the action
@@ -2452,6 +2458,26 @@ class UserController extends Controller
                             'create' => 'master-pricelist-ob-create',
                             'update' => 'master-pricelist-ob-update',
                             'delete' => 'master-pricelist-ob-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-freight permissions explicitly
+                    if ($module === 'master-pricelist-freight' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-freight-view',
+                            'create' => 'master-pricelist-freight-create',
+                            'update' => 'master-pricelist-freight-update',
+                            'delete' => 'master-pricelist-freight-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

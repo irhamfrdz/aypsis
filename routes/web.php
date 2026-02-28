@@ -82,6 +82,7 @@ use App\Http\Controllers\MasterNamaBarangAmprahanController;
 use App\Http\Controllers\MasterGudangAmprahanController;
 use App\Http\Controllers\MasterLwbpLamaController;
 use App\Http\Controllers\SertifikatKapalController;
+use App\Http\Controllers\MasterPricelistFreightController;
 
 /*
 |--------------------------------------------------------------------------
@@ -813,6 +814,20 @@ Route::middleware([
              ->only(['edit', 'update']);
         Route::resource('master-pricelist-labuh-tambat', \App\Http\Controllers\MasterPricelistLabuhTambatController::class)
              ->middleware('can:master-pricelist-labuh-tambat-delete')
+             ->only(['destroy']);
+
+        // Master Pricelist Freight
+        Route::resource('master-pricelist-freight', MasterPricelistFreightController::class)
+             ->middleware('can:master-pricelist-freight-create')
+             ->only(['create', 'store']);
+        Route::resource('master-pricelist-freight', MasterPricelistFreightController::class)
+             ->middleware('can:master-pricelist-freight-view')
+             ->only(['index', 'show']);
+        Route::resource('master-pricelist-freight', MasterPricelistFreightController::class)
+             ->middleware('can:master-pricelist-freight-update')
+             ->only(['edit', 'update']);
+        Route::resource('master-pricelist-freight', MasterPricelistFreightController::class)
+             ->middleware('can:master-pricelist-freight-delete')
              ->only(['destroy']);
 
         // Pricelist Buruh Import/Export routes (must be BEFORE resource routes)
