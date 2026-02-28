@@ -270,11 +270,12 @@
             <table class="table" style="margin-top: 4px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 8%;">No</th>
-                        <th style="width: 15%;">Tgl Inv</th>
-                        <th style="width: 15%;">Voyage</th>
-                        <th style="width: 27%;">Biaya</th>
-                        <th style="width: 35%;">Grand Total</th>
+                        <th style="width: 6%;">No</th>
+                        <th style="width: 12%;">Tgl Inv</th>
+                        <th style="width: 12%;">Voyage</th>
+                        <th style="width: 20%;">No. Ref</th>
+                        <th style="width: 20%;">Biaya</th>
+                        <th style="width: 30%;">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -293,7 +294,7 @@
                         @foreach($groupedDetails as $groupKey => $details)
                             @php
                                 $rowNumber++;
-                                list($groupKapal, $groupVoyage) = explode('|', $groupKey);
+                                list($groupKapal, $groupVoyage, $groupRef) = explode('|', $groupKey);
                                 $groupSubtotal = $details->sum('subtotal');
                                 $firstItem = $details->first();
                                 $groupGrandTotal = $firstItem->grand_total ?? 0;
@@ -302,6 +303,7 @@
                                 <td class="text-center">{{ $rowNumber }}</td>
                                 <td class="text-center">{{ $firstItem->tanggal_invoice_vendor ? \Carbon\Carbon::parse($firstItem->tanggal_invoice_vendor)->format('d/M/y') : '-' }}</td>
                                 <td class="text-center">{{ $groupVoyage }}</td>
+                                <td class="text-center">{{ $groupRef }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
                                 <td class="text-right">Rp {{ number_format($groupGrandTotal, 0, ',', '.') }}</td>
                             </tr>
@@ -309,7 +311,7 @@
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="5" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
