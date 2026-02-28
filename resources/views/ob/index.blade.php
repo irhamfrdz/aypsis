@@ -1698,21 +1698,31 @@ function generateNomorPranota() {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(async response => {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const data = isJson ? await response.json() : null;
+        
+        if (!response.ok) {
+            const errorMsg = data?.message || await response.text() || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMsg);
+        }
+        return data;
+    })
     .then(data => {
-        if (data.success) {
+        if (data && data.success) {
             nomorInput.value = data.nomor_pranota;
         } else {
-            alert(data.message || 'Gagal generate nomor pranota');
+            showNotification(data?.message || 'Gagal generate nomor pranota', 'error');
             nomorInput.value = '';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat generate nomor pranota');
+        showNotification('Terjadi kesalahan saat generate nomor pranota: ' + error.message, 'error');
         nomorInput.value = '';
     });
 }
@@ -1853,32 +1863,35 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
         },
         body: JSON.stringify(requestData)
     })
-    .then(response => {
+    .then(async response => {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const data = isJson ? await response.json() : null;
+        
         if (!response.ok) {
-            return response.text().then(text => {
-                console.error('Server error response:', text);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            });
+            const errorMsg = data?.message || await response.text() || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMsg);
         }
-        return response.json();
+        return data;
     })
     .then(data => {
-        if (data.success) {
-            // Reload page to show updated status
-            window.location.reload();
+        if (data && data.success) {
+            showNotification(data.message || 'Berhasil menyimpan data OB', 'success');
+            setTimeout(() => window.location.reload(), 1000);
         } else {
-            alert(data.message || 'Terjadi kesalahan');
+            const msg = data?.message || 'Terjadi kesalahan pada server';
+            showNotification(msg, 'error');
             btnSubmit.disabled = false;
             btnSubmit.innerHTML = '<i class="fas fa-check mr-2"></i>Tandai Sudah OB';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat menyimpan data: ' + error.message);
+        showNotification('Gagal menyimpan data: ' + error.message, 'error');
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = '<i class="fas fa-check mr-2"></i>Tandai Sudah OB';
     });
@@ -1900,22 +1913,32 @@ function unmarkOB(type, id) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
             },
             body: JSON.stringify(requestData)
         })
-        .then(response => response.json())
+        .then(async response => {
+            const isJson = response.headers.get('content-type')?.includes('application/json');
+            const data = isJson ? await response.json() : null;
+            
+            if (!response.ok) {
+                const errorMsg = data?.message || await response.text() || `HTTP error! status: ${response.status}`;
+                throw new Error(errorMsg);
+            }
+            return data;
+        })
         .then(data => {
-            if (data.success) {
-                // Reload page to show updated status
-                window.location.reload();
+            if (data && data.success) {
+                showNotification(data.message || 'Status OB berhasil dibatalkan', 'success');
+                setTimeout(() => window.location.reload(), 1000);
             } else {
-                alert(data.message || 'Terjadi kesalahan');
+                showNotification(data?.message || 'Terjadi kesalahan saat membatalkan OB', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat membatalkan OB');
+            showNotification('Gagal membatalkan OB: ' + error.message, 'error');
         });
     }
 }
@@ -1931,34 +1954,34 @@ function prosesTL(naikKapalId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
             naik_kapal_id: naikKapalId
         })
     })
-    .then(response => {
-        // Check if response is JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            return response.text().then(text => {
-                console.error('Non-JSON response:', text);
-                throw new Error('Server mengembalikan response yang tidak valid. Cek console untuk detail.');
-            });
+    .then(async response => {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const data = isJson ? await response.json() : null;
+        
+        if (!response.ok) {
+            const errorMsg = data?.message || await response.text() || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMsg);
         }
-        return response.json();
+        return data;
     })
     .then(data => {
-        if (data.success) {
-            alert('Proses TL berhasil! Kontainer sudah masuk ke BLS dan ditandai sebagai OB');
-            window.location.reload();
+        if (data && data.success) {
+            showNotification(data.message || 'Proses TL berhasil! Kontainer sudah masuk ke BLS dan ditandai sebagai OB', 'success');
+            setTimeout(() => window.location.reload(), 1500);
         } else {
-            alert(data.message || 'Terjadi kesalahan saat memproses TL');
+            showNotification(data?.message || 'Gagal memproses TL', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat memproses TL: ' + error.message);
+        showNotification('Terjadi kesalahan saat memproses TL: ' + error.message, 'error');
     });
 }
 
@@ -1973,34 +1996,34 @@ function prosesTLBongkar(blId) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
             bl_id: blId
         })
     })
-    .then(response => {
-        // Check if response is JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            return response.text().then(text => {
-                console.error('Non-JSON response:', text);
-                throw new Error('Server mengembalikan response yang tidak valid. Cek console untuk detail.');
-            });
+    .then(async response => {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const data = isJson ? await response.json() : null;
+        
+        if (!response.ok) {
+            const errorMsg = data?.message || await response.text() || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMsg);
         }
-        return response.json();
+        return data;
     })
     .then(data => {
-        if (data.success) {
-            alert('Proses TL Bongkar berhasil! Kontainer sudah ditandai sebagai OB');
-            window.location.reload();
+        if (data && data.success) {
+            showNotification(data.message || 'Proses TL Bongkar berhasil! Kontainer sudah ditandai sebagai OB', 'success');
+            setTimeout(() => window.location.reload(), 1500);
         } else {
-            alert(data.message || 'Terjadi kesalahan saat memproses TL Bongkar');
+            showNotification(data?.message || 'Gagal memproses TL Bongkar', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat memproses TL Bongkar: ' + error.message);
+        showNotification('Terjadi kesalahan saat memproses TL Bongkar: ' + error.message, 'error');
     });
 }
 
@@ -2021,22 +2044,32 @@ function clearTL(type, id) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
         },
         body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(async response => {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const data = isJson ? await response.json() : null;
+        
+        if (!response.ok) {
+            const errorMsg = data?.message || await response.text() || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMsg);
+        }
+        return data;
+    })
     .then(data => {
-        if (data.success) {
-            alert(data.message || 'Status TL berhasil dihapus');
-            window.location.reload();
+        if (data && data.success) {
+            showNotification(data.message || 'Status TL berhasil dihapus', 'success');
+            setTimeout(() => window.location.reload(), 1000);
         } else {
-            alert(data.message || 'Terjadi kesalahan saat menghapus status TL');
+            showNotification(data?.message || 'Terjadi kesalahan saat menghapus status TL', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat menghapus status TL');
+        showNotification('Gagal menghapus status TL: ' + error.message, 'error');
     });
 }
 
@@ -2249,7 +2282,8 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
         },
         body: JSON.stringify({ 
             items: items, 
@@ -2262,23 +2296,32 @@ document.getElementById('btnConfirmPranota').addEventListener('click', function(
             keterangan: keterangan
         })
     })
-    .then(response => response.json())
+    .then(async response => {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const data = isJson ? await response.json() : null;
+        
+        if (!response.ok) {
+            const errorMsg = data?.message || await response.text() || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMsg);
+        }
+        return data;
+    })
     .then(data => {
-        if (data.success) {
-            alert('Berhasil memasukkan ke pranota');
+        if (data && data.success) {
+            showNotification(data.message || 'Berhasil memasukkan ke pranota', 'success');
             closePranotaModal();
             // Clear storage after success
             localStorage.removeItem(storageKey);
-            window.location.reload();
+            setTimeout(() => window.location.reload(), 1000);
         } else {
-            alert(data.message || 'Terjadi kesalahan');
+            showNotification(data?.message || 'Terjadi kesalahan saat memproses pranota', 'error');
             btnConfirm.disabled = false;
             btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat memproses');
+        showNotification('Terjadi kesalahan saat memproses: ' + error.message, 'error');
         btnConfirm.disabled = false;
         btnConfirm.innerHTML = '<i class="fas fa-plus mr-2"></i>Konfirmasi Masuk Pranota';
     });
@@ -2413,24 +2456,34 @@ document.getElementById('btnSaveAsalKe').addEventListener('click', function() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
         },
         body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(async response => {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const data = isJson ? await response.json() : null;
+        
+        if (!response.ok) {
+            const errorMsg = data?.message || await response.text() || `HTTP error! status: ${response.status}`;
+            throw new Error(errorMsg);
+        }
+        return data;
+    })
     .then(result => {
-        if (result.success) {
-            alert(`Berhasil menyimpan ${result.updated_count} data Asal Kontainer dan Ke`);
-            window.location.reload();
+        if (result && result.success) {
+            showNotification(result.message || `Berhasil menyimpan ${result.updated_count} data Asal Kontainer dan Ke`, 'success');
+            setTimeout(() => window.location.reload(), 1000);
         } else {
-            alert(result.message || 'Terjadi kesalahan saat menyimpan');
+            showNotification(result?.message || 'Terjadi kesalahan saat menyimpan', 'error');
             btnSave.disabled = false;
             btnSave.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Asal & Ke';
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat menyimpan data');
+        showNotification('Terjadi kesalahan saat menyimpan data: ' + error.message, 'error');
         btnSave.disabled = false;
         btnSave.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Asal & Ke';
     });

@@ -758,6 +758,14 @@ class ObController extends Controller
                 'no_voyage' => $naikKapal->no_voyage
             ]);
             
+            // Pengecekan jika sudah OB
+            if ($naikKapal->sudah_ob) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kontainer ' . ($naikKapal->nomor_kontainer ?? '') . ' sudah ditandai OB sebelumnya.'
+                ], 400);
+            }
+            
             // Update status OB di naik_kapal
             $naikKapal->sudah_ob = true;
             $naikKapal->supir_id = $request->supir_id;
@@ -1548,6 +1556,14 @@ class ObController extends Controller
 
             $bl = Bl::findOrFail($request->bl_id);
             
+            // Pengecekan jika sudah OB
+            if ($bl->sudah_ob) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kontainer ' . ($bl->nomor_kontainer ?? '') . ' sudah ditandai OB sebelumnya.'
+                ], 400);
+            }
+            
             // Update status OB
             $bl->sudah_ob = true;
             $bl->supir_id = $request->supir_id;
@@ -2005,13 +2021,21 @@ class ObController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pranota OB berhasil dibuat'
+                'message' => 'Berhasil memasukkan ke pranota',
+                'pranota_id' => $pranota->id,
+                'nomor_pranota' => $pranota->nomor_pranota
             ]);
-        } catch (\Exception $e) {
-            \Log::error('Masuk Pranota error: ' . $e->getMessage());
+        } catch (\Illuminate\Validation\ValidationException $ve) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Validasi gagal: ' . implode(', ', collect($ve->errors())->flatten()->toArray())
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Masuk Pranota Error: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memasukkan ke pranota: ' . $e->getMessage()
             ], 500);
         }
     }
