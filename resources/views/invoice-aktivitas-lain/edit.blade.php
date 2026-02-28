@@ -5,8 +5,8 @@
     <div class="mb-6">
         <div class="flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800">Buat Invoice Aktivitas Lain</h1>
-                <p class="text-gray-600 mt-1">Tambah invoice baru untuk aktivitas lain</p>
+                <h1 class="text-2xl font-bold text-gray-800">Edit Invoice Aktivitas Lain</h1>
+                <p class="text-gray-600 mt-1">Update data invoice aktivitas lain</p>
             </div>
             <a href="{{ route('invoice-aktivitas-lain.index') }}" 
                class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition inline-flex items-center">
@@ -28,8 +28,9 @@
         </div>
     @endif
 
-    <form action="{{ route('invoice-aktivitas-lain.store') }}" method="POST" class="space-y-6">
+    <form action="{{ route('invoice-aktivitas-lain.update', $invoice->id) }}" method="POST" class="space-y-6">
         @csrf
+        @method('PUT')
 
         <!-- Informasi Umum -->
         <div class="bg-white rounded-lg shadow p-6">
@@ -45,7 +46,7 @@
                         <input type="text" 
                                    name="nomor_invoice" 
                                    id="nomor_invoice" 
-                                   value="{{ old('nomor_invoice') }}"
+                                   value="{{ old('nomor_invoice', $invoice->nomor_invoice) }}"
                                    class="w-full {{ $errors->has('nomor_invoice') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm bg-gray-50"
                                    style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                    placeholder="Loading..."
@@ -71,7 +72,7 @@
                     <input type="date" 
                            name="tanggal_invoice" 
                            id="tanggal_invoice" 
-                           value="{{ old('tanggal_invoice', date('Y-m-d')) }}"
+                           value="{{ old('tanggal_invoice', $invoice->tanggal_invoice->format('Y-m-d')) }}"
                            class="w-full {{ $errors->has('tanggal_invoice') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            required>
@@ -91,10 +92,10 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                             required>
                         <option value="">Pilih Jenis Aktivitas</option>
-                        <option value="Pembayaran Kendaraan" {{ old('jenis_aktivitas') == 'Pembayaran Kendaraan' ? 'selected' : '' }}>Pembayaran Kendaraan</option>
-                        <option value="Pembayaran Kapal" {{ old('jenis_aktivitas') == 'Pembayaran Kapal' ? 'selected' : '' }}>Pembayaran Kapal</option>
-                        <option value="Pembayaran Adjustment Uang Jalan" {{ old('jenis_aktivitas') == 'Pembayaran Adjustment Uang Jalan' ? 'selected' : '' }}>Pembayaran Adjustment Uang Jalan</option>
-                        <option value="Pembayaran Lain-lain" {{ old('jenis_aktivitas') == 'Pembayaran Lain-lain' ? 'selected' : '' }}>Pembayaran Lain-lain</option>
+                        <option value="Pembayaran Kendaraan" {{ old('jenis_aktivitas', $invoice->jenis_aktivitas) == 'Pembayaran Kendaraan' ? 'selected' : '' }}>Pembayaran Kendaraan</option>
+                        <option value="Pembayaran Kapal" {{ old('jenis_aktivitas', $invoice->jenis_aktivitas) == 'Pembayaran Kapal' ? 'selected' : '' }}>Pembayaran Kapal</option>
+                        <option value="Pembayaran Adjustment Uang Jalan" {{ old('jenis_aktivitas', $invoice->jenis_aktivitas) == 'Pembayaran Adjustment Uang Jalan' ? 'selected' : '' }}>Pembayaran Adjustment Uang Jalan</option>
+                        <option value="Pembayaran Lain-lain" {{ old('jenis_aktivitas', $invoice->jenis_aktivitas) == 'Pembayaran Lain-lain' ? 'selected' : '' }}>Pembayaran Lain-lain</option>
                     </select>
                     @error('jenis_aktivitas')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -112,7 +113,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Jenis Biaya</option>
                         @foreach($klasifikasiBiayas as $klasifikasi)
-                            <option value="{{ $klasifikasi->id }}" {{ old('klasifikasi_biaya_umum_id') == $klasifikasi->id ? 'selected' : '' }}>
+                            <option value="{{ $klasifikasi->id }}" {{ old('klasifikasi_biaya_umum_id', $invoice->klasifikasi_biaya_umum_id) == $klasifikasi->id ? 'selected' : '' }}>
                                 {{ $klasifikasi->nama }}
                             </option>
                         @endforeach
@@ -132,7 +133,7 @@
                            id="referensi" 
                            class="w-full {{ $errors->has('referensi') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
-                           value="{{ old('referensi') }}"
+                           value="{{ old('referensi', $invoice->referensi) }}"
                            placeholder="Masukkan referensi (opsional)">
                     @error('referensi')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -149,10 +150,10 @@
                             class="w-full {{ $errors->has('sub_jenis_kendaraan') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Sub Jenis Kendaraan</option>
-                        <option value="STNK" {{ old('sub_jenis_kendaraan') == 'STNK' ? 'selected' : '' }}>STNK</option>
-                        <option value="KIR" {{ old('sub_jenis_kendaraan') == 'KIR' ? 'selected' : '' }}>KIR</option>
-                        <option value="PLAT" {{ old('sub_jenis_kendaraan') == 'PLAT' ? 'selected' : '' }}>PLAT</option>
-                        <option value="Lain-lain" {{ old('sub_jenis_kendaraan') == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
+                        <option value="STNK" {{ old('sub_jenis_kendaraan', $invoice->sub_jenis_kendaraan) == 'STNK' ? 'selected' : '' }}>STNK</option>
+                        <option value="KIR" {{ old('sub_jenis_kendaraan', $invoice->sub_jenis_kendaraan) == 'KIR' ? 'selected' : '' }}>KIR</option>
+                        <option value="PLAT" {{ old('sub_jenis_kendaraan', $invoice->sub_jenis_kendaraan) == 'PLAT' ? 'selected' : '' }}>PLAT</option>
+                        <option value="Lain-lain" {{ old('sub_jenis_kendaraan', $invoice->sub_jenis_kendaraan) == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
                     </select>
                     @error('sub_jenis_kendaraan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -170,7 +171,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Nomor Polisi</option>
                         @foreach($mobils as $mobil)
-                            <option value="{{ $mobil->nomor_polisi }}" {{ old('nomor_polisi') == $mobil->nomor_polisi ? 'selected' : '' }}>
+                            <option value="{{ $mobil->nomor_polisi }}" {{ old('nomor_polisi', $invoice->nomor_polisi) == $mobil->nomor_polisi ? 'selected' : '' }}>
                                 {{ $mobil->nomor_polisi }} - {{ $mobil->merek }} {{ $mobil->jenis }}
                             </option>
                         @endforeach
@@ -191,7 +192,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Nomor Voyage</option>
                         @foreach($voyages as $voyage)
-                            <option value="{{ $voyage->voyage }}" {{ old('nomor_voyage') == $voyage->voyage ? 'selected' : '' }}>
+                            <option value="{{ $voyage->voyage }}" {{ old('nomor_voyage', $invoice->nomor_voyage) == $voyage->voyage ? 'selected' : '' }}>
                                 {{ $voyage->voyage }} - {{ $voyage->nama_kapal }} ({{ $voyage->source }})
                             </option>
                         @endforeach
@@ -209,7 +210,7 @@
                     <input type="text" 
                            name="invoice_vendor" 
                            id="invoice_vendor" 
-                           value="{{ old('invoice_vendor') }}"
+                           value="{{ old('invoice_vendor', $invoice->invoice_vendor) }}"
                            class="w-full {{ $errors->has('invoice_vendor') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan nomor invoice vendor">
@@ -291,7 +292,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Klasifikasi Biaya</option>
                         @foreach($klasifikasiBiayas as $klasifikasi)
-                            <option value="{{ $klasifikasi->id }}" data-nama="{{ $klasifikasi->nama }}" {{ old('klasifikasi_biaya_id') == $klasifikasi->id ? 'selected' : '' }}>
+                            <option value="{{ $klasifikasi->id }}" data-nama="{{ $klasifikasi->nama }}" {{ old('klasifikasi_biaya_id', $invoice->klasifikasi_biaya_id) == $klasifikasi->id ? 'selected' : '' }}>
                                 {{ $klasifikasi->nama }}
                             </option>
                         @endforeach
@@ -314,7 +315,7 @@
                         @foreach($pricelistBiayaDokumen as $pricelist)
                             <option value="{{ $pricelist->id }}" 
                                     data-biaya="{{ $pricelist->biaya }}" 
-                                    {{ old('pricelist_biaya_dokumen_id') == $pricelist->id ? 'selected' : '' }}>
+                                    {{ old('pricelist_biaya_dokumen_id', $invoice->pricelist_biaya_dokumen_id) == $pricelist->id ? 'selected' : '' }}>
                                 {{ $pricelist->nama_vendor }} - Rp {{ number_format($pricelist->biaya, 0, ',', '.') }}
                             </option>
                         @endforeach
@@ -332,7 +333,7 @@
                     <input type="text" 
                            name="vendor_labuh_tambat" 
                            id="vendor_labuh_tambat" 
-                           value="{{ old('vendor_labuh_tambat') }}"
+                           value="{{ old('vendor_labuh_tambat', $invoice->vendor_labuh_tambat) }}"
                            class="w-full {{ $errors->has('vendor_labuh_tambat') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan nama vendor labuh tambat">
@@ -346,7 +347,7 @@
                     <input type="date" 
                            name="tanggal_invoice_vendor" 
                            id="tanggal_invoice_vendor" 
-                           value="{{ old('tanggal_invoice_vendor') }}"
+                           value="{{ old('tanggal_invoice_vendor', $invoice->tanggal_invoice_vendor ? $invoice->tanggal_invoice_vendor->format('Y-m-d') : '') }}"
                            class="w-full {{ $errors->has('tanggal_invoice_vendor') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                     @error('tanggal_invoice_vendor')
@@ -451,7 +452,7 @@
                             <option value="{{ $sj->id }}" 
                                     data-uang-jalan="{{ $sj->uang_jalan }}" 
                                     data-source="{{ $sj->source }}"
-                                    {{ old('surat_jalan_id') == $sj->id ? 'selected' : '' }}>
+                                 {{ old('surat_jalan_id', $invoice->surat_jalan_id) == $sj->id ? 'selected' : '' }}>
                                 {{ $sj->no_surat_jalan }} - {{ $sj->tujuan_pengiriman }} (Rp {{ number_format($sj->uang_jalan, 0, ',', '.') }})
                                 @if(isset($sj->source))
                                     - [{{ $sj->source == 'regular' ? 'Regular' : 'Bongkar' }}]
@@ -474,9 +475,9 @@
                             class="w-full {{ $errors->has('jenis_penyesuaian') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Jenis Penyesuaian</option>
-                        <option value="pengembalian penuh" {{ old('jenis_penyesuaian') == 'pengembalian penuh' ? 'selected' : '' }}>Pengembalian Penuh</option>
-                        <option value="pengembalian sebagian" {{ old('jenis_penyesuaian') == 'pengembalian sebagian' ? 'selected' : '' }}>Pengembalian Sebagian</option>
-                        <option value="penambahan" {{ old('jenis_penyesuaian') == 'penambahan' ? 'selected' : '' }}>Penambahan</option>
+                        <option value="pengembalian penuh" {{ old('jenis_penyesuaian', $invoice->jenis_penyesuaian) == 'pengembalian penuh' ? 'selected' : '' }}>Pengembalian Penuh</option>
+                        <option value="pengembalian sebagian" {{ old('jenis_penyesuaian', $invoice->jenis_penyesuaian) == 'pengembalian sebagian' ? 'selected' : '' }}>Pengembalian Sebagian</option>
+                        <option value="penambahan" {{ old('jenis_penyesuaian', $invoice->jenis_penyesuaian) == 'penambahan' ? 'selected' : '' }}>Penambahan</option>
                     </select>
                     @error('jenis_penyesuaian')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -509,7 +510,7 @@
                     <input type="number" 
                            name="jumlah_retur" 
                            id="jumlah_retur" 
-                           value="{{ old('jumlah_retur') }}"
+                           value="{{ old('jumlah_retur', $invoice->jumlah_retur) }}"
                            min="1"
                            step="1"
                            class="w-full {{ $errors->has('jumlah_retur') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -531,7 +532,7 @@
                             style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;">
                         <option value="">Pilih Penerima</option>
                         @foreach($karyawans as $karyawan)
-                            <option value="{{ $karyawan->nama_lengkap }}" {{ old('penerima') == $karyawan->nama_lengkap ? 'selected' : '' }}>
+                            <option value="{{ $karyawan->nama_lengkap }}" {{ old('penerima', $invoice->penerima) == $karyawan->nama_lengkap ? 'selected' : '' }}>
                                 {{ $karyawan->nama_lengkap }}
                             </option>
                         @endforeach
@@ -549,7 +550,7 @@
                     <input type="text" 
                            name="vendor_listrik" 
                            id="vendor_listrik" 
-                           value="{{ old('vendor_listrik') }}"
+                           value="{{ old('vendor_listrik', $invoice->vendor_listrik) }}"
                            class="w-full {{ $errors->has('vendor_listrik') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan nama vendor (misal: PLN, dll)">
@@ -586,7 +587,7 @@
                     <input type="number" 
                            name="lwbp_baru" 
                            id="lwbp_baru" 
-                           value="{{ old('lwbp_baru') }}"
+                           value="{{ old('lwbp_baru', $invoice->lwbp_baru) }}"
                            class="w-full {{ $errors->has('lwbp_baru') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan LWBP baru"
@@ -604,7 +605,7 @@
                     <input type="number" 
                            name="lwbp_lama" 
                            id="lwbp_lama" 
-                           value="{{ old('lwbp_lama') }}"
+                           value="{{ old('lwbp_lama', $invoice->lwbp_lama) }}"
                            class="w-full {{ $errors->has('lwbp_lama') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan LWBP lama"
@@ -622,7 +623,7 @@
                     <input type="number" 
                            name="lwbp" 
                            id="lwbp" 
-                           value="{{ old('lwbp') }}"
+                           value="{{ old('lwbp', $invoice->lwbp) }}"
                            class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('lwbp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Auto-calculated"
@@ -642,7 +643,7 @@
                     <input type="number" 
                            name="wbp" 
                            id="wbp" 
-                           value="{{ old('wbp') }}"
+                           value="{{ old('wbp', $invoice->wbp) }}"
                            class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('wbp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Auto-calculated"
@@ -662,7 +663,7 @@
                     <input type="number" 
                            name="lwbp_tarif" 
                            id="lwbp_tarif" 
-                           value="{{ old('lwbp_tarif', '1982') }}"
+                           value="{{ old('lwbp_tarif', $invoice->lwbp_tarif ?? '1982') }}"
                            class="w-full {{ $errors->has('lwbp_tarif') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan LWBP Tarif"
@@ -680,7 +681,7 @@
                     <input type="number" 
                            name="wbp_tarif" 
                            id="wbp_tarif" 
-                           value="{{ old('wbp_tarif', '2975') }}"
+                           value="{{ old('wbp_tarif', $invoice->wbp_tarif ?? '2975') }}"
                            class="w-full {{ $errors->has('wbp_tarif') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan WBP Tarif"
@@ -698,7 +699,7 @@
                     <input type="number" 
                            name="tarif_1" 
                            id="tarif_1" 
-                           value="{{ old('tarif_1') }}"
+                           value="{{ old('tarif_1', $invoice->tarif_1) }}"
                            class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('tarif_1') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Auto-calculated"
@@ -718,7 +719,7 @@
                     <input type="number" 
                            name="tarif_2" 
                            id="tarif_2" 
-                           value="{{ old('tarif_2') }}"
+                           value="{{ old('tarif_2', $invoice->tarif_2) }}"
                            class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('tarif_2') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Auto-calculated"
@@ -738,7 +739,7 @@
                     <input type="number" 
                            name="biaya_beban" 
                            id="biaya_beban" 
-                           value="{{ old('biaya_beban') }}"
+                           value="{{ old('biaya_beban', $invoice->biaya_beban) }}"
                            class="w-full {{ $errors->has('biaya_beban') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan Biaya Beban"
@@ -756,7 +757,7 @@
                     <input type="number" 
                            name="ppju" 
                            id="ppju" 
-                           value="{{ old('ppju') }}"
+                           value="{{ old('ppju', $invoice->ppju) }}"
                            class="w-full bg-gray-100 cursor-not-allowed {{ $errors->has('ppju') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Auto-calculated"
@@ -776,7 +777,7 @@
                     <input type="number" 
                            name="dpp" 
                            id="dpp" 
-                           value="{{ old('dpp') }}"
+                           value="{{ old('dpp', $invoice->dpp) }}"
                            class="w-full {{ $errors->has('dpp') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                            style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                            placeholder="Masukkan DPP"
@@ -796,7 +797,7 @@
                         <input type="text" 
                                name="total" 
                                id="total" 
-                               value="{{ old('total') }}"
+                               value="{{ old('total', number_format($invoice->total, 0, ',', '.')) }}"
                                class="w-full pl-10 {{ $errors->has('total') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                placeholder="0">
@@ -816,7 +817,7 @@
                         <input type="text" 
                                name="pph" 
                                id="pph" 
-                               value="{{ old('pph', '0') }}"
+                               value="{{ old('pph', number_format($invoice->pph, 0, ',', '.')) }}"
                                class="w-full pl-10 bg-gray-100 cursor-not-allowed {{ $errors->has('pph') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                placeholder="0"
@@ -838,7 +839,7 @@
                         <input type="text" 
                                name="grand_total" 
                                id="grand_total" 
-                               value="{{ old('grand_total', '') }}"
+                               value="{{ old('grand_total', number_format($invoice->grand_total, 0, ',', '.')) }}"
                                class="w-full pl-10 bg-green-50 font-semibold cursor-not-allowed {{ $errors->has('grand_total') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                placeholder="0"
@@ -881,7 +882,7 @@
                           rows="4"
                           class="w-full {{ $errors->has('deskripsi') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           style="padding: 8px 12px; font-size: 14px; line-height: 1.5; border: 1px solid #d1d5db; border-radius: 6px;"
-                          placeholder="Masukkan deskripsi invoice (opsional)">{{ old('deskripsi') }}</textarea>
+                          placeholder="Masukkan deskripsi invoice (opsional)">{{ old('deskripsi', $invoice->deskripsi) }}</textarea>
                 @error('deskripsi')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -897,7 +898,7 @@
                           rows="3"
                           class="w-full {{ $errors->has('catatan') ? 'border-red-500' : 'border-gray-300' }} rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                           style="padding: 8px 12px; font-size: 14px; line-height: 1.5; border: 1px solid #d1d5db; border-radius: 6px;"
-                          placeholder="Masukkan catatan tambahan (opsional)">{{ old('catatan') }}</textarea>
+                          placeholder="Masukkan catatan tambahan (opsional)">{{ old('catatan', $invoice->catatan) }}</textarea>
                 @error('catatan')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror

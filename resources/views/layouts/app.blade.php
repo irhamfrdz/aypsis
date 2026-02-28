@@ -1621,10 +1621,10 @@
                     </a>
                 @endif
 
-                {{-- Approval Tanda Terima (Asuransi) --}}
+                {{-- Approval Tanda Terima --}}
                 @if($user && $user->can('approval-tanda-terima-view'))
                     <a href="{{ route('approval-tanda-terima.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval-tanda-terima.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Approval Asuransi (TT)</span>
+                        <span class="text-xs">Approval Tanda Terima</span>
                     </a>
                 @endif
 

@@ -618,7 +618,17 @@ class InvoiceAktivitasLainController extends Controller
             ->values()
             ->toArray();
         
-        return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList'));
+        // Get akun COA for biaya listrik
+        $akunCoas = DB::table('akun_coa')
+            ->select('id', 'nomor_akun', 'nama_akun')
+            ->orderBy('nomor_akun')
+            ->get();
+        
+        // Get latest LWBP Lama value
+        $latestLwbpLama = \App\Models\MasterLwbpLama::where('status', 'active')->orderBy('created_at', 'desc')->first();
+        $latestLwbpValue = $latestLwbpLama ? $latestLwbpLama->biaya : 0;
+        
+        return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue'));
     }
 
     /**
