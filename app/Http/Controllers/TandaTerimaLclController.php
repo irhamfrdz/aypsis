@@ -1142,7 +1142,85 @@ class TandaTerimaLclController extends Controller
     }
 
     /**
+     * Add single LCL to prospek manually
+     */
+    public function addToProspek(TandaTerimaLcl $tandaTerimaLcl)
+    {
+        try {
+            $tandaTerimaLcl->load(['tujuanPengiriman', 'items', 'pengirimPivot', 'penerimaPivot', 'kontainerPivot']);
+            
+            $kontainerPivots = $tandaTerimaLcl->kontainerPivot;
+            
+            if ($kontainerPivots->isEmpty()) {
+                return back()->with('error', 'Tidak ada kontainer yang di-assign ke LCL ini.');
+            }
+
+            $successCount = 0;
+
+            foreach ($kontainerPivots as $pivot) {
+                if (!$pivot->nomor_kontainer) continue;
+                
+                $nomorKontainer = $pivot->nomor_kontainer;
+                $currentSeal = $pivot->nomor_seal ?? null;
+                
+                $sizeKontainer = '20';
+                if ($pivot->catatan && preg_match('/Size:\s*(\d+)/', $pivot->catatan, $matches)) {
+                    $sizeKontainer = $matches[1];
+                } elseif ($pivot->size_kontainer) {
+                    if (strpos($pivot->size_kontainer, '20') !== false) $sizeKontainer = '20';
+                    elseif (strpos($pivot->size_kontainer, '40') !== false) $sizeKontainer = '40';
+                    elseif (strpos($pivot->size_kontainer, '45') !== false) $sizeKontainer = '45';
+                    elseif (strpos($pivot->size_kontainer, '53') !== false) $sizeKontainer = '53';
+                }
+
+                $allBarang = collect();
+                $allBarang = $allBarang->merge($tandaTerimaLcl->items->pluck('nama_barang'));
+                
+                $allPengirim = collect();
+                $allPengirim = $allPengirim->merge($tandaTerimaLcl->pengirimPivot->pluck('nama_pengirim'));
+                
+                $allPenerima = collect();
+                $allPenerima = $allPenerima->merge($tandaTerimaLcl->penerimaPivot->pluck('nama_penerima'));
+
+                $prospekData = [
+                    'tanggal' => $tandaTerimaLcl->tanggal_tanda_terima,
+                    'nama_supir' => $tandaTerimaLcl->supir ?: 'Tidak ada supir',
+                    'barang' => $allBarang->unique()->implode(', ') ?: 'Barang LCL',
+                    'pt_pengirim' => $allPengirim->unique()->implode(', ') ?: 'Tidak ada pengirim',
+                    'ukuran' => $sizeKontainer,
+                    'tipe' => 'LCL',
+                    'nomor_kontainer' => $nomorKontainer,
+                    'no_seal' => $currentSeal,
+                    'no_surat_jalan' => $tandaTerimaLcl->nomor_tanda_terima,
+                    'tujuan_pengiriman' => $tandaTerimaLcl->tujuanPengiriman->nama_tujuan ?? $allPenerima->first() ?? 'Tidak ada tujuan',
+                    'nama_kapal' => '',
+                    'total_ton' => $tandaTerimaLcl->items->sum('tonase'),
+                    'total_volume' => $tandaTerimaLcl->items->sum('meter_kubik'),
+                    'keterangan' => 'Manual Transfer LCL ID: ' . $tandaTerimaLcl->nomor_tanda_terima,
+                    'status' => 'aktif',
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                ];
+
+                Prospek::create($prospekData);
+                $successCount++;
+            }
+
+            if ($successCount > 0) {
+                return back()->with('success', "Berhasil memasukkan data " . $tandaTerimaLcl->nomor_tanda_terima . " ke prospek!");
+            } else {
+                return back()->with('error', 'Gagal memproses data kontainer.');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error adding LCL to prospek: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memasukkan data LCL ke prospek: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Create prospek entry from LCL data
+
      */
     private function createProspekFromLcl($ids, &$prospekCreated, &$prospekMessage)
     {

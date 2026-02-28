@@ -3018,6 +3018,15 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-tanpa-surat-jalan.download-image')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
 
+    // Route untuk add to prospek manual
+    Route::post('tanda-terima-tanpa-surat-jalan/{tandaTerimaTanpaSuratJalan}/add-to-prospek', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'addToProspek'])
+         ->name('tanda-terima-tanpa-surat-jalan.add-to-prospek')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
+    Route::post('tanda-terima-lcl/{tandaTerimaLcl}/add-to-prospek', [\App\Http\Controllers\TandaTerimaLclController::class, 'addToProspek'])
+         ->name('tanda-terima-lcl.add-to-prospek')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
     Route::resource('tanda-terima-tanpa-surat-jalan', \App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class)
          ->middleware([
              'index' => 'can:tanda-terima-tanpa-surat-jalan-view',

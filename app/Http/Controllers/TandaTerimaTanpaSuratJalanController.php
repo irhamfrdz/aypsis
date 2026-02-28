@@ -1160,7 +1160,80 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     }
 
     /**
+     * Add container to prospek
+     */
+    public function addToProspek(TandaTerimaTanpaSuratJalan $tandaTerimaTanpaSuratJalan)
+    {
+        try {
+            $nomorKontainers = array_filter(explode(',', $tandaTerimaTanpaSuratJalan->no_kontainer ?? ''), 'trim');
+            $noSeals = array_filter(explode(',', $tandaTerimaTanpaSuratJalan->no_seal ?? ''), 'trim');
+            $sizes = array_filter(explode(',', $tandaTerimaTanpaSuratJalan->size_kontainer ?? ''), 'trim');
+
+            if (empty($nomorKontainers) && ($tandaTerimaTanpaSuratJalan->tipe_kontainer ?? 'fcl') !== 'cargo') {
+                return back()->with('error', 'Tidak ada nomor kontainer yang valid.');
+            }
+            
+            // Handle for empty containers (Cargo)
+            if (empty($nomorKontainers)) {
+                $nomorKontainers = ['CARGO'];
+            }
+
+            $successCount = 0;
+
+            foreach ($nomorKontainers as $index => $noKontainer) {
+                $noKontainer = trim($noKontainer);
+                
+                // Tentukan seal untuk kontainer ini
+                $currentSeal = isset($noSeals[$index]) ? trim($noSeals[$index]) : (isset($noSeals[0]) ? trim($noSeals[0]) : null);
+                
+                // Tentukan ukuran untuk kontainer ini
+                $currentSizeRaw = isset($sizes[$index]) ? trim($sizes[$index]) : (isset($sizes[0]) ? trim($sizes[0]) : null);
+                $ukuran = null;
+                if ($currentSizeRaw) {
+                    if (strpos($currentSizeRaw, '20') !== false) $ukuran = '20';
+                    elseif (strpos($currentSizeRaw, '40') !== false) $ukuran = '40';
+                    elseif (strpos($currentSizeRaw, '45') !== false) $ukuran = '45';
+                    elseif (strpos($currentSizeRaw, '53') !== false) $ukuran = '53';
+                }
+
+                $tipeProspek = strtoupper($tandaTerimaTanpaSuratJalan->tipe_kontainer ?: 'CARGO');
+
+                $prospekData = [
+                    'tanggal' => $tandaTerimaTanpaSuratJalan->tanggal_tanda_terima,
+                    'nama_supir' => $tandaTerimaTanpaSuratJalan->supir ?: 'Tidak ada supir',
+                    'barang' => $tandaTerimaTanpaSuratJalan->jenis_barang ?? $tandaTerimaTanpaSuratJalan->nama_barang ?? 'Barang',
+                    'pt_pengirim' => $tandaTerimaTanpaSuratJalan->pengirim ?? 'Tidak ada pengirim',
+                    'ukuran' => $ukuran,
+                    'tipe' => $tipeProspek,
+                    'nomor_kontainer' => $noKontainer === 'CARGO' ? null : $noKontainer,
+                    'no_seal' => $currentSeal,
+                    'no_surat_jalan' => $tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima,
+                    'tujuan_pengiriman' => $tandaTerimaTanpaSuratJalan->tujuan_pengiriman ?: 'Tidak ada tujuan',
+                    'nama_kapal' => $tandaTerimaTanpaSuratJalan->estimasi_naik_kapal ?: 'Tidak ada nama kapal',
+                    'total_ton' => $tandaTerimaTanpaSuratJalan->tonase,
+                    'total_volume' => $tandaTerimaTanpaSuratJalan->meter_kubik,
+                    'keterangan' => "Data manual transfer TTSJ: " . ($tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima) . " Kegiatan: " . ($tandaTerimaTanpaSuratJalan->aktifitas ?? ''),
+                    'status' => 'aktif',
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                ];
+
+                $prospek = Prospek::create($prospekData);
+                $successCount++;
+            }
+
+            $message = "Berhasil memasukkan {$successCount} data " . ($tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima) . " ke prospek!";
+            return back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            Log::error('Error adding to prospek: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memasukkan data ke prospek: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Sync penerima and pengirim data to related tables.
+
      */
     public function syncPenerimaPengirim($id)
     {

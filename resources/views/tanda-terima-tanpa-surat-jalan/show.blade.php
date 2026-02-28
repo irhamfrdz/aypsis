@@ -532,6 +532,50 @@
                         </div>
                     </div>
                 @endif
+
+                <!-- Dokumen Tambahan (Approval) -->
+                @php
+                    $dokumenTambahanData = [
+                        'PPBJ' => $tandaTerimaTanpaSuratJalan->dokumen_ppbj ?? null,
+                        'Packing List' => $tandaTerimaTanpaSuratJalan->dokumen_packing_list ?? null,
+                        'Invoice' => $tandaTerimaTanpaSuratJalan->dokumen_invoice ?? null,
+                        'Faktur Pajak' => $tandaTerimaTanpaSuratJalan->dokumen_faktur_pajak ?? null,
+                    ];
+                @endphp
+                
+                @foreach($dokumenTambahanData as $judul => $dokumen)
+                    @php
+                        $parsedDokumen = [];
+                        if (!empty($dokumen)) {
+                            if (is_string($dokumen) && str_starts_with((string)$dokumen, '[')) {
+                                $parsedDokumen = json_decode($dokumen, true) ?? [];
+                            } elseif (is_array($dokumen)) {
+                                $parsedDokumen = $dokumen;
+                            } else {
+                                $parsedDokumen = [$dokumen];
+                            }
+                        }
+                    @endphp
+                    
+                    @if(!empty($parsedDokumen))
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
+                        <div class="border-b border-gray-200 p-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Dokumen {{ $judul }}</h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                @foreach($parsedDokumen as $index => $file)
+                                    <div class="relative group bg-gray-50 rounded-lg border border-gray-200 p-4 flex flex-col items-center justify-center hover:border-indigo-300 transition-colors">
+                                        <i class="fas fa-file-pdf text-4xl text-blue-500 mb-3 block text-center"></i>
+                                        <p class="text-sm font-semibold text-gray-700 text-center mb-1">File {{ $index + 1 }}</p>
+                                        <a href="{{ asset('storage/' . $file) }}" target="_blank" class="mt-2 text-xs font-bold px-4 py-2 bg-white border border-gray-200 rounded-lg text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 transition-all">Lihat File</a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                @endforeach
             </div>
 
             <!-- Sidebar -->

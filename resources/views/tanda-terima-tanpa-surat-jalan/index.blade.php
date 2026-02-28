@@ -465,6 +465,15 @@
                                                         </svg>
                                                     </a>
                                                     
+                                                    <form action="{{ route('tanda-terima-lcl.add-to-prospek', $tandaTerima) }}" method="POST" class="inline" onsubmit="return confirm('Kirim data ini ke Prospek?')">
+                                                        @csrf
+                                                        <button type="submit" class="text-purple-600 hover:text-purple-900" title="Kirim ke Prospek">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+
                                                     <form action="{{ route('tanda-terima-lcl.sync-penerima-pengirim', $tandaTerima->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin melakukan sinkronisasi data penerima dan pengirim ke Prospek, Naik Kapal, Manifest, dan BL?')">
                                                         @csrf
                                                         <button type="submit" class="text-blue-600 hover:text-blue-900" title="Sync Penerima & Pengirim">
@@ -502,6 +511,15 @@
                                                         </svg>
                                                     </a>
                                                     
+                                                    <form action="{{ route('tanda-terima-tanpa-surat-jalan.add-to-prospek', $tandaTerima) }}" method="POST" class="inline" onsubmit="return confirm('Kirim data ini ke Prospek?')">
+                                                        @csrf
+                                                        <button type="submit" class="text-purple-600 hover:text-purple-900" title="Kirim ke Prospek">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+
                                                     <form action="{{ route('tanda-terima-tanpa-surat-jalan.sync-penerima-pengirim', $tandaTerima->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin melakukan sinkronisasi data penerima dan pengirim ke Prospek, Naik Kapal, Manifest, dan BL?')">
                                                         @csrf
                                                         <button type="submit" class="text-blue-600 hover:text-blue-900" title="Sync Penerima & Pengirim">
