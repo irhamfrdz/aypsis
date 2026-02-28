@@ -1624,10 +1624,12 @@ console.log('Akun COAs data:', akunCoasData);
             });
         }
 
+        let isInitializing = false;
         function toggleConditionalFields() {
             const jenisVal = jenisAktivitasSelect.value;
             
-            // Hide all conditional fields first
+            if (!isInitializing) {
+                // Hide all conditional fields first
             jenisBiayaWrapper.classList.add('hidden');
             jenisBiayaDropdown.removeAttribute('required');
             $('#jenis_biaya_dropdown').val('').trigger('change');
@@ -1719,15 +1721,17 @@ console.log('Akun COAs data:', akunCoasData);
             suratJalanSelect.removeAttribute('required');
             $('#surat_jalan_select').val('').trigger('change');
             
-            jenisPenyesuaianWrapper.classList.add('hidden');
-            jenisPenyesuaianSelect.removeAttribute('required');
-            $('#jenis_penyesuaian_select').val('').trigger('change');
-            
-            tipePenyesuaianWrapper.classList.add('hidden');
-            clearTipePenyesuaianInputs();
-            
-            detailPembayaranWrapper.classList.add('hidden');
-            clearDetailPembayaranInputs();
+            if (!isInitializing) {
+                jenisPenyesuaianWrapper.classList.add('hidden');
+                jenisPenyesuaianSelect.removeAttribute('required');
+                $('#jenis_penyesuaian_select').val('').trigger('change');
+                
+                tipePenyesuaianWrapper.classList.add('hidden');
+                clearTipePenyesuaianInputs();
+                
+                detailPembayaranWrapper.classList.add('hidden');
+                clearDetailPembayaranInputs();
+            }
             
             // Show relevant fields based on jenis aktivitas
             if (jenisVal === 'Pembayaran Kendaraan') {
@@ -2999,7 +3003,34 @@ console.log('Akun COAs data:', akunCoasData);
         // Initialization for edit mode (moved inside to access local functions)
         const jenisAktivitas = '{{ $invoice->jenis_aktivitas }}';
         if (jenisAktivitas) {
+            isInitializing = true;
             $('#jenis_aktivitas').val(jenisAktivitas).trigger('change');
+            isInitializing = false;
+            
+            // Restore sub-dropdowns with small delays to ensure change events finish
+            setTimeout(() => {
+                // Handle Adjustment
+                @if($invoice->jenis_aktivitas == 'Pembayaran Adjustment Uang Jalan')
+                    const sjId = '{{ $invoice->surat_jalan_id }}';
+                    const jenisPenj = '{{ $invoice->jenis_penyesuaian }}';
+                    if (sjId) $('#surat_jalan_select').val(sjId).trigger('change');
+                    if (jenisPenj) $('#jenis_penyesuaian_select').val(jenisPenj).trigger('change');
+                @endif
+
+                // Handle Kendaraan
+                @if($invoice->jenis_aktivitas == 'Pembayaran Kendaraan')
+                    const subJenis = '{{ $invoice->sub_jenis_kendaraan }}';
+                    const noPol = '{{ $invoice->nomor_polisi }}';
+                    if (subJenis) $('#sub_jenis_kendaraan').val(subJenis).trigger('change');
+                    if (noPol) $('#nomor_polisi').val(noPol).trigger('change');
+                @endif
+
+                // Handle Lain-lain / Biaya Listrik
+                @if($invoice->klasifikasi_biaya_umum_id)
+                    const umumId = '{{ $invoice->klasifikasi_biaya_umum_id }}';
+                    $('#jenis_biaya_dropdown').val(umumId).trigger('change');
+                @endif
+            }, 300);
             
             // If Pembayaran Kapalis selected, handle sub-dropdowns
             @if($invoice->klasifikasi_biaya_id)
