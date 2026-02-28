@@ -59,6 +59,10 @@ class TandaTerimaTanpaSuratJalan extends Model
         'asuransi_approved_at',
         'asuransi_approved_by',
         'asuransi_keterangan',
+        'dokumen_ppbj',
+        'dokumen_packing_list',
+        'dokumen_invoice',
+        'dokumen_faktur_pajak',
     ];
 
     protected $casts = [
@@ -75,6 +79,10 @@ class TandaTerimaTanpaSuratJalan extends Model
         'asuransi_uploaded_at' => 'datetime',
         'asuransi_approved_at' => 'datetime',
         'is_asuransi_approved' => 'boolean',
+        'dokumen_ppbj' => 'array',
+        'dokumen_packing_list' => 'array',
+        'dokumen_invoice' => 'array',
+        'dokumen_faktur_pajak' => 'array',
     ];
 
     /**

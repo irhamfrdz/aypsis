@@ -59,7 +59,7 @@ class TandaTerimaApprovalController extends Controller
                     'date' => $item->tanggal ?: $item->tanggal_surat_jalan,
                     'penerima' => $item->penerima,
                     'pengirim' => $item->pengirim,
-                    'asuransi_paths' => is_string($item->asuransi_path) && str_starts_with($item->asuransi_path, '[') ? json_decode($item->asuransi_path, true) : ($item->asuransi_path ? [$item->asuransi_path] : []),
+                    'asuransi_paths' => $this->getDocumentsArray($item),
                     'is_approved' => $item->is_asuransi_approved,
                     'approved_at' => $item->asuransi_approved_at,
                     'keterangan' => $item->asuransi_keterangan,
@@ -77,7 +77,7 @@ class TandaTerimaApprovalController extends Controller
                     'date' => $item->tanggal_tanda_terima,
                     'penerima' => $item->penerima,
                     'pengirim' => $item->pengirim,
-                    'asuransi_paths' => is_string($item->asuransi_path) && str_starts_with($item->asuransi_path, '[') ? json_decode($item->asuransi_path, true) : ($item->asuransi_path ? [$item->asuransi_path] : []),
+                    'asuransi_paths' => $this->getDocumentsArray($item),
                     'is_approved' => $item->is_asuransi_approved,
                     'approved_at' => $item->asuransi_approved_at,
                     'keterangan' => $item->asuransi_keterangan,
@@ -95,7 +95,7 @@ class TandaTerimaApprovalController extends Controller
                     'date' => $item->tanggal_tanda_terima,
                     'penerima' => $item->nama_penerima,
                     'pengirim' => $item->nama_pengirim,
-                    'asuransi_paths' => is_string($item->asuransi_path) && str_starts_with($item->asuransi_path, '[') ? json_decode($item->asuransi_path, true) : ($item->asuransi_path ? [$item->asuransi_path] : []),
+                    'asuransi_paths' => $this->getDocumentsArray($item),
                     'is_approved' => $item->is_asuransi_approved,
                     'approved_at' => $item->asuransi_approved_at,
                     'keterangan' => $item->asuransi_keterangan,
@@ -113,60 +113,82 @@ class TandaTerimaApprovalController extends Controller
     public function upload(Request $request, $sourceType, $id)
     {
         $request->validate([
-            'asuransi_file' => 'required|array',
-            'asuransi_file.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_ppbj' => 'nullable|array',
+            'file_ppbj.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_packing_list' => 'nullable|array',
+            'file_packing_list.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_invoice' => 'nullable|array',
+            'file_invoice.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_faktur_pajak' => 'nullable|array',
+            'file_faktur_pajak.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         $model = $this->getModel($sourceType, $id);
         
-        if ($request->hasFile('asuransi_file')) {
-            // Keep existing files
-            $existingPathArray = [];
-            if ($model->asuransi_path) {
-                if (is_string($model->asuransi_path) && str_starts_with($model->asuransi_path, '[')) {
-                    $existingPathArray = json_decode($model->asuransi_path, true) ?? [];
-                } elseif (!empty($model->asuransi_path)) {
-                    $existingPathArray = [$model->asuransi_path];
+        $documentColumns = [
+            'file_ppbj' => 'dokumen_ppbj', 
+            'file_packing_list' => 'dokumen_packing_list', 
+            'file_invoice' => 'dokumen_invoice', 
+            'file_faktur_pajak' => 'dokumen_faktur_pajak'
+        ];
+
+        $uploaded = false;
+        $updateData = [];
+
+        foreach ($documentColumns as $inputName => $column) {
+            if ($request->hasFile($inputName)) {
+                $rawExisting = $model->{$column};
+                $existingFiles = [];
+                
+                if (is_array($rawExisting)) {
+                    $existingFiles = $rawExisting;
+                } elseif (is_string($rawExisting) && !empty($rawExisting)) {
+                    $existingFiles = json_decode($rawExisting, true) ?? [];
                 }
-            }
 
-            $paths = $existingPathArray;
-            foreach ($request->file('asuransi_file') as $file) {
-                 $paths[] = $file->store('asuransi_tanda_terima', 'public');
+                foreach ($request->file($inputName) as $file) {
+                    $existingFiles[] = $file->store('asuransi_tanda_terima', 'public');
+                    $uploaded = true;
+                }
+                $updateData[$column] = json_encode($existingFiles);
             }
+        }
 
-            $model->update([
-                'asuransi_path' => json_encode($paths),
-                'asuransi_uploaded_at' => now(),
-                'asuransi_uploaded_by' => Auth::id(),
-            ]);
+        if ($uploaded) {
+            $updateData['asuransi_uploaded_at'] = now();
+            $updateData['asuransi_uploaded_by'] = Auth::id();
+            $model->update($updateData);
         }
 
         return back()->with('success', 'Dokumen berhasil diupload.');
     }
 
-    public function deleteDocument($sourceType, $id, $index)
+    public function deleteDocument($sourceType, $id, $column, $index)
     {
         $model = $this->getModel($sourceType, $id);
         
         $existingPathArray = [];
-        if ($model->asuransi_path) {
-            if (is_string($model->asuransi_path) && str_starts_with($model->asuransi_path, '[')) {
-                $existingPathArray = json_decode($model->asuransi_path, true) ?? [];
-            } elseif (!empty($model->asuransi_path)) {
-                $existingPathArray = [$model->asuransi_path];
+        if ($model->{$column}) {
+            if (is_array($model->{$column})) {
+                $existingPathArray = $model->{$column};
+            } elseif (is_string($model->{$column}) && str_starts_with($model->{$column}, '[')) {
+                $existingPathArray = json_decode($model->{$column}, true) ?? [];
+            } elseif (!empty($model->{$column})) {
+                $existingPathArray = [$model->{$column}];
             }
         }
 
         if (isset($existingPathArray[$index])) {
-            $pathToDelete = $existingPathArray[$index];
+            $pathData = $existingPathArray[$index];
+            $pathToDelete = is_array($pathData) ? ($pathData['path'] ?? $pathData) : $pathData;
+            
             if (Storage::disk('public')->exists($pathToDelete)) {
                 Storage::disk('public')->delete($pathToDelete);
             }
             array_splice($existingPathArray, $index, 1);
             
             $model->update([
-                'asuransi_path' => count($existingPathArray) > 0 ? json_encode($existingPathArray) : null,
+                $column => count($existingPathArray) > 0 ? json_encode($existingPathArray) : null,
             ]);
 
             return back()->with('success', 'Dokumen berhasil dihapus.');
@@ -201,6 +223,48 @@ class TandaTerimaApprovalController extends Controller
         ]);
 
         return back()->with('info', 'Status approval dibatalkan.');
+    }
+
+    protected function getDocumentsArray($item)
+    {
+        $allDocuments = [];
+
+        // Legacy support
+        if ($item->asuransi_path) {
+            $legacyPaths = is_string($item->asuransi_path) && str_starts_with($item->asuransi_path, '[') ? json_decode($item->asuransi_path, true) : [$item->asuransi_path];
+            foreach ($legacyPaths as $idx => $p) {
+                $allDocuments[] = [
+                    'type' => is_array($p) && isset($p['type']) ? $p['type'] : 'Lainnya',
+                    'path' => is_array($p) && isset($p['path']) ? $p['path'] : $p,
+                    'column' => 'asuransi_path',
+                    'original_index' => $idx
+                ];
+            }
+        }
+
+        // New separate columns
+        $cols = [
+            'dokumen_ppbj' => 'PPBJ',
+            'dokumen_packing_list' => 'Packing List',
+            'dokumen_invoice' => 'Invoice',
+            'dokumen_faktur_pajak' => 'Faktur Pajak'
+        ];
+
+        foreach ($cols as $col => $typeName) {
+            if ($item->{$col}) {
+                $arr = json_decode($item->{$col}, true) ?? [];
+                foreach ($arr as $idx => $p) {
+                    $allDocuments[] = [
+                        'type' => $typeName,
+                        'path' => $p,
+                        'column' => $col,
+                        'original_index' => $idx
+                    ];
+                }
+            }
+        }
+
+        return $allDocuments;
     }
 
     protected function getModel($sourceType, $id)

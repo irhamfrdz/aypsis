@@ -135,13 +135,19 @@
                                             <span class="text-[10px] font-bold text-emerald-700 uppercase">{{ count($item['asuransi_paths']) }} Dokumen Tersedia</span>
                                             <div class="flex flex-col gap-0.5">
                                                 @foreach($item['asuransi_paths'] as $index => $path)
+                                                @php
+                                                    $filePath = is_array($path) ? ($path['path'] ?? '') : $path;
+                                                    $fileType = is_array($path) && isset($path['type']) ? $path['type'] : 'Lainnya';
+                                                    $column = is_array($path) && isset($path['column']) ? $path['column'] : 'asuransi_path';
+                                                    $originalIndex = is_array($path) && isset($path['original_index']) ? $path['original_index'] : $index;
+                                                @endphp
                                                 <div class="flex items-center gap-2">
-                                                    <a href="{{ asset('storage/' . $path) }}" target="_blank" 
+                                                    <a href="{{ asset('storage/' . $filePath) }}" target="_blank" 
                                                        class="text-xs font-bold text-indigo-600 hover:text-indigo-800 underline">
-                                                        Dokumen {{ $index + 1 }}
+                                                        Dokumen {{ $fileType }}
                                                     </a>
                                                     @can('approval-tanda-terima-upload')
-                                                    <form action="{{ route('approval-tanda-terima.delete-document', ['sourceType' => $item['source_type'], 'id' => $item['id'], 'index' => $index]) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus dokumen ini?');">
+                                                    <form action="{{ route('approval-tanda-terima.delete-document', ['sourceType' => $item['source_type'], 'id' => $item['id'], 'column' => $column, 'index' => $originalIndex]) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus dokumen ini?');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="text-rose-500 hover:text-rose-700 p-0.5 rounded-md hover:bg-rose-50 transition-colors" title="Hapus Dokumen">
@@ -218,16 +224,84 @@
                         <label class="block text-sm font-bold text-gray-700 mb-2">Identitas Tanda Terima</label>
                         <input type="text" id="upload_identity" readonly class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-600 font-mono">
                     </div>
-                    <div class="mb-2">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Pilih File Dokumen</label>
-                        <div class="relative group">
-                            <input type="file" name="asuransi_file[]" multiple required accept=".pdf,.jpg,.jpeg,.png"
-                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                   onchange="updateFileName(this)">
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center group-hover:border-indigo-400 transition-colors">
-                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3 group-hover:text-indigo-500 transition-colors"></i>
-                                <span class="text-sm font-medium text-gray-600" id="file_name_display">Klik atau seret file ke sini</span>
-                                <span class="text-[10px] text-gray-400 mt-2 uppercase tracking-widest font-bold">PDF, JPG, PNG (Max 10MB)</span>
+                    <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                        <!-- PPBJ -->
+                        <div class="p-4 bg-gray-50/50 border border-gray-200 rounded-xl hover:border-indigo-200 transition-colors">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700">Dokumen PPBJ</label>
+                                    <span class="text-[10px] text-gray-400">PDF, JPG, PNG (Max 10MB)</span>
+                                </div>
+                                <button type="button" onclick="addFileInput('ppbj-container', 'file_ppbj[]')" 
+                                        class="text-[10px] font-bold uppercase bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg hover:bg-indigo-200 transition-all flex items-center gap-1">
+                                    <i class="fas fa-plus"></i> Tambah
+                                </button>
+                            </div>
+                            <div id="ppbj-container" class="space-y-2">
+                                <div class="relative flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group">
+                                    <input type="file" name="file_ppbj[]" accept=".pdf,.jpg,.jpeg,.png"
+                                           class="flex-1 text-xs text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Packing List -->
+                        <div class="p-4 bg-gray-50/50 border border-gray-200 rounded-xl hover:border-indigo-200 transition-colors">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700">Dokumen Packing List</label>
+                                    <span class="text-[10px] text-gray-400">PDF, JPG, PNG (Max 10MB)</span>
+                                </div>
+                                <button type="button" onclick="addFileInput('packing-list-container', 'file_packing_list[]')" 
+                                        class="text-[10px] font-bold uppercase bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg hover:bg-indigo-200 transition-all flex items-center gap-1">
+                                    <i class="fas fa-plus"></i> Tambah
+                                </button>
+                            </div>
+                            <div id="packing-list-container" class="space-y-2">
+                                <div class="relative flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group">
+                                    <input type="file" name="file_packing_list[]" accept=".pdf,.jpg,.jpeg,.png"
+                                           class="flex-1 text-xs text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invoice -->
+                        <div class="p-4 bg-gray-50/50 border border-gray-200 rounded-xl hover:border-indigo-200 transition-colors">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700">Dokumen Invoice</label>
+                                    <span class="text-[10px] text-gray-400">PDF, JPG, PNG (Max 10MB)</span>
+                                </div>
+                                <button type="button" onclick="addFileInput('invoice-container', 'file_invoice[]')" 
+                                        class="text-[10px] font-bold uppercase bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg hover:bg-indigo-200 transition-all flex items-center gap-1">
+                                    <i class="fas fa-plus"></i> Tambah
+                                </button>
+                            </div>
+                            <div id="invoice-container" class="space-y-2">
+                                <div class="relative flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group">
+                                    <input type="file" name="file_invoice[]" accept=".pdf,.jpg,.jpeg,.png"
+                                           class="flex-1 text-xs text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Faktur Pajak -->
+                        <div class="p-4 bg-gray-50/50 border border-gray-200 rounded-xl hover:border-indigo-200 transition-colors">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700">Dokumen Faktur Pajak</label>
+                                    <span class="text-[10px] text-gray-400">PDF, JPG, PNG (Max 10MB)</span>
+                                </div>
+                                <button type="button" onclick="addFileInput('faktur-pajak-container', 'file_faktur_pajak[]')" 
+                                        class="text-[10px] font-bold uppercase bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg hover:bg-indigo-200 transition-all flex items-center gap-1">
+                                    <i class="fas fa-plus"></i> Tambah
+                                </button>
+                            </div>
+                            <div id="faktur-pajak-container" class="space-y-2">
+                                <div class="relative flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group">
+                                    <input type="file" name="file_faktur_pajak[]" accept=".pdf,.jpg,.jpeg,.png"
+                                           class="flex-1 text-xs text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -261,8 +335,6 @@
 </style>
 
 <script>
-    let selectedFiles = new DataTransfer();
-
     function openModal(id) {
         document.getElementById(id).classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
@@ -273,82 +345,44 @@
         document.body.classList.remove('overflow-hidden');
     }
 
-    function updateFileName(input) {
-        if (input.files && input.files.length > 0) {
-            for (let i = 0; i < input.files.length; i++) {
-                selectedFiles.items.add(input.files[i]);
-            }
-            input.files = selectedFiles.files;
-        }
-        renderFileList();
-    }
-
-    function removeFile(index) {
-        const input = document.querySelector('input[name="asuransi_file[]"]');
-        const dt = new DataTransfer();
-        const files = input.files;
-        
-        for (let i = 0; i < files.length; i++) {
-            if (i !== index) {
-                dt.items.add(files[i]);
-            }
-        }
-        
-        input.files = dt.files;
-        selectedFiles = dt;
-        
-        if (input.files.length === 0) {
-            input.value = ''; // to trigger 'required' validation properly
-        }
-        
-        renderFileList();
-    }
-
-    function renderFileList() {
-        const input = document.querySelector('input[name="asuransi_file[]"]');
-        const display = document.getElementById('file_name_display');
-        display.innerHTML = '';
-        display.classList.remove('text-indigo-600', 'font-bold');
-
-        if (input.files && input.files.length > 0) {
-            display.classList.add('flex', 'flex-col', 'gap-1', 'items-center', 'mt-2', 'w-full', 'relative', 'z-20');
-            
-            for (let i = 0; i < input.files.length; i++) {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'text-xs text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-md border border-indigo-100 flex items-center justify-between w-full max-w-xs truncate relative z-30 shadow-sm';
-                
-                // We use button to stop event propagation so it doesn't trigger file dialog again
-                fileItem.innerHTML = `
-                    <div class="flex items-center gap-2 truncate">
-                        <i class="fas fa-file text-indigo-400"></i>
-                        <span class="truncate font-semibold" title="${input.files[i].name}">${input.files[i].name}</span>
-                    </div>
-                    <button type="button" onclick="event.preventDefault(); event.stopPropagation(); removeFile(${i});" class="text-rose-500 hover:text-rose-700 p-1 flex-shrink-0 z-40 relative ml-2 bg-rose-50 rounded-md">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
-                display.appendChild(fileItem);
-            }
-        } else {
-            display.classList.remove('flex', 'flex-col', 'gap-1', 'items-center', 'mt-2', 'w-full', 'relative', 'z-20');
-            display.textContent = 'Klik atau seret file ke sini';
-        }
-    }
-
     function openUploadModal(sourceType, id, identity) {
         const form = document.getElementById('uploadForm');
         form.action = `/approval-tanda-terima/${sourceType}/${id}/upload`;
-        document.getElementById('upload_identity').value = identity;
         
-        // Reset file input and display
-        const input = document.querySelector('input[name="asuransi_file[]"]');
-        if (input) {
-            input.value = '';
-            selectedFiles = new DataTransfer();
-            renderFileList();
-        }
+        // Reset inputs
+        form.reset();
+        document.getElementById('upload_identity').value = identity;
+
+        // Clear additional rows and keep only one for each
+        ['ppbj-container', 'packing-list-container', 'invoice-container', 'faktur-pajak-container'].forEach(containerId => {
+            const container = document.getElementById(containerId);
+            const inputName = containerId === 'ppbj-container' ? 'file_ppbj[]' : 
+                             containerId === 'packing-list-container' ? 'file_packing_list[]' :
+                             containerId === 'invoice-container' ? 'file_invoice[]' : 'file_faktur_pajak[]';
+            
+            container.innerHTML = `
+                <div class="relative flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group">
+                    <input type="file" name="${inputName}" accept=".pdf,.jpg,.jpeg,.png"
+                           class="flex-1 text-xs text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                </div>
+            `;
+        });
 
         openModal('uploadModal');
+    }
+
+    function addFileInput(containerId, inputName) {
+        const container = document.getElementById(containerId);
+        const newRow = document.createElement('div');
+        newRow.className = 'relative flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group animate-fade-in';
+        newRow.innerHTML = `
+            <input type="file" name="${inputName}" accept=".pdf,.jpg,.jpeg,.png"
+                   class="flex-1 text-xs text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+            <button type="button" onclick="this.parentElement.remove()" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-md transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(newRow);
     }
 </script>
 @endsection
