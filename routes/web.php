@@ -816,19 +816,7 @@ Route::middleware([
              ->middleware('can:master-pricelist-labuh-tambat-delete')
              ->only(['destroy']);
 
-        // Master Pricelist Freight
-        Route::resource('master-pricelist-freight', MasterPricelistFreightController::class)
-             ->middleware('can:master-pricelist-freight-create')
-             ->only(['create', 'store']);
-        Route::resource('master-pricelist-freight', MasterPricelistFreightController::class)
-             ->middleware('can:master-pricelist-freight-view')
-             ->only(['index', 'show']);
-        Route::resource('master-pricelist-freight', MasterPricelistFreightController::class)
-             ->middleware('can:master-pricelist-freight-update')
-             ->only(['edit', 'update']);
-        Route::resource('master-pricelist-freight', MasterPricelistFreightController::class)
-             ->middleware('can:master-pricelist-freight-delete')
-             ->only(['destroy']);
+        // Master Pricelist Freight - route didefinisikan di luar group ini (lihat bawah) agar nama route tidak dapat prefix 'master.'
 
         // Pricelist Buruh Import/Export routes (must be BEFORE resource routes)
         Route::get('pricelist-buruh/export', [\App\Http\Controllers\Master\PricelistBuruhController::class, 'export'])
@@ -4946,5 +4934,27 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
             ->middleware('can:approval-tanda-terima-approve');
     });
 
+});
+
+// =====================================================================
+// Master Pricelist Freight - standalone routes (nama TIDAK pakai prefix master.)
+// URL tetap /master/pricelist-freight/...
+// =====================================================================
+Route::middleware(['auth',
+    \App\Http\Middleware\EnsureKaryawanPresent::class,
+    \App\Http\Middleware\EnsureUserApproved::class,
+    \App\Http\Middleware\EnsureCrewChecklistComplete::class,
+])->prefix('master')->group(function () {
+    Route::resource('pricelist-freight', \App\Http\Controllers\MasterPricelistFreightController::class)
+         ->names('master-pricelist-freight')
+         ->middleware([
+             'index'   => 'can:master-pricelist-freight-view',
+             'show'    => 'can:master-pricelist-freight-view',
+             'create'  => 'can:master-pricelist-freight-create',
+             'store'   => 'can:master-pricelist-freight-create',
+             'edit'    => 'can:master-pricelist-freight-update',
+             'update'  => 'can:master-pricelist-freight-update',
+             'destroy' => 'can:master-pricelist-freight-delete',
+         ]);
 });
 
