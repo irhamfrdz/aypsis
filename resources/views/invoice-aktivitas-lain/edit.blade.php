@@ -2966,6 +2966,78 @@ console.log('Akun COAs data:', akunCoasData);
         setupLabuhTambatCalculations();
 
         console.log('Select2 initialized for invoice-aktivitas-lain');
+        
+        // Initialization for edit mode (moved inside to access local functions)
+        const jenisAktivitas = '{{ $invoice->jenis_aktivitas }}';
+        if (jenisAktivitas) {
+            $('#jenis_aktivitas').val(jenisAktivitas).trigger('change');
+            
+            // If Pembayaran Kapalis selected, handle sub-dropdowns
+            @if($invoice->klasifikasi_biaya_id)
+                setTimeout(() => {
+                    const klasId = '{{ $invoice->klasifikasi_biaya_id }}';
+                    $('#klasifikasi_biaya_select').val(klasId).trigger('change');
+                    
+                    // Handle Buruh (Barang)
+                    @if($invoice->barang_detail)
+                        initializeBarangInputs(@json($invoice->barang_detail_array));
+                    @endif
+                    
+                    // Handle BL selection
+                    @if($invoice->bl_details)
+                        @php 
+                            $blIds = collect(json_decode($invoice->bl_details, true))->pluck('manifest_id')->toArray();
+                            if (empty($blIds)) {
+                                $blIds = collect(json_decode($invoice->bl_details, true))->pluck('bl_id')->toArray();
+                            }
+                        @endphp
+                        const selectedBlIds = @json($blIds);
+                        selectedBlIds.forEach(id => {
+                            const option = document.querySelector(`.bl-option[data-id="${id}"]`);
+                            if (option) {
+                                const kontainer = option.getAttribute('data-kontainer');
+                                const seal = option.getAttribute('data-seal');
+                                const voyage = option.getAttribute('data-voyage');
+                                
+                                selectedBLs.push({ id, kontainer, seal, voyage });
+                                addBLChip(id, kontainer, seal);
+                            }
+                        });
+                        updateBLSelectedCount();
+                        updateBLHiddenInputs();
+                    @endif
+                }, 500);
+            @endif
+
+            // Handle Biaya Listrik
+            @if($invoice->jenis_aktivitas == 'Pembayaran Lain-lain' && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik'))
+                initializeBiayaListrikInputs(@json($invoice->biayaListrik));
+            @endif
+            
+            // Handle Detail Pembayaran
+            @if($invoice->detail_pembayaran)
+                const container = document.getElementById('detail_pembayaran_container');
+                if (container) {
+                    container.innerHTML = '';
+                    const detailData = @json($invoice->detail_pembayaran_array);
+                    detailData.forEach(data => addDetailPembayaranInput(data));
+                }
+            @endif
+
+            // Handle Tipe Penyesuaian
+            @if($invoice->jenis_penyesuaian == 'penambahan' && $invoice->tipe_penyesuaian)
+                const tipeContainer = document.getElementById('tipe_penyesuaian_container');
+                if (tipeContainer) {
+                    tipeContainer.innerHTML = '';
+                    const tipeData = @json(json_decode($invoice->tipe_penyesuaian, true));
+                    if (Array.isArray(tipeData)) {
+                        tipeData.forEach(data => addTipePenyesuaianInput(data.tipe, data.nominal));
+                    }
+                }
+            @endif
+        }
+        
+        generateInvoiceNumber();
     }
 
     // Start ensuring libraries and initialize
@@ -2979,78 +3051,6 @@ console.log('Akun COAs data:', akunCoasData);
         const $ = jqInstance || window.jQuery;
         $(document).ready(function() {
             initializeSelect2AndForm($);
-            
-            // Initialization for edit mode
-            const jenisAktivitas = '{{ $invoice->jenis_aktivitas }}';
-            if (jenisAktivitas) {
-                $('#jenis_aktivitas').val(jenisAktivitas).trigger('change');
-                
-                // If Pembayaran Kapalis selected, handle sub-dropdowns
-                @if($invoice->klasifikasi_biaya_id)
-                    setTimeout(() => {
-                        const klasId = '{{ $invoice->klasifikasi_biaya_id }}';
-                        $('#klasifikasi_biaya_select').val(klasId).trigger('change');
-                        
-                        // Handle Buruh (Barang)
-                        @if($invoice->barang_detail)
-                            initializeBarangInputs(@json($invoice->barang_detail_array));
-                        @endif
-                        
-                        // Handle BL selection
-                        @if($invoice->bl_details)
-                            @php 
-                                $blIds = collect(json_decode($invoice->bl_details, true))->pluck('manifest_id')->toArray();
-                                if (empty($blIds)) {
-                                    $blIds = collect(json_decode($invoice->bl_details, true))->pluck('bl_id')->toArray();
-                                }
-                            @endphp
-                            const selectedBlIds = @json($blIds);
-                            selectedBlIds.forEach(id => {
-                                const option = document.querySelector(`.bl-option[data-id="${id}"]`);
-                                if (option) {
-                                    const kontainer = option.getAttribute('data-kontainer');
-                                    const seal = option.getAttribute('data-seal');
-                                    const voyage = option.getAttribute('data-voyage');
-                                    
-                                    selectedBLs.push({ id, kontainer, seal, voyage });
-                                    addBLChip(id, kontainer, seal);
-                                }
-                            });
-                            updateBLSelectedCount();
-                            updateBLHiddenInputs();
-                        @endif
-                    }, 500);
-                @endif
-
-                // Handle Biaya Listrik
-                @if($invoice->jenis_aktivitas == 'Pembayaran Lain-lain' && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik'))
-                    initializeBiayaListrikInputs(@json($invoice->biayaListrik));
-                @endif
-                
-                // Handle Detail Pembayaran
-                @if($invoice->detail_pembayaran)
-                    const container = document.getElementById('detail_pembayaran_container');
-                    if (container) {
-                        container.innerHTML = '';
-                        const detailData = @json($invoice->detail_pembayaran_array);
-                        detailData.forEach(data => addDetailPembayaranInput(data));
-                    }
-                @endif
-
-                // Handle Tipe Penyesuaian
-                @if($invoice->jenis_penyesuaian == 'penambahan' && $invoice->tipe_penyesuaian)
-                    const tipeContainer = document.getElementById('tipe_penyesuaian_container');
-                    if (tipeContainer) {
-                        tipeContainer.innerHTML = '';
-                        const tipeData = @json(json_decode($invoice->tipe_penyesuaian, true));
-                        if (Array.isArray(tipeData)) {
-                            tipeData.forEach(data => addTipePenyesuaianInput(data.tipe, data.nominal));
-                        }
-                    }
-                @endif
-            }
-            
-            generateInvoiceNumber();
         });
     });
 
