@@ -2390,6 +2390,7 @@
     const allKapalsData = @json($kapals);
     const pricelistBiayaTruckingData = @json($pricelistBiayaTrucking);
     const pricelistThcVendorsData = @json($pricelistThcVendors ?? []);
+    const pricelistThcsData = @json($pricelistThcs ?? []);
 
     function initializeKapalSections() {
         kapalSectionsContainer.innerHTML = '';
@@ -6719,12 +6720,12 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal Biaya</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal Biaya <span class="text-xs text-teal-500 font-normal">(otomatis)</span></label>
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
                         <input type="text" name="thc_sections[${sectionIndex}][subtotal]" 
-                               class="thc-subtotal-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500" 
-                               value="0">
+                               class="thc-subtotal-input w-full pl-10 pr-3 py-2 border border-teal-200 rounded-lg bg-teal-50 text-teal-800 focus:ring-0 cursor-not-allowed" 
+                               value="0" readonly>
                     </div>
                 </div>
                 <div class="hidden">
@@ -6772,31 +6773,6 @@
                 voyageSelect.disabled = false;
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
-        });
-
-        // Setup manual subtotal calculation
-        const subtotalInput = section.querySelector('.thc-subtotal-input');
-        subtotalInput.addEventListener('input', function() {
-            // Remove non-numeric chars
-            let rawValue = this.value.replace(/[^0-9]/g, '');
-            const numericValue = parseFloat(rawValue) || 0;
-            
-            // Format back to rupiah
-            if (rawValue) {
-                this.value = new Intl.NumberFormat('id-ID').format(numericValue);
-            } else {
-                this.value = '';
-            }
-            
-            // Recalculate PPh (0) & Total
-            const pph = 0;
-            const total = numericValue - pph;
-            
-            section.querySelector('.thc-pph-input').value = new Intl.NumberFormat('id-ID').format(pph);
-            section.querySelector('.thc-total-input').value = new Intl.NumberFormat('id-ID').format(total);
-            
-            // Update Grand Total
-            calculateTotalFromAllTHCSections();
         });
 
         // --- KONTAINER MULTI-SELECT LOGIC (loaded by voyage) ---
@@ -6862,12 +6838,16 @@
                                     const hiddenGroup = document.createElement('div');
                                     hiddenGroup.setAttribute('data-bl-id', blId);
                                     hiddenGroup.innerHTML = `<input type="hidden" name="thc_sections[${sectionIndex}][kontainer][][bl_id]" value="${blId}">
-                                    <input type="hidden" name="thc_sections[${sectionIndex}][kontainer][][nomor_kontainer]" value="${this.dataset.nomor}">`;
+                                    <input type="hidden" name="thc_sections[${sectionIndex}][kontainer][][nomor_kontainer]" value="${this.dataset.nomor}">
+                                    <input type="hidden" name="thc_sections[${sectionIndex}][kontainer][][size]" value="${this.dataset.size}">`;
                                     hiddenInputsContainer.appendChild(hiddenGroup);
                                 }
                             } else {
                                 if (existingInput) existingInput.remove();
                             }
+
+                            // Auto recalculate subtotal
+                            recalcThcSubtotal(section, sectionIndex);
                         });
 
                         kontainerList.appendChild(row);
@@ -6880,8 +6860,60 @@
                 });
         }
 
+        // --- SUBTOTAL AUTO CALCULATION ---
+        // Find tarif from pricelist_thcs matching vendor + container size
+        function getThcTarif(vendorName, containerSize) {
+            if (!vendorName || !containerSize) return 0;
+
+            // Normalize size: could be "20", "40", "20ft", "40ft", "20FT", etc.
+            const sizeNum = String(containerSize).replace(/[^0-9]/g, '');
+
+            // Find matching pricelist entry: vendor matches AND nama_barang contains the size number
+            const match = pricelistThcsData.find(p => {
+                const vendorMatch = p.vendor && p.vendor.toLowerCase() === vendorName.toLowerCase();
+                const namaBarang  = (p.nama_barang || '').toLowerCase();
+                const sizeMatch   = namaBarang.includes(sizeNum + 'ft') || namaBarang.startsWith(sizeNum + 'ft') || namaBarang.includes(sizeNum + ' ft');
+                return vendorMatch && sizeMatch;
+            });
+
+            return match ? parseFloat(match.tarif) : 0;
+        }
+
+        function recalcThcSubtotal(sec, secIdx) {
+            const vendorSelect  = sec.querySelector('.thc-vendor-select');
+            const vendorName    = vendorSelect ? vendorSelect.value : '';
+            const checkboxes    = sec.querySelectorAll('.thc-kontainer-checkbox:checked');
+
+            let subtotal = 0;
+            checkboxes.forEach(cb => {
+                const size  = cb.dataset.size || '';
+                const tarif = getThcTarif(vendorName, size);
+                subtotal   += tarif;
+            });
+
+            const subtotalInput = sec.querySelector('.thc-subtotal-input');
+            const pphInput      = sec.querySelector('.thc-pph-input');
+            const totalInput    = sec.querySelector('.thc-total-input');
+
+            const fmt = (val) => new Intl.NumberFormat('id-ID').format(Math.round(val));
+            subtotalInput.value = fmt(subtotal);
+            pphInput.value      = fmt(0);
+            totalInput.value    = fmt(subtotal);
+
+            calculateTotalFromAllTHCSections();
+        }
+
+        // Re-calculate when vendor changes
+        const vendorSelectEl = section.querySelector('.thc-vendor-select');
+        if (vendorSelectEl) {
+            vendorSelectEl.addEventListener('change', function() {
+                recalcThcSubtotal(section, sectionIndex);
+            });
+        }
+
         // Expose function so voyage change can call it
         section._loadContainers = loadContainersForTHCSection;
+
     }
     
     window.removeTHCSection = function(sectionIndex) {
