@@ -100,8 +100,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Fetch kapal berdasarkan kegiatan
         const url = kegiatan === 'bongkar' 
-            ? '{{ route("ob.get-kapal-bongkar") }}' 
-            : '{{ route("ob.get-kapal-muat") }}';
+            ? '{{ route("ob.get-kapal-bongkar", [], false) }}' 
+            : '{{ route("ob.get-kapal-muat", [], false) }}';
 
         fetch(url, {
             method: 'GET',
@@ -151,8 +151,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Fetch voyage berdasarkan kegiatan dan kapal
         const url = kegiatan === 'bongkar'
-            ? `{{ route('ob.get-voyage-bongkar') }}?nama_kapal=${encodeURIComponent(kapalName)}`
-            : `{{ route('ob.get-voyage-muat') }}?nama_kapal=${encodeURIComponent(kapalName)}`;
+            ? `{{ route('ob.get-voyage-bongkar', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`
+            : `{{ route('ob.get-voyage-muat', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
 
         fetch(url, {
             method: 'GET',
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Redirect to OB Index with filter parameters
-        const url = new URL('{{ route("ob.index") }}', window.location.origin);
+        const url = new URL('{{ route("ob.index", [], false) }}', window.location.origin);
         url.searchParams.set('kegiatan', kegiatan);
         url.searchParams.set('nama_kapal', kapalName);
         url.searchParams.set('no_voyage', voyage);
