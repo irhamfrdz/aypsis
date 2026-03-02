@@ -1824,7 +1824,7 @@
             if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
             clearAllStuffingSections();
             if (thcWrapper) thcWrapper.classList.add('hidden');
-            clearAllThcSections();
+            clearAllTHCSections();
         }
         // Show Stuffing fields if "Biaya Stuffing" is selected
         else if (selectedText.toLowerCase().includes('stuffing')) {
@@ -1933,7 +1933,7 @@
             if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
             clearAllStuffingSections();
             if (thcWrapper) thcWrapper.classList.add('hidden');
-            clearAllThcSections();
+            clearAllTHCSections();
             if (truckingWrapper) truckingWrapper.classList.add('hidden');
             clearAllTruckingSections();
             if (document.getElementById('tkbm_wrapper')) {
@@ -2128,7 +2128,7 @@
             if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
             clearAllStuffingSections();
             if (thcWrapper) thcWrapper.classList.add('hidden');
-            clearAllThcSections();
+            clearAllTHCSections();
 
             // Hide Perlengkapan wrapper
             if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
@@ -6561,14 +6561,14 @@
         thcSectionCounter = 0;
     }
     
-    if (addTHCSectionBtn) {
-        addTHCSectionBtn.addEventListener('click', function() {
+    if (addThcSectionBtn) {
+        addThcSectionBtn.addEventListener('click', function() {
             addTHCSection();
         });
     }
 
-    if (addTHCSectionBottomBtn) {
-        addTHCSectionBottomBtn.addEventListener('click', function() {
+    if (addThcSectionBottomBtn) {
+        addThcSectionBottomBtn.addEventListener('click', function() {
             addTHCSection();
         });
     }
