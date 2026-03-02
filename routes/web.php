@@ -891,6 +891,26 @@ Route::middleware([
              ->name('pricelist-opp-opt.destroy')
              ->middleware('can:master-pricelist-opp-opt-delete');
 
+        // Pricelist THC Routes
+        Route::get('pricelist-thc', [\App\Http\Controllers\PricelistThcController::class, 'index'])
+             ->name('pricelist-thc.index')
+             ->middleware('can:master-pricelist-thc-view');
+        Route::get('pricelist-thc/create', [\App\Http\Controllers\PricelistThcController::class, 'create'])
+             ->name('pricelist-thc.create')
+             ->middleware('can:master-pricelist-thc-create');
+        Route::post('pricelist-thc', [\App\Http\Controllers\PricelistThcController::class, 'store'])
+             ->name('pricelist-thc.store')
+             ->middleware('can:master-pricelist-thc-create');
+        Route::get('pricelist-thc/{id}/edit', [\App\Http\Controllers\PricelistThcController::class, 'edit'])
+             ->name('pricelist-thc.edit')
+             ->middleware('can:master-pricelist-thc-update');
+        Route::put('pricelist-thc/{id}', [\App\Http\Controllers\PricelistThcController::class, 'update'])
+             ->name('pricelist-thc.update')
+             ->middleware('can:master-pricelist-thc-update');
+        Route::delete('pricelist-thc/{id}', [\App\Http\Controllers\PricelistThcController::class, 'destroy'])
+             ->name('pricelist-thc.destroy')
+             ->middleware('can:master-pricelist-thc-delete');
+
         // Master pricelist biaya dokumen routes - granular permissions
         Route::get('pricelist-biaya-dokumen', [\App\Http\Controllers\PricelistBiayaDokumenController::class, 'index'])
              ->name('pricelist-biaya-dokumen.index')

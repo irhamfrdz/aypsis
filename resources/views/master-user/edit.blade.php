@@ -968,6 +968,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist Biaya THC --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist Biaya THC</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-thc][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-thc']['view']) && $userMatrixPermissions['master-pricelist-thc']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-thc][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-thc']['create']) && $userMatrixPermissions['master-pricelist-thc']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-thc][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-thc']['update']) && $userMatrixPermissions['master-pricelist-thc']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-thc][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-thc']['delete']) && $userMatrixPermissions['master-pricelist-thc']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Operational Management --}}
                             <tr class="module-row" data-module="operational">
                                 <td class="module-header">
