@@ -19,7 +19,8 @@ class PricelistThcController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                  ->orWhere('lokasi', 'like', "%{$search}%")
+                  ->orWhere('vendor', 'like', "%{$search}%");
             });
         }
 
@@ -44,6 +45,7 @@ class PricelistThcController extends Controller
         $request->validate([
             'nama_barang' => 'required|string|max:255',
             'lokasi' => 'nullable|in:Jakarta,Batam,Pinang',
+            'vendor' => 'nullable|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:Aktif,Non Aktif',
         ]);
@@ -81,6 +83,7 @@ class PricelistThcController extends Controller
         $request->validate([
             'nama_barang' => 'required|string|max:255',
             'lokasi' => 'nullable|in:Jakarta,Batam,Pinang',
+            'vendor' => 'nullable|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:Aktif,Non Aktif',
         ]);
