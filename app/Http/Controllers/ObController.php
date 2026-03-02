@@ -831,7 +831,7 @@ class ObController extends Controller
             // Cek dulu apakah sudah ada BL dengan nomor kontainer dan voyage yang sama
             // PENGECUALIAN: Untuk CARGO, izinkan duplikat BL karena nomor_kontainer selalu 'CARGO'
             $isCargoContainer = (
-                strtoupper(trim($naikKapal->tipe_kontainer ?? '')) === 'CARGO' ||
+                strtoupper(trim($naikKapal->prospek->tipe ?? $naikKapal->tipe_kontainer ?? '')) === 'CARGO' ||
                 stripos($naikKapal->nomor_kontainer ?? '', 'CARGO') !== false
             );
 
@@ -850,7 +850,7 @@ class ObController extends Controller
             // === MANIFEST CREATION DIPINDAH KE SETELAH DB::commit() ===
             // Simpan data yang dibutuhkan untuk manifest
             $manifestDataForLater = [
-                'tipe_kontainer' => $naikKapal->tipe_kontainer,
+                'tipe_kontainer' => $naikKapal->prospek->tipe ?? $naikKapal->tipe_kontainer,
                 'nomor_kontainer' => $naikKapal->nomor_kontainer,
                 'no_seal' => $naikKapal->no_seal,
                 'size_kontainer' => $naikKapal->size_kontainer,
@@ -878,7 +878,7 @@ class ObController extends Controller
                 $bl->nomor_kontainer = $naikKapal->nomor_kontainer;
                 $bl->no_seal = mb_substr($naikKapal->no_seal ?? '', 0, 255);
                 $bl->nama_barang = mb_substr($naikKapal->jenis_barang ?? '', 0, 255);
-                $bl->tipe_kontainer = $naikKapal->tipe_kontainer;
+                $bl->tipe_kontainer = ($naikKapal->prospek && $naikKapal->prospek->tipe) ? $naikKapal->prospek->tipe : $naikKapal->tipe_kontainer;
                 $bl->size_kontainer = $naikKapal->size_kontainer;
                 $bl->nama_kapal = mb_substr($naikKapal->nama_kapal ?? '', 0, 255);
                 $bl->no_voyage = mb_substr($naikKapal->no_voyage ?? '', 0, 255);
@@ -1023,6 +1023,9 @@ class ObController extends Controller
                 // If BL was previously TL, clear TL status because now a supir is assigned
                 if ($existingBl->sudah_tl) {
                     $existingBl->sudah_tl = false;
+                }
+                if ($naikKapal->prospek && $naikKapal->prospek->tipe) {
+                    $existingBl->tipe_kontainer = $naikKapal->prospek->tipe;
                 }
                 $existingBl->save();
                 
@@ -1292,7 +1295,7 @@ class ObController extends Controller
             if ($recordType === 'naik_kapal') {
                 $record = NaikKapal::with('prospek')->findOrFail($recordId);
 
-                $tipeKontainer  = $record->tipe_kontainer;
+                $tipeKontainer  = $record->prospek->tipe ?? $record->tipe_kontainer;
                 $nomorKontainer = $record->nomor_kontainer;
                 $noSeal         = $record->no_seal;
                 $sizeKontainer  = $record->size_kontainer;
@@ -1310,7 +1313,7 @@ class ObController extends Controller
                 // bl
                 $record = Bl::with('prospek')->findOrFail($recordId);
 
-                $tipeKontainer  = $record->tipe_kontainer;
+                $tipeKontainer  = $record->prospek->tipe ?? $record->tipe_kontainer;
                 $nomorKontainer = $record->nomor_kontainer;
                 $noSeal         = $record->no_seal;
                 $sizeKontainer  = $record->size_kontainer;
@@ -2709,7 +2712,7 @@ class ObController extends Controller
 
             // Check if CARGO container (always create new BL, no dedup)
             $isCargoContainer = (
-                strtoupper(trim($naikKapal->tipe_kontainer ?? '')) === 'CARGO' ||
+                strtoupper(trim($naikKapal->prospek->tipe ?? $naikKapal->tipe_kontainer ?? '')) === 'CARGO' ||
                 stripos($naikKapal->nomor_kontainer ?? '', 'CARGO') !== false
             );
 
@@ -2728,7 +2731,7 @@ class ObController extends Controller
                 $bl->nomor_kontainer = $naikKapal->nomor_kontainer;
                 $bl->no_seal = $naikKapal->no_seal;
                 $bl->nama_barang = $naikKapal->jenis_barang;
-                $bl->tipe_kontainer = $naikKapal->tipe_kontainer;
+                $bl->tipe_kontainer = ($naikKapal->prospek && $naikKapal->prospek->tipe) ? $naikKapal->prospek->tipe : $naikKapal->tipe_kontainer;
                 $bl->size_kontainer = $naikKapal->size_kontainer;
                 $bl->nama_kapal = $naikKapal->nama_kapal;
                 $bl->no_voyage = $naikKapal->no_voyage;
@@ -2745,6 +2748,9 @@ class ObController extends Controller
                 // Update existing BL with latest data from NaikKapal if needed
                 $bl->asal_kontainer = $naikKapal->asal_kontainer ?? $bl->asal_kontainer;
                 $bl->ke = $naikKapal->ke ?? $bl->ke;
+                if ($naikKapal->prospek && $naikKapal->prospek->tipe) {
+                    $bl->tipe_kontainer = $naikKapal->prospek->tipe;
+                }
             }
             
             // Mark as sudah OB (TL tidak perlu supir karena langsung dimuat)
@@ -2784,7 +2790,7 @@ class ObController extends Controller
 
             // === MANIFEST CREATION LOGIC ===
             // Cek apakah kontainer LCL
-            if (strtoupper(trim($naikKapal->tipe_kontainer)) === 'LCL') {
+            if (strtoupper(trim($naikKapal->prospek->tipe ?? $naikKapal->tipe_kontainer)) === 'LCL') {
                 \Log::info("LCL container detected in processTL, finding tanda terima...");
                 
                 // Cari semua tanda terima yang terhubung dengan kontainer ini

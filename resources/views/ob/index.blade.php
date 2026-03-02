@@ -676,7 +676,12 @@
                                 </button>
                             </div>
                         </td>
-                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->tipe_kontainer ?: '-' }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
+                            @php
+                                $displayTipe = $bl->prospek->tipe ?? $bl->tipe_kontainer;
+                            @endphp
+                            {{ $displayTipe ?: '-' }}
+                        </td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->size_kontainer ? $bl->size_kontainer : '-' }}</td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/y') : '-' }}</td>
                         {{-- Volume and Tonase cells removed per request --}}
@@ -886,9 +891,12 @@
                                 </div>
                             </td>
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
-                                @if($naikKapal->tipe_kontainer)
+                                @php
+                                    $displayTipe = $naikKapal->prospek->tipe ?? $naikKapal->tipe_kontainer;
+                                @endphp
+                                @if($displayTipe)
                                     @php
-                                        $tipeUpper = strtoupper($naikKapal->tipe_kontainer);
+                                        $tipeUpper = strtoupper($displayTipe);
                                         $tipeConfig = [
                                             'FCL' => ['color' => 'bg-purple-100 text-purple-800', 'icon' => 'fa-shipping-fast'],
                                             'LCL' => ['color' => 'bg-orange-100 text-orange-800', 'icon' => 'fa-box'],
