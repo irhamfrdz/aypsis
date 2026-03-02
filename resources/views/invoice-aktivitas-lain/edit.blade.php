@@ -3028,6 +3028,33 @@ console.log('Akun COAs data:', akunCoasData);
                 @if($invoice->klasifikasi_biaya_umum_id)
                     const umumId = '{{ $invoice->klasifikasi_biaya_umum_id }}';
                     $('#jenis_biaya_dropdown').val(umumId).trigger('change');
+                    
+                    // Handle Biaya Listrik
+                    @if($invoice->jenis_aktivitas == 'Pembayaran Lain-lain' && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik'))
+                        initializeBiayaListrikInputs(@json($invoice->biayaListrik));
+                    @endif
+                @endif
+
+                // Handle Tipe Penyesuaian
+                @if($invoice->jenis_penyesuaian == 'penambahan' && $invoice->tipe_penyesuaian)
+                    const tipeContainer = document.getElementById('tipe_penyesuaian_container');
+                    if (tipeContainer) {
+                        tipeContainer.innerHTML = '';
+                        const tipeData = @json(json_decode($invoice->tipe_penyesuaian, true));
+                        if (Array.isArray(tipeData)) {
+                            tipeData.forEach(data => addTipePenyesuaianInput(data.tipe, data.nominal));
+                        }
+                    }
+                @endif
+                
+                // Handle Detail Pembayaran
+                @if($invoice->detail_pembayaran)
+                    const container = document.getElementById('detail_pembayaran_container');
+                    if (container) {
+                        container.innerHTML = '';
+                        const detailData = @json($invoice->detail_pembayaran_array);
+                        detailData.forEach(data => addDetailPembayaranInput(data));
+                    }
                 @endif
             }, 300);
             
@@ -3068,32 +3095,7 @@ console.log('Akun COAs data:', akunCoasData);
                 }, 500);
             @endif
 
-            // Handle Biaya Listrik
-            @if($invoice->jenis_aktivitas == 'Pembayaran Lain-lain' && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik'))
-                initializeBiayaListrikInputs(@json($invoice->biayaListrik));
-            @endif
-            
-            // Handle Detail Pembayaran
-            @if($invoice->detail_pembayaran)
-                const container = document.getElementById('detail_pembayaran_container');
-                if (container) {
-                    container.innerHTML = '';
-                    const detailData = @json($invoice->detail_pembayaran_array);
-                    detailData.forEach(data => addDetailPembayaranInput(data));
-                }
-            @endif
 
-            // Handle Tipe Penyesuaian
-            @if($invoice->jenis_penyesuaian == 'penambahan' && $invoice->tipe_penyesuaian)
-                const tipeContainer = document.getElementById('tipe_penyesuaian_container');
-                if (tipeContainer) {
-                    tipeContainer.innerHTML = '';
-                    const tipeData = @json(json_decode($invoice->tipe_penyesuaian, true));
-                    if (Array.isArray(tipeData)) {
-                        tipeData.forEach(data => addTipePenyesuaianInput(data.tipe, data.nominal));
-                    }
-                }
-            @endif
         }
         
         generateInvoiceNumber();
