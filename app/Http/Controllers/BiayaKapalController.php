@@ -581,24 +581,37 @@ class BiayaKapalController extends Controller
                         continue;
                     }
 
-                    $ttIds = [];
-                    if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
-                        foreach ($section['tanda_terima'] as $tt) {
-                            if (!empty($tt['id'])) {
-                                $ttIds[] = $tt['id'];
+                    // Kumpulkan kontainer yang dipilih
+                    $kontainerIds = [];
+                    if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                        foreach ($section['kontainer'] as $k) {
+                            if (!empty($k['bl_id'])) {
+                                $kontainerIds[] = [
+                                    'bl_id'           => $k['bl_id'],
+                                    'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                    'size'            => $k['size'] ?? null,
+                                ];
                             }
                         }
                     }
 
+                    // Clean numeric fields
+                    $cleanNum = function ($val) {
+                        return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                    };
+
                     \App\Models\BiayaKapalThc::create([
-                        'biaya_kapal_id'   => $biayaKapal->id,
-                        'kapal'            => $section['kapal'] ?? null,
-                        'voyage'           => $section['voyage'] ?? null,
-                        'vendor'           => $section['vendor'] ?? null,
-                        'tanda_terima_ids' => $ttIds,
-                        'subtotal'         => $section['subtotal'] ?? 0,
-                        'pph'              => $section['pph'] ?? 0,
-                        'total_biaya'      => $section['total_biaya'] ?? 0,
+                        'biaya_kapal_id'        => $biayaKapal->id,
+                        'kapal'                 => $section['kapal'] ?? null,
+                        'voyage'                => $section['voyage'] ?? null,
+                        'vendor'                => $section['vendor'] ?? null,
+                        'kontainer_ids'         => $kontainerIds,
+                        'subtotal'              => $cleanNum($section['subtotal'] ?? 0),
+                        'biaya_dokumen_muat'    => $cleanNum($section['biaya_dokumen_muat'] ?? 0),
+                        'biaya_dokumen_bongkar' => $cleanNum($section['biaya_dokumen_bongkar'] ?? 0),
+                        'biaya_materai'         => $cleanNum($section['biaya_materai'] ?? 0),
+                        'pph'                   => $cleanNum($section['pph'] ?? 0),
+                        'total_biaya'           => $cleanNum($section['total_biaya'] ?? 0),
                     ]);
                 }
 
@@ -606,6 +619,7 @@ class BiayaKapalController extends Controller
                 $totalThc = \App\Models\BiayaKapalThc::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $biayaKapal->update(['nominal' => $totalThc]);
             }
+
 
             // BIAYA LABUH TAMBAT SECTIONS: Store labuh tambat details
             if ($request->has('labuh_tambat') && !empty($request->labuh_tambat)) {
