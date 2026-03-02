@@ -1068,6 +1068,12 @@ class UserController extends Controller
                             $action = str_replace('pricelist-freight-', '', $action);
                             $module = 'master-pricelist-freight';
                         }
+                        // Special handling for master-pricelist-lolo permissions
+                        elseif (strpos($action, 'pricelist-lolo-') === 0) {
+                            // For master-pricelist-lolo-view, extract the action
+                            $action = str_replace('pricelist-lolo-', '', $action);
+                            $module = 'master-pricelist-lolo';
+                        }
                         // Special handling for master-tipe-akun permissions
                         elseif (strpos($action, 'tipe-akun-') === 0) {
                             // For master-tipe-akun-view, extract the action
@@ -2518,6 +2524,26 @@ class UserController extends Controller
                             'create' => 'master-pricelist-kanisir-ban-create',
                             'update' => 'master-pricelist-kanisir-ban-update',
                             'delete' => 'master-pricelist-kanisir-ban-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-lolo permissions explicitly
+                    if ($module === 'master-pricelist-lolo' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-lolo-view',
+                            'create' => 'master-pricelist-lolo-create',
+                            'update' => 'master-pricelist-lolo-update',
+                            'delete' => 'master-pricelist-lolo-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
