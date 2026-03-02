@@ -2389,7 +2389,8 @@
     const addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
     const allKapalsData = @json($kapals);
     const pricelistBiayaTruckingData = @json($pricelistBiayaTrucking);
-    
+    const pricelistThcVendorsData = @json($pricelistThcVendors ?? []);
+
     function initializeKapalSections() {
         kapalSectionsContainer.innerHTML = '';
         kapalSectionCounter = 0;
@@ -6655,6 +6656,11 @@
         allKapalsData.forEach(kapal => {
             kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
         });
+
+        let vendorThcOptions = '<option value="">-- Pilih Vendor --</option>';
+        pricelistThcVendorsData.forEach(vendor => {
+            vendorThcOptions += `<option value="${vendor}">${vendor}</option>`;
+        });
         
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
@@ -6681,6 +6687,13 @@
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Vendor <span class="text-red-500">*</span></label>
+                <select name="thc_sections[${sectionIndex}][vendor]" class="thc-vendor-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-teal-500" required>
+                    ${vendorThcOptions}
+                </select>
             </div>
             
             <div class="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-teal-300">

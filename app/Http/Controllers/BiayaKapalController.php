@@ -14,6 +14,7 @@ use App\Models\BiayaKapalOperasional;
 use App\Models\BiayaKapalOperasionalItem;
 use App\Models\BiayaKapalTrucking;
 use App\Models\BiayaKapalStuffing;
+use App\Models\PricelistThc;
 use App\Models\BiayaKapalPerlengkapan;
 use App\Models\BiayaKapalLabuhTambat;
 use App\Models\TandaTerima;
@@ -147,6 +148,18 @@ class BiayaKapalController extends Controller
         // Get active pricelist OPP/OPT
         $pricelistOppOpt = \App\Models\PricelistOppOpt::where('status', 'Aktif')->orderBy('nama_barang')->get();
 
+        // Get pricelist THC vendors (distinct vendor names that are active)
+        $pricelistThcs = PricelistThc::where('status', 'Aktif')
+            ->orderBy('vendor')
+            ->get();
+        $pricelistThcVendors = PricelistThc::where('status', 'Aktif')
+            ->whereNotNull('vendor')
+            ->where('vendor', '!=', '')
+            ->select('vendor')
+            ->distinct()
+            ->orderBy('vendor')
+            ->pluck('vendor');
+
         return view('biaya-kapal.create', compact(
             'kapals', 
             'klasifikasiBiayas', 
@@ -157,7 +170,9 @@ class BiayaKapalController extends Controller
             'pricelistTkbm', 
             'pricelistBiayaTrucking',
             'pricelistLabuhTambat',
-            'pricelistOppOpt'
+            'pricelistOppOpt',
+            'pricelistThcs',
+            'pricelistThcVendors'
         ));
     }
 
@@ -256,6 +271,16 @@ class BiayaKapalController extends Controller
         // Stuffing Sections
         if (isset($data['stuffing_sections']) && is_array($data['stuffing_sections'])) {
             foreach ($data['stuffing_sections'] as &$section) {
+                if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
+        // THC Sections
+        if (isset($data['thc_sections']) && is_array($data['thc_sections'])) {
+            foreach ($data['thc_sections'] as &$section) {
                 if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
@@ -391,6 +416,17 @@ class BiayaKapalController extends Controller
             'stuffing_sections.*.subtotal' => 'nullable|numeric|min:0',
             'stuffing_sections.*.pph' => 'nullable|numeric|min:0',
             'stuffing_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // THC sections validation
+            'thc_sections' => 'nullable|array',
+            'thc_sections.*.kapal' => 'nullable|string|max:255',
+            'thc_sections.*.voyage' => 'nullable|string|max:255',
+            'thc_sections.*.vendor' => 'nullable|string|max:255',
+            'thc_sections.*.tanda_terima' => 'nullable|array',
+            'thc_sections.*.tanda_terima.*.id' => 'nullable|numeric',
+            'thc_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'thc_sections.*.pph' => 'nullable|numeric|min:0',
+            'thc_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // Perlengkapan sections
             'perlengkapan_sections'                     => 'nullable|array',
@@ -535,6 +571,40 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for stuffing from section totals
                 $totalStuffing = BiayaKapalStuffing::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $biayaKapal->update(['nominal' => $totalStuffing]);
+            }
+
+            // BIAYA THC SECTIONS: Store THC details
+            if ($request->has('thc_sections') && !empty($request->thc_sections)) {
+                foreach ($request->thc_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                        continue;
+                    }
+
+                    $ttIds = [];
+                    if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
+                        foreach ($section['tanda_terima'] as $tt) {
+                            if (!empty($tt['id'])) {
+                                $ttIds[] = $tt['id'];
+                            }
+                        }
+                    }
+
+                    \App\Models\BiayaKapalThc::create([
+                        'biaya_kapal_id'   => $biayaKapal->id,
+                        'kapal'            => $section['kapal'] ?? null,
+                        'voyage'           => $section['voyage'] ?? null,
+                        'vendor'           => $section['vendor'] ?? null,
+                        'tanda_terima_ids' => $ttIds,
+                        'subtotal'         => $section['subtotal'] ?? 0,
+                        'pph'              => $section['pph'] ?? 0,
+                        'total_biaya'      => $section['total_biaya'] ?? 0,
+                    ]);
+                }
+
+                // Auto-calculate nominal for THC from section totals
+                $totalThc = \App\Models\BiayaKapalThc::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalThc]);
             }
 
             // BIAYA LABUH TAMBAT SECTIONS: Store labuh tambat details
