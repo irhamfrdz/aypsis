@@ -6701,6 +6701,14 @@
                 <label class="block text-sm font-semibold text-gray-800 mb-2">Pilih Kontainer <span class="text-red-500">*</span></label>
                 <p class="text-xs text-gray-400 mb-3"><i class="fas fa-info-circle mr-1"></i>Kontainer akan muncul setelah memilih No. Voyage</p>
 
+                <!-- Search box -->
+                <div class="thc-kontainer-search-wrap hidden mb-3 relative">
+                    <span class="absolute left-3 top-2.5 text-gray-400 text-sm"><i class="fas fa-search"></i></span>
+                    <input type="text"
+                           class="thc-kontainer-search w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                           placeholder="Cari nomor kontainer...">
+                </div>
+
                 <!-- Loading indicator -->
                 <div class="thc-kontainer-loading hidden py-4 text-center text-gray-500 text-sm">
                     <i class="fas fa-spinner fa-spin mr-2"></i>Memuat data kontainer...
@@ -6712,7 +6720,7 @@
                 </div>
 
                 <!-- Kontainer checklist -->
-                <div class="thc-kontainer-list space-y-2 max-h-60 overflow-y-auto"></div>
+                <div class="thc-kontainer-list space-y-2 max-h-60 overflow-y-auto pr-1"></div>
 
                 <!-- Hidden inputs container -->
                 <div class="thc-kontainer-hidden-inputs"></div>
@@ -6776,10 +6784,21 @@
         });
 
         // --- KONTAINER MULTI-SELECT LOGIC (loaded by voyage) ---
-        const kontainerList        = section.querySelector('.thc-kontainer-list');
-        const kontainerLoading     = section.querySelector('.thc-kontainer-loading');
-        const kontainerEmpty       = section.querySelector('.thc-kontainer-empty');
+        const kontainerList         = section.querySelector('.thc-kontainer-list');
+        const kontainerLoading      = section.querySelector('.thc-kontainer-loading');
+        const kontainerEmpty        = section.querySelector('.thc-kontainer-empty');
         const hiddenInputsContainer = section.querySelector('.thc-kontainer-hidden-inputs');
+        const kontainerSearchWrap   = section.querySelector('.thc-kontainer-search-wrap');
+        const kontainerSearch       = section.querySelector('.thc-kontainer-search');
+
+        // Filter kontainer list saat mengetik
+        kontainerSearch.addEventListener('input', function() {
+            const q = this.value.toLowerCase().trim();
+            kontainerList.querySelectorAll('label').forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = (!q || text.includes(q)) ? '' : 'none';
+            });
+        });
 
         function loadContainersForTHCSection(voyageValue) {
             // Clear previous state
@@ -6787,6 +6806,8 @@
             hiddenInputsContainer.innerHTML = '';
             kontainerLoading.classList.remove('hidden');
             kontainerEmpty.classList.add('hidden');
+            kontainerSearchWrap.classList.add('hidden');
+            kontainerSearch.value = '';
 
             if (!voyageValue) {
                 kontainerLoading.classList.add('hidden');
@@ -6802,6 +6823,10 @@
                         kontainerEmpty.classList.remove('hidden');
                         return;
                     }
+
+                    // Tampilkan search box karena ada data
+                    kontainerSearchWrap.classList.remove('hidden');
+                    kontainerSearch.focus();
 
                     data.containers.forEach((kontainer, idx) => {
                         const row = document.createElement('label');
