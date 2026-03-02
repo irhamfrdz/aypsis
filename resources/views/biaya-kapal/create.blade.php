@@ -6897,9 +6897,9 @@
                                 if (!existingInput) {
                                     const hiddenGroup = document.createElement('div');
                                     hiddenGroup.setAttribute('data-bl-id', blId);
-                                    hiddenGroup.innerHTML = `<input type="hidden" name="thc_sections[${sectionIndex}][kontainer][][bl_id]" value="${blId}">
-                                    <input type="hidden" name="thc_sections[${sectionIndex}][kontainer][][nomor_kontainer]" value="${this.dataset.nomor}">
-                                    <input type="hidden" name="thc_sections[${sectionIndex}][kontainer][][size]" value="${this.dataset.size}">`;
+                                     hiddenGroup.innerHTML = `<input type="hidden" name="thc_sections[${sectionIndex}][kontainer][${blId}][bl_id]" value="${blId}">
+                                    <input type="hidden" name="thc_sections[${sectionIndex}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
+                                    <input type="hidden" name="thc_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">`;
                                     hiddenInputsContainer.appendChild(hiddenGroup);
                                 }
                             } else {

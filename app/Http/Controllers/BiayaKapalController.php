@@ -1574,7 +1574,18 @@ class BiayaKapalController extends Controller
     public function edit(BiayaKapal $biayaKapal)
     {
         // Load relationships
-        $biayaKapal->load(['barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails']);
+        $biayaKapal->load([
+            'barangDetails.pricelistBuruh', 
+            'airDetails', 
+            'tkbmDetails.pricelistTkbm', 
+            'operasionalDetails',
+            'truckingDetails',
+            'stuffingDetails',
+            'perlengkapanDetails',
+            'labuhTambatDetails',
+            'oppOptDetails',
+            'thcDetails'
+        ]);
 
         // Get list of ships for dropdown
         $kapals = MasterKapal::where('status', 'aktif')
@@ -1608,7 +1619,36 @@ class BiayaKapalController extends Controller
         // Get active pricelist labuh tambat
         $pricelistLabuhTambat = \App\Models\MasterPricelistLabuhTambat::where('is_active', true)->orderBy('nama_agen')->get();
 
-        return view('biaya-kapal.edit', compact('biayaKapal', 'kapals', 'klasifikasiBiayas', 'pricelistBuruh', 'karyawans', 'pricelistBiayaDokumen', 'pricelistAirTawar', 'pricelistTkbm', 'pricelistBiayaTrucking', 'pricelistLabuhTambat'));
+        // Get active pricelist OPP/OPT
+        $pricelistOppOpt = \App\Models\PricelistOppOpt::where('status', 'Aktif')->orderBy('nama_barang')->get();
+
+        // THC data (added)
+        $pricelistThcs = PricelistThc::where('status', 'Aktif')
+            ->orderBy('vendor')
+            ->get();
+        $pricelistThcVendors = PricelistThc::where('status', 'Aktif')
+            ->whereNotNull('vendor')
+            ->where('vendor', '!=', '')
+            ->select('vendor')
+            ->distinct()
+            ->orderBy('vendor')
+            ->pluck('vendor');
+
+        return view('biaya-kapal.edit', compact(
+            'biayaKapal', 
+            'kapals', 
+            'klasifikasiBiayas', 
+            'pricelistBuruh', 
+            'karyawans', 
+            'pricelistBiayaDokumen', 
+            'pricelistAirTawar', 
+            'pricelistTkbm', 
+            'pricelistBiayaTrucking', 
+            'pricelistLabuhTambat',
+            'pricelistOppOpt',
+            'pricelistThcs',
+            'pricelistThcVendors'
+        ));
     }
 
     /**
@@ -2033,6 +2073,56 @@ class BiayaKapalController extends Controller
                             'total_biaya' => $section['total_biaya'] ?? 0,
                         ]);
                     }
+                }
+            }
+
+            // THC UPDATE (NEW)
+            if ($request->has('thc_sections')) {
+                \App\Models\BiayaKapalThc::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                $totalThc = 0;
+                if (!empty($request->thc_sections)) {
+                    foreach ($request->thc_sections as $section) {
+                        if (empty($section['kapal']) && empty($section['voyage'])) continue;
+
+                        $kontainerIds = [];
+                        if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                            foreach ($section['kontainer'] as $k) {
+                                if (!empty($k['bl_id'])) {
+                                    $kontainerIds[] = [
+                                        'bl_id'           => $k['bl_id'],
+                                        'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                        'size'            => $k['size'] ?? null,
+                                    ];
+                                }
+                            }
+                        }
+
+                        $cleanSubtotal = str_replace(',', '.', str_replace('.', '', $section['subtotal'] ?? '0'));
+                        $cleanDokMuat = str_replace(',', '.', str_replace('.', '', $section['biaya_dokumen_muat'] ?? '0'));
+                        $cleanDokBongkar = str_replace(',', '.', str_replace('.', '', $section['biaya_dokumen_bongkar'] ?? '0'));
+                        $cleanMaterai = str_replace(',', '.', str_replace('.', '', $section['biaya_materai'] ?? '0'));
+                        $cleanPph = str_replace(',', '.', str_replace('.', '', $section['pph'] ?? '0'));
+                        $cleanTotal = str_replace(',', '.', str_replace('.', '', $section['total_biaya'] ?? '0'));
+
+                        \App\Models\BiayaKapalThc::create([
+                            'biaya_kapal_id'        => $biayaKapal->id,
+                            'kapal'                 => $section['kapal'] ?? null,
+                            'voyage'                => $section['voyage'] ?? null,
+                            'vendor'                => $section['vendor'] ?? null,
+                            'kontainer_ids'         => $kontainerIds,
+                            'subtotal'              => $cleanSubtotal,
+                            'biaya_dokumen_muat'    => $cleanDokMuat,
+                            'biaya_dokumen_bongkar' => $cleanDokBongkar,
+                            'biaya_materai'         => $cleanMaterai,
+                            'pph'                   => $cleanPph,
+                            'total_biaya'           => $cleanTotal,
+                        ]);
+                        $totalThc += floatval($cleanTotal);
+                    }
+                }
+                
+                if ($totalThc > 0) {
+                    $biayaKapal->update(['nominal' => $totalThc]);
                 }
             }
 
