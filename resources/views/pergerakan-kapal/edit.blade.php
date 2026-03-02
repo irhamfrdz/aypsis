@@ -317,7 +317,7 @@
             tujuan_tujuan: tujuanTujuan
         });
 
-        fetch(`{{ route('api.pergerakan-kapal.generate-voyage') }}?${params}`)
+        fetch(`{{ route('api.pergerakan-kapal.generate-voyage', [], false) }}?${params}`)
             .then(response => response.json())
             .then(data => {
                 if (data.voyage_number) {

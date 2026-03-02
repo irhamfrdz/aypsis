@@ -160,7 +160,7 @@
             });
 
             function generateKode() {
-                fetch('{{ route("order.tujuan-ambil.store") }}', {
+                fetch('{{ route("order.tujuan-ambil.store", [], false) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

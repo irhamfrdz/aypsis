@@ -436,7 +436,7 @@ async function generateNomor() {
             return;
         }
 
-        let url = '{{ route('pembayaran-ob.generate-nomor') }}';
+        let url = '{{ route('pembayaran-ob.generate-nomor', [], false) }}';
         url += '?kas_bank_id=' + kasBankId;
 
         const response = await fetch(url);

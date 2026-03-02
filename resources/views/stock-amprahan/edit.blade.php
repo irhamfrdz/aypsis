@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTypeBarangLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTypeBarangInput.value.trim();
-            let url = "{{ route('nama-barang-amprahan.create') }}";
+            let url = "{{ route('nama-barang-amprahan.create', [], false) }}";
 
             // Add popup parameter and nama_barang if available
             const params = new URLSearchParams();

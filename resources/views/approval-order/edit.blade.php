@@ -497,7 +497,7 @@
             addPenerimaLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 const searchValue = searchPenerimaInput.value.trim();
-                let url = "{{ route('order.penerima.create') }}";
+                let url = "{{ route('order.penerima.create', [], false) }}";
 
                 const params = new URLSearchParams();
                 params.append('popup', '1');
@@ -527,7 +527,7 @@
             addNotifyPartyLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 const searchValue = searchNotifyPartyInput.value.trim();
-                let url = "{{ route('order.penerima.create') }}";
+                let url = "{{ route('order.penerima.create', [], false) }}";
 
                 const params = new URLSearchParams();
                 params.append('popup', '1');

@@ -1353,7 +1353,7 @@ function kirimManifest(type, id) {
         return;
     }
 
-    fetch('{{ route('ob.kirim-manifest') }}', {
+    fetch('{{ route('ob.kirim-manifest', [], false) }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

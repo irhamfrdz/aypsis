@@ -494,7 +494,7 @@ function toggleFilter() {
 }
 
 function loadStatistics() {
-    $.get('{{ route("outstanding.stats") }}', function(data) {
+    $.get('{{ route("outstanding.stats", [], false) }}', function(data) {
         $('#pendingCount').html(data.pending);
         $('#partialCount').html(data.partial);
         $('#completedCount').html(data.completed);
@@ -507,7 +507,7 @@ function loadStatistics() {
 
 function processUnits(orderId) {
     // Get order details via AJAX
-    $.get(`{{ route('outstanding.details', '') }}/${orderId}`, function(data) {
+    $.get(`{{ route('outstanding.details', '', false) }}/${orderId}`, function(data) {
         $('#modalOrderNumber').val(data.nomor_order);
         $('#modalTotalUnits').val(data.units);
         $('#modalCurrentSisa').val(data.sisa);
@@ -542,7 +542,7 @@ $('#processUnitsForm').submit(function(e) {
     $('#processUnitsForm button').prop('disabled', true);
 
     $.ajax({
-        url: `{{ route('outstanding.process', '') }}/${orderId}`,
+        url: `{{ route('outstanding.process', '', false) }}/${orderId}`,
         method: 'POST',
         data: {
             processed_units: processedUnits,

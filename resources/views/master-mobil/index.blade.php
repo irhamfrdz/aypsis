@@ -618,7 +618,7 @@ document.addEventListener('click', function(event) {
 // Handle export with current filters
 function exportWithFilters(format) {
     const searchParam = new URLSearchParams(window.location.search).get('search');
-    let exportUrl = `{{ route('master.mobil.export', ['format' => '__FORMAT__']) }}`.replace('__FORMAT__', format);
+    let exportUrl = `{{ route('master.mobil.export', ['format' => '__FORMAT__'], false) }}`.replace('__FORMAT__', format);
     
     if (searchParam) {
         exportUrl += `&search=${encodeURIComponent(searchParam)}`;

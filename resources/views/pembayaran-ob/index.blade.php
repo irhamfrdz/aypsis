@@ -343,7 +343,7 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
         // Create form and submit
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `{{ route('pembayaran-ob.index') }}/${deleteItemId}`;
+        form.action = `{{ route('pembayaran-ob.index', [], false) }}/${deleteItemId}`;
 
         // Add CSRF token
         const csrfToken = document.createElement('input');

@@ -632,7 +632,7 @@ function keluarkanKontainer(tagihanId, nomorKontainer, vendor) {
         };
 
         // Send POST request
-        fetch(`{{ route('pranota-kontainer-sewa.lepas-kontainer', $pranota->id) }}`, {
+        fetch(`{{ route('pranota-kontainer-sewa.lepas-kontainer', $pranota->id, false) }}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -686,7 +686,7 @@ function lepasKontainer() {
         };
 
         // Send POST request
-        fetch(`{{ route('pranota-kontainer-sewa.lepas-kontainer', $pranota->id) }}`, {
+        fetch(`{{ route('pranota-kontainer-sewa.lepas-kontainer', $pranota->id, false) }}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -781,7 +781,7 @@ function searchTagihan() {
     if (tanggalAwal) params.append('tanggal_awal', tanggalAwal);
     if (tanggalAkhir) params.append('tanggal_akhir', tanggalAkhir);
     
-    fetch(`{{ route('daftar-tagihan-kontainer-sewa.index') }}?${params.toString()}`, {
+    fetch(`{{ route('daftar-tagihan-kontainer-sewa.index', [], false) }}?${params.toString()}`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -1039,7 +1039,7 @@ function saveGrandTotal(tagihanId) {
     console.log('Sending payload:', payload);
     
     // Send AJAX request to update
-    fetch(`{{ route('pranota-kontainer-sewa.update-grand-total') }}`, {
+    fetch(`{{ route('pranota-kontainer-sewa.update-grand-total', [], false) }}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1111,7 +1111,7 @@ function tambahKontainerTerpilih() {
         button.disabled = true;
         button.innerHTML = '<span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Memproses...';
         
-        fetch(`{{ route('pranota-kontainer-sewa.add-items-to-existing') }}`, {
+        fetch(`{{ route('pranota-kontainer-sewa.add-items-to-existing', [], false) }}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

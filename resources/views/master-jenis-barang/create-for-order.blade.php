@@ -124,7 +124,7 @@
 
             function generateKode() {
                 // Generate simple auto-incrementing code
-                fetch('{{ route("order.jenis-barang.store") }}', {
+                fetch('{{ route("order.jenis-barang.store", [], false) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -714,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-        fetch('{{ route("report.manifests.auto-update-nomor-urut") }}', {
+        fetch('{{ route("report.manifests.auto-update-nomor-urut", [], false) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-        fetch('{{ route("report.manifests.auto-update-size") }}', {
+        fetch('{{ route("report.manifests.auto-update-size", [], false) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -798,7 +798,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.insertAdjacentHTML('beforeend', loadingHtml);
         
         // Call API through tanda-terima controller
-        fetch('{{ route("tanda-terima.update-manifest") }}', {
+        fetch('{{ route("tanda-terima.update-manifest", [], false) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

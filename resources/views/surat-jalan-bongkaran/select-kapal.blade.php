@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         voyageSelect.appendChild(loadingOption);
         
         // Fetch BL data via AJAX
-        fetch(`{{ route('surat-jalan-bongkaran.bl-data') }}?nama_kapal=${encodeURIComponent(namaKapal)}`)
+        fetch(`{{ route('surat-jalan-bongkaran.bl-data', [], false) }}?nama_kapal=${encodeURIComponent(namaKapal)}`)
             .then(response => response.json())
             .then(data => {
                 // Hide loading

@@ -821,7 +821,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTermLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTermInput.value.trim();
-            let url = "{{ route('term.create') }}";
+            let url = "{{ route('term.create', [], false) }}";
             const params = new URLSearchParams();
             params.append('popup', '1');
             if (searchValue) params.append('search', searchValue);
@@ -837,7 +837,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTujuanKirimLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTujuanKirimInput.value.trim();
-            let url = "{{ route('tujuan-kirim.create') }}";
+            let url = "{{ route('tujuan-kirim.create', [], false) }}";
             const params = new URLSearchParams();
             params.append('popup', '1');
             if (searchValue) params.append('search', searchValue);
@@ -853,7 +853,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTujuanAmbilLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTujuanAmbilInput.value.trim();
-            let url = "{{ route('master.tujuan-kegiatan-utama.create') }}";
+            let url = "{{ route('master.tujuan-kegiatan-utama.create', [], false) }}";
             const params = new URLSearchParams();
             params.append('popup', '1');
             if (searchValue) params.append('search', searchValue);
@@ -869,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addPengirimLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchPengirimInput.value.trim();
-            let url = "{{ route('order.pengirim.create') }}";
+            let url = "{{ route('order.pengirim.create', [], false) }}";
             const params = new URLSearchParams();
             params.append('popup', '1');
             if (searchValue) params.append('search', searchValue);
@@ -886,7 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addPenerimaLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchPenerimaInput.value.trim();
-            let url = "{{ route('order.penerima.create') }}";
+            let url = "{{ route('order.penerima.create', [], false) }}";
             const params = new URLSearchParams();
             params.append('popup', '1');
             if (searchValue) params.append('search', searchValue);
@@ -902,7 +902,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addJenisBarangLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchJenisBarangInput.value.trim();
-            let url = "{{ route('order.jenis-barang.create') }}";
+            let url = "{{ route('order.jenis-barang.create', [], false) }}";
             const params = new URLSearchParams();
             params.append('popup', '1');
             if (searchValue) params.append('search', searchValue);

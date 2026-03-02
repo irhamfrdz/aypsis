@@ -1334,7 +1334,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
 
             // Build export URL with same filters
-            let exportUrl = '{{ route("daftar-tagihan-kontainer-sewa.export") }}';
+            let exportUrl = '{{ route("daftar-tagihan-kontainer-sewa.export", [], false) }}';
             const params = [];
 
             // Add all existing filters
@@ -1519,7 +1519,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-delete") }}';
+                form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-delete", [], false) }}';
 
                 // Add CSRF token
                 const csrfToken = document.createElement('input');
@@ -1575,7 +1575,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Create form and submit
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-update-status") }}';
+                    form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-update-status", [], false) }}';
 
                     // Add CSRF token
                     const csrfToken = document.createElement('input');
@@ -1943,7 +1943,7 @@ window.ungroupSelectedContainers = function() {
     });
 
     // Send AJAX request
-    fetch('{{ route("daftar-tagihan-kontainer-sewa.ungroup-containers") }}', {
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.ungroup-containers", [], false) }}', {
         method: 'POST',
         body: formData,
         headers: {
@@ -2056,7 +2056,7 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
         nomorPranotaDisplay.value = 'Memuat...';
 
         // Make AJAX call to get next pranota number
-        fetch('{{ route("api.next-pranota-number") }}', {
+        fetch('{{ route("api.next-pranota-number", [], false) }}', {
             method: 'GET',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -2364,20 +2364,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (pranotaAction === 'masukan_ke_pranota') {
                 // Masukan ke pranota (update status existing items) - menggunakan sistem pranota kontainer sewa
-                actionUrl = '{{ route("pranota-kontainer-sewa.bulk-create-from-tagihan-kontainer-sewa") }}';
+                actionUrl = '{{ route("pranota-kontainer-sewa.bulk-create-from-tagihan-kontainer-sewa", [], false) }}';
                 submitData.append('action', 'masukan_ke_pranota');
                 selectedIds.forEach(id => {
                     submitData.append('selected_ids[]', id);
                 });
             } else if (pranotaType === 'bulk') {
                 // Bulk pranota submission (create new pranota)
-                actionUrl = '{{ route("pranota.bulk.store") }}';
+                actionUrl = '{{ route("pranota.bulk.store", [], false) }}';
                 selectedIds.forEach(id => {
                     submitData.append('selected_ids[]', id);
                 });
             } else {
                 // Single pranota submission (create new pranota)
-                actionUrl = '{{ route("pranota.store") }}';
+                actionUrl = '{{ route("pranota.store", [], false) }}';
             }
 
             // Submit to server
@@ -2555,7 +2555,7 @@ window.openDeleteGroupModal = function() {
     showNotification('warning', 'Memuat Groups', 'Sedang memuat daftar group yang ada...');
 
     // Fetch existing groups via AJAX
-    fetch('{{ route("daftar-tagihan-kontainer-sewa.groups") }}', {
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.groups", [], false) }}', {
         method: 'GET',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -2780,7 +2780,7 @@ window.deleteGroups = function(groupNames) {
     });
 
     // Send AJAX request
-    fetch('{{ route("daftar-tagihan-kontainer-sewa.delete-groups") }}', {
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.delete-groups", [], false) }}', {
         method: 'POST',
         body: formData,
         headers: {

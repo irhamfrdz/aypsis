@@ -267,7 +267,7 @@ function printReport() {
         status: document.getElementById('status').value
     });
 
-    window.open(`{{ route('report.pembayaran.print') }}?${params.toString()}`, '_blank');
+    window.open(`{{ route('report.pembayaran.print', [], false) }}?${params.toString()}`, '_blank');
 }
 
 function exportReport() {
@@ -278,7 +278,7 @@ function exportReport() {
         status: document.getElementById('status').value
     });
 
-    window.location.href = `{{ route('report.pembayaran.export') }}?${params.toString()}`;
+    window.location.href = `{{ route('report.pembayaran.export', [], false) }}?${params.toString()}`;
 }
 </script>
 @endsection

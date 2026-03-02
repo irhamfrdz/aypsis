@@ -1226,7 +1226,7 @@ function loadBarangForSplit(selectedContainers) {
     
     // Get all tanda terima IDs from selected containers
     // We need to make an AJAX call to get barang from these containers
-    fetch('{{ route("tanda-terima-lcl.get-barang-from-containers-by-nomor") }}', {
+    fetch('{{ route("tanda-terima-lcl.get-barang-from-containers-by-nomor", [], false) }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

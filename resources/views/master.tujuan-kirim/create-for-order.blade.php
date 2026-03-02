@@ -117,7 +117,7 @@
             });
 
             function generateKode() {
-                fetch('{{ route("order.tujuan-kirim.store") }}', {
+                fetch('{{ route("order.tujuan-kirim.store", [], false) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

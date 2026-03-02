@@ -770,7 +770,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route("perbaikan-kontainer.bulk-delete") }}';
+                form.action = '{{ route("perbaikan-kontainer.bulk-delete", [], false) }}';
 
             // Add CSRF token
             const csrfToken = document.createElement('input');
@@ -828,7 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route("perbaikan-kontainer.bulk-update-status") }}';
+                form.action = '{{ route("perbaikan-kontainer.bulk-update-status", [], false) }}';
 
                 // Add CSRF token
                 const csrfToken = document.createElement('input');

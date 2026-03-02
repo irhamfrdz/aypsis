@@ -463,7 +463,7 @@ $(document).ready(function() {
 
         // Fetch gudang options based on selected kegiatan
         $.ajax({
-            url: '{{ route("gate-in.get-gudang-by-kegiatan") }}',
+            url: '{{ route("gate-in.get-gudang-by-kegiatan", [], false) }}',
             method: 'GET',
             data: { kegiatan: selectedKegiatan },
             success: function(response) {
@@ -492,7 +492,7 @@ $(document).ready(function() {
 
         // Fetch kontainer options based on selected kegiatan
         $.ajax({
-            url: '{{ route("gate-in.get-kontainer-by-kegiatan") }}',
+            url: '{{ route("gate-in.get-kontainer-by-kegiatan", [], false) }}',
             method: 'GET',
             data: { kegiatan: selectedKegiatan },
             success: function(response) {
@@ -521,7 +521,7 @@ $(document).ready(function() {
 
         // Fetch muatan options based on selected kegiatan
         $.ajax({
-            url: '{{ route("gate-in.get-muatan-by-kegiatan") }}',
+            url: '{{ route("gate-in.get-muatan-by-kegiatan", [], false) }}',
             method: 'GET',
             data: { kegiatan: selectedKegiatan },
             success: function(response) {
@@ -648,7 +648,7 @@ function loadKontainerData(kontainerSize = null) {
     }
 
     $.ajax({
-        url: '{{ route("gate-in.get-kontainers-surat-jalan") }}',
+        url: '{{ route("gate-in.get-kontainers-surat-jalan", [], false) }}',
         method: 'GET',
         data: ajaxData,
         timeout: 30000,
@@ -1219,7 +1219,7 @@ function calculateTotal() {
     $('#total-section').removeClass('hidden');
 
     $.ajax({
-        url: '{{ route("gate-in.calculate-total") }}',
+        url: '{{ route("gate-in.calculate-total", [], false) }}',
         method: 'GET',
         data: {
             pelabuhan: pelabuhan,

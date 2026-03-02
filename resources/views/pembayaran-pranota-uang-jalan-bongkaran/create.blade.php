@@ -335,7 +335,7 @@
 
         function generateNomorPembayaran() {
             if (generateBtn) { generateBtn.disabled = true; }
-            fetch('{{ route("pembayaran-pranota-uang-jalan-bongkaran.generate-nomor") }}', {
+            fetch('{{ route("pembayaran-pranota-uang-jalan-bongkaran.generate-nomor", [], false) }}', {
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
             })

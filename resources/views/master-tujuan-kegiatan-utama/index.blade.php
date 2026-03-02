@@ -229,7 +229,7 @@ $(document).ready(function() {
             btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...');
 
             $.ajax({
-                url: "{{ route('master.tujuan-kegiatan-utama.sync-ongkos') }}",
+                url: "{{ route('master.tujuan-kegiatan-utama.sync-ongkos', [], false) }}",
                 method: "POST",
                 data: {
                     _token: "{{ csrf_token() }}"

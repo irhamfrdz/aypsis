@@ -561,7 +561,7 @@ function generatePranotaCatNumber() {
     console.log('Starting generatePranotaCatNumber...');
 
     return $.ajax({
-        url: '{{ route("pranota-cat.generate-nomor") }}',
+        url: '{{ route("pranota-cat.generate-nomor", [], false) }}',
         type: 'GET',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -665,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.showPranotaModal = function(ids, isBulk = false) {
         // For individual pranota, redirect to create page
         if (!isBulk) {
-            window.location.href = '{{ route("pranota.create") }}?tagihan_cat_id=' + ids[0];
+            window.location.href = '{{ route("pranota.create", [], false) }}?tagihan_cat_id=' + ids[0];
             return;
         }
 
@@ -1056,7 +1056,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create form and submit
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ route("tagihan-cat.bulk-delete") }}';
+            form.action = '{{ route("tagihan-cat.bulk-delete", [], false) }}';
 
             // Add CSRF token
             const csrfToken = document.createElement('input');
@@ -1114,7 +1114,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route("tagihan-cat.bulk-update-status") }}';
+                form.action = '{{ route("tagihan-cat.bulk-update-status", [], false) }}';
 
                 // Add CSRF token
                 const csrfToken = document.createElement('input');

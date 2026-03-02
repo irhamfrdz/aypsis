@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.uang_jalan_id) {
-                    const createAdjustmentUrl = '{{ route("uang-jalan.adjustment.create") }}?uang_jalan_id=' + data.uang_jalan_id;
+                    const createAdjustmentUrl = '{{ route("uang-jalan.adjustment.create", [], false) }}?uang_jalan_id=' + data.uang_jalan_id;
                     window.location.href = createAdjustmentUrl;
                 } else {
                     alert('Tidak ada uang jalan yang dapat disesuaikan untuk surat jalan ini.');

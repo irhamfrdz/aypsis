@@ -662,7 +662,7 @@
 
 <script>
 function generateNomorSuratJalan() {
-    fetch('{{ route("surat-jalan.generate-nomor") }}')
+    fetch('{{ route("surat-jalan.generate-nomor", [], false) }}')
         .then(response => response.json())
         .then(data => {
             document.querySelector('input[name="no_surat_jalan"]').value = data.no_surat_jalan;
@@ -995,7 +995,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addPengirimLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchPengirimInput.value.trim();
-            let url = "{{ route('pengirim.create') }}";
+            let url = "{{ route('pengirim.create', [], false) }}";
 
             // Add popup parameter and nama_pengirim if available
             const params = new URLSearchParams();
@@ -1267,7 +1267,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addJenisBarangLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchJenisBarangInput.value.trim();
-            let url = "{{ route('jenis-barang.create') }}";
+            let url = "{{ route('jenis-barang.create', [], false) }}";
 
             // Add popup parameter and nama_barang if available
             const params = new URLSearchParams();
@@ -1308,7 +1308,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTujuanPengambilanLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTujuanPengambilanInput.value.trim();
-            let url = "{{ route('tujuan-kirim.create') }}";
+            let url = "{{ route('tujuan-kirim.create', [], false) }}";
 
             // Add popup parameter and nama_tujuan if available
             const params = new URLSearchParams();
@@ -1349,7 +1349,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTujuanPengirimanLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTujuanPengirimanInput.value.trim();
-            let url = "{{ route('tujuan-kirim.create') }}";
+            let url = "{{ route('tujuan-kirim.create', [], false) }}";
 
             // Add popup parameter and nama_tujuan if available
             const params = new URLSearchParams();

@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedId = document.getElementById('selected_surat_jalan_id').value;
         if (selectedId) {
             // Redirect to create/find tanda terima from surat jalan
-            window.location.href = '{{ route("tanda-terima.from-surat-jalan", ":id") }}'.replace(':id', selectedId);
+            window.location.href = '{{ route("tanda-terima.from-surat-jalan", ":id", false) }}'.replace(':id', selectedId);
         }
     });
 
@@ -445,7 +445,7 @@ function loadModalPage(page = 1) {
     const search = document.getElementById('modal-search').value || '';
     const status = document.getElementById('status') ? document.getElementById('status').value : '';
 
-    const url = new URL('{{ route('tanda-terima.select-surat-jalan') }}', window.location.origin);
+    const url = new URL('{{ route('tanda-terima.select-surat-jalan', [], false) }}', window.location.origin);
     url.searchParams.set('page', page);
     url.searchParams.set('per_page', perPage);
     if (search) url.searchParams.set('search', search);

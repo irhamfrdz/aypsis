@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (selectedId) {
             // Redirect to create adjustment page with selected uang jalan id
-            const createAdjustmentUrl = '{{ route("uang-jalan.adjustment.create") }}?uang_jalan_id=' + selectedId;
+            const createAdjustmentUrl = '{{ route("uang-jalan.adjustment.create", [], false) }}?uang_jalan_id=' + selectedId;
             window.location.href = createAdjustmentUrl;
         }
     });

@@ -1512,7 +1512,7 @@ function removeExistingImage(button, path) {
         const top = (screen.height - popupHeight) / 2;
         
         window.open(
-            '{{ route("tanda-terima.penerima.create") }}',
+            '{{ route("tanda-terima.penerima.create", [], false) }}',
             'TambahPenerima',
             `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
         );
@@ -1526,7 +1526,7 @@ function removeExistingImage(button, path) {
         const top = (screen.height - popupHeight) / 2;
         
         window.open(
-            '{{ route("tanda-terima.penerima.create") }}',
+            '{{ route("tanda-terima.penerima.create", [], false) }}',
             'TambahPengirim',
             `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
         );

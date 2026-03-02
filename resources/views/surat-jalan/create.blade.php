@@ -900,7 +900,7 @@ function filterNomorKontainerBySize() {
 }
 
 function generateNomorSuratJalan() {
-    fetch('{{ route("surat-jalan.generate-nomor") }}')
+    fetch('{{ route("surat-jalan.generate-nomor", [], false) }}')
         .then(response => response.json())
         .then(data => {
             document.querySelector('input[name="no_surat_jalan"]').value = data.no_surat_jalan;

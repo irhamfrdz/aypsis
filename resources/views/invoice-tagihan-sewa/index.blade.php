@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoadingModal();
 
         // Fetch invoice details via AJAX
-        fetch('{{ route("invoice-tagihan-sewa.details") }}', {
+        fetch('{{ route("invoice-tagihan-sewa.details", [], false) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -763,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         // Send AJAX request to create pranota
-        fetch('{{ route("invoice-tagihan-sewa.store-pranota") }}', {
+        fetch('{{ route("invoice-tagihan-sewa.store-pranota", [], false) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -799,7 +799,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.redirect_url) {
                     window.location.href = data.redirect_url;
                 } else {
-                    window.location.href = '{{ route("invoice-tagihan-sewa.index") }}';
+                    window.location.href = '{{ route("invoice-tagihan-sewa.index", [], false) }}';
                 }
             } else {
                 button.disabled = false;
@@ -843,7 +843,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         params.append('nomor_pranota', nomorPranota.value.trim());
         
-        window.location.href = '{{ route("pranota-kontainer-sewa.create") }}?' + params.toString();
+        window.location.href = '{{ route("pranota-kontainer-sewa.create", [], false) }}?' + params.toString();
     };
 
     // Bulk delete handler
@@ -865,7 +865,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create form and submit
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ route("invoice-tagihan-sewa.bulk-delete") }}';
+            form.action = '{{ route("invoice-tagihan-sewa.bulk-delete", [], false) }}';
 
             const csrfToken = document.createElement('input');
             csrfToken.type = 'hidden';

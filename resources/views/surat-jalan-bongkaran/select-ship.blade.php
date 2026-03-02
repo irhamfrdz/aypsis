@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
         voyageSelect.innerHTML = '<option value="">Memuat voyage...</option>';
 
         // Make AJAX request to get voyages
-        fetch(`{{ route('surat-jalan-bongkaran.get-voyages') }}?nama_kapal=${encodeURIComponent(kapalName)}`)
+        fetch(`{{ route('surat-jalan-bongkaran.get-voyages', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`)
             .then(response => response.json())
             .then(data => {
                 voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';

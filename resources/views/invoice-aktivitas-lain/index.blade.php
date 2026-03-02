@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (confirm(`Apakah Anda yakin ingin menghapus ${checkedBoxes.length} invoice?`)) {
             const ids = Array.from(checkedBoxes).map(cb => cb.value);
             
-            fetch('{{ route("invoice-aktivitas-lain.bulk-delete") }}', {
+            fetch('{{ route("invoice-aktivitas-lain.bulk-delete", [], false) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

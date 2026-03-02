@@ -325,7 +325,7 @@
             tujuan_tujuan: tujuanTujuan
         });
 
-        fetch(`{{ route('api.pergerakan-kapal.generate-voyage') }}?${params}`, {
+        fetch(`{{ route('api.pergerakan-kapal.generate-voyage', [], false) }}?${params}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

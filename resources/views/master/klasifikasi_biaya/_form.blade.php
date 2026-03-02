@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loader = document.getElementById('kode_loader');
     
     if (kodeInput && loader) {
-        fetch('{{ route('klasifikasi-biaya.get-next-kode') }}', {
+        fetch('{{ route('klasifikasi-biaya.get-next-kode', [], false) }}', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

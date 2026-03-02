@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
             searchInput.value = '';
             if (new URLSearchParams(window.location.search).get('search')) {
                 const currentPerPage = new URLSearchParams(window.location.search).get('per_page');
-                const baseUrl = '{{ route("master.user.index") }}';
+                const baseUrl = '{{ route("master.user.index", [], false) }}';
                 window.location.href = currentPerPage ? `${baseUrl}?per_page=${currentPerPage}` : baseUrl;
             }
         }

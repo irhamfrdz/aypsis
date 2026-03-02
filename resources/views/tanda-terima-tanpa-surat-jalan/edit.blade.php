@@ -1248,7 +1248,7 @@
         const top = (screen.height - height) / 2;
         
         const popup = window.open(
-            '{{ route("tanda-terima.penerima.create") }}',
+            '{{ route("tanda-terima.penerima.create", [], false) }}',
             'TambahPenerima',
             `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
         );
@@ -1268,7 +1268,7 @@
         const top = (screen.height - height) / 2;
         
         const popup = window.open(
-            '{{ route("tanda-terima.penerima.create") }}',
+            '{{ route("tanda-terima.penerima.create", [], false) }}',
             'TambahPengirim',
             `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
         );

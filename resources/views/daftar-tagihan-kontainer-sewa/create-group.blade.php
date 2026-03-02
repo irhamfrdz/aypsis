@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Submit to server
-        fetch('{{ route("daftar-tagihan-kontainer-sewa.store-group") }}', {
+        fetch('{{ route("daftar-tagihan-kontainer-sewa.store-group", [], false) }}', {
             method: 'POST',
             body: submitData
         })
@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification('success', 'Group Berhasil Dibuat',
                     `Group "${groupName}" berhasil dibuat dengan ${selectedIds.length} kontainer`);
                 setTimeout(() => {
-                    window.location.href = '{{ route("daftar-tagihan-kontainer-sewa.index") }}';
+                    window.location.href = '{{ route("daftar-tagihan-kontainer-sewa.index", [], false) }}';
                 }, 2000);
             } else {
                 showNotification('error', 'Gagal Membuat Group', data.message || 'Terjadi kesalahan saat membuat group');

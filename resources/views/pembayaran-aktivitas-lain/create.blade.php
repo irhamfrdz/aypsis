@@ -1356,7 +1356,7 @@ function initializeSelect2() {
                             window.location.href = data.redirect;
                         } else {
                             // Default redirect to index
-                            window.location.href = "{{ route('pembayaran-aktivitas-lain.index') }}";
+                            window.location.href = "{{ route('pembayaran-aktivitas-lain.index', [], false) }}";
                         }
                     }, 1500);
                 }

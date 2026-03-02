@@ -467,7 +467,7 @@ async function loadNomorVoyage() {
     }
 
     try {
-        const response = await fetch(`{{ route('pembayaran-ob.get-voyage-list') }}?kegiatan=${kegiatan}`);
+        const response = await fetch(`{{ route('pembayaran-ob.get-voyage-list', [], false) }}?kegiatan=${kegiatan}`);
         const data = await response.json();
 
         if (data.success && data.voyages) {

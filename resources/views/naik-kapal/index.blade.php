@@ -385,12 +385,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!kapalId || !noVoyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
-            window.location.href = "{{ route('naik-kapal.select') }}";
+            window.location.href = "{{ route('naik-kapal.select', [], false) }}";
             return;
         }
         
         // Build print URL with parameters
-        let printUrl = "{{ route('naik-kapal.print') }}?kapal_id=" + kapalId + "&no_voyage=" + encodeURIComponent(noVoyage);
+        let printUrl = "{{ route('naik-kapal.print', [], false) }}?kapal_id=" + kapalId + "&no_voyage=" + encodeURIComponent(noVoyage);
         if (statusFilter) {
             printUrl += "&status_filter=" + statusFilter;
         }
@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!kapalId || !noVoyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
-            window.location.href = "{{ route('naik-kapal.select') }}";
+            window.location.href = "{{ route('naik-kapal.select', [], false) }}";
             return;
         }
         
@@ -434,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.disabled = true;
         
         // Build export URL with parameters
-        let exportUrl = "{{ route('naik-kapal.export') }}?kapal_id=" + kapalId + "&no_voyage=" + encodeURIComponent(noVoyage);
+        let exportUrl = "{{ route('naik-kapal.export', [], false) }}?kapal_id=" + kapalId + "&no_voyage=" + encodeURIComponent(noVoyage);
         if (statusFilter) {
             exportUrl += "&status_filter=" + statusFilter;
         }
@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('action', action);
         formData.append('selected_ids', JSON.stringify(selectedIds));
 
-        fetch('{{ route("naik-kapal.bulk-action") }}', {
+        fetch('{{ route("naik-kapal.bulk-action", [], false) }}', {
             method: 'POST',
             body: formData,
             headers: {

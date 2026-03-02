@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch(`{{ route('naik-kapal.get-voyages') }}?kapal_id=${encodeURIComponent(kapalId)}`, {
+        fetch(`{{ route('naik-kapal.get-voyages', [], false) }}?kapal_id=${encodeURIComponent(kapalId)}`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
             credentials: 'same-origin'

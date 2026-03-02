@@ -714,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const params = new URLSearchParams({ vendor, size, tarif, tanggal_awal, tanggal_akhir, periode });
-        const url = '{{ route("daftar-tagihan-kontainer-sewa.get_pricelist") }}' + '?' + params.toString();
+        const url = '{{ route("daftar-tagihan-kontainer-sewa.get_pricelist", [], false) }}' + '?' + params.toString();
 
         fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
             .then(r => r.json())

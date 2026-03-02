@@ -671,7 +671,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add action buttons
         html += '<div class="mt-6 flex items-center justify-end space-x-3">';
         if (!response.validate_only && response.success) {
-            html += '<a href="{{ route("daftar-tagihan-kontainer-sewa.index") }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">Lihat Data</a>';
+            html += '<a href="{{ route("daftar-tagihan-kontainer-sewa.index", [], false) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">Lihat Data</a>';
         }
         html += '<button type="button" onclick="location.reload()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-150">Import Lagi</button>';
         html += '</div>';

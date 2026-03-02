@@ -267,7 +267,7 @@ $(document).ready(function() {
 });
 
 function loadOutstandingStats() {
-    $.get('{{ route("outstanding.stats") }}', function(data) {
+    $.get('{{ route("outstanding.stats", [], false) }}', function(data) {
         $('#pendingOrdersCount').text(data.pending || 0);
         $('#partialOrdersCount').text(data.partial || 0);
         $('#completedOrdersCount').text(data.completed || 0);

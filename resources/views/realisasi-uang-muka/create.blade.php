@@ -589,8 +589,8 @@ async function generateNomor(forceGenerate = false) {
 
         // Determine which endpoint to use
         const endpoint = forceGenerate ?
-            '{{ route("realisasi-uang-muka.force-generate-nomor") }}' :
-            '{{ route("realisasi-uang-muka.generate-nomor") }}';
+            '{{ route("realisasi-uang-muka.force-generate-nomor", [], false) }}' :
+            '{{ route("realisasi-uang-muka.generate-nomor", [], false) }}';
 
         let maxRetries = forceGenerate ? 1 : 3; // Force generate only tries once
         let attempt = 0;

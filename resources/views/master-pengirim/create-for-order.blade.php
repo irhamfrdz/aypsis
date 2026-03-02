@@ -118,7 +118,7 @@
 
             function generateKode() {
                 // Generate simple auto-incrementing code
-                fetch('{{ route("order.pengirim.store") }}', {
+                fetch('{{ route("order.pengirim.store", [], false) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('notes', notes);
             formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
-            fetch(`{{ route('outstanding.process', '') }}/${orderId}`, {
+            fetch(`{{ route('outstanding.process', '', false) }}/${orderId}`, {
                 method: 'POST',
                 body: formData
             })
@@ -565,7 +565,7 @@ function toggleFilter() {
 }
 
 function loadStatistics() {
-    fetch('{{ route("outstanding.stats") }}')
+    fetch('{{ route("outstanding.stats", [], false) }}')
         .then(response => response.json())
         .then(data => {
             const pendingCount = document.getElementById('pendingCount');
@@ -590,7 +590,7 @@ function loadStatistics() {
 
 function processUnits(orderId) {
     // Get order details via fetch
-    fetch(`{{ route('outstanding.details', '') }}/${orderId}`)
+    fetch(`{{ route('outstanding.details', '', false) }}/${orderId}`)
         .then(response => response.json())
         .then(data => {
             const modalOrderNumber = document.getElementById('modalOrderNumber');

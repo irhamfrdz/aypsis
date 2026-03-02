@@ -221,7 +221,7 @@
             submitBtn.disabled = true;
             
             try {
-                const response = await fetch('{{ route("master.karyawan.update-catatan-pekerjaan", $karyawan->id) }}', {
+                const response = await fetch('{{ route("master.karyawan.update-catatan-pekerjaan", $karyawan->id, false) }}', {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',

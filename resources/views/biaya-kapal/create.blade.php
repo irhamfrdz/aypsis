@@ -5415,7 +5415,7 @@
         const loader = document.getElementById('invoice_loader');
         
         try {
-            const response = await fetch("{{ route('biaya-kapal.get-next-invoice-number') }}", {
+            const response = await fetch("{{ route('biaya-kapal.get-next-invoice-number', [], false) }}", {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

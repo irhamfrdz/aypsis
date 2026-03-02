@@ -1681,7 +1681,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
 
             // Build export URL with same filters
-            let exportUrl = '{{ route("daftar-tagihan-kontainer-sewa.export") }}';
+            let exportUrl = '{{ route("daftar-tagihan-kontainer-sewa.export", [], false) }}';
             const params = [];
 
             // Add all existing filters
@@ -2123,7 +2123,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-delete") }}';
+                form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-delete", [], false) }}';
 
                 // Add CSRF token
                 const csrfToken = document.createElement('input');
@@ -2184,7 +2184,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Create form and submit
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-update-status") }}';
+                    form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-update-status", [], false) }}';
 
                     // Add CSRF token
                     const csrfToken = document.createElement('input');
@@ -2316,7 +2316,7 @@ window.ungroupSelectedContainers = function() {
     });
 
     // Send AJAX request
-    fetch('{{ route("daftar-tagihan-kontainer-sewa.ungroup-containers") }}', {
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.ungroup-containers", [], false) }}', {
         method: 'POST',
         body: formData,
         headers: {
@@ -2413,7 +2413,7 @@ window.ungroupSelectedContainers = function() {
     });
 
     // Send AJAX request
-    fetch('{{ route("daftar-tagihan-kontainer-sewa.ungroup-containers") }}', {
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.ungroup-containers", [], false) }}', {
         method: 'POST',
         body: formData,
         headers: {
@@ -2459,7 +2459,7 @@ window.openDeleteGroupModal = function() {
     showNotification('warning', 'Memuat Groups', 'Sedang memuat daftar group yang ada...');
 
     // Fetch existing groups via AJAX
-    fetch('{{ route("daftar-tagihan-kontainer-sewa.groups") }}', {
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.groups", [], false) }}', {
         method: 'GET',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -2684,7 +2684,7 @@ window.deleteGroups = function(groupNames) {
     });
 
     // Send AJAX request
-    fetch('{{ route("daftar-tagihan-kontainer-sewa.delete-groups") }}', {
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.delete-groups", [], false) }}', {
         method: 'POST',
         body: formData,
         headers: {
@@ -4023,7 +4023,7 @@ window.generateInvoiceNumber = function() {
     console.log('Calling generate invoice number API...');
 
     // Call API to generate invoice number
-    fetch('{{ route("daftar-tagihan-kontainer-sewa.generate-invoice-number") }}', {
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.generate-invoice-number", [], false) }}', {
         method: 'GET',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -4192,7 +4192,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(importForm);
 
             // Send AJAX request
-            fetch('{{ route("daftar-tagihan-kontainer-sewa.import-csv") }}', {
+            fetch('{{ route("daftar-tagihan-kontainer-sewa.import-csv", [], false) }}', {
                 method: 'POST',
                 body: formData,
                 headers: {

@@ -508,7 +508,7 @@
                     width: '100%',
                     minimumInputLength: 0,
                     ajax: {
-                        url: '{{ route("supir.api.kontainer.search") }}',
+                        url: '{{ route("supir.api.kontainer.search", [], false) }}',
                         dataType: 'json',
                         delay: 250,
                         data: function (params) {
@@ -538,7 +538,7 @@
                     minimumInputLength: 0,
                     tokenSeparators: [',', ' '],
                     ajax: {
-                        url: '{{ route("supir.api.kontainer.search") }}',
+                        url: '{{ route("supir.api.kontainer.search", [], false) }}',
                         dataType: 'json',
                         delay: 250,
                         data: function (params) {

@@ -487,7 +487,7 @@ async function generateNomor() {
         }
 
         // Buat URL dengan parameter kas_bank_id
-        let url = '{{ route('pembayaran-uang-muka.generate-nomor') }}';
+        let url = '{{ route('pembayaran-uang-muka.generate-nomor', [], false) }}';
         url += '?kas_bank_id=' + kasBankId;
 
         console.log('Calling URL:', url);

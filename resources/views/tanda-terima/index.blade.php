@@ -1167,7 +1167,7 @@
             // Create form and submit
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ route("tanda-terima.add-to-prospek", ":id") }}'.replace(':id', tandaTerimaId);
+            form.action = '{{ route("tanda-terima.add-to-prospek", ":id", false) }}'.replace(':id', tandaTerimaId);
             
             // Add CSRF token
             const csrfInput = document.createElement('input');
@@ -1192,7 +1192,7 @@
     function openChangeContainerModal(tandaTerimaId, noSuratJalan, noKontainer, noSeal) {
         // Set form action
         const form = document.getElementById('changeContainerForm');
-        form.action = '{{ route("tanda-terima.update", ":id") }}'.replace(':id', tandaTerimaId);
+        form.action = '{{ route("tanda-terima.update", ":id", false) }}'.replace(':id', tandaTerimaId);
         
         // Fill modal fields
         document.getElementById('modalNoSuratJalan').value = noSuratJalan || '-';
@@ -1431,7 +1431,7 @@ function updateManifest(isDryRun) {
     document.body.insertAdjacentHTML('beforeend', loadingHtml);
     
     // Call API
-    fetch('{{ route("tanda-terima.update-manifest") }}', {
+    fetch('{{ route("tanda-terima.update-manifest", [], false) }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

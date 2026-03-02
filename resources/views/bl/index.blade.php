@@ -536,7 +536,7 @@
         const kapalSelect = $('#export_nama_kapal');
         kapalSelect.empty().append('<option value="">-- Semua Kapal --</option>');
         
-        fetch('{{ route("bl.get-ships") }}')
+        fetch('{{ route("bl.get-ships", [], false) }}')
             .then(response => response.json())
             .then(data => {
                 data.ships.forEach(ship => {
@@ -561,7 +561,7 @@
         
         if (!shipName) return;
 
-        fetch(`{{ route("bl.get-voyages") }}?nama_kapal=${encodeURIComponent(shipName)}`)
+        fetch(`{{ route("bl.get-voyages", [], false) }}?nama_kapal=${encodeURIComponent(shipName)}`)
             .then(response => response.json())
             .then(data => {
                 data.voyages.forEach(voyage => {

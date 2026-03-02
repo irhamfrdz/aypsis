@@ -359,7 +359,7 @@
             }
 
             // Make AJAX call to get the current nomor pembayaran
-            const url = `{{ route('pembayaran-pranota-supir.generate-nomor') }}?nomor_cetakan=${cetakan}&kode_bank=${kodeBank}`;
+            const url = `{{ route('pembayaran-pranota-supir.generate-nomor', [], false) }}?nomor_cetakan=${cetakan}&kode_bank=${kodeBank}`;
 
             fetch(url)
                 .then(response => response.json())

@@ -375,7 +375,7 @@ window.autoUpdateNomorUrutAll = function(event) {
 
     const csrfToken = document.querySelector('input[name="_token"]').value;
 
-    fetch('{{ route("report.manifests.auto-update-nomor-urut-all") }}', {
+    fetch('{{ route("report.manifests.auto-update-nomor-urut-all", [], false) }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

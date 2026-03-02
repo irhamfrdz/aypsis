@@ -1185,7 +1185,7 @@
                 
             case 'export':
                 // Redirect to export route with selected IDs
-                const exportUrl = new URL('{{ route("tanda-terima-lcl.export") }}', window.location.origin);
+                const exportUrl = new URL('{{ route("tanda-terima-lcl.export", [], false) }}', window.location.origin);
                 selectedIds.forEach(id => exportUrl.searchParams.append('ids[]', id));
                 window.location.href = exportUrl.toString();
                 break;
@@ -1207,7 +1207,7 @@
                         // Create form for LCL bulk delete
                         const form = document.createElement('form');
                         form.method = 'POST';
-                        form.action = '{{ route("tanda-terima-lcl.bulk-delete") }}';
+                        form.action = '{{ route("tanda-terima-lcl.bulk-delete", [], false) }}';
                         
                         // Add CSRF token
                         const csrfInput = document.createElement('input');
@@ -1240,7 +1240,7 @@
                         selectedIds.forEach(id => {
                             const form = document.createElement('form');
                             form.method = 'POST';
-                            form.action = `{{ route('tanda-terima-tanpa-surat-jalan.index') }}/${id}`;
+                            form.action = `{{ route('tanda-terima-tanpa-surat-jalan.index', [], false) }}/${id}`;
                             
                             // Add CSRF token
                             const csrfInput = document.createElement('input');
@@ -1272,7 +1272,7 @@
 
     function validateContainerNumbers(selectedIds) {
         // Make AJAX request to validate container numbers
-        fetch('{{ route("tanda-terima-lcl.validate-containers") }}', {
+        fetch('{{ route("tanda-terima-lcl.validate-containers", [], false) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1348,7 +1348,7 @@
         namaBarangSelect.disabled = true;
         
         // Fetch barang data from selected containers
-        fetch('{{ route("tanda-terima-lcl.get-barang-from-containers") }}', {
+        fetch('{{ route("tanda-terima-lcl.get-barang-from-containers", [], false) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

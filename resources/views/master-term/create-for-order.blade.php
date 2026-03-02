@@ -117,7 +117,7 @@
             });
 
             function generateKode() {
-                fetch('{{ route("order.term.store") }}', {
+                fetch('{{ route("order.term.store", [], false) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
             generateButton.textContent = 'Loading...';
 
             // Make AJAX request to generate order number
-            fetch('{{ route("orders.generate-number") }}', {
+            fetch('{{ route("orders.generate-number", [], false) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -716,7 +716,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTermLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTermInput.value.trim();
-            let url = "{{ route('order.term.create') }}";
+            let url = "{{ route('order.term.create', [], false) }}";
 
             // Add popup parameter and nama_status if available
             const params = new URLSearchParams();
@@ -749,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTujuanKirimLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTujuanKirimInput.value.trim();
-            let url = "{{ route('order.tujuan-kirim.create') }}";
+            let url = "{{ route('order.tujuan-kirim.create', [], false) }}";
 
             // Add popup parameter and nama_tujuan if available
             const params = new URLSearchParams();
@@ -780,7 +780,7 @@ document.addEventListener('DOMContentLoaded', function() {
             addPengirimLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 const searchValue = searchPengirimInput.value.trim();
-                let url = "{{ route('order.pengirim.create') }}";
+                let url = "{{ route('order.pengirim.create', [], false) }}";
 
                 // Add popup parameter and nama_pengirim if available
                 const params = new URLSearchParams();
@@ -813,7 +813,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addPenerimaLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchPenerimaInput.value.trim();
-            let url = "{{ route('order.penerima.create') }}";
+            let url = "{{ route('order.penerima.create', [], false) }}";
 
             // Add popup parameter and nama_penerima if available
             const params = new URLSearchParams();
@@ -846,7 +846,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addJenisBarangLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchJenisBarangInput.value.trim();
-            let url = "{{ route('order.jenis-barang.create') }}";
+            let url = "{{ route('order.jenis-barang.create', [], false) }}";
 
             // Add popup parameter and nama_barang if available
             const params = new URLSearchParams();
@@ -879,7 +879,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTujuanAmbildLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTujuanAmbildInput.value.trim();
-            let url = "{{ route('order.tujuan-ambil.create') }}";
+            let url = "{{ route('order.tujuan-ambil.create', [], false) }}";
 
             // Add popup parameter and nama_tujuan if available
             const params = new URLSearchParams();

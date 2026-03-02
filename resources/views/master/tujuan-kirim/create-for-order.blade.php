@@ -257,7 +257,7 @@
             let lastSuggestions = [];
 
             function fetchSuggestions(q) {
-                fetch(`{{ route('order.tujuan-kirim.suggest') }}?q=${encodeURIComponent(q)}`)
+                fetch(`{{ route('order.tujuan-kirim.suggest', [], false) }}?q=${encodeURIComponent(q)}`)
                     .then(res => res.json())
                     .then(data => {
                         suggestionsList.innerHTML = '';

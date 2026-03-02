@@ -1366,7 +1366,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addPengirimLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchPengirimInput.value.trim();
-            let url = "{{ route('pengirim.create') }}";
+            let url = "{{ route('pengirim.create', [], false) }}";
 
             // Add popup parameter and nama_pengirim if available
             const params = new URLSearchParams();
@@ -1398,7 +1398,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTujuanPengirimanLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = document.getElementById('search_tujuan_pengiriman')?.value.trim() || '';
-            let url = "{{ route('tujuan-kirim.create') }}";
+            let url = "{{ route('tujuan-kirim.create', [], false) }}";
 
             // Add popup parameter and nama_tujuan if available
             const params = new URLSearchParams();

@@ -245,9 +245,9 @@ function closePaymentMethodModal() {
 
 function navigateToPaymentMethod(method) {
     if (method === 'invoice') {
-        window.location.href = '{{ route('pembayaran-aktivitas-lain.create') }}?method=invoice';
+        window.location.href = '{{ route('pembayaran-aktivitas-lain.create', [], false) }}?method=invoice';
     } else if (method === 'direct') {
-        window.location.href = '{{ route('pembayaran-aktivitas-lain.create') }}?method=direct';
+        window.location.href = '{{ route('pembayaran-aktivitas-lain.create', [], false) }}?method=direct';
     }
 }
 
@@ -286,7 +286,7 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
 
 function openPrintWindow() {
     const params = new URLSearchParams(window.location.search);
-    window.open(`{{ route('pembayaran-aktivitas-lain.print.index') }}?${params.toString()}`, '_blank');
+    window.open(`{{ route('pembayaran-aktivitas-lain.print.index', [], false) }}?${params.toString()}`, '_blank');
 }
 </script>
 @endpush

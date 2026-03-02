@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function confirmDelete(id, identifier) {
     document.getElementById('deleteItemName').textContent = identifier;
-    document.getElementById('deleteForm').action = '{{ route('uang-jalan.destroy', ':id') }}'.replace(':id', id);
+    document.getElementById('deleteForm').action = '{{ route('uang-jalan.destroy', ':id', false) }}'.replace(':id', id);
     
     // Show modal
     document.getElementById('deleteModal').classList.remove('hidden');

@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Permission management functions
 function syncPermissions() {
     if (confirm('Sinkronisasi akan memperbarui daftar izin dari kode aplikasi. Lanjutkan?')) {
-        fetch('{{ route("master.permission.sync") }}', {
+        fetch('{{ route("master.permission.sync", [], false) }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -414,7 +414,7 @@ function bulkDelete() {
     }
 
     if (confirm(`Apakah Anda yakin ingin menghapus ${selectedPermissions.length} izin terpilih? Tindakan ini tidak dapat dibatalkan.`)) {
-        fetch('{{ route("master.permission.bulk-delete") }}', {
+        fetch('{{ route("master.permission.bulk-delete", [], false) }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),

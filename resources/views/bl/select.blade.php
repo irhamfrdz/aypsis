@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('Nama kapal dipilih:', namaKapal);
 
-        fetch(`{{ route('bl.get-voyage-by-kapal') }}?nama_kapal=${encodeURIComponent(namaKapal)}`, {
+        fetch(`{{ route('bl.get-voyage-by-kapal', [], false) }}?nama_kapal=${encodeURIComponent(namaKapal)}`, {
             method: 'GET',
             headers: { 
                 'Accept': 'application/json',
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Redirect to BL index with filter parameters
-        const url = new URL('{{ route("bl.index") }}', window.location.origin);
+        const url = new URL('{{ route("bl.index", [], false) }}', window.location.origin);
         url.searchParams.set('nama_kapal', namaKapal);
         url.searchParams.set('no_voyage', voyage);
         
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Redirect to BL export with filter parameters
-        const url = new URL('{{ route("bl.export") }}', window.location.origin);
+        const url = new URL('{{ route("bl.export", [], false) }}', window.location.origin);
         url.searchParams.set('nama_kapal', namaKapal);
         url.searchParams.set('no_voyage', voyage);
         

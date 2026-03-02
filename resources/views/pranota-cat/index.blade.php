@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route("pranota-cat.bulk-status-update") }}';
+                form.action = '{{ route("pranota-cat.bulk-status-update", [], false) }}';
 
                 // Add CSRF token
                 const csrfToken = document.createElement('input');

@@ -552,7 +552,7 @@
         
         try {
             // Fetch running number dari server
-            const response = await fetch('{{ route('tanda-terima-bongkaran.get-next-number') }}', {
+            const response = await fetch('{{ route('tanda-terima-bongkaran.get-next-number', [], false) }}', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

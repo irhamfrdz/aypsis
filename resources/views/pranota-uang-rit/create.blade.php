@@ -1190,7 +1190,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Create form and submit
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '{{ route("pranota-uang-rit.export-excel") }}';
+            form.action = '{{ route("pranota-uang-rit.export-excel", [], false) }}';
             form.target = '_blank';
 
             // Add CSRF token

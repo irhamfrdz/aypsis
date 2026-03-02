@@ -3030,7 +3030,7 @@ console.log('Akun COAs data:', akunCoasData);
         const loader = document.getElementById('invoice_loader');
         
         // Fetch next invoice number from server
-        fetch('{{ route("invoice-aktivitas-lain.get-next-number") }}', {
+        fetch('{{ route("invoice-aktivitas-lain.get-next-number", [], false) }}', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

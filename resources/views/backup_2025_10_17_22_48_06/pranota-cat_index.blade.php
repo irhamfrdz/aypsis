@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Create form and submit
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route("pranota-cat.bulk-status-update") }}';
+                form.action = '{{ route("pranota-cat.bulk-status-update", [], false) }}';
 
                 // Add CSRF token
                 const csrfToken = document.createElement('input');
@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Set form action
-        bulkPaymentForm.action = '{{ route("pranota-cat.bulk-payment") }}';
+        bulkPaymentForm.action = '{{ route("pranota-cat.bulk-payment", [], false) }}';
         bulkPaymentForm.method = 'POST';
 
         // Submit the form

@@ -443,7 +443,7 @@
             }
 
             // Make AJAX call to generate new number
-            fetch('{{ route("pembayaran-pranota-uang-jalan.generate-nomor") }}', {
+            fetch('{{ route("pembayaran-pranota-uang-jalan.generate-nomor", [], false) }}', {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',

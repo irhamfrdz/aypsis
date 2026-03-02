@@ -284,7 +284,7 @@ function loadKontainerData() {
     console.log('Loading kontainer data from checkpoint supir...');
 
     $.ajax({
-        url: '{{ route("gate-in.get-kontainers-surat-jalan") }}',
+        url: '{{ route("gate-in.get-kontainers-surat-jalan", [], false) }}',
         method: 'GET',
         timeout: 30000,
         success: function(response) {

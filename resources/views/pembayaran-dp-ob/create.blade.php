@@ -410,7 +410,7 @@ async function generateNomor() {
         }
 
         // Buat URL dengan parameter kas_bank_id
-        let url = '{{ route('pembayaran-ob.generate-nomor') }}';
+        let url = '{{ route('pembayaran-ob.generate-nomor', [], false) }}';
         url += '?kas_bank_id=' + kasBankId;
 
         const response = await fetch(url);
@@ -1002,7 +1002,7 @@ async function loadNomorVoyage(isInitialLoad = false) {
     }
 
     try {
-        const response = await fetch(`{{ route('pembayaran-ob.get-voyage-list') }}?kegiatan=${kegiatan}`);
+        const response = await fetch(`{{ route('pembayaran-ob.get-voyage-list', [], false) }}?kegiatan=${kegiatan}`);
         const data = await response.json();
 
         if (data.success && data.voyages && data.voyages.length > 0) {

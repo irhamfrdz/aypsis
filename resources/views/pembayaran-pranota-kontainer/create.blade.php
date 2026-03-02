@@ -551,7 +551,7 @@
             }
 
             // Make AJAX call to get the current nomor pembayaran
-            const url = `{{ route('pembayaran-pranota-kontainer.generate-nomor') }}?nomor_cetakan=${cetakan}&kode_bank=${kodeBank}`;
+            const url = `{{ route('pembayaran-pranota-kontainer.generate-nomor', [], false) }}?nomor_cetakan=${cetakan}&kode_bank=${kodeBank}`;
 
             fetch(url)
                 .then(response => response.json())
@@ -674,7 +674,7 @@
         }
 
         function loadDPData() {
-            fetch('{{ route("pembayaran-pranota-kontainer.get-available-dp") }}')
+            fetch('{{ route("pembayaran-pranota-kontainer.get-available-dp", [], false) }}')
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('dpLoading').classList.add('hidden');

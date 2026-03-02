@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            const response = await fetch('{{ route("master.user.bulk-assign-permissions") }}', {
+            const response = await fetch('{{ route("master.user.bulk-assign-permissions", [], false) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

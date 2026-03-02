@@ -501,7 +501,7 @@ function initializeSearchFeatures() {
                 }
             });
             // Redirect to clean URL
-            window.location.href = '{{ route("permohonan.index") }}';
+            window.location.href = '{{ route("permohonan.index", [], false) }}';
         });
     }
 

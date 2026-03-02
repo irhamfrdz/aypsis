@@ -281,7 +281,7 @@ function updateTandaTerima(isDryRun) {
     document.body.insertAdjacentHTML('beforeend', loadingHtml);
     
     // Call API
-    fetch('{{ route("approval-order.update-tanda-terima") }}', {
+    fetch('{{ route("approval-order.update-tanda-terima", [], false) }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
