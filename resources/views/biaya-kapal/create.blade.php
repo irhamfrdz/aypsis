@@ -6697,32 +6697,24 @@
             </div>
             
             <div class="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-teal-300">
-                <label class="block text-sm font-semibold text-gray-800 mb-2">Pilih Tanda Terima <span class="text-red-500">*</span></label>
-                
-                <div class="relative thc-multiselect-container">
-                    <!-- Chips and Input Container -->
-                    <div class="w-full min-h-[42px] px-3 py-2 border border-gray-300 rounded-lg bg-white cursor-text flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-teal-500 transition-all shadow-sm"
-                         onclick="this.querySelector('.tt-search-input').focus()">
-                         
-                        <div class="selected-chips flex flex-wrap gap-2"></div>
-                        
-                        <input type="text" 
-                               class="tt-search-input border-none outline-none bg-transparent flex-1 min-w-[200px] text-sm focus:ring-0 p-1"
-                               placeholder="Cari No. Surat Jalan / Kontainer / Pengirim..."
-                               autocomplete="off">
-                    </div>
-                    
-                    <!-- Dropdown Results -->
-                    <div class="tt-results-dropdown hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                        <div class="p-4 text-center text-gray-400 text-sm">
-                            <i class="fas fa-search mb-1"></i>
-                            <p>Ketik minimal 2 karakter untuk mencari</p>
-                        </div>
-                    </div>
+                <label class="block text-sm font-semibold text-gray-800 mb-2">Pilih Kontainer <span class="text-red-500">*</span></label>
+                <p class="text-xs text-gray-400 mb-3"><i class="fas fa-info-circle mr-1"></i>Kontainer akan muncul setelah memilih No. Voyage</p>
+
+                <!-- Loading indicator -->
+                <div class="thc-kontainer-loading hidden py-4 text-center text-gray-500 text-sm">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>Memuat data kontainer...
                 </div>
-                
-                <!-- Hidden Inputs for Form Submission -->
-                <div class="hidden-inputs-container"></div>
+
+                <!-- Empty state -->
+                <div class="thc-kontainer-empty hidden py-4 text-center text-gray-400 text-sm">
+                    <i class="fas fa-inbox text-3xl mb-2 block"></i>Tidak ada kontainer untuk voyage ini
+                </div>
+
+                <!-- Kontainer checklist -->
+                <div class="thc-kontainer-list space-y-2 max-h-60 overflow-y-auto"></div>
+
+                <!-- Hidden inputs container -->
+                <div class="thc-kontainer-hidden-inputs"></div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
@@ -6807,125 +6799,89 @@
             calculateTotalFromAllTHCSections();
         });
 
-        // --- SEARCHABLE MULTI-SELECT LOGIC ---
-        const multiselectContainer = section.querySelector('.thc-multiselect-container');
-        const searchInput = section.querySelector('.tt-search-input');
-        const resultsDropdown = section.querySelector('.tt-results-dropdown');
-        const selectedChipsContainer = section.querySelector('.selected-chips');
-        const hiddenInputsContainer = section.querySelector('.hidden-inputs-container');
-        
-        let searchTimeout;
+        // --- KONTAINER MULTI-SELECT LOGIC (loaded by voyage) ---
+        const kontainerList        = section.querySelector('.thc-kontainer-list');
+        const kontainerLoading     = section.querySelector('.thc-kontainer-loading');
+        const kontainerEmpty       = section.querySelector('.thc-kontainer-empty');
+        const hiddenInputsContainer = section.querySelector('.thc-kontainer-hidden-inputs');
 
-        // Hide dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!multiselectContainer.contains(e.target)) {
-                resultsDropdown.classList.add('hidden');
-            }
-        });
+        function loadContainersForTHCSection(voyageValue) {
+            // Clear previous state
+            kontainerList.innerHTML = '';
+            hiddenInputsContainer.innerHTML = '';
+            kontainerLoading.classList.remove('hidden');
+            kontainerEmpty.classList.add('hidden');
 
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            const query = this.value;
-            
-            if (query.length < 2) {
-                resultsDropdown.classList.add('hidden');
+            if (!voyageValue) {
+                kontainerLoading.classList.add('hidden');
                 return;
             }
-            
-            searchTimeout = setTimeout(() => {
-                resultsDropdown.classList.remove('hidden');
-                resultsDropdown.innerHTML = '<div class="p-3 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Mencari...</div>';
-                
-                fetch(`{{ url('biaya-kapal/search-tanda-terima') }}?search=${encodeURIComponent(query)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                         resultsDropdown.innerHTML = '';
-                         if (data.length > 0) {
-                             let foundAny = false;
-                             data.forEach(tt => {
-                                 // Check if already selected
-                                 if (hiddenInputsContainer.querySelector(`input[value="${tt.id}"]`)) return;
-                                 
-                                 foundAny = true;
-                                 const item = document.createElement('div');
-                                 item.className = 'p-3 hover:bg-teal-50 cursor-pointer border-b last:border-0 border-gray-100 transition-colors';
-                                 
-                                 let typeBadge = '';
-                                 if (tt.type === 'tanda_terima_tanpa_surat_jalan') {
-                                     typeBadge = '<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-2">Tanpa SJ</span>';
-                                 } else if (tt.type === 'tanda_terima_lcl') {
-                                     typeBadge = '<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full ml-2">LCL</span>';
-                                 }
 
-                                 item.innerHTML = `
-                                     <div class="flex items-start gap-2">
-                                         <div class="flex-1">
-                                             <div class="font-medium text-sm text-gray-800 flex items-center">
-                                                 ${tt.display_text || tt.no_surat_jalan}
-                                                 ${typeBadge}
-                                             </div>
-                                             <div class="text-xs text-gray-500 mt-1">
-                                                 <span class="mr-2"><i class="fas fa-box text-orange-400 mr-1"></i>${tt.no_kontainer || '-'}</span>
-                                                 <span><i class="fas fa-user-check text-green-400 mr-1"></i>${tt.penerima}</span>
-                                             </div>
-                                         </div>
-                                     </div>
-                                 `; 
+            fetch(`{{ url('biaya-kapal/get-containers-by-voyage') }}?voyage=${encodeURIComponent(voyageValue)}`)
+                .then(res => res.json())
+                .then(data => {
+                    kontainerLoading.classList.add('hidden');
 
-                                 item.addEventListener('click', () => {
-                                     addChip(tt);
-                                     searchInput.value = '';
-                                     resultsDropdown.classList.add('hidden');
-                                     searchInput.focus();
-                                 });
-                                 resultsDropdown.appendChild(item);
-                             });
-                             
-                             if (!foundAny) {
-                                  resultsDropdown.innerHTML = '<div class="p-3 text-center text-gray-500">Semua hasil sudah dipilih</div>';
-                             }
-                         } else {
-                             resultsDropdown.innerHTML = '<div class="p-3 text-center text-gray-500">Tidak ditemukan</div>';
-                         }
-                    })
-                    .catch(e => {
-                        console.error(e);
-                        resultsDropdown.innerHTML = '<div class="p-3 text-center text-red-500">Gagal memuat data</div>';
+                    if (!data.success || !data.containers || data.containers.length === 0) {
+                        kontainerEmpty.classList.remove('hidden');
+                        return;
+                    }
+
+                    data.containers.forEach((kontainer, idx) => {
+                        const row = document.createElement('label');
+                        row.className = 'flex items-center gap-3 p-3 bg-gray-50 hover:bg-teal-50 rounded-lg cursor-pointer border border-gray-200 hover:border-teal-300 transition-all';
+                        row.innerHTML = `
+                            <input type="checkbox"
+                                   class="thc-kontainer-checkbox w-4 h-4 rounded text-teal-600 focus:ring-teal-500 cursor-pointer"
+                                   data-bl-id="${kontainer.id}"
+                                   data-nomor="${kontainer.nomor_kontainer}"
+                                   data-seal="${kontainer.no_seal}"
+                                   data-tipe="${kontainer.tipe_kontainer}"
+                                   data-size="${kontainer.size_kontainer}">
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm text-gray-800">
+                                    <i class="fas fa-cube text-teal-500 mr-1"></i>
+                                    ${kontainer.nomor_kontainer}
+                                    <span class="ml-2 text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">${kontainer.size_kontainer || '-'}'</span>
+                                    <span class="ml-1 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">${kontainer.tipe_kontainer || '-'}</span>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-0.5">
+                                    <span class="mr-3"><i class="fas fa-lock text-gray-400 mr-1"></i>Seal: ${kontainer.no_seal || '-'}</span>
+                                    <span><i class="fas fa-box text-orange-400 mr-1"></i>${kontainer.nama_barang || '-'}</span>
+                                </div>
+                            </div>
+                        `;
+
+                        const checkbox = row.querySelector('.thc-kontainer-checkbox');
+                        checkbox.addEventListener('change', function() {
+                            const blId = this.dataset.blId;
+                            const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"]`);
+
+                            if (this.checked) {
+                                if (!existingInput) {
+                                    const hiddenGroup = document.createElement('div');
+                                    hiddenGroup.setAttribute('data-bl-id', blId);
+                                    hiddenGroup.innerHTML = `<input type="hidden" name="thc_sections[${sectionIndex}][kontainer][][bl_id]" value="${blId}">
+                                    <input type="hidden" name="thc_sections[${sectionIndex}][kontainer][][nomor_kontainer]" value="${this.dataset.nomor}">`;
+                                    hiddenInputsContainer.appendChild(hiddenGroup);
+                                }
+                            } else {
+                                if (existingInput) existingInput.remove();
+                            }
+                        });
+
+                        kontainerList.appendChild(row);
                     });
-            }, 300);
-        });
-
-        function addChip(tt) {
-            const chip = document.createElement('div');
-            // Styling similar to pteals-naik-kapal but adjusted
-            chip.className = 'inline-flex items-center bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full border border-blue-200 shadow-sm gap-2';
-            
-            const label = tt.display_text || tt.no_surat_jalan;
-            chip.innerHTML = `
-                <span class="font-medium text-xs">${label}</span>
-                <button type="button" class="ml-1 text-blue-600 hover:text-blue-800 focus:outline-none rounded-full flex items-center justify-center bg-blue-200 hover:bg-blue-300 h-4 w-4 transition-colors">
-                    <i class="fas fa-times text-[10px]"></i>
-                </button>
-            `;
-            
-            chip.querySelector('button').addEventListener('click', (e) => {
-                e.stopPropagation(); // prevent focusing input
-                chip.remove();
-                const hiddenInput = hiddenInputsContainer.querySelector(`.tt-input-group-${tt.id}`);
-                if (hiddenInput) hiddenInput.remove();
-            });
-            
-            selectedChipsContainer.appendChild(chip);
-            
-            // Add hidden inputs
-            const hiddenGroup = document.createElement('div');
-            hiddenGroup.className = `tt-input-group-${tt.id}`;
-            hiddenGroup.innerHTML = `
-                <input type="hidden" name="thc_sections[${sectionIndex}][tanda_terima][][id]" value="${tt.id}">
-                <input type="hidden" name="thc_sections[${sectionIndex}][tanda_terima][][type]" value="${tt.type || 'tanda_terima'}">
-            `;
-            hiddenInputsContainer.appendChild(hiddenGroup);
+                })
+                .catch(e => {
+                    kontainerLoading.classList.add('hidden');
+                    kontainerList.innerHTML = '<div class="p-3 text-center text-red-500 text-sm"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal memuat kontainer</div>';
+                    console.error(e);
+                });
         }
+
+        // Expose function so voyage change can call it
+        section._loadContainers = loadContainersForTHCSection;
     }
     
     window.removeTHCSection = function(sectionIndex) {
@@ -6939,6 +6895,7 @@
     function loadVoyagesForTHCSection(sectionIndex, kapalNama) {
         const section = document.querySelector(`[data-thc-section-index="${sectionIndex}"]`);
         const voyageSelect = section.querySelector('.thc-voyage-select');
+        const voyageInput  = section.querySelector('.thc-voyage-input');
         
         if (!kapalNama) {
             voyageSelect.disabled = true;
@@ -6959,6 +6916,13 @@
                     });
                     voyageSelect.innerHTML = html;
                     voyageSelect.disabled = false;
+
+                    // Add/replace voyage change listener to load containers
+                    voyageSelect.onchange = function() {
+                        if (section._loadContainers) {
+                            section._loadContainers(this.value);
+                        }
+                    };
                 } else {
                     voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
                 }
@@ -6967,6 +6931,16 @@
                 console.error('Error fetching voyages for THC:', error);
                 voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
             });
+
+        // Also listen to manual voyage input
+        voyageInput.oninput = function() {
+            if (section._loadContainers) {
+                clearTimeout(voyageInput._thcDebounce);
+                voyageInput._thcDebounce = setTimeout(() => {
+                    section._loadContainers(this.value.trim());
+                }, 500);
+            }
+        };
     }
 
     function calculateTHCTotals(sectionIndex) {

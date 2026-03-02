@@ -2523,4 +2523,61 @@ class BiayaKapalController extends Controller
                 ]);
         }
     }
+
+    /**
+     * Get containers from bls table by voyage number (for THC section)
+     */
+    public function getContainersByVoyage(Request $request)
+    {
+        try {
+            $voyage = $request->input('voyage');
+
+            if (empty($voyage)) {
+                return response()->json([
+                    'success' => true,
+                    'containers' => []
+                ]);
+            }
+
+            $containers = DB::table('bls')
+                ->select(
+                    'id',
+                    'nomor_kontainer',
+                    'no_seal',
+                    'tipe_kontainer',
+                    'size_kontainer',
+                    'nama_barang',
+                    'pengirim',
+                    'penerima'
+                )
+                ->where('no_voyage', $voyage)
+                ->whereNotNull('nomor_kontainer')
+                ->where('nomor_kontainer', '!=', '')
+                ->orderBy('nomor_kontainer')
+                ->get()
+                ->map(function ($bl) {
+                    return [
+                        'id'              => $bl->id,
+                        'nomor_kontainer' => $bl->nomor_kontainer,
+                        'no_seal'         => $bl->no_seal ?? '-',
+                        'tipe_kontainer'  => $bl->tipe_kontainer ?? '-',
+                        'size_kontainer'  => $bl->size_kontainer ?? '-',
+                        'nama_barang'     => $bl->nama_barang ?? '-',
+                        'pengirim'        => $bl->pengirim ?? '-',
+                        'penerima'        => $bl->penerima ?? '-',
+                        'display_text'    => $bl->nomor_kontainer . ($bl->size_kontainer ? ' (' . $bl->size_kontainer . ')' : ''),
+                    ];
+                });
+
+            return response()->json([
+                'success'    => true,
+                'containers' => $containers
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data kontainer: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
