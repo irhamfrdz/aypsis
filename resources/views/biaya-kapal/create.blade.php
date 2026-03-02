@@ -6726,28 +6726,63 @@
                 <div class="thc-kontainer-hidden-inputs"></div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal Biaya <span class="text-xs text-teal-500 font-normal">(otomatis)</span></label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
-                        <input type="text" name="thc_sections[${sectionIndex}][subtotal]" 
-                               class="thc-subtotal-input w-full pl-10 pr-3 py-2 border border-teal-200 rounded-lg bg-teal-50 text-teal-800 focus:ring-0 cursor-not-allowed" 
-                               value="0" readonly>
+            <div class="border-t pt-4 mt-2 space-y-3">
+                <!-- Row 1: Subtotal + Dokumen Muat + Dokumen Bongkar -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal THC <span class="text-xs text-teal-500 font-normal">(otomatis)</span></label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="thc_sections[${sectionIndex}][subtotal]"
+                                   class="thc-subtotal-input w-full pl-10 pr-3 py-2 border border-teal-200 rounded-lg bg-teal-50 text-teal-800 focus:ring-0 cursor-not-allowed"
+                                   value="0" readonly>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Dokumen Muat</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="thc_sections[${sectionIndex}][biaya_dokumen_muat]"
+                                   class="thc-dok-muat-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                   value="200.000">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Dokumen Bongkar</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="thc_sections[${sectionIndex}][biaya_dokumen_bongkar]"
+                                   class="thc-dok-bongkar-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                   value="200.000">
+                        </div>
                     </div>
                 </div>
-                <div class="hidden">
-                    <input type="hidden" name="thc_sections[${sectionIndex}][pph]" 
-                           class="thc-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0" 
-                           value="0" readonly>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
-                        <input type="text" name="thc_sections[${sectionIndex}][total_biaya]" 
-                               class="thc-total-input w-full pl-10 pr-3 py-2 border border-blue-300 rounded-lg bg-blue-50 text-blue-800 font-bold focus:ring-0" 
-                               value="0" readonly>
+
+                <!-- Row 2: Materai (kondisional) + Total -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div class="thc-materai-wrap hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Biaya Materai
+                            <span class="text-xs text-amber-500 font-normal">(total &gt; Rp 5 jt)</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="thc_sections[${sectionIndex}][biaya_materai]"
+                                   class="thc-materai-input w-full pl-10 pr-3 py-2 border border-amber-200 rounded-lg bg-amber-50 text-amber-800 focus:ring-0 cursor-not-allowed"
+                                   value="10.000" readonly>
+                        </div>
+                    </div>
+                    <div class="hidden">
+                        <input type="hidden" name="thc_sections[${sectionIndex}][pph]" class="thc-pph-input" value="0">
+                    </div>
+                    <div class="md:col-start-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="thc_sections[${sectionIndex}][total_biaya]"
+                                   class="thc-total-input w-full pl-10 pr-3 py-2 border border-blue-300 rounded-lg bg-blue-50 text-blue-800 font-bold focus:ring-0 cursor-not-allowed"
+                                   value="0" readonly>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -6909,21 +6944,47 @@
             const vendorName    = vendorSelect ? vendorSelect.value : '';
             const checkboxes    = sec.querySelectorAll('.thc-kontainer-checkbox:checked');
 
-            let subtotal = 0;
+            // 1. Subtotal THC (dari tarif kontainer)
+            let subtotalThc = 0;
             checkboxes.forEach(cb => {
                 const size  = cb.dataset.size || '';
                 const tarif = getThcTarif(vendorName, size);
-                subtotal   += tarif;
+                subtotalThc += tarif;
             });
 
-            const subtotalInput = sec.querySelector('.thc-subtotal-input');
-            const pphInput      = sec.querySelector('.thc-pph-input');
-            const totalInput    = sec.querySelector('.thc-total-input');
+            // 2. Biaya dokumen muat & bongkar (bisa diubah user)
+            const parseFmt = (el) => parseFloat((el ? el.value : '0').replace(/\./g, '').replace(',', '.')) || 0;
+            const dokMuatInput    = sec.querySelector('.thc-dok-muat-input');
+            const dokBongkarInput = sec.querySelector('.thc-dok-bongkar-input');
+            const biayaDokMuat    = parseFmt(dokMuatInput);
+            const biayaDokBongkar = parseFmt(dokBongkarInput);
+
+            // 3. Total sebelum materai
+            const totalSebelumMaterai = subtotalThc + biayaDokMuat + biayaDokBongkar;
+
+            // 4. Materai kondisional: muncul jika total > 5.000.000
+            const MATERAI          = 10000;
+            const BATAS_MATERAI    = 5000000;
+            const materaiWrap      = sec.querySelector('.thc-materai-wrap');
+            const materaiInput     = sec.querySelector('.thc-materai-input');
+            const kenaMaterai      = totalSebelumMaterai > BATAS_MATERAI;
+
+            if (kenaMaterai) {
+                materaiWrap.classList.remove('hidden');
+            } else {
+                materaiWrap.classList.add('hidden');
+            }
+            const biayaMaterai = kenaMaterai ? MATERAI : 0;
+
+            // 5. Total akhir
+            const totalAkhir = totalSebelumMaterai + biayaMaterai;
 
             const fmt = (val) => new Intl.NumberFormat('id-ID').format(Math.round(val));
-            subtotalInput.value = fmt(subtotal);
-            pphInput.value      = fmt(0);
-            totalInput.value    = fmt(subtotal);
+
+            sec.querySelector('.thc-subtotal-input').value = fmt(subtotalThc);
+            sec.querySelector('.thc-pph-input').value      = fmt(0);
+            sec.querySelector('.thc-total-input').value    = fmt(totalAkhir);
+            if (materaiInput) materaiInput.value           = fmt(MATERAI);
 
             calculateTotalFromAllTHCSections();
         }
@@ -6936,8 +6997,25 @@
             });
         }
 
+        // Format rupiah + recalc saat biaya dokumen muat/bongkar diubah
+        function attachDocInputListener(inputEl) {
+            if (!inputEl) return;
+            inputEl.addEventListener('input', function() {
+                let raw = this.value.replace(/[^0-9]/g, '');
+                const num = parseFloat(raw) || 0;
+                this.value = num > 0 ? new Intl.NumberFormat('id-ID').format(num) : '';
+                recalcThcSubtotal(section, sectionIndex);
+            });
+        }
+        attachDocInputListener(section.querySelector('.thc-dok-muat-input'));
+        attachDocInputListener(section.querySelector('.thc-dok-bongkar-input'));
+
+        // Jalankan recalc awal agar Total Biaya ter-update saat section pertama dibuat
+        recalcThcSubtotal(section, sectionIndex);
+
         // Expose function so voyage change can call it
         section._loadContainers = loadContainersForTHCSection;
+
 
     }
     
