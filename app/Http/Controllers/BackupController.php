@@ -30,16 +30,28 @@ class BackupController extends Controller
         // Path to mysqldump might differ depending on environment
         $mysqldumpPath = file_exists('C:\xampp\mysql\bin\mysqldump.exe') ? '"C:\xampp\mysql\bin\mysqldump.exe"' : 'mysqldump';
         
-        $passwordCmd = $password ? "--password=\"{$password}\"" : '';
+        if ($password) {
+            putenv("MYSQL_PWD={$password}");
+        }
         
-        $command = "{$mysqldumpPath} --user=\"{$username}\" {$passwordCmd} --host=\"{$host}\" --port=\"{$port}\" {$database} > \"{$storagePath}\" 2>&1";
+        $command = "{$mysqldumpPath} --user=\"{$username}\" --host=\"{$host}\" --port=\"{$port}\" {$database} > \"{$storagePath}\"";
 
         exec($command, $output, $returnVar);
+
+        // Reset environment variable for safety
+        if ($password) {
+            putenv("MYSQL_PWD=");
+        }
 
         if ($returnVar === 0 && file_exists($storagePath)) {
             return Response::download($storagePath)->deleteFileAfterSend(true);
         }
 
-        return back()->with('error', 'Gagal membackup database. ' . implode("\n", $output));
+        $errorMessage = 'Gagal membackup database.';
+        if (!empty($output)) {
+            $errorMessage .= ' ' . implode("\n", $output);
+        }
+
+        return back()->with('error', $errorMessage);
     }
 }
