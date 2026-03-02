@@ -482,6 +482,86 @@
         </div>
     </div>
     @endif
+    @if($biayaKapal->oppOptDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail OPP/OPT</h3>
+        <div class="space-y-6">
+            @php
+                $groupedOppOpt = $biayaKapal->oppOptDetails->groupBy(function($item) {
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                });
+            @endphp
+            @foreach($groupedOppOpt as $groupKey => $details)
+                @php
+                    $parts = explode('|', $groupKey);
+                    $kapal = $parts[0] ?? '-';
+                    $voyage = $parts[1] ?? '-';
+                    $first = $details->first();
+                @endphp
+                <div class="bg-purple-50 border-2 border-purple-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $kapal }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-purple-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $voyage }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Item OPP/OPT</span>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama Barang</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Tarif</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($details as $item)
+                                        @if($item->pricelist_opp_opt_id)
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $item->pricelistOppOpt->nama_barang ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ number_format($item->jumlah, 2, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->tarif, 0, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                        </tr>
+                                        @endif
+                                    @endforeach
+                                    @if($details->whereNotNull('pricelist_opp_opt_id')->count() == 0)
+                                        <tr>
+                                            <td colspan="4" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada item tercatat</td>
+                                        </tr>
+                                    @endif
+                                </tbody>
+                                <tfoot class="bg-gray-50 font-bold">
+                                    <tr class="bg-blue-50">
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">Total Nominal Kapal</td>
+                                        <td class="px-4 py-2 text-sm text-right font-black text-blue-700">Rp {{ number_format($first->total_nominal, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right">DP</td>
+                                        <td class="px-4 py-2 text-sm text-right text-emerald-600">Rp {{ number_format($first->dp, 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr class="bg-purple-100">
+                                        <td colspan="3" class="px-4 py-2 text-sm text-right font-black">Sisa Pembayaran</td>
+                                        <td class="px-4 py-2 text-sm text-right font-black text-purple-900">Rp {{ number_format($first->sisa_pembayaran, 0, ',', '.') }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
 
     @can('biaya-kapal-delete')
     <div class="mt-8 pt-6 border-t border-gray-200">

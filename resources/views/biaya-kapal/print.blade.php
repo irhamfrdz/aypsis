@@ -302,17 +302,14 @@
                 </thead>
                 <tbody>
                     @php
-                        // Untuk biaya buruh (KB024), ambil kapal dan voyage dari barangDetails
                         if ($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0) {
-                            // Debug: Dump barangDetails untuk melihat data mentah
-                            // dd($biayaKapal->barangDetails->toArray());
-                            
                             $groupedDetails = $biayaKapal->barangDetails->groupBy(function($item) {
                                 return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
                             });
-                            
-                            // Debug: Dump groupedDetails untuk melihat hasil grouping
-                            // dd($groupedDetails->toArray());
+                        } elseif ($biayaKapal->oppOptDetails && $biayaKapal->oppOptDetails->count() > 0) {
+                            $groupedDetails = $biayaKapal->oppOptDetails->groupBy(function($item) {
+                                return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                            });
                         } else {
                             $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
                             $noVoyages = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : ($biayaKapal->no_voyage ? [$biayaKapal->no_voyage] : []);
@@ -370,9 +367,6 @@
             @if($biayaKapal->jenis_biaya === 'KB024' && isset($groupedDetails) && $groupedDetails->count() > 0)
                 {{-- Biaya Buruh: Gabungkan semua barang menjadi satu tabel (gabungan semua kapal) --}}
                 @php
-                    // DEBUG: Show all barangDetails raw data
-                    $allSubtotalFromGroups = $groupedDetails->flatten()->sum('subtotal');
-                    
                     // Combine all barang across groups into one list, excluding placeholder records
                     $combinedBarang = $biayaKapal->barangDetails
                         ->filter(function($item) {
@@ -410,7 +404,7 @@
                         @foreach($combinedBarang as $index => $item)
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
-                            <td>{{ $item['barang'] }} <!-- Count: {{ $item['item_count'] }} items --></td>
+                            <td>{{ $item['barang'] }}</td>
                             <td class="text-center">{{ number_format($item['jumlah'], 2, ',', '.') }}</td>
                             <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
                             <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
@@ -423,6 +417,56 @@
                     </tbody>
                 </table>
 
+            @elseif($biayaKapal->oppOptDetails && $biayaKapal->oppOptDetails->count() > 0)
+                {{-- Biaya OPP/OPT: Gabungkan semua barang --}}
+                @php
+                    $combinedBarang = $biayaKapal->oppOptDetails
+                        ->filter(function($item) {
+                            return $item->pricelist_opp_opt_id !== null;
+                        })
+                        ->groupBy('pricelist_opp_opt_id')
+                        ->map(function($items) {
+                            $first = $items->first();
+                            return [
+                                'barang' => $first->pricelistOppOpt->nama_barang ?? '-',
+                                'harga_satuan' => $first->pricelistOppOpt->tarif ?? 0,
+                                'jumlah' => $items->sum('jumlah'),
+                                'subtotal' => $items->sum('subtotal'),
+                            ];
+                        })->values();
+                    $overallTotal = $combinedBarang->sum('subtotal');
+                @endphp
+
+                <div style="margin-top:2px; margin-bottom:2px; font-size:{{ $currentPaper['tableFont'] }};">
+                    <strong>Detail Barang OPP/OPT (Gabungan Semua Kapal)</strong>
+                </div>
+
+                <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 6%;">No</th>
+                            <th style="width: 37%;">Jenis Barang</th>
+                            <th style="width: 12%;">Jumlah</th>
+                            <th style="width: 17%;">Harga Satuan</th>
+                            <th style="width: 18%;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($combinedBarang as $index => $item)
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ $item['barang'] }}</td>
+                            <td class="text-center">{{ number_format($item['jumlah'], 2, ',', '.') }}</td>
+                            <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
+                            <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
+                        </tr>
+                        @endforeach
+                        <tr class="total-row">
+                            <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
+                            <td class="text-right"><strong>Rp {{ number_format($overallTotal, 0, ',', '.') }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
             @else
                 {{-- Default: Gabungkan semua barang yang sama --}}
                 <table class="table" style="margin-top: 6px; margin-bottom: 0;">

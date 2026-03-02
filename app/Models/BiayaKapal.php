@@ -170,4 +170,9 @@ class BiayaKapal extends Model
     {
         return $this->hasMany(BiayaKapalLabuhTambat::class, 'biaya_kapal_id');
     }
+
+    public function oppOptDetails()
+    {
+        return $this->hasMany(BiayaKapalOppOpt::class, 'biaya_kapal_id');
+    }
 }

@@ -144,6 +144,9 @@ class BiayaKapalController extends Controller
         // Get active pricelist labuh tambat
         $pricelistLabuhTambat = \App\Models\MasterPricelistLabuhTambat::where('is_active', true)->orderBy('nama_agen')->get();
 
+        // Get active pricelist OPP/OPT
+        $pricelistOppOpt = \App\Models\PricelistOppOpt::where('status', 'Aktif')->orderBy('nama_barang')->get();
+
         return view('biaya-kapal.create', compact(
             'kapals', 
             'klasifikasiBiayas', 
@@ -153,7 +156,8 @@ class BiayaKapalController extends Controller
             'pricelistAirTawar', 
             'pricelistTkbm', 
             'pricelistBiayaTrucking',
-            'pricelistLabuhTambat'
+            'pricelistLabuhTambat',
+            'pricelistOppOpt'
         ));
     }
 
@@ -710,6 +714,71 @@ class BiayaKapalController extends Controller
                     }
                 }
             }
+            
+            // OPP/OPT SECTIONS: multi-kapal biaya OPP/OPT (similar to buruh)
+            if ($request->has('opp_opt_sections') && !empty($request->opp_opt_sections)) {
+                Log::info('OPP/OPT sections received in store method', [
+                    'biaya_kapal_id' => $biayaKapal->id,
+                    'sections_count' => count($request->opp_opt_sections),
+                ]);
+                
+                foreach ($request->opp_opt_sections as $sectionIndex => $section) {
+                    $kapalName = $section['kapal'] ?? null;
+                    $voyageName = $section['voyage'] ?? null;
+                    $sectionTotalNominal = $section['total_nominal'] ?? 0;
+                    $sectionDp = $section['dp'] ?? 0;
+                    $sectionSisa = $section['sisa_pembayaran'] ?? 0;
+                    
+                    $sectionHasData = false;
+                    
+                    if (isset($section['barang']) && is_array($section['barang'])) {
+                        foreach ($section['barang'] as $item) {
+                            $barangId = $item['barang_id'] ?? null;
+                            $jumlah = floatval($item['jumlah'] ?? 0);
+
+                            if (empty($barangId) || $jumlah <= 0) {
+                                continue;
+                            }
+
+                            $barang = \App\Models\PricelistOppOpt::find($barangId);
+                            if (!$barang) continue;
+
+                            $subtotal = $barang->tarif * $jumlah;
+
+                            \App\Models\BiayaKapalOppOpt::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'pricelist_opp_opt_id' => $barang->id,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'jumlah' => $jumlah,
+                                'tarif' => $barang->tarif,
+                                'subtotal' => $subtotal,
+                                'total_nominal' => $sectionTotalNominal,
+                                'dp' => $sectionDp,
+                                'sisa_pembayaran' => $sectionSisa,
+                            ]);
+                            
+                            $sectionHasData = true;
+                        }
+                    }
+                    
+                    // Create placeholder if section has vessel info but no items
+                    if (!$sectionHasData && !empty($kapalName) && !empty($voyageName)) {
+                        \App\Models\BiayaKapalOppOpt::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'pricelist_opp_opt_id' => null,
+                            'kapal' => $kapalName,
+                            'voyage' => $voyageName,
+                            'jumlah' => 0,
+                            'tarif' => 0,
+                            'subtotal' => 0,
+                            'total_nominal' => $sectionTotalNominal,
+                            'dp' => $sectionDp,
+                            'sisa_pembayaran' => $sectionSisa,
+                        ]);
+                    }
+                }
+            }
             // OLD STRUCTURE: flat barang array (for backward compatibility)
             elseif ($request->has('barang') && !empty($request->barang)) {
                 foreach ($request->barang as $item) {
@@ -1104,7 +1173,8 @@ class BiayaKapalController extends Controller
             'truckingDetails', 
             'stuffingDetails',
             'perlengkapanDetails',
-            'labuhTambatDetails'
+            'labuhTambatDetails',
+            'oppOptDetails.pricelistOppOpt'
         ]);
 
         // Resolve container details for trucking if needed
@@ -1171,7 +1241,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt']);
         
         // Check if it's Biaya Dokumen and use specific print template
         if ($biayaKapal->klasifikasiBiaya && 
@@ -2145,46 +2215,66 @@ class BiayaKapalController extends Controller
             }
 
             // Get BL data for the selected kapal and voyage
-            // Exclude CARGO containers from calculation
             $bls = DB::table('bls')
                 ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer')
                 ->where('nama_kapal', $kapalNama)
                 ->where('no_voyage', $voyage)
-                ->whereNotNull('nomor_kontainer')
-                ->where('nomor_kontainer', '!=', '')
-                ->where('nomor_kontainer', '!=', 'CARGO')
-                ->where(function($query) {
-                    $query->where('tipe_kontainer', '!=', 'CARGO')
-                          ->orWhereNull('tipe_kontainer');
-                })
                 ->get();
 
-            // Count containers by size and type (FULL/EMPTY)
+            // Count containers by size and type
             $counts = [
-                '20' => ['full' => 0, 'empty' => 0],
-                '40' => ['full' => 0, 'empty' => 0],
+                '20' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
+                '40' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
+                'extra' => [
+                    'Mobil' => 0,
+                    'Trailer' => 0,
+                    'Truck' => 0,
+                ]
             ];
 
             foreach ($bls as $bl) {
-                // Determine size (default to 20 if not specified)
-                $size = '20';
-                if (!empty($bl->size_kontainer)) {
-                    if (str_contains($bl->size_kontainer, '40')) {
-                        $size = '40';
+                // Check if it's CARGO or has nomor_kontainer
+                $isCargo = (strtolower($bl->nomor_kontainer ?? '') === 'cargo' || strtolower($bl->tipe_kontainer ?? '') === 'cargo');
+                
+                if (!$isCargo && !empty($bl->nomor_kontainer)) {
+                    // Determine size (default to 20 if not specified)
+                    $size = '20';
+                    if (!empty($bl->size_kontainer)) {
+                        if (str_contains($bl->size_kontainer, '40')) {
+                            $size = '40';
+                        }
                     }
-                }
 
-                // Determine if EMPTY based on nama_barang
-                $namaBarang = strtolower($bl->nama_barang ?? '');
-                $isEmpty = str_contains($namaBarang, 'empty') || 
-                           str_contains($namaBarang, 'kosong') ||
-                           str_contains($namaBarang, 'mty') ||
-                           str_contains($namaBarang, 'mt container');
+                    // Determine if EMPTY based on nama_barang
+                    $namaBarang = strtolower($bl->nama_barang ?? '');
+                    $isEmpty = str_contains($namaBarang, 'empty') || 
+                               str_contains($namaBarang, 'kosong') ||
+                               str_contains($namaBarang, 'mty') ||
+                               str_contains($namaBarang, 'mt container');
 
-                if ($isEmpty) {
-                    $counts[$size]['empty']++;
-                } else {
-                    $counts[$size]['full']++;
+                    if ($isEmpty) {
+                        $counts[$size]['empty']++;
+                    } else {
+                        $counts[$size]['full']++;
+                        
+                        // Count FCL/LCL specifically for OPP/OPT
+                        $tipe = strtolower($bl->tipe_kontainer ?? '');
+                        if (str_contains($tipe, 'fcl')) {
+                            $counts[$size]['fcl']++;
+                        } else if (str_contains($tipe, 'lcl')) {
+                            $counts[$size]['lcl']++;
+                        }
+                    }
+                } else if ($isCargo) {
+                    // It's cargo, check nama_barang for specific types for OPP/OPT
+                    $namaBarang = strtolower($bl->nama_barang ?? '');
+                    if (str_contains($namaBarang, 'mobil')) {
+                        $counts['extra']['Mobil']++;
+                    } else if (str_contains($namaBarang, 'trailer')) {
+                        $counts['extra']['Trailer']++;
+                    } else if (str_contains($namaBarang, 'truck')) {
+                        $counts['extra']['Truck']++;
+                    }
                 }
             }
 
