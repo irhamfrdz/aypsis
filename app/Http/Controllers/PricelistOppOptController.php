@@ -16,7 +16,11 @@ class PricelistOppOptController extends Controller
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where('nama_barang', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->where('nama_barang', 'like', "%{$search}%")
+                  ->orWhere('vendor', 'like', "%{$search}%")
+                  ->orWhere('lokasi', 'like', "%{$search}%");
+            });
         }
 
         $pricelistOppOpts = $query->latest()->paginate(10)->withQueryString();
@@ -39,6 +43,8 @@ class PricelistOppOptController extends Controller
     {
         $request->validate([
             'nama_barang' => 'required|string|max:255',
+            'vendor' => 'nullable|string|max:255',
+            'lokasi' => 'nullable|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:Aktif,Non Aktif',
         ]);
@@ -67,6 +73,8 @@ class PricelistOppOptController extends Controller
         
         $request->validate([
             'nama_barang' => 'required|string|max:255',
+            'vendor' => 'nullable|string|max:255',
+            'lokasi' => 'nullable|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:Aktif,Non Aktif',
         ]);

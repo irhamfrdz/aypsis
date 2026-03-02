@@ -22,6 +22,17 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
+                            <label for="vendor" class="block text-sm font-medium text-gray-700">Vendor</label>
+                            <input type="text" name="vendor" id="vendor" value="{{ old('vendor', $pricelistOppOpt->vendor) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi</label>
+                            <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi', $pricelistOppOpt->lokasi) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
                             <label for="tarif" class="block text-sm font-medium text-gray-700">Tarif</label>
                             <input type="number" step="0.01" name="tarif" id="tarif" value="{{ old('tarif', (float)$pricelistOppOpt->tarif) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
                         </div>
