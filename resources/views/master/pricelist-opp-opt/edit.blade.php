@@ -27,7 +27,12 @@
                         </div>
                         <div>
                             <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi</label>
-                            <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi', $pricelistOppOpt->lokasi) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <select name="lokasi" id="lokasi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="">-- Pilih Lokasi --</option>
+                                <option value="Jakarta" {{ old('lokasi', $pricelistOppOpt->lokasi) === 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                                <option value="Batam" {{ old('lokasi', $pricelistOppOpt->lokasi) === 'Batam' ? 'selected' : '' }}>Batam</option>
+                                <option value="Pinang" {{ old('lokasi', $pricelistOppOpt->lokasi) === 'Pinang' ? 'selected' : '' }}>Pinang</option>
+                            </select>
                         </div>
                     </div>
 
