@@ -20,11 +20,7 @@
                         <input type="text" name="nama_barang" id="nama_barang" value="{{ old('nama_barang', $pricelistOppOpt->nama_barang) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="vendor" class="block text-sm font-medium text-gray-700">Vendor</label>
-                            <input type="text" name="vendor" id="vendor" value="{{ old('vendor', $pricelistOppOpt->vendor) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi</label>
                             <select name="lokasi" id="lokasi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
