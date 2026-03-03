@@ -528,7 +528,7 @@ class ProspekController extends Controller
                 
                 $naikKapalData = [
                     'prospek_id' => $prospek->id,
-                    'nomor_kontainer' => $prospek->nomor_kontainer,
+                    'nomor_kontainer' => $prospek->nomor_kontainer ?? $prospek->no_surat_jalan ?? '-',
                     'jenis_barang' => $prospek->barang ? substr($prospek->barang, 0, 255) : null,
                     'tipe_kontainer' => $prospek->tipe,
                     'size_kontainer' => $sizeKontainer,
