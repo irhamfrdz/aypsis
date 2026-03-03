@@ -6574,7 +6574,6 @@
             <div class="border-t pt-4 mt-2 space-y-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal LOLO <span class="text-xs text-indigo-500 font-normal">(otomatis)</span></label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
                             <input type="text" name="lolo_sections[${sectionIndex}][subtotal]"
@@ -6582,6 +6581,14 @@
                                    value="0" readonly>
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">PPH (2%)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="lolo_sections[${sectionIndex}][pph]"
+                                   class="lolo-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                   value="0">
+                        </div>
                     </div>
                 </div>
 
@@ -6603,6 +6610,24 @@
                                    class="lolo-materai-input w-full pl-10 pr-3 py-2 border border-amber-200 rounded-lg bg-amber-50 text-amber-800 focus:ring-0 cursor-not-allowed"
                                    value="0" readonly>
                         </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="lolo_sections[${sectionIndex}][adjustment]"
+                                   class="lolo-adjustment-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                   value="0">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan Adjustment</label>
+                        <input type="text" name="lolo_sections[${sectionIndex}][notes_adjustment]"
+                               class="lolo-notes-adjustment-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                               placeholder="Contoh: Koreksi tarif, Biaya tambahan, dll">
                     </div>
                 </div>
                     <div>
@@ -6642,6 +6667,7 @@
         const kontainerLoading = section.querySelector('.lolo-kontainer-loading');
         const kontainerEmpty = section.querySelector('.lolo-kontainer-empty');
         const searchInput = section.querySelector('.lolo-kontainer-search');
+        const adjInput = section.querySelector('.lolo-adjustment-input');
         
         kapalSelect.addEventListener('change', async function() {
             const kapalName = this.value;
@@ -6746,6 +6772,17 @@
         });
 
         vendorSelect.addEventListener('change', () => calculateLoloSectionTotal(section));
+        pphInput.addEventListener('input', function() {
+            let val = this.value.replace(/\./g, '');
+            this.value = parseInt(val || 0).toLocaleString('id-ID');
+            calculateLoloSectionTotal(section);
+        });
+
+        adjInput.addEventListener('input', function() {
+            let val = this.value.replace(/\./g, '');
+            this.value = parseInt(val || 0).toLocaleString('id-ID');
+            calculateLoloSectionTotal(section);
+        });
 
         if (searchInput) {
             searchInput.addEventListener('input', function() {
@@ -6762,6 +6799,7 @@
         const lokasi = section.querySelector('.lolo-lokasi-select').value;
         const vendor = section.querySelector('.lolo-vendor-select').value;
         const subInput = section.querySelector('.lolo-subtotal-input');
+        const pphInput = section.querySelector('.lolo-pph-input');
         const ppnInput = section.querySelector('.lolo-ppn-input');
         const matInput = section.querySelector('.lolo-materai-input');
         const totInput = section.querySelector('.lolo-total-biaya-input');
@@ -6790,9 +6828,13 @@
             });
         }
         
+        const adjInput = section.querySelector('.lolo-adjustment-input');
+        
         let ppn = Math.round(subtotal * 0.11);
+        let pph = parseInt(pphInput.value.replace(/\./g, '') || 0);
+        let adj = parseInt(adjInput.value.replace(/\./g, '') || 0);
         let mat = subtotal > 5000000 ? 10000 : 0;
-        let total = subtotal + ppn + mat;
+        let total = subtotal + ppn + mat - pph + adj;
         
         subInput.value = subtotal.toLocaleString('id-ID');
         ppnInput.value = ppn.toLocaleString('id-ID');

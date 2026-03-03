@@ -17,6 +17,8 @@ class BiayaKapalLolo extends Model
         'biaya_materai',
         'ppn',
         'pph',
+        'adjustment',
+        'notes_adjustment',
         'total_biaya',
     ];
 
@@ -26,6 +28,7 @@ class BiayaKapalLolo extends Model
         'biaya_materai' => 'decimal:2',
         'ppn'           => 'decimal:2',
         'pph'           => 'decimal:2',
+        'adjustment'    => 'decimal:2',
         'total_biaya'   => 'decimal:2',
     ];
 

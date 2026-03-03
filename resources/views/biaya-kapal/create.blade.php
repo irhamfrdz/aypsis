@@ -7544,6 +7544,14 @@
                                    value="0" readonly>
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">PPH (2%)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="lolo_sections[${sectionIndex}][pph]"
+                                   class="lolo-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                   value="0">
+                        </div>
                     </div>
                 </div>
 
@@ -7565,6 +7573,24 @@
                                    class="lolo-materai-input w-full pl-10 pr-3 py-2 border border-amber-200 rounded-lg bg-amber-50 text-amber-800 focus:ring-0 cursor-not-allowed"
                                    value="0" readonly>
                         </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="lolo_sections[${sectionIndex}][adjustment]"
+                                   class="lolo-adjustment-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                   value="0">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan Adjustment</label>
+                        <input type="text" name="lolo_sections[${sectionIndex}][notes_adjustment]"
+                               class="lolo-notes-adjustment-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                               placeholder="Contoh: Koreksi tarif, Biaya tambahan, dll">
                     </div>
                 </div>
                     <div>
@@ -7604,6 +7630,8 @@
         const kontainerList = section.querySelector('.lolo-kontainer-list');
         const kontainerLoading = section.querySelector('.lolo-kontainer-loading');
         const kontainerEmpty = section.querySelector('.lolo-kontainer-empty');
+        const pphInput = section.querySelector('.lolo-pph-input');
+        const adjInput = section.querySelector('.lolo-adjustment-input');
         
         // Kapal change -> Fetch Voyages
         kapalSelect.addEventListener('change', function() {
@@ -7735,8 +7763,18 @@
         vendorSelect.addEventListener('change', function() {
             calculateLoloSectionTotal(section);
         });
+        // PPH Input Change
+        pphInput.addEventListener('input', function() {
+            formatCurrencyInput(this);
+            calculateLoloSectionTotal(section);
+        });
 
-
+        // Adjustment Input Change
+        const adjInput = section.querySelector('.lolo-adjustment-input');
+        adjInput.addEventListener('input', function() {
+            formatCurrencyInput(this);
+            calculateLoloSectionTotal(section);
+        });
     }
 
     function calculateLoloSectionTotal(section) {
@@ -7744,9 +7782,11 @@
         const lokasi = section.querySelector('.lolo-lokasi-select').value;
         const vendor = section.querySelector('.lolo-vendor-select').value;
         const subtotalInput = section.querySelector('.lolo-subtotal-input');
+        const pphInput = section.querySelector('.lolo-pph-input');
         const ppnInput = section.querySelector('.lolo-ppn-input');
         const materaiInput = section.querySelector('.lolo-materai-input');
         const totalInput = section.querySelector('.lolo-total-biaya-input');
+        const adjInput = section.querySelector('.lolo-adjustment-input');
         const hiddenInputsContainer = section.querySelector('.lolo-kontainer-hidden-inputs');
         
         const checkboxes = section.querySelectorAll('.lolo-kontainer-checkbox:checked');
@@ -7790,14 +7830,27 @@
 
         // PPN 11% calculation
         let ppnValue = Math.round(subtotal * 0.11);
+
+        // PPH 2% auto calculation if not modified manually or just initialize
+        let pphValue = 0;
+        const rawPphInput = pphInput.value.replace(/\./g, '');
+        if (rawPphInput === '0' || rawPphInput === '') {
+            pphValue = Math.round(subtotal * 0.02);
+            pphInput.value = pphValue.toLocaleString('id-ID');
+        } else {
+            pphValue = parseFloat(rawPphInput) || 0;
+        }
         
+        // Adjustment
+        let adjValue = parseFloat(adjInput.value.replace(/\./g, '') || 0);
+
         // Materai if subtotal > 5,000,000
         let materai = 0;
         if (subtotal > 5000000) {
             materai = 10000;
         }
         
-        const total = subtotal + ppnValue + materai;
+        const total = subtotal + ppnValue + materai - pphValue + adjValue;
         
         subtotalInput.value = subtotal.toLocaleString('id-ID');
         ppnInput.value = ppnValue.toLocaleString('id-ID');

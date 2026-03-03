@@ -698,6 +698,8 @@ class BiayaKapalController extends Controller
                         'biaya_materai'  => $cleanNum($section['biaya_materai'] ?? 0),
                         'ppn'            => $cleanNum($section['ppn'] ?? 0),
                         'pph'            => $cleanNum($section['pph'] ?? 0),
+                        'adjustment'     => $cleanNum($section['adjustment'] ?? 0),
+                        'notes_adjustment' => $section['notes_adjustment'] ?? null,
                         'total_biaya'    => $cleanNum($section['total_biaya'] ?? 0),
                     ]);
                 }
@@ -2275,6 +2277,7 @@ class BiayaKapalController extends Controller
                         $cleanMaterai = str_replace(',', '.', str_replace('.', '', $section['biaya_materai'] ?? '0'));
                         $cleanPpn = str_replace(',', '.', str_replace('.', '', $section['ppn'] ?? '0'));
                         $cleanPph = str_replace(',', '.', str_replace('.', '', $section['pph'] ?? '0'));
+                        $cleanAdj = str_replace(',', '.', str_replace('.', '', $section['adjustment'] ?? '0'));
                         $cleanTotal = str_replace(',', '.', str_replace('.', '', $section['total_biaya'] ?? '0'));
 
                         \App\Models\BiayaKapalLolo::create([
@@ -2288,6 +2291,8 @@ class BiayaKapalController extends Controller
                             'biaya_materai'  => $cleanMaterai,
                             'ppn'            => $cleanPpn,
                             'pph'            => $cleanPph,
+                            'adjustment'     => $cleanAdj,
+                            'notes_adjustment' => $section['notes_adjustment'] ?? null,
                             'total_biaya'    => $cleanTotal,
                         ]);
                         $totalLolo += floatval($cleanTotal);
