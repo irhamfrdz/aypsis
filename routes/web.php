@@ -1517,6 +1517,9 @@ Route::middleware([
     Route::get('biaya-kapal/{biayaKapal}/print-stuffing', [\App\Http\Controllers\BiayaKapalController::class, 'printStuffing'])
          ->name('biaya-kapal.print-stuffing')
          ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/{biayaKapal}/print-lolo', [\App\Http\Controllers\BiayaKapalController::class, 'printLolo'])
+         ->name('biaya-kapal.print-lolo')
+         ->middleware('can:biaya-kapal-view');
     Route::get('biaya-kapal', [\App\Http\Controllers\BiayaKapalController::class, 'index'])
          ->name('biaya-kapal.index')
          ->middleware('can:biaya-kapal-view');
