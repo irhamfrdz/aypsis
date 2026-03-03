@@ -913,22 +913,22 @@ Route::middleware([
 
         // Master Pricelist LOLO
         Route::get('pricelist-lolo', [\App\Http\Controllers\MasterPricelistLoloController::class, 'index'])
-             ->name('master.pricelist-lolo.index')
+             ->name('pricelist-lolo.index')
              ->middleware('can:master-pricelist-lolo-view');
         Route::get('pricelist-lolo/create', [\App\Http\Controllers\MasterPricelistLoloController::class, 'create'])
-             ->name('master.pricelist-lolo.create')
+             ->name('pricelist-lolo.create')
              ->middleware('can:master-pricelist-lolo-create');
         Route::post('pricelist-lolo', [\App\Http\Controllers\MasterPricelistLoloController::class, 'store'])
-             ->name('master.pricelist-lolo.store')
+             ->name('pricelist-lolo.store')
              ->middleware('can:master-pricelist-lolo-create');
         Route::get('pricelist-lolo/{pricelistLolo}/edit', [\App\Http\Controllers\MasterPricelistLoloController::class, 'edit'])
-             ->name('master.pricelist-lolo.edit')
+             ->name('pricelist-lolo.edit')
              ->middleware('can:master-pricelist-lolo-update');
         Route::put('pricelist-lolo/{pricelistLolo}', [\App\Http\Controllers\MasterPricelistLoloController::class, 'update'])
-             ->name('master.pricelist-lolo.update')
+             ->name('pricelist-lolo.update')
              ->middleware('can:master-pricelist-lolo-update');
         Route::delete('pricelist-lolo/{pricelistLolo}', [\App\Http\Controllers\MasterPricelistLoloController::class, 'destroy'])
-             ->name('master.pricelist-lolo.destroy')
+             ->name('pricelist-lolo.destroy')
              ->middleware('can:master-pricelist-lolo-delete');
 
         // Master pricelist biaya dokumen routes - granular permissions
