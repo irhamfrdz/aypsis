@@ -151,8 +151,12 @@ class BiayaKapalController extends Controller
         // Get active pricelist OPP/OPT
         $pricelistOppOpt = \App\Models\PricelistOppOpt::where('status', 'Aktif')->orderBy('nama_barang')->get();
 
+        $pricelistThcs = \App\Models\PricelistThc::where('status', 'Aktif')
+            ->orderBy('vendor')
+            ->get();
+
         // Get pricelist THC vendors (distinct vendor names that are active)
-        $pricelistThcVendors = PricelistThc::where('status', 'Aktif')
+        $pricelistThcVendors = \App\Models\PricelistThc::where('status', 'Aktif')
             ->whereNotNull('vendor')
             ->where('vendor', '!=', '')
             ->select('vendor')
