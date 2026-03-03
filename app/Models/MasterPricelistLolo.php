@@ -14,10 +14,10 @@ class MasterPricelistLolo extends Model
     protected $table = 'master_pricelist_lolos';
 
     protected $fillable = [
-        'terminal',
+        'vendor',
+        'lokasi',
         'size',
         'kategori',
-        'tipe_aktivitas',
         'tarif',
         'status'
     ];

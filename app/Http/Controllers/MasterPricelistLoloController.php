@@ -14,16 +14,20 @@ class MasterPricelistLoloController extends Controller
     {
         $query = MasterPricelistLolo::query();
 
-        if ($request->filled('terminal')) {
-            $query->where('terminal', 'like', '%' . $request->terminal . '%');
-        }
-
         if ($request->filled('size')) {
             $query->where('size', $request->size);
         }
 
         if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);
+        }
+
+        if ($request->filled('vendor')) {
+            $query->where('vendor', 'like', '%' . $request->vendor . '%');
+        }
+
+        if ($request->filled('lokasi')) {
+            $query->where('lokasi', 'like', '%' . $request->lokasi . '%');
         }
 
         if ($request->filled('status')) {
@@ -49,10 +53,10 @@ class MasterPricelistLoloController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'terminal' => 'required|string|max:255',
+            'vendor' => 'nullable|string|max:255',
+            'lokasi' => 'nullable|string|max:255',
             'size' => 'required|string|max:50',
             'kategori' => 'required|string|max:50', // Full, Empty
-            'tipe_aktivitas' => 'required|string|max:50', // Lift On, Lift Off
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:aktif,non-aktif',
         ]);
@@ -77,10 +81,10 @@ class MasterPricelistLoloController extends Controller
     public function update(Request $request, MasterPricelistLolo $pricelistLolo)
     {
         $validated = $request->validate([
-            'terminal' => 'required|string|max:255',
+            'vendor' => 'nullable|string|max:255',
+            'lokasi' => 'nullable|string|max:255',
             'size' => 'required|string|max:50',
             'kategori' => 'required|string|max:50',
-            'tipe_aktivitas' => 'required|string|max:50',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:aktif,non-aktif',
         ]);
