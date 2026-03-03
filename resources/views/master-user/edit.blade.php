@@ -821,6 +821,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Dokumen Kapal Alexindo --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Dokumen Kapal Alexindo</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-kapal-alexindo][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-kapal-alexindo']['view']) && $userMatrixPermissions['master-dokumen-kapal-alexindo']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-kapal-alexindo][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-kapal-alexindo']['create']) && $userMatrixPermissions['master-dokumen-kapal-alexindo']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-kapal-alexindo][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-kapal-alexindo']['update']) && $userMatrixPermissions['master-dokumen-kapal-alexindo']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-kapal-alexindo][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-kapal-alexindo']['delete']) && $userMatrixPermissions['master-dokumen-kapal-alexindo']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-kapal-alexindo][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-kapal-alexindo']['print']) && $userMatrixPermissions['master-dokumen-kapal-alexindo']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-dokumen-kapal-alexindo][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-kapal-alexindo']['export']) && $userMatrixPermissions['master-dokumen-kapal-alexindo']['export']) checked @endif></td>
+                            </tr>
+
 
                             {{-- Master Tarif --}}
                             <tr class="module-row" data-module="master-tarif">
