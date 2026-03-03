@@ -356,7 +356,7 @@
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td>{{ $item['barang'] }}</td>
-                        <td class="text-center">{{ number_format($item['jumlah'], 2, ',', '.') }}</td>
+                        <td class="text-center">{{ rtrim(rtrim(number_format($item['jumlah'], 2, ',', '.'), '0'), ',') }}</td>
                         <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                     </tr>
                     @endforeach

@@ -357,10 +357,10 @@
                     <tr>
                         <td class="text-center">{{ $no++ }}</td>
                         <td>{{ strtoupper($typeName) }}</td>
-                        <td class="text-center">{{ number_format($data['qty'], 2, ',', '.') }}</td>
+                        <td class="text-center">{{ rtrim(rtrim(number_format($data['qty'], 2, ',', '.'), '0'), ',') }}</td>
                         <td class="text-right">
                             @if($data['qty'] > 0)
-                                Rp {{ number_format($data['cost'] / $data['qty'], 2, ',', '.') }}
+                                Rp {{ number_format(round($data['cost'] / $data['qty']), 0, ',', '.') }}
                             @else
                                 -
                             @endif

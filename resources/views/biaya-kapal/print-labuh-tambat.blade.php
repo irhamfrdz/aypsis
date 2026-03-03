@@ -342,14 +342,14 @@
                         <td>{{ strtoupper($typeName) }}</td>
                         <td class="text-center">
                             @if($typeQty > 0)
-                                {{ number_format($typeQty, 2, ',', '.') }}
+                                {{ rtrim(rtrim(number_format($typeQty, 2, ',', '.'), '0'), ',') }}
                             @else
                                 {{ $typeCount }} Lumpsum
                             @endif
                         </td>
                         <td class="text-right">
                             @if($typeQty > 0)
-                                Rp {{ number_format($typeSubtotal / $typeQty, 2, ',', '.') }}
+                                Rp {{ number_format(round($typeSubtotal / $typeQty), 0, ',', '.') }}
                             @else
                                 -
                             @endif
