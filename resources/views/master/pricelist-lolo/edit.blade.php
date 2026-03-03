@@ -39,7 +39,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi</label>
-                    <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi', $pricelistLolo->lokasi) }}" class="{{ $inputClasses }}" placeholder="Contoh: Depot A" required>
+                    <select name="lokasi" id="lokasi" class="{{ $inputClasses }}" required>
+                        <option value="Jakarta" {{ old('lokasi', $pricelistLolo->lokasi) == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                        <option value="Batam" {{ old('lokasi', $pricelistLolo->lokasi) == 'Batam' ? 'selected' : '' }}>Batam</option>
+                        <option value="Pinang" {{ old('lokasi', $pricelistLolo->lokasi) == 'Pinang' ? 'selected' : '' }}>Pinang</option>
+                    </select>
                 </div>
 
                 <div>

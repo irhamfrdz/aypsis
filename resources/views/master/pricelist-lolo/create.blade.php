@@ -38,7 +38,12 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi</label>
-                    <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}" class="{{ $inputClasses }}" placeholder="Contoh: Depot A" required>
+                    <select name="lokasi" id="lokasi" class="{{ $inputClasses }}" required>
+                        <option value="" disabled selected>-- Pilih Lokasi --</option>
+                        <option value="Jakarta" {{ old('lokasi') == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                        <option value="Batam" {{ old('lokasi') == 'Batam' ? 'selected' : '' }}>Batam</option>
+                        <option value="Pinang" {{ old('lokasi') == 'Pinang' ? 'selected' : '' }}>Pinang</option>
+                    </select>
                 </div>
 
                 <div>

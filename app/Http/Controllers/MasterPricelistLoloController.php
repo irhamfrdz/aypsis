@@ -54,7 +54,7 @@ class MasterPricelistLoloController extends Controller
     {
         $validated = $request->validate([
             'vendor' => 'nullable|string|max:255',
-            'lokasi' => 'nullable|string|max:255',
+            'lokasi' => 'required|in:Jakarta,Batam,Pinang',
             'size' => 'required|string|max:50',
             'kategori' => 'required|string|max:50', // Full, Empty
             'tarif' => 'required|numeric|min:0',
@@ -82,7 +82,7 @@ class MasterPricelistLoloController extends Controller
     {
         $validated = $request->validate([
             'vendor' => 'nullable|string|max:255',
-            'lokasi' => 'nullable|string|max:255',
+            'lokasi' => 'required|in:Jakarta,Batam,Pinang',
             'size' => 'required|string|max:50',
             'kategori' => 'required|string|max:50',
             'tarif' => 'required|numeric|min:0',

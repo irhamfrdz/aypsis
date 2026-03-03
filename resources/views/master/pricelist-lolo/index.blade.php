@@ -26,8 +26,12 @@
             {{-- Lokasi Filter --}}
             <div class="flex-1 min-w-48">
                 <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
-                <input type="text" id="lokasi" name="lokasi" value="{{ request('lokasi') }}" placeholder="Cari lokasi..." 
-                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                <select id="lokasi" name="lokasi" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <option value="">Semua Lokasi</option>
+                    <option value="Jakarta" {{ request('lokasi') == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                    <option value="Batam" {{ request('lokasi') == 'Batam' ? 'selected' : '' }}>Batam</option>
+                    <option value="Pinang" {{ request('lokasi') == 'Pinang' ? 'selected' : '' }}>Pinang</option>
+                </select>
             </div>
 
             {{-- Ukuran Filter --}}
