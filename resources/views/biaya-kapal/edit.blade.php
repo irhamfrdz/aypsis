@@ -6775,13 +6775,13 @@
         pphInput.addEventListener('input', function() {
             let val = this.value.replace(/\./g, '');
             this.value = parseInt(val || 0).toLocaleString('id-ID');
-            calculateLoloSectionTotal(section);
+            calculateLoloSectionTotal(section, true);
         });
 
         adjInput.addEventListener('input', function() {
             let val = this.value.replace(/\./g, '');
             this.value = parseInt(val || 0).toLocaleString('id-ID');
-            calculateLoloSectionTotal(section);
+            calculateLoloSectionTotal(section, true);
         });
 
         if (searchInput) {
@@ -6794,7 +6794,7 @@
         }
     }
 
-    function calculateLoloSectionTotal(section) {
+    function calculateLoloSectionTotal(section, skipPphAuto = false) {
         const index = section.getAttribute('data-lolo-section-index');
         const lokasi = section.querySelector('.lolo-lokasi-select').value;
         const vendor = section.querySelector('.lolo-vendor-select').value;
@@ -6831,7 +6831,15 @@
         const adjInput = section.querySelector('.lolo-adjustment-input');
         
         let ppn = Math.round(subtotal * 0.11);
-        let pph = parseInt(pphInput.value.replace(/\./g, '') || 0);
+        
+        let pph = 0;
+        const rawPphInput = pphInput.value.replace(/\./g, '');
+        if (skipPphAuto && rawPphInput !== '') {
+            pph = parseInt(rawPphInput) || 0;
+        } else {
+            pph = Math.round(subtotal * 0.02);
+            pphInput.value = pph.toLocaleString('id-ID');
+        }
         let adj = parseInt(adjInput.value.replace(/\./g, '') || 0);
         let mat = subtotal > 5000000 ? 10000 : 0;
         let total = subtotal + ppn + mat - pph + adj;

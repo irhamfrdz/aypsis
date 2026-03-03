@@ -7766,17 +7766,17 @@
         // PPH Input Change
         pphInput.addEventListener('input', function() {
             formatCurrencyInput(this);
-            calculateLoloSectionTotal(section);
+            calculateLoloSectionTotal(section, true);
         });
 
         // Adjustment Input Change
         adjInput.addEventListener('input', function() {
             formatCurrencyInput(this);
-            calculateLoloSectionTotal(section);
+            calculateLoloSectionTotal(section, true);
         });
     }
 
-    function calculateLoloSectionTotal(section) {
+    function calculateLoloSectionTotal(section, skipPphAuto = false) {
         const index = section.getAttribute('data-lolo-section-index');
         const lokasi = section.querySelector('.lolo-lokasi-select').value;
         const vendor = section.querySelector('.lolo-vendor-select').value;
@@ -7830,14 +7830,15 @@
         // PPN 11% calculation
         let ppnValue = Math.round(subtotal * 0.11);
 
-        // PPH 2% auto calculation if not modified manually or just initialize
+        // PPH 2% auto calculation
         let pphValue = 0;
         const rawPphInput = pphInput.value.replace(/\./g, '');
-        if (rawPphInput === '0' || rawPphInput === '') {
+        
+        if (skipPphAuto && rawPphInput !== '') {
+            pphValue = parseFloat(rawPphInput) || 0;
+        } else {
             pphValue = Math.round(subtotal * 0.02);
             pphInput.value = pphValue.toLocaleString('id-ID');
-        } else {
-            pphValue = parseFloat(rawPphInput) || 0;
         }
         
         // Adjustment
