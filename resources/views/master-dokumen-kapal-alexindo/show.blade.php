@@ -54,7 +54,7 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-3 py-3 whitespace-nowrap text-center">{{ $index + 1 }}</td>
                             <td class="px-3 py-3 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ $dokumen->nama_dokumen }}</div>
+                                <div class="font-medium text-gray-900">{{ $dokumen->sertifikatKapal->nama_sertifikat ?? '-' }}</div>
                                 @if($dokumen->keterangan)
                                 <div class="text-xs text-gray-500 mt-0.5">{{ Str::limit($dokumen->keterangan, 30) }}</div>
                                 @endif

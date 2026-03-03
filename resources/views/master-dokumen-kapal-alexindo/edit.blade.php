@@ -42,8 +42,15 @@
                         </div>
 
                         <div class="col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Dokumen <span class="text-red-500">*</span></label>
-                            <input type="text" name="nama_dokumen" value="{{ old('nama_dokumen') ?? $dokumen->nama_dokumen }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Dokumen / Sertifikat <span class="text-red-500">*</span></label>
+                            <select name="sertifikat_kapal_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required>
+                                <option value="">-- Pilih Dokumen/Sertifikat --</option>
+                                @foreach($sertifikat_kapals as $sertifikat)
+                                    <option value="{{ $sertifikat->id }}" {{ (old('sertifikat_kapal_id') ?? $dokumen->sertifikat_kapal_id) == $sertifikat->id ? 'selected' : '' }}>
+                                        {{ $sertifikat->nama_sertifikat }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="col-span-1">

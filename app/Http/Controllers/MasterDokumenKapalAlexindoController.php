@@ -16,22 +16,23 @@ class MasterDokumenKapalAlexindoController extends Controller
     public function show($id)
     {
         $kapal = \App\Models\MasterKapal::findOrFail($id);
-        $dokumens = \App\Models\MasterDokumenKapalAlexindo::where('kapal_id', $id)->get();
+        $dokumens = \App\Models\MasterDokumenKapalAlexindo::with('sertifikatKapal')->where('kapal_id', $id)->get();
         return view('master-dokumen-kapal-alexindo.show', compact('kapal', 'dokumens'));
     }
 
     public function create(Request $request)
     {
         $kapals = \App\Models\MasterKapal::all();
+        $sertifikat_kapals = \App\Models\SertifikatKapal::aktif()->get();
         $selected_kapal_id = $request->query('kapal_id');
-        return view('master-dokumen-kapal-alexindo.create', compact('kapals', 'selected_kapal_id'));
+        return view('master-dokumen-kapal-alexindo.create', compact('kapals', 'sertifikat_kapals', 'selected_kapal_id'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'kapal_id' => 'required|exists:master_kapals,id',
-            'nama_dokumen' => 'required|string|max:255',
+            'sertifikat_kapal_id' => 'required|exists:sertifikat_kapals,id',
             'nomor_dokumen' => 'nullable|string|max:255',
             'tanggal_terbit' => 'nullable|date',
             'tanggal_berakhir' => 'nullable|date',
@@ -58,14 +59,15 @@ class MasterDokumenKapalAlexindoController extends Controller
     {
         $dokumen = \App\Models\MasterDokumenKapalAlexindo::findOrFail($id);
         $kapals = \App\Models\MasterKapal::all();
-        return view('master-dokumen-kapal-alexindo.edit', compact('dokumen', 'kapals'));
+        $sertifikat_kapals = \App\Models\SertifikatKapal::aktif()->get();
+        return view('master-dokumen-kapal-alexindo.edit', compact('dokumen', 'kapals', 'sertifikat_kapals'));
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
             'kapal_id' => 'required|exists:master_kapals,id',
-            'nama_dokumen' => 'required|string|max:255',
+            'sertifikat_kapal_id' => 'required|exists:sertifikat_kapals,id',
             'nomor_dokumen' => 'nullable|string|max:255',
             'tanggal_terbit' => 'nullable|date',
             'tanggal_berakhir' => 'nullable|date',

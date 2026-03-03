@@ -9,7 +9,7 @@ class MasterDokumenKapalAlexindo extends Model
 {
     protected $fillable = [
         'kapal_id',
-        'nama_dokumen',
+        'sertifikat_kapal_id',
         'nomor_dokumen',
         'tanggal_terbit',
         'tanggal_berakhir',
@@ -20,5 +20,10 @@ class MasterDokumenKapalAlexindo extends Model
     public function kapal()
     {
         return $this->belongsTo(MasterKapal::class, 'kapal_id');
+    }
+
+    public function sertifikatKapal()
+    {
+        return $this->belongsTo(SertifikatKapal::class, 'sertifikat_kapal_id');
     }
 }
