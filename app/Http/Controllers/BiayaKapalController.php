@@ -2836,7 +2836,7 @@ class BiayaKapalController extends Controller
             $containers = DB::table('bls')
                 ->select(
                     'id',
-                    'no_bl',
+                    'nomor_bl',
                     'nomor_kontainer',
                     'no_seal',
                     'tipe_kontainer',
@@ -2854,7 +2854,7 @@ class BiayaKapalController extends Controller
                     return [
                         'id'              => $bl->id,
                         'bl_id'           => $bl->id,
-                        'no_bl'           => $bl->no_bl ?? '-',
+                        'no_bl'           => $bl->nomor_bl ?? '-',
                         'nomor_kontainer' => $bl->nomor_kontainer,
                         'no_seal'         => $bl->no_seal ?? '-',
                         'tipe_kontainer'  => $bl->tipe_kontainer ?? '-',
