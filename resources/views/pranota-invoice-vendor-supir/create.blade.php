@@ -110,13 +110,30 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div class="form-group md:col-span-2 mt-2">
+                            <div class="flex items-center">
+                                <input type="checkbox" name="potong_pph" id="potong_pph" value="1" class="h-4 w-4 text-rose-600 focus:ring-rose-500 border-gray-300 rounded cursor-pointer">
+                                <label for="potong_pph" class="ml-2 block text-sm font-medium text-gray-700 cursor-pointer">
+                                    Potong PPh 2% dari Total Invoice
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-8 border-t border-gray-200 pt-6">
                         <div class="flex justify-between items-end mb-4">
                             <h3 class="text-lg font-bold text-gray-800">Daftar Invoice Tersedia</h3>
-                            <div class="bg-rose-50 text-rose-800 px-4 py-2 rounded-lg font-medium shadow-sm border border-rose-100">
-                                Total Pranota: <span id="total_nominal_display" class="font-bold">Rp 0</span>
+                            <div class="flex flex-col gap-2 items-end">
+                                <div class="bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium shadow-sm border border-gray-200">
+                                    Subtotal: <span id="subtotal_display" class="font-bold">Rp 0</span>
+                                </div>
+                                <div id="pph_container" class="hidden bg-orange-50 text-orange-800 px-4 py-2 rounded-lg font-medium shadow-sm border border-orange-200">
+                                    PPh 2%: <span id="total_pph_display" class="font-bold">- Rp 0</span>
+                                </div>
+                                <div class="bg-rose-50 text-rose-800 px-4 py-2 rounded-lg font-medium shadow-sm border border-rose-100">
+                                    Grand Total: <span id="total_nominal_display" class="font-bold text-lg">Rp 0</span>
+                                </div>
                             </div>
                         </div>
 
@@ -197,17 +214,35 @@
         const submitBtn = document.getElementById('submitBtn');
         const form = document.getElementById('pranotaForm');
 
+        const potongPphCheckbox = document.getElementById('potong_pph');
+        const pphContainer = document.getElementById('pph_container');
+        const subtotalDisplay = document.getElementById('subtotal_display');
+        const totalPphDisplay = document.getElementById('total_pph_display');
+
         function calculateTotal() {
-            let total = 0;
+            let subtotal = 0;
             let count = 0;
             checkboxes.forEach(cb => {
                 if (cb.checked) {
-                    total += parseFloat(cb.dataset.total) || 0;
+                    subtotal += parseFloat(cb.dataset.total) || 0;
                     count++;
                 }
             });
             
-            totalDisplay.textContent = 'Rp ' + total.toLocaleString('id-ID');
+            let pph = 0;
+            if (potongPphCheckbox && potongPphCheckbox.checked) {
+                pph = subtotal * 0.02;
+                if(pphContainer) pphContainer.classList.remove('hidden');
+            } else {
+                if(pphContainer) pphContainer.classList.add('hidden');
+            }
+
+            let grandTotal = subtotal - pph;
+
+            if (subtotalDisplay) subtotalDisplay.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            if (totalPphDisplay) totalPphDisplay.textContent = '- Rp ' + pph.toLocaleString('id-ID');
+            
+            totalDisplay.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
             countDisplay.textContent = count;
 
             if (count > 0) {
@@ -220,6 +255,10 @@
             if(selectAll) {
                 selectAll.checked = checkboxes.length > 0 && count === checkboxes.length;
             }
+        }
+
+        if(potongPphCheckbox) {
+            potongPphCheckbox.addEventListener('change', calculateTotal);
         }
 
         if(selectAll) {

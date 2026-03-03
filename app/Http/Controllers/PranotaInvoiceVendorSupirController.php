@@ -76,12 +76,21 @@ class PranotaInvoiceVendorSupirController extends Controller
             }
 
             $totalNominal = $invoices->sum('total_nominal');
+            $pph = 0;
+            
+            if ($request->has('potong_pph')) {
+                $pph = $totalNominal * 0.02;
+            }
+            
+            $grandTotal = $totalNominal - $pph;
 
             $pranota = PranotaInvoiceVendorSupir::create([
                 'no_pranota' => $request->no_pranota,
                 'vendor_id' => $request->vendor_id,
                 'tanggal_pranota' => $request->tanggal_pranota,
                 'total_nominal' => $totalNominal,
+                'pph' => $pph,
+                'grand_total' => $grandTotal,
                 'status_pembayaran' => 'belum_dibayar',
                 'keterangan' => $request->keterangan,
                 'created_by' => Auth::id(),

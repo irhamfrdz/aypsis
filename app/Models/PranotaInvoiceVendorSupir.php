@@ -11,6 +11,8 @@ class PranotaInvoiceVendorSupir extends Model
         'vendor_id',
         'tanggal_pranota',
         'total_nominal',
+        'pph',
+        'grand_total',
         'status_pembayaran',
         'keterangan',
         'created_by',
