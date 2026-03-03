@@ -18,9 +18,7 @@ class MasterPricelistLoloController extends Controller
             $query->where('size', $request->size);
         }
 
-        if ($request->filled('kategori')) {
-            $query->where('kategori', $request->kategori);
-        }
+
 
         if ($request->filled('vendor')) {
             $query->where('vendor', 'like', '%' . $request->vendor . '%');
@@ -56,7 +54,6 @@ class MasterPricelistLoloController extends Controller
             'vendor' => 'nullable|string|max:255',
             'lokasi' => 'required|in:Jakarta,Batam,Pinang',
             'size' => 'required|string|max:50',
-            'kategori' => 'required|string|max:50', // Full, Empty
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:aktif,non-aktif',
         ]);
@@ -84,7 +81,6 @@ class MasterPricelistLoloController extends Controller
             'vendor' => 'nullable|string|max:255',
             'lokasi' => 'required|in:Jakarta,Batam,Pinang',
             'size' => 'required|string|max:50',
-            'kategori' => 'required|string|max:50',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|in:aktif,non-aktif',
         ]);

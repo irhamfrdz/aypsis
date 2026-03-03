@@ -17,7 +17,6 @@ class MasterPricelistLolo extends Model
         'vendor',
         'lokasi',
         'size',
-        'kategori',
         'tarif',
         'status'
     ];

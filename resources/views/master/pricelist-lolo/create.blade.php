@@ -66,13 +66,7 @@
                     <input type="number" name="tarif" id="tarif" value="{{ old('tarif') }}" class="{{ $inputClasses }}" placeholder="0" required>
                 </div>
 
-                <div>
-                    <label for="kategori" class="block text-sm font-medium text-gray-700">Kategori</label>
-                    <select name="kategori" id="kategori" class="{{ $inputClasses }}" required>
-                        <option value="Full" {{ old('kategori') == 'Full' ? 'selected' : '' }}>Full</option>
-                        <option value="Empty" {{ old('kategori') == 'Empty' ? 'selected' : '' }}>Empty</option>
-                    </select>
-                </div>
+
 
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700">Status</label>

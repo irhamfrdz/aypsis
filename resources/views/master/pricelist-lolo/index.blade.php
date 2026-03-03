@@ -45,15 +45,7 @@
                 </select>
             </div>
 
-            {{-- Kategori Filter --}}
-            <div class="min-w-32">
-                <label for="kategori" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                <select id="kategori" name="kategori" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                    <option value="">Semua Kategori</option>
-                    <option value="Full" {{ request('kategori') == 'Full' ? 'selected' : '' }}>Full</option>
-                    <option value="Empty" {{ request('kategori') == 'Empty' ? 'selected' : '' }}>Empty</option>
-                </select>
-            </div>
+
 
             {{-- Filter Buttons --}}
             <div class="flex space-x-2">
@@ -82,7 +74,7 @@
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Vendor</th>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Ukuran</th>
-                <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori</th>
+
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Tarif</th>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                 <th scope="col" class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -97,7 +89,7 @@
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->vendor ?? '-' }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->lokasi ?? '-' }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->size }}'</td>
-                <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->kategori }}</td>
+
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-bold text-indigo-600">{{ $pricelist->formatted_tarif }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-center">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $pricelist->status === 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
