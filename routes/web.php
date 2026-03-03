@@ -1482,6 +1482,8 @@ Route::middleware([
              'destroy' => 'can:master-kapal.delete'
          ]);
 
+    Route::resource('master-dokumen-kapal-alexindo', \App\Http\Controllers\MasterDokumenKapalAlexindoController::class);
+
     // 💰 Biaya Kapal (Ship Costs) Management with permissions
     Route::get('biaya-kapal/get-next-invoice-number', [\App\Http\Controllers\BiayaKapalController::class, 'getNextInvoiceNumber'])
          ->name('biaya-kapal.get-next-invoice-number')
