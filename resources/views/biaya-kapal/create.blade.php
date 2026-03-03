@@ -7770,7 +7770,6 @@
         });
 
         // Adjustment Input Change
-        const adjInput = section.querySelector('.lolo-adjustment-input');
         adjInput.addEventListener('input', function() {
             formatCurrencyInput(this);
             calculateLoloSectionTotal(section);
