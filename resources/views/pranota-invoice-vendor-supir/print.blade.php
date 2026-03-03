@@ -213,9 +213,19 @@
                 <td class="text-right font-bold">Rp {{ number_format($invoice->total_nominal, 0, ',', '.') }}</td>
             </tr>
             @endforeach
+            <tr>
+                <td colspan="3" class="text-right font-bold">SUBTOTAL KESELURUHAN</td>
+                <td class="text-right font-bold">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
+            </tr>
+            @if($pranota->pph > 0)
+            <tr>
+                <td colspan="3" class="text-right font-bold">PPH 2%</td>
+                <td class="text-right font-bold">- Rp {{ number_format($pranota->pph, 0, ',', '.') }}</td>
+            </tr>
+            @endif
             <tr class="total-row">
-                <td colspan="3" class="text-right">TOTAL KESELURUHAN</td>
-                <td class="text-right">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
+                <td colspan="3" class="text-right">GRAND TOTAL KESELURUHAN</td>
+                <td class="text-right" style="font-size: 11px;">Rp {{ number_format($pranota->grand_total > 0 ? $pranota->grand_total : $pranota->total_nominal, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>
