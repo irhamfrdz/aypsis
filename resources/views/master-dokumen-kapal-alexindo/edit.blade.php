@@ -8,7 +8,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center rounded-t-lg">
                 <h2 class="text-lg font-bold text-gray-800">Edit Dokumen Kapal</h2>
-                <a href="{{ route('master-dokumen-kapal-alexindo.index') }}" class="text-sm text-gray-500 hover:text-gray-700 font-medium pb-1.5 border-b-2 border-transparent hover:border-gray-500 transition-colors">
+                <a href="{{ route('master-dokumen-kapal-alexindo.show', $dokumen->kapal_id) }}" class="text-sm text-gray-500 hover:text-gray-700 font-medium pb-1.5 border-b-2 border-transparent hover:border-gray-500 transition-colors">
                     <i class="fas fa-arrow-left mr-1"></i> Kembali
                 </a>
             </div>
@@ -81,7 +81,7 @@
                     </div>
 
                     <div class="flex justify-end border-t border-gray-200 mt-6 pt-4 gap-2">
-                        <a href="{{ route('master-dokumen-kapal-alexindo.index') }}" class="bg-white hover:bg-gray-50 text-gray-700 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium transition duration-150">Batal</a>
+                        <a href="{{ route('master-dokumen-kapal-alexindo.show', $dokumen->kapal_id) }}" class="bg-white hover:bg-gray-50 text-gray-700 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium transition duration-150">Batal</a>
                         <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium transition duration-150">Update Dokumen</button>
                     </div>
                 </form>

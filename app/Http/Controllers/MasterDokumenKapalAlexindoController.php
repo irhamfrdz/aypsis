@@ -9,14 +9,22 @@ class MasterDokumenKapalAlexindoController extends Controller
 {
     public function index()
     {
-        $dokumens = \App\Models\MasterDokumenKapalAlexindo::with('kapal')->get();
-        return view('master-dokumen-kapal-alexindo.index', compact('dokumens'));
+        $kapals = \App\Models\MasterKapal::withCount('dokumenKapalAlexindos')->get();
+        return view('master-dokumen-kapal-alexindo.index', compact('kapals'));
     }
 
-    public function create()
+    public function show($id)
+    {
+        $kapal = \App\Models\MasterKapal::findOrFail($id);
+        $dokumens = \App\Models\MasterDokumenKapalAlexindo::where('kapal_id', $id)->get();
+        return view('master-dokumen-kapal-alexindo.show', compact('kapal', 'dokumens'));
+    }
+
+    public function create(Request $request)
     {
         $kapals = \App\Models\MasterKapal::all();
-        return view('master-dokumen-kapal-alexindo.create', compact('kapals'));
+        $selected_kapal_id = $request->query('kapal_id');
+        return view('master-dokumen-kapal-alexindo.create', compact('kapals', 'selected_kapal_id'));
     }
 
     public function store(Request $request)
@@ -42,7 +50,7 @@ class MasterDokumenKapalAlexindoController extends Controller
 
         \App\Models\MasterDokumenKapalAlexindo::create($data);
 
-        return redirect()->route('master-dokumen-kapal-alexindo.index')
+        return redirect()->route('master-dokumen-kapal-alexindo.show', $data['kapal_id'])
                          ->with('success', 'Dokumen Kapal berhasil ditambahkan.');
     }
 
@@ -81,13 +89,14 @@ class MasterDokumenKapalAlexindoController extends Controller
 
         $dokumen->update($data);
 
-        return redirect()->route('master-dokumen-kapal-alexindo.index')
+        return redirect()->route('master-dokumen-kapal-alexindo.show', $dokumen->kapal_id)
                          ->with('success', 'Dokumen Kapal berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
         $dokumen = \App\Models\MasterDokumenKapalAlexindo::findOrFail($id);
+        $kapal_id = $dokumen->kapal_id;
         
         if ($dokumen->file_dokumen && file_exists(public_path($dokumen->file_dokumen))) {
             unlink(public_path($dokumen->file_dokumen));
@@ -95,7 +104,7 @@ class MasterDokumenKapalAlexindoController extends Controller
 
         $dokumen->delete();
 
-        return redirect()->route('master-dokumen-kapal-alexindo.index')
+        return redirect()->route('master-dokumen-kapal-alexindo.show', $kapal_id)
                          ->with('success', 'Dokumen Kapal berhasil dihapus.');
     }
 }

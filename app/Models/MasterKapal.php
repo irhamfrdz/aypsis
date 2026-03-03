@@ -67,4 +67,9 @@ class MasterKapal extends Model
         $total = $this->total_kapasitas_kontainer;
         return $total > 0 ? number_format($total) : '-';
     }
+
+    public function dokumenKapalAlexindos()
+    {
+        return $this->hasMany(MasterDokumenKapalAlexindo::class, 'kapal_id');
+    }
 }
