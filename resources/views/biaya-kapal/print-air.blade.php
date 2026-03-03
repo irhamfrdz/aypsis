@@ -356,7 +356,7 @@
                     @if($data['cost'] > 0 || $data['qty'] > 0)
                     <tr>
                         <td class="text-center">{{ $no++ }}</td>
-                        <td>AIR TAWAR ({{ strtoupper($typeName) }})</td>
+                        <td>{{ strtoupper($typeName) }}</td>
                         <td class="text-center">{{ number_format($data['qty'], 2, ',', '.') }}</td>
                         <td class="text-right">
                             @if($data['qty'] > 0)
