@@ -696,6 +696,7 @@ class BiayaKapalController extends Controller
                         'kontainer_ids'  => $kontainerIds,
                         'subtotal'       => $cleanNum($section['subtotal'] ?? 0),
                         'biaya_materai'  => $cleanNum($section['biaya_materai'] ?? 0),
+                        'ppn'            => $cleanNum($section['ppn'] ?? 0),
                         'pph'            => $cleanNum($section['pph'] ?? 0),
                         'total_biaya'    => $cleanNum($section['total_biaya'] ?? 0),
                     ]);
@@ -2272,6 +2273,7 @@ class BiayaKapalController extends Controller
 
                         $cleanSubtotal = str_replace(',', '.', str_replace('.', '', $section['subtotal'] ?? '0'));
                         $cleanMaterai = str_replace(',', '.', str_replace('.', '', $section['biaya_materai'] ?? '0'));
+                        $cleanPpn = str_replace(',', '.', str_replace('.', '', $section['ppn'] ?? '0'));
                         $cleanPph = str_replace(',', '.', str_replace('.', '', $section['pph'] ?? '0'));
                         $cleanTotal = str_replace(',', '.', str_replace('.', '', $section['total_biaya'] ?? '0'));
 
@@ -2284,6 +2286,7 @@ class BiayaKapalController extends Controller
                             'kontainer_ids'  => $kontainerIds,
                             'subtotal'       => $cleanSubtotal,
                             'biaya_materai'  => $cleanMaterai,
+                            'ppn'            => $cleanPpn,
                             'pph'            => $cleanPph,
                             'total_biaya'    => $cleanTotal,
                         ]);

@@ -15,6 +15,7 @@ class BiayaKapalLolo extends Model
         'kontainer_ids',
         'subtotal',
         'biaya_materai',
+        'ppn',
         'pph',
         'total_biaya',
     ];
@@ -23,6 +24,7 @@ class BiayaKapalLolo extends Model
         'kontainer_ids' => 'array',
         'subtotal'      => 'decimal:2',
         'biaya_materai' => 'decimal:2',
+        'ppn'           => 'decimal:2',
         'pph'           => 'decimal:2',
         'total_biaya'   => 'decimal:2',
     ];

@@ -6582,18 +6582,19 @@
                                    value="0" readonly>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">PPH (2%)</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
-                            <input type="text" name="lolo_sections[${sectionIndex}][pph]"
-                                   class="lolo-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                                   value="0">
-                        </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">PPN (11%)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="lolo_sections[${sectionIndex}][ppn]"
+                                   class="lolo-ppn-input w-full pl-10 pr-3 py-2 border border-blue-200 rounded-lg bg-blue-50 text-blue-800 focus:ring-0 cursor-not-allowed"
+                                   value="0" readonly>
+                        </div>
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Materai <span class="text-xs text-amber-500 font-normal">(total > Rp 5 jt)</span></label>
                         <div class="relative">
@@ -6603,6 +6604,7 @@
                                    value="0" readonly>
                         </div>
                     </div>
+                </div>
                     <div>
                         <label class="block text-lg font-bold text-gray-900 mb-1">Total Biaya (Nett)</label>
                         <div class="relative">
@@ -6639,7 +6641,6 @@
         const kontainerList = section.querySelector('.lolo-kontainer-list');
         const kontainerLoading = section.querySelector('.lolo-kontainer-loading');
         const kontainerEmpty = section.querySelector('.lolo-kontainer-empty');
-        const pphInput = section.querySelector('.lolo-pph-input');
         const searchInput = section.querySelector('.lolo-kontainer-search');
         
         kapalSelect.addEventListener('change', async function() {
@@ -6745,11 +6746,6 @@
         });
 
         vendorSelect.addEventListener('change', () => calculateLoloSectionTotal(section));
-        pphInput.addEventListener('input', function() {
-            let val = this.value.replace(/\./g, '');
-            this.value = parseInt(val || 0).toLocaleString('id-ID');
-            calculateLoloSectionTotal(section);
-        });
 
         if (searchInput) {
             searchInput.addEventListener('input', function() {
@@ -6766,7 +6762,7 @@
         const lokasi = section.querySelector('.lolo-lokasi-select').value;
         const vendor = section.querySelector('.lolo-vendor-select').value;
         const subInput = section.querySelector('.lolo-subtotal-input');
-        const pphInput = section.querySelector('.lolo-pph-input');
+        const ppnInput = section.querySelector('.lolo-ppn-input');
         const matInput = section.querySelector('.lolo-materai-input');
         const totInput = section.querySelector('.lolo-total-biaya-input');
         const hiddenCont = section.querySelector('.lolo-kontainer-hidden-inputs');
@@ -6794,11 +6790,12 @@
             });
         }
         
-        let pph = parseInt(pphInput.value.replace(/\./g, '') || 0);
+        let ppn = Math.round(subtotal * 0.11);
         let mat = subtotal > 5000000 ? 10000 : 0;
-        let total = subtotal + mat - pph;
+        let total = subtotal + ppn + mat;
         
         subInput.value = subtotal.toLocaleString('id-ID');
+        ppnInput.value = ppn.toLocaleString('id-ID');
         matInput.value = mat.toLocaleString('id-ID');
         totInput.value = total.toLocaleString('id-ID');
         
