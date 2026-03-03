@@ -163,10 +163,15 @@
                                      class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto hidden">
                                     @foreach($prospeksAktif as $prospek)
                                         @php
-                                            // For CARGO type, always show nomor_tanda_terima
+                                            $suratJalanInfo = $prospek->no_surat_jalan ?? '';
+                                            
+                                            // For CARGO type, show no_surat_jalan as primary identifier
                                             if (strtoupper($prospek->tipe ?? '') === 'CARGO') {
-                                                $ttNumber = $prospek->nomor_tanda_terima ?? 'Belum ada TT';
-                                                $displayText = 'TT: ' . $ttNumber;
+                                                if ($suratJalanInfo) {
+                                                    $displayText = $suratJalanInfo;
+                                                } else {
+                                                    $displayText = 'CARGO #' . $prospek->id;
+                                                }
                                             } elseif ($prospek->nomor_kontainer) {
                                                 $displayText = $prospek->no_seal 
                                                     ? $prospek->nomor_kontainer . ' - ' . $prospek->no_seal 
@@ -174,6 +179,9 @@
                                             } else {
                                                 // Show alternative info when container number is empty
                                                 $displayText = 'ID #' . $prospek->id . ' - ' . strtoupper($prospek->tipe ?? 'N/A');
+                                                if ($suratJalanInfo) {
+                                                    $displayText .= ' (SJ: ' . $suratJalanInfo . ')';
+                                                }
                                                 if ($prospek->no_seal) {
                                                     $displayText .= ' - Seal: ' . $prospek->no_seal;
                                                 }
@@ -186,7 +194,8 @@
                                              data-supir="{{ $prospek->nama_supir }}"
                                              data-tanggal="{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}"
                                              data-pengirim="{{ $prospek->pt_pengirim ?? '-' }}"
-                                             data-barang="{{ $prospek->barang ?? '-' }}">
+                                             data-barang="{{ $prospek->barang ?? '-' }}"
+                                             data-surat-jalan="{{ $suratJalanInfo }}">
                                             <div class="font-medium text-gray-900 {{ !$prospek->nomor_kontainer ? 'text-orange-600' : '' }}">
                                                 {{ $displayText }}
                                             </div>
@@ -545,7 +554,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const text = option.getAttribute('data-text').toLowerCase();
             const supir = option.getAttribute('data-supir').toLowerCase();
             const tanggal = option.getAttribute('data-tanggal').toLowerCase();
-            const shouldShow = text.includes(searchTerm) || supir.includes(searchTerm) || tanggal.includes(searchTerm);
+            const pengirim = (option.getAttribute('data-pengirim') || '').toLowerCase();
+            const barang = (option.getAttribute('data-barang') || '').toLowerCase();
+            const suratJalan = (option.getAttribute('data-surat-jalan') || '').toLowerCase();
+            const shouldShow = text.includes(searchTerm) || supir.includes(searchTerm) || tanggal.includes(searchTerm) || pengirim.includes(searchTerm) || barang.includes(searchTerm) || suratJalan.includes(searchTerm);
             option.style.display = shouldShow ? 'block' : 'none';
         });
     }
