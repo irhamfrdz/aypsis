@@ -274,7 +274,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>PERMOHONAN BIAYA LOLO</h1>
+            <h1>PERMOHONAN TRANSFER</h1>
         </div>
 
         <!-- Document Info -->
@@ -337,7 +337,7 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 25%;">Lokasi / Vendor</th>
+                    <th style="width: 25%;">Kapal / Voyage</th>
                     <th style="width: 30%;">Daftar Kontainer</th>
                     <th style="width: 25%;">Rincian Biaya</th>
                     <th style="width: 15%;">Total Biaya</th>
@@ -357,7 +357,8 @@
                     <tr>
                         <td class="center">{{ $index + 1 }}</td>
                         <td>
-                            <strong>{{ $detail->lokasi }}</strong><br>
+                            <strong>{{ $detail->kapal }}</strong><br>
+                            <span style="color: #555;">Voy: {{ $detail->voyage }}</span><br>
                             <span style="color: #6a0dad; font-size: 0.9em;">Vendor: {{ $detail->vendor }}</span>
                         </td>
                         <td>
