@@ -180,4 +180,9 @@ class BiayaKapal extends Model
     {
         return $this->hasMany(BiayaKapalThc::class, 'biaya_kapal_id');
     }
+
+    public function loloDetails()
+    {
+        return $this->hasMany(BiayaKapalLolo::class, 'biaya_kapal_id');
+    }
 }

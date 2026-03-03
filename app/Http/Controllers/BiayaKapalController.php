@@ -16,6 +16,9 @@ use App\Models\BiayaKapalTrucking;
 use App\Models\BiayaKapalStuffing;
 use App\Models\PricelistThc;
 use App\Models\BiayaKapalPerlengkapan;
+use App\Models\BiayaKapalThc;
+use App\Models\BiayaKapalLolo;
+use App\Models\MasterPricelistLolo;
 use App\Models\BiayaKapalLabuhTambat;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaTanpaSuratJalan;
@@ -149,10 +152,19 @@ class BiayaKapalController extends Controller
         $pricelistOppOpt = \App\Models\PricelistOppOpt::where('status', 'Aktif')->orderBy('nama_barang')->get();
 
         // Get pricelist THC vendors (distinct vendor names that are active)
-        $pricelistThcs = PricelistThc::where('status', 'Aktif')
-            ->orderBy('vendor')
-            ->get();
         $pricelistThcVendors = PricelistThc::where('status', 'Aktif')
+            ->whereNotNull('vendor')
+            ->where('vendor', '!=', '')
+            ->select('vendor')
+            ->distinct()
+            ->orderBy('vendor')
+            ->pluck('vendor');
+
+        // Get pricelist Lolo data
+        $pricelistLolosData = MasterPricelistLolo::aktif()
+            ->get();
+        
+        $pricelistLoloVendors = MasterPricelistLolo::aktif()
             ->whereNotNull('vendor')
             ->where('vendor', '!=', '')
             ->select('vendor')
@@ -172,7 +184,9 @@ class BiayaKapalController extends Controller
             'pricelistLabuhTambat',
             'pricelistOppOpt',
             'pricelistThcs',
-            'pricelistThcVendors'
+            'pricelistThcVendors',
+            'pricelistLolosData',
+            'pricelistLoloVendors'
         ));
     }
 
@@ -281,6 +295,16 @@ class BiayaKapalController extends Controller
         // THC Sections
         if (isset($data['thc_sections']) && is_array($data['thc_sections'])) {
             foreach ($data['thc_sections'] as &$section) {
+                if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
+        // LOLO Sections
+        if (isset($data['lolo_sections']) && is_array($data['lolo_sections'])) {
+            foreach ($data['lolo_sections'] as &$section) {
                 if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
@@ -427,6 +451,18 @@ class BiayaKapalController extends Controller
             'thc_sections.*.subtotal' => 'nullable|numeric|min:0',
             'thc_sections.*.pph' => 'nullable|numeric|min:0',
             'thc_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // LOLO sections validation
+            'lolo_sections' => 'nullable|array',
+            'lolo_sections.*.kapal' => 'nullable|string|max:255',
+            'lolo_sections.*.voyage' => 'nullable|string|max:255',
+            'lolo_sections.*.lokasi' => 'nullable|string|max:255',
+            'lolo_sections.*.vendor' => 'nullable|string|max:255',
+            'lolo_sections.*.kontainer' => 'nullable|array',
+            'lolo_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'lolo_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'lolo_sections.*.pph' => 'nullable|numeric|min:0',
+            'lolo_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // Perlengkapan sections
             'perlengkapan_sections'                     => 'nullable|array',
@@ -618,6 +654,52 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for THC from section totals
                 $totalThc = \App\Models\BiayaKapalThc::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $biayaKapal->update(['nominal' => $totalThc]);
+            }
+
+            // BIAYA LOLO SECTIONS: Store Lolo details
+            if ($request->has('lolo_sections') && !empty($request->lolo_sections)) {
+                foreach ($request->lolo_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                        continue;
+                    }
+
+                    // Kumpulkan kontainer yang dipilih
+                    $kontainerIds = [];
+                    if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                        foreach ($section['kontainer'] as $k) {
+                            if (!empty($k['bl_id'])) {
+                                $kontainerIds[] = [
+                                    'bl_id'           => $k['bl_id'],
+                                    'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                    'size'            => $k['size'] ?? null,
+                                ];
+                            }
+                        }
+                    }
+
+                    // Clean numeric fields
+                    $cleanNum = function ($val) {
+                        return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                    };
+
+                    \App\Models\BiayaKapalLolo::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal'          => $section['kapal'] ?? null,
+                        'voyage'         => $section['voyage'] ?? null,
+                        'lokasi'         => $section['lokasi'] ?? null,
+                        'vendor'         => $section['vendor'] ?? null,
+                        'kontainer_ids'  => $kontainerIds,
+                        'subtotal'       => $cleanNum($section['subtotal'] ?? 0),
+                        'biaya_materai'  => $cleanNum($section['biaya_materai'] ?? 0),
+                        'pph'            => $cleanNum($section['pph'] ?? 0),
+                        'total_biaya'    => $cleanNum($section['total_biaya'] ?? 0),
+                    ]);
+                }
+
+                // Auto-calculate nominal for LOLO from section totals
+                $totalLolo = \App\Models\BiayaKapalLolo::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalLolo]);
             }
 
 
@@ -1584,7 +1666,8 @@ class BiayaKapalController extends Controller
             'perlengkapanDetails',
             'labuhTambatDetails',
             'oppOptDetails',
-            'thcDetails'
+            'thcDetails',
+            'loloDetails'
         ]);
 
         // Get list of ships for dropdown
@@ -1634,6 +1717,18 @@ class BiayaKapalController extends Controller
             ->orderBy('vendor')
             ->pluck('vendor');
 
+        // Get pricelist Lolo data
+        $pricelistLolosData = MasterPricelistLolo::aktif()
+            ->get();
+        
+        $pricelistLoloVendors = MasterPricelistLolo::aktif()
+            ->whereNotNull('vendor')
+            ->where('vendor', '!=', '')
+            ->select('vendor')
+            ->distinct()
+            ->orderBy('vendor')
+            ->pluck('vendor');
+
         return view('biaya-kapal.edit', compact(
             'biayaKapal', 
             'kapals', 
@@ -1647,7 +1742,9 @@ class BiayaKapalController extends Controller
             'pricelistLabuhTambat',
             'pricelistOppOpt',
             'pricelistThcs',
-            'pricelistThcVendors'
+            'pricelistThcVendors',
+            'pricelistLolosData',
+            'pricelistLoloVendors'
         ));
     }
 
@@ -1710,6 +1807,16 @@ class BiayaKapalController extends Controller
         // Trucking Sections Cleaning
         if (isset($data['trucking_sections']) && is_array($data['trucking_sections'])) {
             foreach ($data['trucking_sections'] as &$section) {
+                if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
+        // LOLO Sections Cleaning
+        if (isset($data['lolo_sections']) && is_array($data['lolo_sections'])) {
+            foreach ($data['lolo_sections'] as &$section) {
                 if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
@@ -1816,6 +1923,18 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.subtotal' => 'nullable|numeric|min:0',
             'trucking_sections.*.pph' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // LOLO sections validation
+            'lolo_sections' => 'nullable|array',
+            'lolo_sections.*.kapal' => 'nullable|string|max:255',
+            'lolo_sections.*.voyage' => 'nullable|string|max:255',
+            'lolo_sections.*.lokasi' => 'nullable|string|max:255',
+            'lolo_sections.*.vendor' => 'nullable|string|max:255',
+            'lolo_sections.*.kontainer' => 'nullable|array',
+            'lolo_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'lolo_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'lolo_sections.*.pph' => 'nullable|numeric|min:0',
+            'lolo_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // Labuh tambat sections validation
             'labuh_tambat' => 'nullable|array',
@@ -2123,6 +2242,53 @@ class BiayaKapalController extends Controller
                 
                 if ($totalThc > 0) {
                     $biayaKapal->update(['nominal' => $totalThc]);
+                }
+            }
+
+            // LOLO UPDATE
+            if ($request->has('lolo_sections')) {
+                \App\Models\BiayaKapalLolo::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                $totalLolo = 0;
+                if (!empty($request->lolo_sections)) {
+                    foreach ($request->lolo_sections as $section) {
+                        if (empty($section['kapal']) && empty($section['voyage'])) continue;
+
+                        $kontainerIds = [];
+                        if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                            foreach ($section['kontainer'] as $k) {
+                                if (!empty($k['bl_id'])) {
+                                    $kontainerIds[] = [
+                                        'bl_id'           => $k['bl_id'],
+                                        'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                        'size'            => $k['size'] ?? null,
+                                    ];
+                                }
+                            }
+                        }
+
+                        $cleanSubtotal = str_replace(',', '.', str_replace('.', '', $section['subtotal'] ?? '0'));
+                        $cleanMaterai = str_replace(',', '.', str_replace('.', '', $section['biaya_materai'] ?? '0'));
+                        $cleanPph = str_replace(',', '.', str_replace('.', '', $section['pph'] ?? '0'));
+                        $cleanTotal = str_replace(',', '.', str_replace('.', '', $section['total_biaya'] ?? '0'));
+
+                        \App\Models\BiayaKapalLolo::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal'          => $section['kapal'] ?? null,
+                            'voyage'         => $section['voyage'] ?? null,
+                            'lokasi'         => $section['lokasi'] ?? null,
+                            'vendor'         => $section['vendor'] ?? null,
+                            'kontainer_ids'  => $kontainerIds,
+                            'subtotal'       => $cleanSubtotal,
+                            'biaya_materai'  => $cleanMaterai,
+                            'pph'            => $cleanPph,
+                            'total_biaya'    => $cleanTotal,
+                        ]);
+                        $totalLolo += floatval($cleanTotal);
+                    }
+                }
+                
+                if ($totalLolo > 0) {
+                    $biayaKapal->update(['nominal' => $totalLolo]);
                 }
             }
 
