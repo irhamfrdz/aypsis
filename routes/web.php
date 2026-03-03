@@ -1496,6 +1496,8 @@ Route::middleware([
          ->name('biaya-kapal.search-tanda-terima');
     Route::get('biaya-kapal/get-containers-by-voyage', [\App\Http\Controllers\BiayaKapalController::class, 'getContainersByVoyage'])
          ->name('biaya-kapal.get-containers-by-voyage');
+    Route::get('biaya-kapal/get-containers', [\App\Http\Controllers\BiayaKapalController::class, 'getContainersByVoyage'])
+         ->name('biaya-kapal.get-containers');
     Route::get('biaya-kapal/get-tanda-terima-details/{id}', [\App\Http\Controllers\BiayaKapalController::class, 'getTandaTerimaDetails'])
          ->name('biaya-kapal.get-tanda-terima-details');
     Route::get('biaya-kapal/{biayaKapal}/print', [\App\Http\Controllers\BiayaKapalController::class, 'print'])

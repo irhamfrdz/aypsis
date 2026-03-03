@@ -7419,7 +7419,9 @@
 </style>
 
 @endpush
-// ============= LOLO SECTIONS MANAGEMENT =============
+@push('scripts')
+<script>
+    // ============= LOLO SECTIONS MANAGEMENT =============
     let loloSectionCounter = 0;
     
     function initializeLoloSections() {
@@ -7832,6 +7834,5 @@
         if (value === '') value = '0';
         input.value = parseInt(value).toLocaleString('id-ID');
     }
-    
-    // Auto-initialize if its Lolo on page load (for edit mode)
-    // For now we only care about create.
+</script>
+@endpush
