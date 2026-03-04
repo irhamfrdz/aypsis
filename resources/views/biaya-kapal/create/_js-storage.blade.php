@@ -326,10 +326,10 @@
                     const pricelist = pricelistStoragesData.find(p => 
                         p.lokasi === lokasi && 
                         p.vendor === vendor && 
-                        (p.size ? p.size.toString() : '') === normSize
+                        (p.size_kontainer ? p.size_kontainer.toString() : '') === normSize
                     );
                     
-                    const tarif = pricelist ? parseFloat(pricelist.tarif) : 0;
+                    const tarif = pricelist ? parseFloat(pricelist.biaya_per_hari) : 0;
                     calculatedSubtotal += (tarif * hari);
                 });
             }
