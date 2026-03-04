@@ -387,15 +387,22 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Seal</label>
-                    <input type="text"
-                           name="no_seal"
-                           value="{{ old('no_seal') }}"
-                           placeholder="Contoh: SL123456"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror">
+                    <div id="no_seal_container_inputs">
+                        <input type="text"
+                               name="no_seal[]"
+                               value="{{ old('no_seal.0', old('no_seal')) }}"
+                               placeholder="Contoh: SL123456"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror">
+                    </div>
                     @error('no_seal')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">Nomor seal/segel kontainer untuk keamanan</p>
+                    @for ($i = 0; $i < (int) old('jumlah_kontainer', 1); $i++)
+                        @error('no_seal.' . $i)
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    @endfor
+                    <p class="text-xs text-gray-500 mt-1">Nomor seal/segel kontainer untuk keamanan. Jika <strong>Jumlah Kontainer</strong> > 1, akan muncul input seal tambahan.</p>
                 </div>
 
                 <!-- Packaging Information -->
@@ -694,6 +701,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Prefilled kontainer values (from old input) as an array
 window.oldNomorKontainer = {!! json_encode(array_values((array) old('nomor_kontainer'))) !!};
+window.oldNoSeal = {!! json_encode(array_values((array) old('no_seal'))) !!};
 
 function setupKontainerDropdownEvents() {
     // Support multiple search inputs and dropdowns. We'll set active search input to identify which hidden to update.
@@ -808,8 +816,10 @@ function initializeKontainerFiltering() {
 
 function renderKontainerInputs(count) {
     const container = document.getElementById('nomor_kontainer_container_inputs');
+    const sealContainer = document.getElementById('no_seal_container_inputs');
     if (!container) return;
     container.innerHTML = '';
+    if (sealContainer) sealContainer.innerHTML = '';
 
     for (let i = 1; i <= count; i++) {
         const wrapper = document.createElement('div');
@@ -846,6 +856,28 @@ function renderKontainerInputs(count) {
             }
         } catch (e) {
             // ignore if old not defined
+        }
+
+        // Handle seal inputs matching container count
+        if (sealContainer) {
+            const sealInput = document.createElement('input');
+            sealInput.type = 'text';
+            sealInput.name = 'no_seal[]';
+            sealInput.id = `no_seal_${i}`;
+            sealInput.placeholder = `Nomor Seal ${i > 1 ? i : ''}`;
+            sealInput.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 mb-2';
+            
+            // Prefill seal if old values provided
+            try {
+                if (window.oldNoSeal && Array.isArray(window.oldNoSeal)) {
+                    const oldSeal = window.oldNoSeal[i-1];
+                    if (oldSeal) {
+                        sealInput.value = oldSeal;
+                    }
+                }
+            } catch(e) {}
+            
+            sealContainer.appendChild(sealInput);
         }
     }
 

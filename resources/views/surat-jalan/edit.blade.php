@@ -440,14 +440,30 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Seal</label>
-                    <input type="text"
-                           name="no_seal"
-                           value="{{ old('no_seal', $suratJalan->no_seal) }}"
-                           placeholder="Nomor seal"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror">
+                    <div id="no_seal_container_inputs">
+                        @php 
+                            $seals = old('no_seal');
+                            if (!$seals) {
+                                $seals = explode(',', $suratJalan->no_seal);
+                            }
+                            $seals = (array) $seals;
+                        @endphp
+                        @foreach($seals as $index => $seal)
+                            <input type="text"
+                                   name="no_seal[]"
+                                   value="{{ $seal }}"
+                                   placeholder="Nomor seal {{ $index + 1 }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 mb-2 @error('no_seal.'.$index) border-red-500 @enderror">
+                        @endforeach
+                    </div>
                     @error('no_seal')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    @for ($i = 0; $i < 10; $i++) {{-- Anticipate up to 10 kontainers --}}
+                        @error('no_seal.' . $i)
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    @endfor
                 </div>
 
                 <!-- Transportasi Information -->
@@ -656,7 +672,47 @@ document.addEventListener('DOMContentLoaded', function() {
     if (nomorKontainerSelect && nomorKontainerSelect.value) {
         autoFillKontainerDetails();
     }
+
+    // Initial seal inputs render
+    const initialJumlah = parseInt(document.querySelector('input[name="jumlah_kontainer"]')?.value) || 1;
+    renderSealInputs(initialJumlah);
 });
+
+// Prefilled seal values
+window.existingSeals = {!! json_encode(explode(',', $suratJalan->no_seal)) !!};
+window.oldNoSeal = {!! json_encode(old('no_seal')) !!};
+
+function renderSealInputs(count) {
+    const sealContainer = document.getElementById('no_seal_container_inputs');
+    if (!sealContainer) return;
+
+    // Get current values to preserve them if possible
+    const currentInputs = sealContainer.querySelectorAll('input[name="no_seal[]"]');
+    const currentValues = Array.from(currentInputs).map(input => input.value);
+
+    sealContainer.innerHTML = '';
+
+    for (let i = 1; i <= count; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'no_seal[]';
+        input.placeholder = `Nomor Seal ${i}`;
+        input.className = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 mb-2';
+        
+        // Value priority: 1. Current value, 2. Old value, 3. Existing database value
+        let val = '';
+        if (currentValues[i-1] !== undefined) {
+            val = currentValues[i-1];
+        } else if (window.oldNoSeal && window.oldNoSeal[i-1]) {
+            val = window.oldNoSeal[i-1];
+        } else if (window.existingSeals && window.existingSeals[i-1]) {
+            val = window.existingSeals[i-1];
+        }
+        
+        input.value = val;
+        sealContainer.appendChild(input);
+    }
+}
 
 function initializeKontainerFiltering() {
     // Store original options for filtering
@@ -952,6 +1008,9 @@ function updateKontainerNote() {
         note.innerHTML = '<strong>Catatan:</strong> Untuk 2 kontainer, akan menggunakan tarif 40ft meskipun size 20ft';
         jumlahKontainerInput.parentNode.appendChild(note);
     }
+    
+    // Update seal inputs
+    renderSealInputs(jumlahKontainer);
 }
 
 function updateKontainerRules() {
@@ -1017,6 +1076,9 @@ function updateKontainerRules() {
     
     // Update uang jalan berdasarkan size
     updateUangJalan();
+    
+    // Update seal inputs
+    renderSealInputs(parseInt(jumlahKontainerInput.value) || 1);
 }
 
 // Function to create searchable dropdown

@@ -310,7 +310,8 @@ class SuratJalanController extends Controller
             'tipe_kontainer' => 'nullable|string|max:50',
             'nomor_kontainer' => 'nullable',
             'nomor_kontainer.*' => 'nullable|string|max:255',
-            'no_seal' => 'nullable|string|max:255',
+            'no_seal' => 'nullable',
+            'no_seal.*' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
             'jumlah_kontainer' => 'nullable|integer|min:1',
             'karton' => 'nullable|in:pakai,tidak_pakai',
@@ -352,6 +353,12 @@ class SuratJalanController extends Controller
                     $data['no_kontainer'] = $data['nomor_kontainer'];
                 }
                 unset($data['nomor_kontainer']);
+            }
+
+            // Map no_seal array to CSV string
+            if (isset($data['no_seal']) && is_array($data['no_seal'])) {
+                $filteredSeals = array_filter(array_map('trim', $data['no_seal']));
+                $data['no_seal'] = implode(',', $filteredSeals);
             }
 
             // If submitted as supir customer, set supir as the nama_supir_customer value
@@ -639,7 +646,8 @@ class SuratJalanController extends Controller
             'nomor_kontainer' => 'nullable', // Accept both string and array
             'nomor_kontainer.*' => 'nullable|string|max:255',
             'kontainer_id' => 'nullable|integer|min:1',
-            'no_seal' => 'nullable|string|max:255',
+            'no_seal' => 'nullable',
+            'no_seal.*' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
             'jumlah_kontainer' => 'nullable|integer|min:1',
             'uang_jalan' => 'nullable|numeric|min:0',
@@ -661,6 +669,12 @@ class SuratJalanController extends Controller
                     $data['no_kontainer'] = $data['nomor_kontainer'];
                 }
                 unset($data['nomor_kontainer']);
+            }
+
+            // Map no_seal array to CSV string
+            if (isset($data['no_seal']) && is_array($data['no_seal'])) {
+                $filteredSeals = array_filter(array_map('trim', $data['no_seal']));
+                $data['no_seal'] = implode(',', $filteredSeals);
             }
 
             // Convert IDs to text values for dropdown fields
