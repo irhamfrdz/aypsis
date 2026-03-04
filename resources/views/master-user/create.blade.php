@@ -898,6 +898,40 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Pricelist LOLO --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Pricelist LOLO</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-lolo][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Master Pricelist Biaya Storage --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Pricelist Biaya Storage</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-storage][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-storage][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-storage][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-biaya-storage][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pricelist Vendor Supir --}}
                             <tr class="submodule-row" data-parent="master-tarif">
                                 <td class="submodule">

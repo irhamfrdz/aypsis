@@ -5011,5 +5011,17 @@ Route::middleware(['auth',
              'update'  => 'can:master-pricelist-freight-update',
              'destroy' => 'can:master-pricelist-freight-delete',
          ]);
+
+    Route::resource('pricelist-biaya-storage', \App\Http\Controllers\MasterPricelistBiayaStorageController::class)
+         ->names('master-pricelist-biaya-storage')
+         ->middleware([
+             'index'   => 'can:master-pricelist-biaya-storage-view',
+             'show'    => 'can:master-pricelist-biaya-storage-view',
+             'create'  => 'can:master-pricelist-biaya-storage-create',
+             'store'   => 'can:master-pricelist-biaya-storage-create',
+             'edit'    => 'can:master-pricelist-biaya-storage-update',
+             'update'  => 'can:master-pricelist-biaya-storage-update',
+             'destroy' => 'can:master-pricelist-biaya-storage-delete',
+         ]);
 });
 

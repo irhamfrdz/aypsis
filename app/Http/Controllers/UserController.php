@@ -1074,6 +1074,12 @@ class UserController extends Controller
                             $action = str_replace('pricelist-lolo-', '', $action);
                             $module = 'master-pricelist-lolo';
                         }
+                        // Special handling for master-pricelist-biaya-storage permissions
+                        elseif (strpos($action, 'pricelist-biaya-storage-') === 0) {
+                            // For master-pricelist-biaya-storage-view, extract the action
+                            $action = str_replace('pricelist-biaya-storage-', '', $action);
+                            $module = 'master-pricelist-biaya-storage';
+                        }
                         // Special handling for master-tipe-akun permissions
                         elseif (strpos($action, 'tipe-akun-') === 0) {
                             // For master-tipe-akun-view, extract the action
@@ -2544,6 +2550,26 @@ class UserController extends Controller
                             'create' => 'master-pricelist-lolo-create',
                             'update' => 'master-pricelist-lolo-update',
                             'delete' => 'master-pricelist-lolo-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-biaya-storage permissions explicitly
+                    if ($module === 'master-pricelist-biaya-storage' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-biaya-storage-view',
+                            'create' => 'master-pricelist-biaya-storage-create',
+                            'update' => 'master-pricelist-biaya-storage-update',
+                            'delete' => 'master-pricelist-biaya-storage-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
