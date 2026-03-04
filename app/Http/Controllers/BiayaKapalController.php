@@ -1629,6 +1629,14 @@ class BiayaKapalController extends Controller
             $biayaKapal->load(['labuhTambatDetails']);
             return view('biaya-kapal.print-labuh-tambat', compact('biayaKapal'));
         }
+
+        // Check if it's Biaya Storage and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            (stripos($biayaKapal->klasifikasiBiaya->nama, 'storage') !== false || 
+             $biayaKapal->jenis_biaya === 'KB044')) {
+            $biayaKapal->load(['storageDetails']);
+            return view('biaya-kapal.print-storage', compact('biayaKapal'));
+        }
         
         return view('biaya-kapal.print', compact('biayaKapal'));
     }
@@ -1754,6 +1762,16 @@ class BiayaKapalController extends Controller
         $biayaKapal->load(['klasifikasiBiaya', 'loloDetails']);
 
         return view('biaya-kapal.print-lolo', compact('biayaKapal'));
+    }
+
+    /**
+     * Print biaya storage specifically.
+     */
+    public function printStorage(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'storageDetails']);
+
+        return view('biaya-kapal.print-storage', compact('biayaKapal'));
     }
 
     /**
