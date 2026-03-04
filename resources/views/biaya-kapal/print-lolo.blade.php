@@ -401,7 +401,7 @@
                             @endif
                         </td>
                         <td class="right">
-                            <div style="font-weight: bold;">Rp {{ number_format($detail->total_biaya + $detail->pph, 0, ',', '.') }}</div>
+                            <div style="font-weight: bold;">Rp {{ number_format(ceil($detail->total_biaya + $detail->pph), 0, ',', '.') }}</div>
                         </td>
                     </tr>
                     @php 
@@ -409,7 +409,7 @@
                         $grandTotalPpn += $detail->ppn;
                         $grandTotalMaterai += $detail->biaya_materai;
                         $grandTotalPph += $detail->pph;
-                        $grandTotalFinal += ($detail->total_biaya + $detail->pph);
+                        $grandTotalFinal += ceil($detail->total_biaya + $detail->pph);
                     @endphp
                     @endforeach
                 @else
