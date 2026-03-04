@@ -669,21 +669,33 @@ class StockBanController extends Controller
 
         $request->validate([
             'tanggal_kembali' => 'required|date',
+            'nama_toko' => 'nullable|string|max:255',
             'keterangan_kembali' => 'nullable|string',
         ]);
 
         $tanggalKembali = \Carbon\Carbon::parse($request->tanggal_kembali)->format('d-m-Y');
 
-        $returnNote = "[Kembali ke Toko] Tgl: " . $tanggalKembali;
+        $returnNote = "[Kembali ke Toko] ";
+        if ($request->filled('nama_toko')) {
+            $returnNote .= "Toko: " . $request->nama_toko . ", ";
+        }
+        $returnNote .= "Tgl: " . $tanggalKembali;
+        
         if ($request->filled('keterangan_kembali')) {
             $returnNote .= ", Ket: " . $request->keterangan_kembali;
         }
 
-        $stockBan->update([
+        $updateData = [
             'status' => 'Dikembalikan',
             'tanggal_kembali' => $request->tanggal_kembali,
             'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $returnNote) : $returnNote,
-        ]);
+        ];
+
+        if ($request->filled('nama_toko')) {
+            $updateData['tempat_beli'] = $request->nama_toko;
+        }
+
+        $stockBan->update($updateData);
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dikembalikan ke toko.');
     }

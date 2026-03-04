@@ -2048,6 +2048,7 @@
         const modalBanId = document.getElementById('return_shop_ban_id');
         const modalNomorSeri = document.getElementById('return_shop_nomor_seri');
         const modalTanggal = document.getElementById('return_shop_tanggal');
+        const modalNamaToko = document.getElementById('return_shop_nama_toko');
         const modalKeterangan = document.getElementById('return_shop_keterangan');
 
         if (!modal) return;
@@ -2055,6 +2056,7 @@
         modalBanId.value = id;
         modalNomorSeri.textContent = seri || '-';
         modalTanggal.value = new Date().toISOString().split('T')[0];
+        modalNamaToko.value = '';
         modalKeterangan.value = '';
 
         modal.classList.remove('hidden');
@@ -2232,6 +2234,11 @@
                                 <div>
                                     <label for="return_shop_tanggal" class="form-label-premium">Tanggal Kembali <span class="text-red-500">*</span></label>
                                     <input type="date" name="tanggal_kembali" id="return_shop_tanggal" class="form-input-premium" value="{{ date('Y-m-d') }}" required>
+                                </div>
+
+                                <div>
+                                    <label for="return_shop_nama_toko" class="form-label-premium">Nama Toko</label>
+                                    <input type="text" name="nama_toko" id="return_shop_nama_toko" class="form-input-premium" placeholder="Nama toko pengembalian...">
                                 </div>
 
                                 <div>
