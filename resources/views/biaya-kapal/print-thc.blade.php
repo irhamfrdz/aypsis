@@ -388,13 +388,14 @@
                             @endif
                         </td>
                         <td class="right">
-                            <div style="font-weight: bold;">Rp {{ number_format($detail->total_biaya, 0, ',', '.') }}</div>
+                            <div style="font-weight: bold;">Rp {{ number_format($detail->subtotal + $detail->biaya_dokumen_muat + $detail->biaya_dokumen_bongkar + $detail->biaya_materai, 0, ',', '.') }}</div>
                         </td>
                     </tr>
                     @php 
+                        $totalRowBeforePph = $detail->subtotal + $detail->biaya_dokumen_muat + $detail->biaya_dokumen_bongkar + $detail->biaya_materai;
                         $grandTotalSubtotal += $detail->subtotal;
                         $grandTotalPph += $detail->pph;
-                        $grandTotalFinal += $detail->total_biaya;
+                        $grandTotalFinal += $totalRowBeforePph;
                     @endphp
                     @endforeach
                 @else
