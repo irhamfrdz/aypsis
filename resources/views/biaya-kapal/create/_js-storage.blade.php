@@ -144,6 +144,21 @@
                         </div>
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="storage_sections[${sectionIndex}][adjustment]"
+                                   class="storage-adjustment-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+                                   placeholder="0">
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes Adjustment</label>
+                        <input type="text" name="storage_sections[${sectionIndex}][notes_adjustment]"
+                               class="storage-notes-adjustment-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+                               placeholder="Keterangan adjustment (contoh: Diskon khusus, Koreksi tarif, dll)">
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Total Biaya</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
@@ -300,6 +315,7 @@
         const subtotalInput = section.querySelector('.storage-subtotal-input');
         const materaiInput  = section.querySelector('.storage-materai-input');
         const pphInput      = section.querySelector('.storage-pph-input');
+        const adjustmentInput = section.querySelector('.storage-adjustment-input');
         const totalInput    = section.querySelector('.storage-total-input');
 
         function calculateStorageSectionSubtotal(sec) {
@@ -340,11 +356,12 @@
 
         function recalcStorageTotal() {
             const subtotal = parseFloat(subtotalInput.value.replace(/\./g, '')) || 0;
+            const adjustment = parseFloat(adjustmentInput.value.replace(/\./g, '')) || 0;
             
             // Logic: if subtotal >= 5,000,000 then materai = 10,000
             const materai = subtotal >= 5000000 ? 10000 : 0;
             const pph = Math.round(subtotal * 0.02);
-            const total = subtotal + materai - pph;
+            const total = subtotal + materai - pph + adjustment;
 
             const fmt = (val) => new Intl.NumberFormat('id-ID').format(Math.round(val));
             if (materaiInput) materaiInput.value = fmt(materai);
@@ -354,12 +371,14 @@
             calculateTotalFromAllStorageSections();
         }
 
-        [subtotalInput].forEach(el => {
+        [subtotalInput, adjustmentInput].forEach(el => {
             if (el) {
                 el.addEventListener('input', function() {
+                    let isNegative = this.value.startsWith('-');
                     let raw = this.value.replace(/[^0-9]/g, '');
                     const num = parseFloat(raw) || 0;
-                    this.value = num > 0 ? new Intl.NumberFormat('id-ID').format(num) : '';
+                    let formatted = num > 0 ? new Intl.NumberFormat('id-ID').format(num) : (num === 0 && this.value !== '' ? '0' : '');
+                    this.value = (isNegative && num > 0) ? '-' + formatted : formatted;
                     recalcStorageTotal();
                 });
             }
