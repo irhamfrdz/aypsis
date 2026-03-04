@@ -7080,9 +7080,18 @@
                                     <span class="ml-2 text-xs bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">${kontainer.size_kontainer || '-'}'</span>
                                 </div>
                             </div>
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] text-gray-400 uppercase font-bold">Hari</label>
+                                <input type="number" 
+                                       class="storage-kontainer-hari w-16 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
+                                       value="1" min="1"
+                                       data-bl-id="${kontainer.id}">
+                            </div>
                         `;
 
                         const checkbox = row.querySelector('.storage-kontainer-checkbox');
+                        const hariInput = row.querySelector('.storage-kontainer-hari');
+
                         checkbox.addEventListener('change', function() {
                             const blId = this.dataset.blId;
                             const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"]`);
@@ -7093,11 +7102,20 @@
                                     hiddenGroup.innerHTML = `
                                         <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][bl_id]" value="${blId}">
                                         <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
-                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">`;
+                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">
+                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari]" class="hari-hidden" value="${hariInput.value}">`;
                                     hiddenInputsContainer.appendChild(hiddenGroup);
                                 }
                             } else {
                                 if (existingInput) existingInput.remove();
+                            }
+                        });
+
+                        hariInput.addEventListener('input', function() {
+                            const blId = this.dataset.blId;
+                            const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-hidden`);
+                            if (existingInput) {
+                                existingInput.value = this.value;
                             }
                         });
                         kontainerList.appendChild(row);

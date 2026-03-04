@@ -596,6 +596,7 @@
                                     <tr>
                                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">No. Kontainer</th>
                                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
+                                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Hari</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -612,11 +613,14 @@
                                                     -
                                                 @endif
                                             </td>
+                                            <td class="px-4 py-2 text-sm text-gray-800 text-center font-bold">
+                                                {{ $k['hari'] ?? '1' }}
+                                            </td>
                                         </tr>
                                     @endforeach
                                     @if(empty($kontainerIds))
                                         <tr>
-                                            <td colspan="2" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada kontainer terpilih</td>
+                                            <td colspan="3" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada kontainer terpilih</td>
                                         </tr>
                                     @endif
                                 </tbody>
