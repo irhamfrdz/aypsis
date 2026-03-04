@@ -384,8 +384,8 @@
                             @endif
                             @if($detail->pph > 0)
                             <div class="rincian-item">
-                                <span>PPH 2%:</span>
-                                <span>- {{ number_format($detail->pph, 0, ',', '.') }}</span>
+                                <span>PPH (REIMBURSE):</span>
+                                <span>{{ number_format($detail->pph, 0, ',', '.') }}</span>
                             </div>
                             @endif
                             @if($detail->adjustment != 0)
@@ -401,7 +401,7 @@
                             @endif
                         </td>
                         <td class="right">
-                            <div style="font-weight: bold;">Rp {{ number_format($detail->total_biaya, 0, ',', '.') }}</div>
+                            <div style="font-weight: bold;">Rp {{ number_format($detail->total_biaya + $detail->pph, 0, ',', '.') }}</div>
                         </td>
                     </tr>
                     @php 
@@ -409,7 +409,7 @@
                         $grandTotalPpn += $detail->ppn;
                         $grandTotalMaterai += $detail->biaya_materai;
                         $grandTotalPph += $detail->pph;
-                        $grandTotalFinal += $detail->total_biaya;
+                        $grandTotalFinal += ($detail->total_biaya + $detail->pph);
                     @endphp
                     @endforeach
                 @else
