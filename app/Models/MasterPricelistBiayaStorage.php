@@ -14,13 +14,11 @@ class MasterPricelistBiayaStorage extends Model
         'lokasi',
         'size_kontainer',
         'biaya_per_hari',
-        'free_time',
         'status',
         'keterangan',
     ];
 
     protected $casts = [
         'biaya_per_hari' => 'decimal:2',
-        'free_time' => 'integer',
     ];
 }

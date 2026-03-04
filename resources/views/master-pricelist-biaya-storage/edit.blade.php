@@ -52,13 +52,6 @@
                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                 </div>
 
-                {{-- Free Time --}}
-                <div>
-                    <label for="free_time" class="block text-sm font-medium text-gray-700 mb-1">Free Time (Hari) <span class="text-red-500">*</span></label>
-                    <input type="number" name="free_time" id="free_time" value="{{ old('free_time', $pricelist->free_time) }}" required
-                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                </div>
-
                 {{-- Status --}}
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-500">*</span></label>

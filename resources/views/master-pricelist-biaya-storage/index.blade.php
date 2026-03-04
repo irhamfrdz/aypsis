@@ -73,7 +73,6 @@
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Ukuran</th>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Tarif / Hari</th>
-                <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Free Time</th>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                 <th scope="col" class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
@@ -88,7 +87,6 @@
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->lokasi ?? '-' }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->size_kontainer }}'</td>
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-bold text-indigo-600">Rp {{ number_format($pricelist->biaya_per_hari, 0, ',', '.') }}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->free_time }} Hari</td>
                 <td class="px-4 py-3 whitespace-nowrap text-center">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $pricelist->status === 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                         {{ strtoupper($pricelist->status) }}

@@ -53,7 +53,6 @@ class MasterPricelistBiayaStorageController extends Controller
             'lokasi' => 'nullable|string|max:255',
             'size_kontainer' => 'required|string|max:50',
             'biaya_per_hari' => 'required|numeric|min:0',
-            'free_time' => 'required|integer|min:0',
             'status' => 'required|in:aktif,non-aktif',
             'keterangan' => 'nullable|string',
         ]);
@@ -83,7 +82,6 @@ class MasterPricelistBiayaStorageController extends Controller
             'lokasi' => 'nullable|string|max:255',
             'size_kontainer' => 'required|string|max:50',
             'biaya_per_hari' => 'required|numeric|min:0',
-            'free_time' => 'required|integer|min:0',
             'status' => 'required|in:aktif,non-aktif',
             'keterangan' => 'nullable|string',
         ]);
