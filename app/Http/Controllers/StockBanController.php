@@ -689,10 +689,17 @@ class StockBanController extends Controller
             'status' => 'Dikembalikan',
             'tanggal_kembali' => $request->tanggal_kembali,
             'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $returnNote) : $returnNote,
+            'mobil_id' => null,
+            'alat_berat_id' => null,
+            'penerima_id' => null,
+            'kapal_id' => null,
+            'tanggal_keluar' => null,
+            'tanggal_kirim' => null,
         ];
 
         if ($request->filled('nama_toko')) {
             $updateData['tempat_beli'] = $request->nama_toko;
+            $updateData['lokasi'] = $request->nama_toko;
         }
 
         $stockBan->update($updateData);
