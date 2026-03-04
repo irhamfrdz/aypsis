@@ -195,7 +195,8 @@ class BiayaKapalController extends Controller
             'pricelistThcs',
             'pricelistThcVendors',
             'pricelistLolosData',
-            'pricelistLoloVendors'
+            'pricelistLoloVendors',
+            'pricelistStoragesData'
         ));
     }
 
@@ -1765,7 +1766,8 @@ class BiayaKapalController extends Controller
             'labuhTambatDetails',
             'oppOptDetails',
             'thcDetails',
-            'loloDetails'
+            'loloDetails',
+            'storageDetails'
         ]);
 
         // Get list of ships for dropdown
@@ -1827,6 +1829,9 @@ class BiayaKapalController extends Controller
             ->orderBy('vendor')
             ->pluck('vendor');
 
+        // Get pricelist Storage data
+        $pricelistStoragesData = MasterPricelistBiayaStorage::all();
+
         return view('biaya-kapal.edit', compact(
             'biayaKapal', 
             'kapals', 
@@ -1842,7 +1847,8 @@ class BiayaKapalController extends Controller
             'pricelistThcs',
             'pricelistThcVendors',
             'pricelistLolosData',
-            'pricelistLoloVendors'
+            'pricelistLoloVendors',
+            'pricelistStoragesData'
         ));
     }
 
