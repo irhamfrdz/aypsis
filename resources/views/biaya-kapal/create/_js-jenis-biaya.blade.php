@@ -446,10 +446,10 @@
 
     // Function to calculate nominal for Biaya Dokumen (vendor tariff × number of containers)
     function calculateDokumenNominal() {
-        const selectedJenisBiaya = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
+        const currentJenisBiaya = selectedJenisBiaya.nama || '';
         
         // Only calculate if jenis biaya is "Biaya Dokumen"
-        if (!selectedJenisBiaya.toLowerCase().includes('dokumen')) {
+        if (!currentJenisBiaya.toLowerCase().includes('dokumen')) {
             return;
         }
         
@@ -492,10 +492,10 @@
         console.log('Vendor selected:', this.value);
         console.log('Biaya from vendor:', biaya);
         
-        const selectedJenisBiaya = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
+        const currentJenisBiaya = selectedJenisBiaya.nama || '';
         
         // If Biaya Dokumen, use the calculate function
-        if (selectedJenisBiaya.toLowerCase().includes('dokumen')) {
+        if (currentJenisBiaya.toLowerCase().includes('dokumen')) {
             calculateDokumenNominal();
         } else {
             // For other jenis biaya, use original logic

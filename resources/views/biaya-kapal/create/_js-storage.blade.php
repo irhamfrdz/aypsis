@@ -427,7 +427,7 @@
             totalSubtotal += sub;
         });
 
-        const selectedText = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
+        const selectedText = selectedJenisBiaya.nama || '';
         if (selectedText.toLowerCase().includes('storage')) {
             if (nominalInput) {
                 nominalInput.value = totalSubtotal > 0 ? Math.round(totalSubtotal).toLocaleString('id-ID') : '';
