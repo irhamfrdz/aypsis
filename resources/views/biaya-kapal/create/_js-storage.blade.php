@@ -158,11 +158,18 @@
         
         storageSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener
+        const vendorSelect = section.querySelector('.storage-vendor-select');
+        const lokasiSelect = section.querySelector('.storage-lokasi-select');
+
+        // Kapal change listener
         const kapalSelect = section.querySelector('.storage-kapal-select');
         kapalSelect.addEventListener('change', function() {
             loadVoyagesForStorageSection(sectionIndex, this.value);
         });
+
+        // Vendor & Lokasi change listeners to trigger recalculation
+        vendorSelect.addEventListener('change', () => calculateStorageSectionSubtotal(section));
+        lokasiSelect.addEventListener('change', () => calculateStorageSectionSubtotal(section));
 
         // Setup manual voyage toggle
         const voyageSelect = section.querySelector('.storage-voyage-select');
@@ -269,6 +276,7 @@
                             } else {
                                 if (existingInput) existingInput.remove();
                             }
+                            calculateStorageSectionSubtotal(section);
                         });
 
                         hariInput.addEventListener('input', function() {
@@ -277,6 +285,7 @@
                             if (existingInput) {
                                 existingInput.value = this.value;
                             }
+                            calculateStorageSectionSubtotal(section);
                         });
                         kontainerList.appendChild(row);
                     });
@@ -292,6 +301,42 @@
         const materaiInput  = section.querySelector('.storage-materai-input');
         const pphInput      = section.querySelector('.storage-pph-input');
         const totalInput    = section.querySelector('.storage-total-input');
+
+        function calculateStorageSectionSubtotal(sec) {
+            const vendor = sec.querySelector('.storage-vendor-select').value;
+            const lokasi = sec.querySelector('.storage-lokasi-select').value;
+            const subsInput = sec.querySelector('.storage-subtotal-input');
+            const checkedCbs = sec.querySelectorAll('.storage-kontainer-checkbox:checked');
+            
+            let calculatedSubtotal = 0;
+            
+            if (vendor && lokasi) {
+                checkedCbs.forEach(cb => {
+                    const blId = cb.dataset.blId;
+                    const size = cb.dataset.size;
+                    const hariInput = sec.querySelector(`.storage-kontainer-hari[data-bl-id="${blId}"]`);
+                    const hari = parseInt(hariInput.value) || 0;
+                    
+                    // Normalize size (20, 40, 45)
+                    let normSize = size || '20';
+                    normSize = normSize.toString().replace(/[^0-9]/g, '');
+                    if (normSize === '2') normSize = '20';
+                    if (normSize === '4') normSize = '40';
+
+                    const pricelist = pricelistStoragesData.find(p => 
+                        p.lokasi === lokasi && 
+                        p.vendor === vendor && 
+                        p.size.toString() === normSize
+                    );
+                    
+                    const tarif = pricelist ? parseFloat(pricelist.tarif) : 0;
+                    calculatedSubtotal += (tarif * hari);
+                });
+            }
+            
+            subsInput.value = calculatedSubtotal > 0 ? new Intl.NumberFormat('id-ID').format(calculatedSubtotal) : '0';
+            recalcStorageTotal();
+        }
 
         function recalcStorageTotal() {
             const subtotal = parseFloat(subtotalInput.value.replace(/\./g, '')) || 0;
