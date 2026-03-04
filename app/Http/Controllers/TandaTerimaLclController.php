@@ -108,7 +108,7 @@ class TandaTerimaLclController extends Controller
             'tipe_kontainer' => 'nullable|in:HC,STD,RF,OT,FR,Dry Container',
             'gambar_surat_jalan.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'nama_barang' => 'nullable|array',
-            'nama_barang.*' => 'nullable|string|max:255',
+            'nama_barang.*' => 'nullable|string',
             'jumlah' => 'nullable|array',
             'jumlah.*' => 'nullable|integer|min:0',
             'satuan' => 'nullable|array',
@@ -297,7 +297,7 @@ class TandaTerimaLclController extends Controller
             'telepon_pengirim' => 'nullable|string|max:50',
             'alamat_pengirim' => 'required|string',
             'nama_barang' => 'nullable|array',
-            'nama_barang.*' => 'nullable|string|max:255',
+            'nama_barang.*' => 'nullable|string',
             'jumlah' => 'nullable|array',
             'jumlah.*' => 'nullable|numeric|min:0',
             'satuan' => 'nullable|array',
@@ -2242,8 +2242,8 @@ class TandaTerimaLclController extends Controller
                 return $pivot->tandaTerima ? $pivot->tandaTerima->nama_pengirim : null;
             })->filter()->unique()->implode(', ');
 
-            if (strlen($ptPengirimList) > 180) {
-                $ptPengirimList = substr($ptPengirimList, 0, 177) . '...';
+            if (strlen($ptPengirimList) > 2000) {
+                $ptPengirimList = substr($ptPengirimList, 0, 1997) . '...';
             }
 
             $barangList = $pivotRecords->map(function($pivot) {
@@ -2251,8 +2251,8 @@ class TandaTerimaLclController extends Controller
                 return $pivot->tandaTerima->items->pluck('nama_barang')->filter()->unique()->implode(', ');
             })->filter()->unique()->implode(', ');
 
-            if (strlen($barangList) > 180) {
-                $barangList = substr($barangList, 0, 177) . '...';
+            if (strlen($barangList) > 2000) {
+                $barangList = substr($barangList, 0, 1997) . '...';
             }
 
             // Cari tujuan terbanyak atau pertama

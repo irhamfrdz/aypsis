@@ -436,7 +436,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'gudang_id' => 'nullable|exists:gudangs,id',
             // Barang - Array format dari form
             'nama_barang' => 'nullable|array',
-            'nama_barang.*' => 'nullable|string|max:255',
+            'nama_barang.*' => 'nullable|string',
             'jumlah' => 'nullable|array',
             'jumlah.*' => 'nullable|integer|min:1',
             'satuan' => 'nullable|array',
@@ -810,7 +810,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'PIC' => 'nullable|string|max:255',
             // Accept either scalar or array inputs for LCL rows during edit
             'nama_barang' => 'nullable',
-            'nama_barang.*' => 'nullable|string|max:255',
+            'nama_barang.*' => 'nullable|string',
             'jenis_barang' => 'nullable|string|max:255',
             'jumlah_barang' => 'nullable|integer|min:1',
             'satuan_barang' => 'nullable|string|max:255',
