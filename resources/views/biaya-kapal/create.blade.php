@@ -57,71 +57,43 @@
 @include('biaya-kapal.create._section-perlengkapan')
 
 {{-- ===== FORM FIELDS EXTRA ===== --}}
-{{-- Nominal, PPH Dokumen, Grand Total, Materai, DP, Sisa Pembayaran,
-     Penerima, PPN, PPH, Total Biaya, Nama Vendor, Rekening,
-     Keterangan, Upload Bukti, Info Box, Form Actions --}}
 @include('biaya-kapal.create._form-fields-extra')
 
 @endsection
 
-{{-- ===== JAVASCRIPT ===== --}}
-
-{{-- JS Init: pricelist data variables --}}
-@include('biaya-kapal.create._js-init')
-
-{{-- JS Jenis Biaya: searchable dropdown + vendor dokumen logic --}}
-@include('biaya-kapal.create._js-jenis-biaya')
-
-{{-- JS Toggle: show/hide sections based on jenis biaya --}}
-@include('biaya-kapal.create._js-toggle')
-
-{{-- JS Perlengkapan --}}
-@include('biaya-kapal.create._js-perlengkapan')
-
-{{-- JS Buruh / Barang --}}
-@include('biaya-kapal.create._js-buruh')
-
-{{-- JS OPP/OPT --}}
-@include('biaya-kapal.create._js-opp-opt')
-
-{{-- JS TKBM --}}
-@include('biaya-kapal.create._js-tkbm')
-
-{{-- JS Air Tawar --}}
-@include('biaya-kapal.create._js-air')
-
-{{-- JS Labuh Tambat --}}
-@include('biaya-kapal.create._js-labuh-tambat')
-
-{{-- JS Penerima Select2 --}}
-@include('biaya-kapal.create._js-penerima')
-
-{{-- JS Kapal Multi-Select --}}
-@include('biaya-kapal.create._js-kapal-multi')
-
-{{-- JS Voyage Multi-Select --}}
-@include('biaya-kapal.create._js-voyage-multi')
-
-{{-- JS BL Multi-Select --}}
-@include('biaya-kapal.create._js-bl-multi')
-
-{{-- JS Operasional --}}
-@include('biaya-kapal.create._js-operasional')
-
-{{-- JS Trucking --}}
-@include('biaya-kapal.create._js-trucking')
-
-{{-- JS Stuffing --}}
-@include('biaya-kapal.create._js-stuffing')
-
-{{-- JS Storage --}}
-@include('biaya-kapal.create._js-storage')
-
-{{-- JS THC --}}
-@include('biaya-kapal.create._js-thc')
-
-{{-- Styles (CSS) --}}
+{{-- ===== STYLES ===== --}}
+@push('styles')
 @include('biaya-kapal.create._styles')
+@endpush
 
-{{-- JS LOLO (separate script block) --}}
+{{-- ===== JAVASCRIPT (Main Script Block) ===== --}}
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+@include('biaya-kapal.create._js-init')
+@include('biaya-kapal.create._js-jenis-biaya')
+@include('biaya-kapal.create._js-toggle')
+@include('biaya-kapal.create._js-perlengkapan')
+@include('biaya-kapal.create._js-buruh')
+@include('biaya-kapal.create._js-opp-opt')
+@include('biaya-kapal.create._js-tkbm')
+@include('biaya-kapal.create._js-air')
+@include('biaya-kapal.create._js-labuh-tambat')
+@include('biaya-kapal.create._js-penerima')
+@include('biaya-kapal.create._js-kapal-multi')
+@include('biaya-kapal.create._js-voyage-multi')
+@include('biaya-kapal.create._js-bl-multi')
+@include('biaya-kapal.create._js-operasional')
+@include('biaya-kapal.create._js-trucking')
+@include('biaya-kapal.create._js-stuffing')
+@include('biaya-kapal.create._js-storage')
+@include('biaya-kapal.create._js-thc')
+</script>
+@endpush
+
+{{-- ===== JAVASCRIPT (LOLO - Separate Script Block) ===== --}}
+@push('scripts')
+<script>
 @include('biaya-kapal.create._js-lolo')
+</script>
+@endpush

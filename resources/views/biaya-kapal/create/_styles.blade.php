@@ -1,5 +1,3 @@
-{{-- Styles CSS --}}
-@push('styles')
 <style>
     /* Select2 Styling */
     .select2-container {
@@ -165,5 +163,3 @@
         50% { opacity: 0.8; }
     }
 </style>
-
-@endpush

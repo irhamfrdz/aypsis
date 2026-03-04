@@ -523,5 +523,3 @@
             }
         }
     }
-</script>
-@endpush

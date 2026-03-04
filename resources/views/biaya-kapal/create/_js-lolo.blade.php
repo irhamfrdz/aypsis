@@ -1,5 +1,4 @@
-@push('scripts')
-<script>
+
     // ============= LOLO SECTIONS MANAGEMENT =============
     let loloSectionCounter = 0;
     
@@ -461,5 +460,3 @@
         if (value === '') value = '0';
         input.value = parseInt(value).toLocaleString('id-ID');
     }
-</script>
-@endpush
