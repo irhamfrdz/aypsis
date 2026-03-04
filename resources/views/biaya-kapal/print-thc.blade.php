@@ -386,6 +386,12 @@
                                 <span>{{ number_format($detail->biaya_materai, 0, ',', '.') }}</span>
                             </div>
                             @endif
+                            @if($detail->pph > 0)
+                            <div class="rincian-item">
+                                <span>PPh (reimburse):</span>
+                                <span>{{ number_format($detail->pph, 0, ',', '.') }}</span>
+                            </div>
+                            @endif
                         </td>
                         <td class="right">
                             <div style="font-weight: bold;">Rp {{ number_format($detail->subtotal + $detail->biaya_dokumen_muat + $detail->biaya_dokumen_bongkar + $detail->biaya_materai, 0, ',', '.') }}</div>
@@ -409,6 +415,12 @@
         <!-- Summary -->
         <div class="summary-box">
             <table class="summary-table">
+                @if($grandTotalPph > 0)
+                <tr>
+                    <td class="label">PPh (reimburse):</td>
+                    <td class="value">Rp {{ number_format($grandTotalPph, 0, ',', '.') }}</td>
+                </tr>
+                @endif
                 <tr class="total-row">
                     <td class="label">TOTAL BIAYA:</td>
                     <td class="value">Rp {{ number_format($grandTotalFinal, 0, ',', '.') }}</td>
