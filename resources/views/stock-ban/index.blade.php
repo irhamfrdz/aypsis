@@ -2236,7 +2236,7 @@
 
                                 <div>
                                     <label for="return_shop_keterangan" class="form-label-premium">Keterangan / Alasan</label>
-                                    <textarea name="keterangan_kembali" id="return_shop_keterangan" class="form-input-premium" rows="2" placeholder="Catatan...</textarea>
+                                    <textarea name="keterangan_kembali" id="return_shop_keterangan" class="form-input-premium" rows="2" placeholder="Catatan..."></textarea>
                                 </div>
                             </div>
                         </div>
