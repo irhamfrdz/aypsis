@@ -549,6 +549,14 @@
                                                 title="Selesai Masak (Kembali ke Gudang)">
                                                 <i class="fas fa-check-circle"></i>
                                             </button>
+                                        @elseif($ban->status == 'Dikembalikan')
+                                            <button type="button" 
+                                                class="btn-restore-stock-modal text-green-600 hover:text-green-900"
+                                                data-id="{{ $ban->id }}"
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Jadikan Stok Kembali">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
                                         @endif
 
                                         <a href="{{ route('stock-ban.show', $ban->id) }}" class="text-purple-600 hover:text-purple-900" title="Lihat Detail">
@@ -2131,7 +2139,63 @@
             const seri = returnShopBtn.getAttribute('data-seri');
             openReturnToShopModal(id, seri);
         }
+
+        const restoreStockBtn = e.target.closest('.btn-restore-stock-modal');
+        if (restoreStockBtn) {
+            e.preventDefault();
+            const id = restoreStockBtn.getAttribute('data-id');
+            const seri = restoreStockBtn.getAttribute('data-seri');
+            openRestoreStockModal(id, seri);
+        }
     });
+
+    // Restore To Stock Functions
+    function openRestoreStockModal(id, seri) {
+        const modal = document.getElementById('restoreStockModal');
+        const modalBanId = document.getElementById('restore_stock_ban_id');
+        const modalNomorSeri = document.getElementById('restore_stock_nomor_seri');
+        const modalLokasi = document.getElementById('restore_stock_lokasi');
+
+        if (!modal) return;
+
+        modalBanId.value = id;
+        modalNomorSeri.textContent = seri || '-';
+        modalLokasi.value = '';
+
+        modal.classList.remove('hidden');
+        
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
+        modal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
+    }
+
+    function closeRestoreStockModal() {
+        const modal = document.getElementById('restoreStockModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style');
+        }
+    }
+
+    function submitRestoreStockForm() {
+        const banId = document.getElementById('restore_stock_ban_id').value;
+        const lokasi = document.getElementById('restore_stock_lokasi').value;
+        
+        if (!lokasi) {
+            alert('Mohon pilih lokasi penyimpanan!');
+            return;
+        }
+
+        const form = document.getElementById('restoreStockForm');
+        form.action = `{{ url('stock-ban') }}/${banId}/restore-to-stock`;
+        form.submit();
+    }
+
+    window.openRestoreStockModal = openRestoreStockModal;
+    window.closeRestoreStockModal = closeRestoreStockModal;
+    window.submitRestoreStockForm = submitRestoreStockForm;
 
 </script>
 
@@ -2270,6 +2334,59 @@
                         Kembalikan
                     </button>
                     <button type="button" onclick="closeReturnToShopModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Jadikan Stok Kembali -->
+<div id="restoreStockModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeRestoreStockModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="restoreStockForm" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="ban_id" id="restore_stock_ban_id">
+                
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-undo text-green-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Kembalikan Jadi Stok: <span id="restore_stock_nomor_seri" class="text-green-600 font-bold"></span>
+                            </h3>
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label class="form-label-premium">Lokasi Penyimpanan <span class="text-red-500">*</span></label>
+                                    <select name="lokasi" id="restore_stock_lokasi" class="form-input-premium" required>
+                                        <option value="">-- Pilih Lokasi --</option>
+                                        <option value="Garasi Pluit">Garasi Pluit</option>
+                                        <option value="Ruko 10">Ruko 10</option>
+                                        <option value="Ruko 9">Ruko 9</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="restore_stock_keterangan" class="form-label-premium">Keterangan (Opsional)</label>
+                                    <textarea name="keterangan" id="restore_stock_keterangan" class="form-input-premium" rows="2" placeholder="Catatan..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                    <button type="button" onclick="submitRestoreStockForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Jadikan Stok
+                    </button>
+                    <button type="button" onclick="closeRestoreStockModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Batal
                     </button>
                 </div>

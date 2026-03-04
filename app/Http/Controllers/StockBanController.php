@@ -706,4 +706,35 @@ class StockBanController extends Controller
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dikembalikan ke toko.');
     }
+
+    /**
+     * Restore returned ban to stock.
+     */
+    public function restoreToStock(Request $request, $id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        if ($stockBan->status !== 'Dikembalikan') {
+            return redirect()->route('stock-ban.index')->with('error', 'Hanya ban dengan status "Dikembalikan" yang bisa dikembalikan ke stok.');
+        }
+
+        $request->validate([
+            'lokasi' => 'required|string|max:255',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        $restoreNote = "[Kembali ke Stok] Lokasi: " . $request->lokasi . ", Tgl: " . date('d-m-Y');
+        if ($request->filled('keterangan')) {
+            $restoreNote .= ", Ket: " . $request->keterangan;
+        }
+
+        $stockBan->update([
+            'status' => 'Stok',
+            'lokasi' => $request->lokasi,
+            'tanggal_kembali' => null,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $restoreNote) : $restoreNote,
+        ]);
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dikembalikan ke stok.');
+    }
 }
