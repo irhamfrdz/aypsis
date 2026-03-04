@@ -274,7 +274,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>PERMOHONAN BIAYA THC</h1>
+            <h1>PERMOHONAN TRANSFER</h1>
         </div>
 
         <!-- Document Info -->
@@ -305,16 +305,6 @@
                 @endif
             </div>
             <div>
-                <div class="info-row">
-                    <span class="label">Kapal</span>
-                    <span class="separator">:</span>
-                    <span class="value">
-                        @php
-                            $kapals = collect(is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal])->filter()->unique()->values();
-                        @endphp
-                        {{ $kapals->count() > 0 ? $kapals->join(', ') : '-' }}
-                    </span>
-                </div>
                 @if($biayaKapal->nama_vendor)
                 <div class="info-row">
                     <span class="label">Vendor</span>
