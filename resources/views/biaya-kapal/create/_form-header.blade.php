@@ -1,8 +1,4 @@
-@extends('layouts.app')
-
-@section('title', 'Tambah Biaya Kapal')
-
-@section('content')
+{{-- Header: alerts, card header, form opening --}}
 <div class="container mx-auto px-4 py-8">
     <!-- Header -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">

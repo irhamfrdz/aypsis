@@ -1,10 +1,15 @@
+@extends('layouts.app')
+
+@section('title', 'Tambah Biaya Kapal')
+
+@section('content')
 {{-- =============================================
     TAMBAH BIAYA KAPAL - MAIN FILE
     File ini dipecah menjadi partial files di folder create/
     untuk memudahkan maintenance kode.
     ============================================= --}}
 
-{{-- Header: extends, title, alerts --}}
+{{-- Header: alerts, form card header, form opening --}}
 @include('biaya-kapal.create._form-header')
 
 {{-- Form Fields Common: tanggal, invoice, referensi, kapal, voyage, BL, jenis biaya --}}
@@ -56,6 +61,8 @@
      Penerima, PPN, PPH, Total Biaya, Nama Vendor, Rekening,
      Keterangan, Upload Bukti, Info Box, Form Actions --}}
 @include('biaya-kapal.create._form-fields-extra')
+
+@endsection
 
 {{-- ===== JAVASCRIPT ===== --}}
 

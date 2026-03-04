@@ -1,6 +1,4 @@
-@endpush
-@endsection
-
+{{-- Styles CSS --}}
 @push('styles')
 <style>
     /* Select2 Styling */
