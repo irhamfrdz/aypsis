@@ -326,7 +326,7 @@
                     const pricelist = pricelistStoragesData.find(p => 
                         p.lokasi === lokasi && 
                         p.vendor === vendor && 
-                        p.size.toString() === normSize
+                        (p.size ? p.size.toString() : '') === normSize
                     );
                     
                     const tarif = pricelist ? parseFloat(pricelist.tarif) : 0;
