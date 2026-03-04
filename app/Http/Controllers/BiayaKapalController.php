@@ -20,6 +20,8 @@ use App\Models\BiayaKapalThc;
 use App\Models\BiayaKapalLolo;
 use App\Models\MasterPricelistLolo;
 use App\Models\BiayaKapalLabuhTambat;
+use App\Models\BiayaKapalStorage;
+use App\Models\MasterPricelistBiayaStorage;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaTanpaSuratJalan;
 use App\Models\TandaTerimaLcl;
@@ -176,6 +178,9 @@ class BiayaKapalController extends Controller
             ->orderBy('vendor')
             ->pluck('vendor');
 
+        // Get pricelist Storage data
+        $pricelistStoragesData = MasterPricelistBiayaStorage::all();
+
         return view('biaya-kapal.create', compact(
             'kapals', 
             'klasifikasiBiayas', 
@@ -309,6 +314,16 @@ class BiayaKapalController extends Controller
         // LOLO Sections
         if (isset($data['lolo_sections']) && is_array($data['lolo_sections'])) {
             foreach ($data['lolo_sections'] as &$section) {
+                if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
+        // STORAGE Sections
+        if (isset($data['storage_sections']) && is_array($data['storage_sections'])) {
+            foreach ($data['storage_sections'] as &$section) {
                 if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
@@ -467,6 +482,18 @@ class BiayaKapalController extends Controller
             'lolo_sections.*.subtotal' => 'nullable|numeric|min:0',
             'lolo_sections.*.pph' => 'nullable|numeric|min:0',
             'lolo_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // STORAGE sections validation
+            'storage_sections' => 'nullable|array',
+            'storage_sections.*.kapal' => 'nullable|string|max:255',
+            'storage_sections.*.voyage' => 'nullable|string|max:255',
+            'storage_sections.*.lokasi' => 'nullable|string|max:255',
+            'storage_sections.*.vendor' => 'nullable|string|max:255',
+            'storage_sections.*.kontainer' => 'nullable|array',
+            'storage_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'storage_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'storage_sections.*.pph' => 'nullable|numeric|min:0',
+            'storage_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // Perlengkapan sections
             'perlengkapan_sections'                     => 'nullable|array',
@@ -707,6 +734,53 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for LOLO from section totals
                 $totalLolo = \App\Models\BiayaKapalLolo::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $biayaKapal->update(['nominal' => $totalLolo]);
+            }
+
+            // BIAYA STORAGE SECTIONS: Store Storage details
+            if ($request->has('storage_sections') && !empty($request->storage_sections)) {
+                foreach ($request->storage_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                        continue;
+                    }
+
+                    // Kumpulkan kontainer yang dipilih
+                    $kontainerIds = [];
+                    if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                        foreach ($section['kontainer'] as $k) {
+                            if (!empty($k['bl_id'])) {
+                                $kontainerIds[] = [
+                                    'bl_id'           => $k['bl_id'],
+                                    'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                    'size'            => $k['size'] ?? null,
+                                ];
+                            }
+                        }
+                    }
+
+                    // Clean numeric fields
+                    $cleanNum = function ($val) {
+                        return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                    };
+
+                    \App\Models\BiayaKapalStorage::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal'          => $section['kapal'] ?? null,
+                        'voyage'         => $section['voyage'] ?? null,
+                        'lokasi'         => $section['lokasi'] ?? null,
+                        'vendor'         => $section['vendor'] ?? null,
+                        'kontainer_ids'  => $kontainerIds,
+                        'subtotal'       => $cleanNum($section['subtotal'] ?? 0),
+                        'biaya_materai'  => $cleanNum($section['biaya_materai'] ?? 0),
+                        'ppn'            => $cleanNum($section['ppn'] ?? 0),
+                        'pph'            => $cleanNum($section['pph'] ?? 0),
+                        'total_biaya'    => $cleanNum($section['total_biaya'] ?? 0),
+                    ]);
+                }
+
+                // Auto-calculate nominal for STORAGE from section totals
+                $totalStorage = \App\Models\BiayaKapalStorage::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalStorage]);
             }
 
 
@@ -2318,6 +2392,55 @@ class BiayaKapalController extends Controller
                 
                 if ($totalLolo > 0) {
                     $biayaKapal->update(['nominal' => $totalLolo]);
+                }
+            }
+
+            // STORAGE UPDATE
+            if ($request->has('storage_sections')) {
+                \App\Models\BiayaKapalStorage::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                $totalStorage = 0;
+                if (!empty($request->storage_sections)) {
+                    foreach ($request->storage_sections as $section) {
+                        if (empty($section['kapal']) && empty($section['voyage'])) continue;
+
+                        $kontainerIds = [];
+                        if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                            foreach ($section['kontainer'] as $k) {
+                                if (!empty($k['bl_id'])) {
+                                    $kontainerIds[] = [
+                                        'bl_id'           => $k['bl_id'],
+                                        'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                        'size'            => $k['size'] ?? null,
+                                    ];
+                                }
+                            }
+                        }
+
+                        $cleanSubtotal = str_replace(',', '.', str_replace('.', '', $section['subtotal'] ?? '0'));
+                        $cleanMaterai = str_replace(',', '.', str_replace('.', '', $section['biaya_materai'] ?? '0'));
+                        $cleanPpn = str_replace(',', '.', str_replace('.', '', $section['ppn'] ?? '0'));
+                        $cleanPph = str_replace(',', '.', str_replace('.', '', $section['pph'] ?? '0'));
+                        $cleanTotal = str_replace(',', '.', str_replace('.', '', $section['total_biaya'] ?? '0'));
+
+                        \App\Models\BiayaKapalStorage::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal'          => $section['kapal'] ?? null,
+                            'voyage'         => $section['voyage'] ?? null,
+                            'lokasi'         => $section['lokasi'] ?? null,
+                            'vendor'         => $section['vendor'] ?? null,
+                            'kontainer_ids'  => $kontainerIds,
+                            'subtotal'       => $cleanSubtotal,
+                            'biaya_materai'  => $cleanMaterai,
+                            'ppn'            => $cleanPpn,
+                            'pph'            => $cleanPph,
+                            'total_biaya'    => $cleanTotal,
+                        ]);
+                        $totalStorage += floatval($cleanTotal);
+                    }
+                }
+                
+                if ($totalStorage > 0) {
+                    $biayaKapal->update(['nominal' => $totalStorage]);
                 }
             }
 

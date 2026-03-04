@@ -185,4 +185,9 @@ class BiayaKapal extends Model
     {
         return $this->hasMany(BiayaKapalLolo::class, 'biaya_kapal_id');
     }
+
+    public function storageDetails()
+    {
+        return $this->hasMany(BiayaKapalStorage::class, 'biaya_kapal_id');
+    }
 }
