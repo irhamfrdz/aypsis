@@ -303,6 +303,19 @@
                         <p class="text-xs text-red-600 mt-1">Rusak</p>
                     </div>
 
+                    <!-- Ban Dikembalikan -->
+                    @php
+                        $banDikembalikan = $stockBans->where('status', 'Dikembalikan')->count();
+                    @endphp
+                    <div id="card-dikembalikan" onclick="setCardFilter('dikembalikan')" class="cursor-pointer bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-rose-600 uppercase">Dikembalikan</span>
+                            <i class="fas fa-undo-alt text-rose-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-rose-900">{{ $banDikembalikan }}</div>
+                        <p class="text-xs text-rose-600 mt-1">Ke Toko</p>
+                    </div>
+
                     <!-- Garasi Pluit -->
                     @php
                         $garasiPluit = $stockBans->filter(function($ban) {
@@ -1630,7 +1643,7 @@
             card.classList.remove('active-filter', 'ring-2');
             
             // Remove specific color rings
-            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400', 'ring-cyan-400');
+            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400', 'ring-cyan-400', 'ring-rose-400');
         });
 
         const activeCard = document.getElementById('card-' + filterType);
@@ -1649,7 +1662,8 @@
                 'garasi-pluit': 'ring-indigo-400',
                 'ruko-10': 'ring-orange-400',
                 'asli-stok': 'ring-teal-400',
-                'dikirim': 'ring-cyan-400'
+                'dikirim': 'ring-cyan-400',
+                'dikembalikan': 'ring-rose-400'
             };
             activeCard.classList.add(colorMap[filterType]);
         }
@@ -1892,6 +1906,8 @@
                         filterMatch = kondisi === 'asli' && status === 'stok';
                     } else if (currentCardFilter === 'dikirim') {
                         filterMatch = status === 'dikirim ke batam';
+                    } else if (currentCardFilter === 'dikembalikan') {
+                        filterMatch = status === 'dikembalikan';
                     }
                 }
 
