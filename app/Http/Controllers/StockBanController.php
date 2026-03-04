@@ -654,4 +654,37 @@ class StockBanController extends Controller
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban selesai dimasak dan kembali ke stok.');
     }
+
+    /**
+     * Return ban to shop/vendor.
+     */
+    public function returnToShop(Request $request, $id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        // Only stock bans can be returned to shop
+        if ($stockBan->status !== 'Stok') {
+            return redirect()->route('stock-ban.index')->with('error', 'Hanya ban dengan status "Stok" yang bisa dikembalikan ke toko.');
+        }
+
+        $request->validate([
+            'tanggal_kembali' => 'required|date',
+            'keterangan_kembali' => 'nullable|string',
+        ]);
+
+        $tanggalKembali = \Carbon\Carbon::parse($request->tanggal_kembali)->format('d-m-Y');
+
+        $returnNote = "[Kembali ke Toko] Tgl: " . $tanggalKembali;
+        if ($request->filled('keterangan_kembali')) {
+            $returnNote .= ", Ket: " . $request->keterangan_kembali;
+        }
+
+        $stockBan->update([
+            'status' => 'Dikembalikan',
+            'tanggal_kembali' => $request->tanggal_kembali,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $returnNote) : $returnNote,
+        ]);
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dikembalikan ke toko.');
+    }
 }

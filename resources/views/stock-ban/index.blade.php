@@ -419,7 +419,8 @@
                                         {{ $ban->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
                                            ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
                                            ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
-                                           ($ban->status == 'Dikirim Ke Batam' ? 'bg-cyan-100 text-cyan-800' : 'bg-gray-100 text-gray-800'))) }}">
+                                           ($ban->status == 'Dikirim Ke Batam' ? 'bg-cyan-100 text-cyan-800' : 
+                                           ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')))) }}">
                                         {{ $ban->status }}
                                     </span>
                                 </td>
@@ -508,6 +509,14 @@
                                                  data-seri="{{ $ban->nomor_seri ?? '-' }}"
                                                  title="Kirim Ke Batam">
                                                  <i class="fas fa-truck-loading"></i>
+                                             </button>
+
+                                             <button type="button" 
+                                                 class="btn-return-shop-modal text-red-500 hover:text-red-700" 
+                                                 data-id="{{ $ban->id }}" 
+                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                 title="Kembalikan ke Toko">
+                                                 <i class="fas fa-undo-alt"></i>
                                              </button>
                                              @endif
                                          @elseif($ban->status == 'Terpakai')
@@ -2033,10 +2042,59 @@
         form.submit();
     }
 
+    // Return To Shop Functions
+    function openReturnToShopModal(id, seri) {
+        const modal = document.getElementById('returnToShopModal');
+        const modalBanId = document.getElementById('return_shop_ban_id');
+        const modalNomorSeri = document.getElementById('return_shop_nomor_seri');
+        const modalTanggal = document.getElementById('return_shop_tanggal');
+        const modalKeterangan = document.getElementById('return_shop_keterangan');
+
+        if (!modal) return;
+
+        modalBanId.value = id;
+        modalNomorSeri.textContent = seri || '-';
+        modalTanggal.value = new Date().toISOString().split('T')[0];
+        modalKeterangan.value = '';
+
+        modal.classList.remove('hidden');
+        
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
+        modal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
+    }
+
+    function closeReturnToShopModal() {
+        const modal = document.getElementById('returnToShopModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style');
+        }
+    }
+
+    function submitReturnToShopForm() {
+        const banId = document.getElementById('return_shop_ban_id').value;
+        const tanggal = document.getElementById('return_shop_tanggal').value;
+        
+        if (!tanggal) {
+            alert('Mohon isi tanggal kembali!');
+            return;
+        }
+
+        const form = document.getElementById('returnToShopForm');
+        form.action = `{{ url('stock-ban') }}/${banId}/return-to-shop`;
+        form.submit();
+    }
+
     // Expose functions to global window object
     window.openReturnMasakModal = openReturnMasakModal;
     window.closeReturnMasakModal = closeReturnMasakModal;
     window.submitReturnMasakForm = submitReturnMasakForm;
+    window.openReturnToShopModal = openReturnToShopModal;
+    window.closeReturnToShopModal = closeReturnToShopModal;
+    window.submitReturnToShopForm = submitReturnToShopForm;
 
     // Additional event listener for the new Kirim button
     document.addEventListener('click', function(e) {
@@ -2046,6 +2104,14 @@
             const id = kirimBtn.getAttribute('data-id');
             const seri = kirimBtn.getAttribute('data-seri');
             openKirimModal(id, seri);
+        }
+
+        const returnShopBtn = e.target.closest('.btn-return-shop-modal');
+        if (returnShopBtn) {
+            e.preventDefault();
+            const id = returnShopBtn.getAttribute('data-id');
+            const seri = returnShopBtn.getAttribute('data-seri');
+            openReturnToShopModal(id, seri);
         }
     });
 
@@ -2133,6 +2199,54 @@
                         Kirim
                     </button>
                     <button type="button" onclick="closeKirimBanModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Kembalikan Ke Toko -->
+<div id="returnToShopModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeReturnToShopModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="returnToShopForm" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="ban_id" id="return_shop_ban_id">
+                
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-undo-alt text-red-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Kembalikan Ke Toko: <span id="return_shop_nomor_seri" class="text-red-600 font-bold"></span>
+                            </h3>
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label for="return_shop_tanggal" class="form-label-premium">Tanggal Kembali <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_kembali" id="return_shop_tanggal" class="form-input-premium" value="{{ date('Y-m-d') }}" required>
+                                </div>
+
+                                <div>
+                                    <label for="return_shop_keterangan" class="form-label-premium">Keterangan / Alasan</label>
+                                    <textarea name="keterangan_kembali" id="return_shop_keterangan" class="form-input-premium" rows="2" placeholder="Catatan...</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                    <button type="button" onclick="submitReturnToShopForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Kembalikan
+                    </button>
+                    <button type="button" onclick="closeReturnToShopModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Batal
                     </button>
                 </div>
