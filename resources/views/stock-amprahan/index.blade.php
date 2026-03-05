@@ -287,9 +287,9 @@
                                                         @foreach($alatBerats as $alat)
                                                             <div class="alat-berat-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
                                                                  data-value="{{ $alat->id }}" 
-                                                                 data-name="{{ $alat->kode_alat }} {{ $alat->nama }} {{ $alat->lokasi ?? '' }} {{ $alat->warna ?? '' }}"
-                                                                 onclick="selectAlatBerat('{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }}{{ $alat->lokasi ? ' - ' . $alat->lokasi : '' }}{{ $alat->warna ? ' - ' . $alat->warna : '' }}')">
-                                                                <span class="block font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }}{{ $alat->lokasi ? ' - ' . $alat->lokasi : '' }}{{ $alat->warna ? ' - ' . $alat->warna : '' }}</span>
+                                                                 data-name="{{ $alat->kode_alat }} {{ $alat->nama }} {{ $alat->merk ?? '' }} {{ $alat->lokasi ?? '' }} {{ $alat->warna ?? '' }}"
+                                                                 onclick="selectAlatBerat('{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }}{{ $alat->merk ? ' - ' . $alat->merk : '' }}{{ $alat->lokasi ? ' - ' . $alat->lokasi : '' }}{{ $alat->warna ? ' - ' . $alat->warna : '' }}')">
+                                                                <span class="block font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }}{{ $alat->merk ? ' - ' . $alat->merk : '' }}{{ $alat->lokasi ? ' - ' . $alat->lokasi : '' }}{{ $alat->warna ? ' - ' . $alat->warna : '' }}</span>
                                                             </div>
                                                         @endforeach
                                                     @endif

@@ -121,7 +121,7 @@
                             {{ $usage->kapal->nama_kapal ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $usage->alatBerat ? ($usage->alatBerat->kode_alat . ' - ' . $usage->alatBerat->nama) : '-' }}
+                            {{ $usage->alatBerat ? ($usage->alatBerat->kode_alat . ' - ' . $usage->alatBerat->nama . ($usage->alatBerat->merk ? ' - ' . $usage->alatBerat->merk : '')) : '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $usage->kilometer ?? '-' }}

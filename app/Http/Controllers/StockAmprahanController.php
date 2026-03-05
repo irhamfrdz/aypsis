@@ -246,7 +246,7 @@ class StockAmprahanController extends Controller
             $formattedUsages = $usages->map(function ($usage) {
                 $mobilInfo = $usage->mobil ? ($usage->mobil->nomor_polisi . ' - ' . $usage->mobil->merek) : '-';
                 $kapalInfo = $usage->kapal ? $usage->kapal->nama_kapal : '-';
-                $alatBeratInfo = $usage->alatBerat ? ($usage->alatBerat->kode_alat . ' - ' . $usage->alatBerat->nama) : '-';
+                $alatBeratInfo = $usage->alatBerat ? ($usage->alatBerat->kode_alat . ' - ' . $usage->alatBerat->nama . ($usage->alatBerat->merk ? ' - ' . $usage->alatBerat->merk : '')) : '-';
                 return [
                     'tanggal' => date('d-m-Y', strtotime($usage->tanggal_pengambilan)),
                     'jumlah' => $usage->jumlah,
