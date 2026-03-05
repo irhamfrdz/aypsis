@@ -925,7 +925,7 @@
             if (noSealField) noSealField.style.display = 'none';
             if (tanggalSealField) tanggalSealField.style.display = 'none';
             // Clear kontainer fields when cargo is selected and remove required attribute
-            if (noKontainerInput) noKontainerInput.value = '';
+            if (noKontainerInput) noKontainerInput.value = 'CARGO';
             const sizeKontainerInput = document.getElementById('size_kontainer');
             if (sizeKontainerInput) sizeKontainerInput.value = '';
             if (noSealInput) noSealInput.value = '';

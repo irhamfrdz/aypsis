@@ -491,6 +491,12 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Sync nomor_tanda_terima for backward compatibility
             $validated['nomor_tanda_terima'] = $validated['no_tanda_terima'];
 
+            // Force no_kontainer to 'CARGO' for cargo type
+            $tipeForCheck = $validated['tipe_kontainer_selected'] ?? $validated['tipe_kontainer'] ?? 'fcl';
+            if (strtolower($tipeForCheck) === 'cargo') {
+                $validated['no_kontainer'] = 'CARGO';
+            }
+
             // (Legacy flattened dimensi items merged before validation)
 
             // Extract array data for dimensi items and sanitize values
@@ -841,6 +847,10 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'hapus_gambar' => 'nullable|array',
             'hapus_gambar.*' => 'nullable|string',
         ]);
+
+        if (strtolower($validated['tipe_kontainer'] ?? '') === 'cargo') {
+            $validated['no_kontainer'] = 'CARGO';
+        }
 
         try {
             $validated['updated_by'] = Auth::user()->name;

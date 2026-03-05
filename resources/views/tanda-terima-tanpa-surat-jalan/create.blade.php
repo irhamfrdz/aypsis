@@ -983,6 +983,9 @@
         // Initialize kenek dropdown
         initializeKenekDropdown();
 
+        // Initialize tipe kontainer state
+        handleTipeKontainerChange();
+
         // Add new dimensi item (only if legacy table exists)
         const addDimensiBtnLegacy = document.getElementById('addDimensiItem');
         if (addDimensiBtnLegacy) {
@@ -1338,7 +1341,7 @@
             if (gudangField) gudangField.style.display = 'none'; // Added
             
             // Clear kontainer fields when cargo is selected and remove required attribute
-            if (noKontainerInput) noKontainerInput.value = '';
+            if (noKontainerInput) noKontainerInput.value = 'CARGO';
             const sizeKontainerInput = document.getElementById('size_kontainer');
             if (sizeKontainerInput) sizeKontainerInput.value = '';
             if (noSealInput) noSealInput.value = '';
