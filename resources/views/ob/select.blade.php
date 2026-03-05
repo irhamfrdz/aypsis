@@ -31,6 +31,7 @@
                         <option value="">--Pilih Kegiatan--</option>
                         <option value="bongkar" {{ request('kegiatan') == 'bongkar' ? 'selected' : '' }}>Bongkar</option>
                         <option value="muat" {{ request('kegiatan') == 'muat' ? 'selected' : '' }}>Muat</option>
+                        <option value="antar_gudang" {{ request('kegiatan') == 'antar_gudang' ? 'selected' : '' }}>Antar Gudang</option>
                     </select>
                 </div>
 
@@ -99,9 +100,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Kegiatan dipilih:', kegiatan);
 
         // Fetch kapal berdasarkan kegiatan
-        const url = kegiatan === 'bongkar' 
-            ? '{{ route("ob.get-kapal-bongkar", [], false) }}' 
-            : '{{ route("ob.get-kapal-muat", [], false) }}';
+        let url = '';
+        if (kegiatan === 'bongkar') {
+            url = '{{ route("ob.get-kapal-bongkar", [], false) }}';
+        } else if (kegiatan === 'muat') {
+            url = '{{ route("ob.get-kapal-muat", [], false) }}';
+        } else if (kegiatan === 'antar_gudang') {
+            url = '{{ route("ob.get-kapal-antar-gudang", [], false) }}';
+        }
 
         fetch(url, {
             method: 'GET',
@@ -150,9 +156,14 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Nama kapal dipilih:', kapalName);
 
         // Fetch voyage berdasarkan kegiatan dan kapal
-        const url = kegiatan === 'bongkar'
-            ? `{{ route('ob.get-voyage-bongkar', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`
-            : `{{ route('ob.get-voyage-muat', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
+        let url = '';
+        if (kegiatanSelect.value === 'bongkar') {
+            url = `{{ route('ob.get-voyage-bongkar', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
+        } else if (kegiatanSelect.value === 'muat') {
+            url = `{{ route('ob.get-voyage-muat', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
+        } else if (kegiatanSelect.value === 'antar_gudang') {
+            url = `{{ route('ob.get-voyage-antar-gudang', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
+        }
 
         fetch(url, {
             method: 'GET',

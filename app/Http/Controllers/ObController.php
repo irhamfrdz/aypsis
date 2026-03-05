@@ -687,6 +687,57 @@ class ObController extends Controller
     }
 
     /**
+     * Get list of ships from both BL and naik_kapal tables (for antar gudang)
+     */
+    public function getKapalAntarGudang(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('ob-view')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $shipsNaik = NaikKapal::select('nama_kapal')
+                ->whereNotNull('nama_kapal')
+                ->where('nama_kapal', '!=', '')
+                ->get()
+                ->map(function($item) {
+                    return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
+                });
+
+            $shipsBl = Bl::select('nama_kapal')
+                ->whereNotNull('nama_kapal')
+                ->where('nama_kapal', '!=', '')
+                ->get()
+                ->map(function($item) {
+                    return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
+                });
+
+            $kapals = $shipsNaik->merge($shipsBl)->unique()->sort()->values()->toArray();
+
+            return response()->json([
+                'success' => true,
+                'kapals' => $kapals
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('getKapalAntarGudang error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data kapal'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get voyages from both BL and naik_kapal tables for specific ship (for antar gudang)
+     */
+    public function getVoyageAntarGudang(Request $request)
+    {
+        return $this->getVoyageByKapal($request);
+    }
+
+    /**
      * Redirect to OB operations with selected ship and voyage
      */
     public function selectShipVoyage(Request $request)

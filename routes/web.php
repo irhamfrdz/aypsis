@@ -4002,6 +4002,12 @@ Route::middleware(['auth'])->group(function() {
     Route::get('ob/get-voyage-muat', [\App\Http\Controllers\ObController::class, 'getVoyageMuat'])
          ->name('ob.get-voyage-muat')
          ->middleware('can:ob-view');
+    Route::get('ob/get-kapal-antar-gudang', [\App\Http\Controllers\ObController::class, 'getKapalAntarGudang'])
+         ->name('ob.get-kapal-antar-gudang')
+         ->middleware('can:ob-view');
+    Route::get('ob/get-voyage-antar-gudang', [\App\Http\Controllers\ObController::class, 'getVoyageAntarGudang'])
+         ->name('ob.get-voyage-antar-gudang')
+         ->middleware('can:ob-view');
     Route::post('ob/select', [\App\Http\Controllers\ObController::class, 'selectShipVoyage'])
          ->name('ob.select')
          ->middleware('can:ob-view');
