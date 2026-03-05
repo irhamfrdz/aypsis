@@ -125,20 +125,7 @@ class ObController extends Controller
             $gudangan = Gudang::find($gudangId);
             $namaGudang = $gudangan ? $gudangan->nama_gudang : '';
             
-            // Get all containers currently in this warehouse from stock and kontainers
-            $stockQuery = DB::table('stock_kontainers')
-                ->where('gudangs_id', $gudangId)
-                ->where('status', 'active')
-                ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer', 'tipe_kontainer');
-            
-            $kontainerQuery = DB::table('kontainers')
-                ->where('gudangs_id', $gudangId)
-                ->where('status', 'active')
-                ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer', 'tipe_kontainer');
-            
-            $unionQuery = $stockQuery->union($kontainerQuery);
-            $baseQuery = DB::table(DB::raw("({$unionQuery->toSql()}) as inventory"))
-                ->mergeBindings($unionQuery);
+            $baseQuery = $this->getAntarGudangInventoryQuery($gudangId, $request, $namaGudang);
             
             // Apply common filters to the inventory base
             if ($request->filled('tipe_kontainer')) {
@@ -2843,12 +2830,12 @@ class ObController extends Controller
     {
         $stockQuery = DB::table('stock_kontainers')
             ->where('gudangs_id', $gudangId)
-            ->where('status', 'active')
+            ->whereIn('status', ['available', 'active'])
             ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer', 'tipe_kontainer');
         
         $kontainerQuery = DB::table('kontainers')
             ->where('gudangs_id', $gudangId)
-            ->where('status', 'active')
+            ->whereIn('status', ['Tersedia', 'active', 'Tersedia '])
             ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer', 'tipe_kontainer');
         
         $unionQuery = $stockQuery->union($kontainerQuery);

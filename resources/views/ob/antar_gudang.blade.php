@@ -356,16 +356,12 @@
         {{-- Card Content --}}
         <div class="space-y-1.5 text-xs">
             <div class="flex justify-between">
-                <span class="text-gray-600">Barang:</span>
-                <span class="font-medium text-gray-900 text-right">{{ $naikKapal->jenis_barang ?: '-' }}</span>
+                <span class="text-gray-600">Asal:</span>
+                <span class="font-medium text-gray-900">{{ $naikKapal->asal_kontainer ?: '-' }}</span>
             </div>
             <div class="flex justify-between">
-                <span class="text-gray-600">Pengirim:</span>
-                <span class="font-medium text-gray-900 text-right">{{ $naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-' }}</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="text-gray-600">No. Seal:</span>
-                <span class="font-mono text-gray-900">{{ $naikKapal->no_seal ?: '-' }}</span>
+                <span class="text-gray-600">Ke (Tujuan):</span>
+                <span class="font-medium text-blue-600">{{ $naikKapal->ke ?: '-' }}</span>
             </div>
             <div class="flex justify-between">
                 <span class="text-gray-600">Tipe/Size:</span>
@@ -378,7 +374,7 @@
                 </div>
             @endif
             <div class="flex justify-between">
-                <span class="text-gray-600">Tgl Muat:</span>
+                <span class="text-gray-600">Tgl Masuk:</span>
                 <span class="text-gray-900">{{ $naikKapal->created_at ? $naikKapal->created_at->format('d/m/y') : '-' }}</span>
             </div>
         </div>
@@ -435,15 +431,12 @@
             </th>
             <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No</th>
             <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Kontainer</th>
-            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No. Seal</th>
-            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Jenis Barang</th>
-            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">PT. Pengirim</th>
-            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
-            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Asal</th>
-            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ke</th>
-            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tipe</th>
             <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Size</th>
-            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Created</th>
+            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tipe</th>
+            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
+            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Dari (Gudang)</th>
+            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ke (Tujuan)</th>
+            <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tgl Masuk</th>
             <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status OB</th>
             <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Aksi</th>
         </tr>
@@ -459,56 +452,30 @@
             <tr class="hover:bg-gray-50 transition duration-150 {{ $isCARGO ? 'bg-gray-100' : '' }}">
                 <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
                     <input type="checkbox" class="row-checkbox" value="{{ $naikKapal->id }}" data-type="naik_kapal" data-nomor-kontainer="{{ $naikKapal->nomor_kontainer }}" data-nama-barang="{{ $naikKapal->jenis_barang }}" data-tipe="{{ $naikKapal->tipe_kontainer }}" data-size="{{ $naikKapal->size_kontainer }}" data-biaya="{{ $naikKapal->biaya ?? '' }}" data-status="{{ $naikKapal->detected_status ?? 'full' }}" data-supir="{{ $naikKapal->supir ? ($naikKapal->supir->nama_panggilan ?? $naikKapal->supir->nama_lengkap ?? '') : '' }}" data-sudah-tl="{{ $isTL ? '1' : '0' }}" data-sudah-ob="{{ $isOB ? '1' : '0' }}" {{ $shouldDisable ? 'disabled title="' . ($isCARGO ? 'Kontainer CARGO tidak bisa dimasukkan ke pranota' : 'Kontainer belum OB tidak bisa dimasukkan ke pranota') . '"' : '' }}>
-                    @if($isCARGO)
-                        <span class="text-[10px] text-red-600" title="Kontainer CARGO tidak bisa dimasukkan ke pranota">⚠️</span>
-                    @elseif($isTL)
-                        <span class="text-[10px] text-blue-600" title="Kontainer TL - tidak ada biaya">ℹ️</span>
-                    @elseif(!$isOB)
-                        <span class="text-[10px] text-orange-600" title="Kontainer belum OB tidak bisa dimasukkan ke pranota">⚠️</span>
-                    @endif
                 </td>
                 <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
                     {{ $naikKapals->firstItem() + $key }}
                 </td>
-                <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">
+                <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-bold font-mono">
                     {{ $naikKapal->nomor_kontainer ?: '-' }}
                 </td>
-                <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-mono">
-                    {{ $naikKapal->no_seal ?: ($naikKapal->prospek->no_seal ?? '-') }}
+                <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
+                    {{ $naikKapal->size_kontainer ?: '-' }}
                 </td>
-                <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $naikKapal->jenis_barang }}">
-                    {{ $naikKapal->jenis_barang ?: '-' }}
-                </td>
-                <td class="px-1 py-1 text-xs text-gray-900 max-w-xs truncate" title="{{ $naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-' }}">
-                    {{ $naikKapal->prospek->pt_pengirim ?? $naikKapal->prospek->pengirim ?? '-' }}
+                <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
+                    {{ $naikKapal->tipe_kontainer ?: '-' }}
                 </td>
                 <td class="px-1 py-1 whitespace-nowrap text-xs">
                     @php
                         $barangUpper = strtoupper($naikKapal->jenis_barang ?? '');
                         $isEmpty = str_contains($barangUpper, 'EMPTY') || ($naikKapal->tipe_kontainer == 'FCL' && (empty($naikKapal->nomor_kontainer) || str_starts_with($naikKapal->nomor_kontainer, 'CARGO-')));
                     @endphp
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $isEmpty ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
-                        {{ $isEmpty ? 'E' : 'F' }}
+                    <span class="px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full {{ $isEmpty ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
+                        {{ $isEmpty ? 'EMPTY' : 'FULL' }}
                     </span>
                 </td>
-                <td class="px-1 py-1 text-xs text-gray-900">
-                    <div class="flex items-center gap-1">
-                        <select class="editable-asal-kontainer select2-gudang w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                                data-id="{{ $naikKapal->id }}" 
-                                data-type="naik_kapal">
-                            <option value="">Pilih gudang...</option>
-                            @foreach($gudangs as $gudang)
-                                <option value="{{ $gudang->nama_gudang }}" {{ $naikKapal->asal_kontainer == $gudang->nama_gudang ? 'selected' : '' }}>
-                                    {{ $gudang->nama_gudang }} - {{ $gudang->lokasi }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
-                                class="text-green-600 hover:text-green-900 transition duration-150"
-                                title="Simpan">
-                            <i class="fas fa-save"></i>
-                        </button>
-                    </div>
+                <td class="px-1 py-1 text-xs text-gray-600">
+                    {{ $naikKapal->asal_kontainer ?: '-' }}
                 </td>
                 <td class="px-1 py-1 text-xs text-gray-900">
                     <div class="flex items-center gap-1">
@@ -525,34 +492,26 @@
                         </button>
                     </div>
                 </td>
-                <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
-                    {{ $naikKapal->tipe_kontainer ?: '-' }}
-                </td>
-                <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
-                    {{ $naikKapal->size_kontainer ?: '-' }}
-                </td>
-                <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
+                <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-500">
                     {{ $naikKapal->created_at ? $naikKapal->created_at->format('d/m/y') : '-' }}
                 </td>
                 <td class="px-1 py-1 text-xs text-gray-900">
                     @if($naikKapal->sudah_ob)
-                        <div class="flex flex-col space-y-1">
-                            <div class="flex items-center space-x-1">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 w-fit">
-                                    <i class="fas fa-check-circle mr-1"></i>
-                                    OB
-                                </span>
-                            </div>
+                        <div class="flex flex-col space-y-0.5">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800 border border-green-200 w-fit">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                OB
+                            </span>
                             @if($naikKapal->supir)
-                                <div class="text-xs text-gray-600 font-medium">
+                                <div class="text-[10px] text-gray-500">
                                     {{ $naikKapal->supir->nama_panggilan }}
                                 </div>
                             @endif
                         </div>
                     @else
-                        <span class="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                            <i class="fas fa-clock mr-0.5 text-[9px]"></i>
-                            Belum
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                            <i class="fas fa-clock mr-1"></i>
+                            BELUM
                         </span>
                     @endif
                 </td>
@@ -560,24 +519,24 @@
                     <div class="flex items-center space-x-2">
                         @if(!$naikKapal->sudah_ob)
                             <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
-                                   class="text-green-600 hover:text-green-900 transition duration-150"
+                                   class="text-green-600 hover:text-green-900"
                                    title="Tandai sudah OB">
                                 <i class="fas fa-check"></i>
                             </button>
                         @else
                             <button type="button" onclick="unmarkOB('naik_kapal', {{ $naikKapal->id }})"
-                                   class="text-yellow-600 hover:text-yellow-900 transition duration-150"
+                                   class="text-yellow-600 hover:text-yellow-900"
                                    title="Batalkan OB">
                                 <i class="fas fa-undo"></i>
                             </button>
                         @endif
                         <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
-                               class="text-blue-600 hover:text-blue-900 transition duration-150"
+                               class="text-blue-600 hover:text-blue-900"
                                title="Input Supir OB">
                             <i class="fas fa-user-plus"></i>
                         </button>
                         <button type="button" onclick="kirimManifest('naik_kapal', {{ $naikKapal->id }})"
-                               class="text-indigo-600 hover:text-indigo-900 transition duration-150"
+                               class="text-indigo-600 hover:text-indigo-900"
                                title="Kirim ke Manifest">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -586,11 +545,11 @@
             </tr>
         @empty
             <tr>
-                <td colspan="14" class="px-4 py-8 text-center text-gray-500">
+                <td colspan="11" class="px-4 py-8 text-center text-gray-500">
                     <div class="flex flex-col items-center justify-center">
                         <i class="fas fa-inbox text-4xl mb-3 text-gray-400"></i>
-                        <p class="text-lg font-medium">Tidak ada data kontainer yang ditemukan</p>
-                        <p class="text-sm text-gray-400 mt-1">Gudang Asal: {{ str_replace('Gudang: ', '', $namaKapal) }}</p>
+                        <p class="text-lg font-medium">Tidak ada data kontainer di gudang ini</p>
+                        <p class="text-sm text-gray-400 mt-1">Gudang: {{ str_replace('Gudang: ', '', $namaKapal) }}</p>
                     </div>
                 </td>
             </tr>
