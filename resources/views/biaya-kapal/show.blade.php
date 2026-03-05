@@ -16,12 +16,60 @@
                 Edit
             </a>
             @endcan
+            @if($biayaKapal->airDetails->count() > 0)
+            <a href="{{ route('biaya-kapal.print-air', $biayaKapal->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-medium rounded-md transition duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print Air
+            </a>
+            @endif
+            @if($biayaKapal->truckingDetails->count() > 0)
+            <a href="{{ route('biaya-kapal.print-trucking', $biayaKapal->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-md transition duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print Trucking
+            </a>
+            @endif
+            @if($biayaKapal->tkbmDetails->count() > 0)
+            <a href="{{ route('biaya-kapal.print-tkbm', $biayaKapal->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-md transition duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print TKBM
+            </a>
+            @endif
             @if($biayaKapal->stuffingDetails->count() > 0)
             <a href="{{ route('biaya-kapal.print-stuffing', $biayaKapal->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium rounded-md transition duration-150">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                 </svg>
                 Print Stuffing
+            </a>
+            @endif
+            @if($biayaKapal->thcDetails->count() > 0)
+            <a href="{{ route('biaya-kapal.print-thc', $biayaKapal->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium rounded-md transition duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print THC
+            </a>
+            @endif
+            @if($biayaKapal->loloDetails->count() > 0)
+            <a href="{{ route('biaya-kapal.print-lolo', $biayaKapal->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium rounded-md transition duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print LOLO
+            </a>
+            @endif
+            @if($biayaKapal->labuhTambatDetails->count() > 0)
+            <a href="{{ route('biaya-kapal.print-labuh-tambat', $biayaKapal->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-md transition duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print Labuh Tambat
             </a>
             @endif
             @if($biayaKapal->storageDetails->count() > 0)
@@ -32,6 +80,23 @@
                 Print Storage
             </a>
             @endif
+            @if($biayaKapal->perlengkapanDetails->count() > 0)
+            <a href="{{ route('biaya-kapal.print-perlengkapan', $biayaKapal->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-md transition duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print Perlengkapan
+            </a>
+            @endif
+            @if($biayaKapal->operasionalDetails->count() > 0)
+            <a href="{{ route('biaya-kapal.print-operasional', $biayaKapal->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white text-sm font-medium rounded-md transition duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                Print Operasional
+            </a>
+            @endif
+
             <a href="{{ route('biaya-kapal.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-md transition duration-150">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -229,6 +294,125 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    @if($biayaKapal->airDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Biaya Air</h3>
+        <div class="space-y-6">
+            @php
+                $groupedAir = $biayaKapal->airDetails->groupBy(function($item) {
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->vendor ?? '-') . '|' . ($item->lokasi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
+                });
+            @endphp
+            @foreach($groupedAir as $groupKey => $details)
+                @php
+                    $parts = explode('|', $groupKey);
+                    $kapal = $parts[0] ?? '-';
+                    $voyage = $parts[1] ?? '-';
+                    $vendor = $parts[2] ?? '-';
+                    $lokasi = $parts[3] ?? '-';
+                    $tglVendor = $parts[4] ?? '-';
+                    $first = $details->first();
+                @endphp
+                <div class="bg-cyan-50 border-2 border-cyan-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-cyan-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $kapal }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-cyan-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $voyage }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-cyan-600 uppercase tracking-wider">Vendor</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $vendor }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-cyan-600 uppercase tracking-wider">Lokasi</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $lokasi }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-cyan-600 uppercase tracking-wider">Tgl Vendor</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $tglVendor != '-' ? \Carbon\Carbon::parse($tglVendor)->format('d/m/Y') : '-' }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Item Biaya Air</span>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tipe / Keterangan</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Kuantitas (TON)</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Harga</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Jasa Air</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($details as $item)
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900">
+                                                {{ $item->type_keterangan }}
+                                                @if($item->is_lumpsum)
+                                                    <span class="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded">LUMPSUM</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ $item->is_lumpsum ? '-' : number_format($item->kuantitas, 2, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->jasa_air, 0, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->sub_total, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-gray-50 font-bold">
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-2 text-sm text-right">Subtotal Section</td>
+                                        <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('sub_total'), 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-2 text-sm text-right">PPh 2%</td>
+                                        <td class="px-4 py-2 text-sm text-right text-red-600">- Rp {{ number_format($details->sum('pph'), 0, ',', '.') }}</td>
+                                    </tr>
+                                    <tr class="bg-cyan-100 uppercase">
+                                        <td colspan="4" class="px-4 py-2 text-base text-right font-black">Grand Total Section</td>
+                                        <td class="px-4 py-2 text-base text-right font-black text-cyan-900">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</td>
+                                    </tr>
+                                </tfoot>
+
+                            </table>
+                        </div>
+                    </div>
+                    
+                    @if($first->penerima || $first->nomor_rekening || $first->nomor_referensi)
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        @if($first->penerima)
+                        <div>
+                            <span class="text-gray-500">Penerima:</span>
+                            <span class="font-semibold">{{ $first->penerima }}</span>
+                        </div>
+                        @endif
+                        @if($first->nomor_rekening)
+                        <div>
+                            <span class="text-gray-500">No. Rekening:</span>
+                            <span class="font-semibold">{{ $first->nomor_rekening }}</span>
+                        </div>
+                        @endif
+                        @if($first->nomor_referensi)
+                        <div>
+                            <span class="text-gray-500">Ref Vendor:</span>
+                            <span class="font-semibold">{{ $first->nomor_referensi }}</span>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             @endforeach
         </div>

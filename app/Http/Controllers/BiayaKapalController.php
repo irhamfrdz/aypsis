@@ -1775,6 +1775,43 @@ class BiayaKapalController extends Controller
     }
 
     /**
+     * Print biaya air specifically.
+     */
+    public function printAir(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'airDetails']);
+        return view('biaya-kapal.print-air', compact('biayaKapal'));
+    }
+
+    /**
+     * Print biaya TKBM specifically.
+     */
+    public function printTkbm(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'tkbmDetails.pricelistTkbm']);
+        return view('biaya-kapal.print-tkbm', compact('biayaKapal'));
+    }
+
+    /**
+     * Print biaya operasional specifically.
+     */
+    public function printOperasional(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'operasionalDetails']);
+        return view('biaya-kapal.print-operasional', compact('biayaKapal'));
+    }
+
+    /**
+     * Print biaya labuh tambat specifically.
+     */
+    public function printLabuhTambat(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'labuhTambatDetails']);
+        return view('biaya-kapal.print-labuh-tambat', compact('biayaKapal'));
+    }
+
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(BiayaKapal $biayaKapal)

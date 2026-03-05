@@ -1523,6 +1523,23 @@ Route::middleware([
     Route::get('biaya-kapal/{biayaKapal}/print-storage', [\App\Http\Controllers\BiayaKapalController::class, 'printStorage'])
          ->name('biaya-kapal.print-storage')
          ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/{biayaKapal}/print-thc', [\App\Http\Controllers\BiayaKapalController::class, 'printThc'])
+         ->name('biaya-kapal.print-thc')
+         ->middleware('can:biaya-kapal-view');
+
+    Route::get('biaya-kapal/{biayaKapal}/print-air', [\App\Http\Controllers\BiayaKapalController::class, 'printAir'])
+         ->name('biaya-kapal.print-air')
+         ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/{biayaKapal}/print-tkbm', [\App\Http\Controllers\BiayaKapalController::class, 'printTkbm'])
+         ->name('biaya-kapal.print-tkbm')
+         ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/{biayaKapal}/print-operasional', [\App\Http\Controllers\BiayaKapalController::class, 'printOperasional'])
+         ->name('biaya-kapal.print-operasional')
+         ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/{biayaKapal}/print-labuh-tambat', [\App\Http\Controllers\BiayaKapalController::class, 'printLabuhTambat'])
+         ->name('biaya-kapal.print-labuh-tambat')
+         ->middleware('can:biaya-kapal-view');
+
     Route::get('biaya-kapal', [\App\Http\Controllers\BiayaKapalController::class, 'index'])
          ->name('biaya-kapal.index')
          ->middleware('can:biaya-kapal-view');
