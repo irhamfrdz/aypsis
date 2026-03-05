@@ -35,17 +35,27 @@
                     </select>
                 </div>
 
-                <div>
+                <div id="kapal_container">
                     <label for="nama_kapal" class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Kapal <span class="text-red-500">*</span></label>
                     <select id="nama_kapal" name="nama_kapal" class="w-full px-3 py-2.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required disabled>
                         <option value="">--Pilih Kegiatan Terlebih Dahulu--</option>
                     </select>
                 </div>
 
-                <div>
+                <div id="voyage_container">
                     <label for="no_voyage" class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">No Voyage <span class="text-red-500">*</span></label>
                     <select id="no_voyage" name="no_voyage" class="w-full px-3 py-2.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500" required disabled>
                         <option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>
+                    </select>
+                </div>
+
+                <div id="gudang_container" class="hidden">
+                    <label for="gudang_id" class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Pilih Gudang <span class="text-red-500">*</span></label>
+                    <select id="gudang_id" name="gudang_id" class="w-full px-3 py-2.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
+                        <option value="">--Pilih Gudang--</option>
+                        @foreach($gudangs as $gudang)
+                            <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -79,12 +89,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const kegiatanSelect = document.getElementById('kegiatan');
     const kapalSelect = document.getElementById('nama_kapal');
     const voyageSelect = document.getElementById('no_voyage');
+    const gudangSelect = document.getElementById('gudang_id');
+    const kapalContainer = document.getElementById('kapal_container');
+    const voyageContainer = document.getElementById('voyage_container');
+    const gudangContainer = document.getElementById('gudang_container');
     const goToOBIndexBtn = document.getElementById('goToOBIndex');
 
     // Handle kegiatan selection
     kegiatanSelect.addEventListener('change', function() {
         const kegiatan = this.value;
         
+        // Handle UI toggling for Antar Gudang
+        if (kegiatan === 'antar_gudang') {
+            kapalContainer.classList.add('hidden');
+            voyageContainer.classList.add('hidden');
+            gudangContainer.classList.remove('hidden');
+            
+            kapalSelect.required = false;
+            voyageSelect.required = false;
+            gudangSelect.required = true;
+            
+            return; // No need to fetch kapal for antar_gudang
+        } else {
+            kapalContainer.classList.remove('hidden');
+            voyageContainer.classList.remove('hidden');
+            gudangContainer.classList.add('hidden');
+            
+            kapalSelect.required = true;
+            voyageSelect.required = true;
+            gudangSelect.required = false;
+        }
+
         // Reset kapal and voyage
         kapalSelect.innerHTML = '<option value="">Loading...</option>';
         kapalSelect.disabled = true;
@@ -221,17 +256,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const kegiatan = kegiatanSelect.value;
         const kapalName = kapalSelect.value;
         const voyage = voyageSelect.value;
+        const gudangId = gudangSelect.value;
 
-        if (!kegiatan || !kapalName || !voyage) {
-            alert('Silakan pilih kegiatan, kapal, dan voyage terlebih dahulu');
+        if (!kegiatan) {
+            alert('Silakan pilih kegiatan terlebih dahulu');
             return;
+        }
+
+        if (kegiatan === 'antar_gudang') {
+            if (!gudangId) {
+                alert('Silakan pilih gudang terlebih dahulu');
+                return;
+            }
+        } else {
+            if (!kapalName || !voyage) {
+                alert('Silakan pilih kapal dan voyage terlebih dahulu');
+                return;
+            }
         }
         
         // Redirect to OB Index with filter parameters
         const url = new URL('{{ route("ob.index", [], false) }}', window.location.origin);
         url.searchParams.set('kegiatan', kegiatan);
-        url.searchParams.set('nama_kapal', kapalName);
-        url.searchParams.set('no_voyage', voyage);
+        
+        if (kegiatan === 'antar_gudang') {
+            url.searchParams.set('gudang_id', gudangId);
+        } else {
+            url.searchParams.set('nama_kapal', kapalName);
+            url.searchParams.set('no_voyage', voyage);
+        }
         
         window.location.href = url.toString();
     });

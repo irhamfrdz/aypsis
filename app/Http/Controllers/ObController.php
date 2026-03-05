@@ -41,8 +41,9 @@ class ObController extends Controller
         $kegiatan = $request->get('kegiatan');
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
+        $gudangId = $request->get('gudang_id');
 
-        if ($namaKapal && $noVoyage) {
+        if (($namaKapal && $noVoyage) || ($kegiatan === 'antar_gudang' && $gudangId)) {
             // Show OB data table based on kegiatan type
             return $this->showOBData($request, $namaKapal, $noVoyage, $kegiatan);
         }
@@ -66,7 +67,9 @@ class ObController extends Controller
             return (object)['nama_kapal' => $name];
         });
 
-        return view('ob.select', compact('ships'));
+        $gudangs = Gudang::orderBy('nama_gudang')->get();
+
+        return view('ob.select', compact('ships', 'gudangs'));
     }
 
     /**
@@ -75,6 +78,7 @@ class ObController extends Controller
      */
     private function normalizeShipName($name)
     {
+        if (!$name) return '';
         // Remove dots, convert to uppercase, and normalize spaces
         $normalized = strtoupper(trim($name));
         $normalized = str_replace('.', '', $normalized);
@@ -93,28 +97,42 @@ class ObController extends Controller
         header('Expires: 0');
 
         // Trim whitespace untuk memastikan matching yang tepat
-        $namaKapal = trim($namaKapal);
-        $noVoyage = trim($noVoyage);
+        $namaKapal = trim($namaKapal ?? '');
+        $noVoyage = trim($noVoyage ?? '');
+        $gudangId = $request->get('gudang_id');
         
         // Normalize ship name for flexible matching (remove dots, extra spaces)
         $normalizedKapal = $this->normalizeShipName($namaKapal);
 
         // Determine data source based on kegiatan
-        // If kegiatan is 'muat', FORCE use naik_kapal table
+        // If kegiatan is 'muat' or 'antar_gudang', FORCE use naik_kapal table
         // If kegiatan is 'bongkar' or not specified, check BL first (legacy behavior)
-        $useMuatData = ($kegiatan === 'muat');
-
+        $useMuatData = ($kegiatan === 'muat' || $kegiatan === 'antar_gudang');
+        
         // Check if we have BL records for this ship/voyage using normalized name
-        $hasBl = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-            ->where('no_voyage', $noVoyage)
-            ->exists();
-
-        // CRITICAL: If kegiatan is explicitly 'muat', ALWAYS use naik_kapal table
-        // Only use BL if kegiatan is NOT 'muat' AND BL data exists
-        if ($kegiatan !== 'muat' && $hasBl) {
+        $hasBl = false;
+        if (!$useMuatData && $namaKapal && $noVoyage) {
+            $hasBl = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $noVoyage)
+                ->exists();
+        }
+        
+        // Handle antar_gudang specific query
+        if ($kegiatan === 'antar_gudang' && $gudangId) {
+            $gudangan = Gudang::find($gudangId);
+            $namaGudang = $gudangan ? $gudangan->nama_gudang : '';
+            
+            $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
+                ->where('asal_kontainer', $namaGudang);
+                
+            $namaKapal = "Gudang: " . $namaGudang;
+            $noVoyage = "Antar Gudang";
+            
+            // Go to common NaikKapal filtering logic below
+        } else if ($kegiatan !== 'muat' && $hasBl) {
             $queryBl = Bl::with(['prospek', 'supir'])
                 ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-            ->where('no_voyage', $noVoyage);
+                ->where('no_voyage', $noVoyage);
             if ($request->filled('status_ob')) {
                 if ($request->status_ob === 'sudah') {
                     $queryBl->where('sudah_ob', true);
@@ -305,10 +323,12 @@ class ObController extends Controller
             ));
         }
 
-        // Default: Get naik_kapal data for the selected ship and voyage
-        $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
-            ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-            ->where('no_voyage', $noVoyage);
+        // Default: Get naik_kapal data for the selected ship and voyage (if not already set by antar_gudang)
+        if (!isset($query)) {
+            $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
+                ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $noVoyage);
+        }
 
         // Additional filters
         if ($request->filled('status_ob')) {
@@ -364,14 +384,19 @@ class ObController extends Controller
             ->withQueryString();
 
         // Statistics
-        $totalKontainer = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-            ->where('no_voyage', $noVoyage)
-            ->count();
+        if ($kegiatan === 'antar_gudang' && isset($namaGudang)) {
+            $totalCountQuery = NaikKapal::where('asal_kontainer', $namaGudang);
+            $sudahOBCountQuery = NaikKapal::where('asal_kontainer', $namaGudang)->where('sudah_ob', true);
+        } else {
+            $totalCountQuery = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $noVoyage);
+            $sudahOBCountQuery = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $noVoyage)
+                ->where('sudah_ob', true);
+        }
 
-        $sudahOB = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-            ->where('no_voyage', $noVoyage)
-            ->where('sudah_ob', true)
-            ->count();
+        $totalKontainer = $totalCountQuery->count();
+        $sudahOB = $sudahOBCountQuery->count();
 
         $belumOB = $totalKontainer - $sudahOB;
 
@@ -2115,24 +2140,46 @@ class ObController extends Controller
         $kegiatan = $request->get('kegiatan');
         $statusFilter = $request->get('status_ob');
         $tipeFilter = $request->get('tipe_kontainer');
+        $gudangId = $request->get('gudang_id');
 
-        if (!$namaKapal || !$noVoyage) {
+        if (($kegiatan !== 'antar_gudang') && (!$namaKapal || !$noVoyage)) {
             abort(400, 'Nama kapal dan nomor voyage harus diisi');
         }
 
         // Trim whitespace
-        $namaKapal = trim($namaKapal);
-        $noVoyage = trim($noVoyage);
+        $namaKapal = trim($namaKapal ?? '');
+        $noVoyage = trim($noVoyage ?? '');
 
         // Check if we have BL records for this ship/voyage
-        $hasBl = Bl::where('nama_kapal', $namaKapal)
-            ->where('no_voyage', $noVoyage)
-            ->exists();
+        $hasBl = false;
+        if ($namaKapal && $noVoyage) {
+            $hasBl = Bl::where('nama_kapal', $namaKapal)
+                ->where('no_voyage', $noVoyage)
+                ->exists();
+        }
 
-        // Determine which data to use based on kegiatan
-        // If kegiatan is 'bongkar' or not specified but BL exists, use BL
-        // If kegiatan is 'muat', always use naik_kapal
-        if ($kegiatan === 'bongkar' || ($kegiatan !== 'muat' && $hasBl)) {
+        // Handle antar_gudang
+        if ($kegiatan === 'antar_gudang' && $gudangId) {
+            $gudangan = Gudang::find($gudangId);
+            $namaGudang = $gudangan ? $gudangan->nama_gudang : '';
+            $query = NaikKapal::with(['prospek', 'supir'])->where('asal_kontainer', $namaGudang);
+            $namaKapal = "Gudang: " . $namaGudang;
+            $noVoyage = "Antar Gudang";
+            
+            // Apply common NaikKapal filters
+            if ($statusFilter) {
+                if ($statusFilter === 'sudah') {
+                    $query->where('sudah_ob', true);
+                } elseif ($statusFilter === 'belum') {
+                    $query->where('sudah_ob', false);
+                }
+            }
+            if ($tipeFilter) { $query->where('tipe_kontainer', $tipeFilter); }
+
+            $naikKapals = $query->orderBy('tanggal_muat', 'desc')->get();
+            return view('ob.print', compact('naikKapals', 'namaKapal', 'noVoyage', 'statusFilter', 'kegiatan'));
+            
+        } elseif ($kegiatan === 'bongkar' || ($kegiatan !== 'muat' && $hasBl)) {
             // Use BL data
             $query = Bl::with(['prospek', 'supir'])
                 ->where('nama_kapal', $namaKapal)
@@ -2209,27 +2256,42 @@ class ObController extends Controller
         $statusFilter = $request->get('status_ob');
         $tipeFilter = $request->get('tipe_kontainer');
         $searchFilter = $request->get('search');
+        $gudangId = $request->get('gudang_id');
 
-        if (!$namaKapal || !$noVoyage) {
+        if (($kegiatan !== 'antar_gudang') && (!$namaKapal || !$noVoyage)) {
             abort(400, 'Nama kapal dan nomor voyage harus diisi');
         }
 
         // Trim whitespace
-        $namaKapal = trim($namaKapal);
-        $noVoyage = trim($noVoyage);
+        $namaKapal = trim($namaKapal ?? '');
+        $noVoyage = trim($noVoyage ?? '');
         
         // Normalize ship name
         $normalizedKapal = $this->normalizeShipName($namaKapal);
 
         // Check if we have BL records for this ship/voyage
-        $hasBl = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
-            ->where('no_voyage', $noVoyage)
-            ->exists();
+        $hasBl = false;
+        if ($namaKapal && $noVoyage) {
+            $hasBl = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                ->where('no_voyage', $noVoyage)
+                ->exists();
+        }
+
+        // Handle antar_gudang
+        if ($kegiatan === 'antar_gudang' && $gudangId) {
+            $gudangan = Gudang::find($gudangId);
+            $namaGudang = $gudangan ? $gudangan->nama_gudang : '';
+            $namaKapal = "Gudang: " . $namaGudang;
+            $noVoyage = "Antar Gudang";
+        }
 
         $fileName = 'OB_' . str_replace(' ', '_', $namaKapal) . '_' . $noVoyage . '_' . date('Ymd_His') . '.xlsx';
 
         // Determine which data to use
-        if ($kegiatan !== 'muat' && $hasBl) {
+        if ($kegiatan === 'antar_gudang' && $gudangId) {
+             // Handle in ObExport later or here
+             return Excel::download(new ObExport($namaKapal, $noVoyage, $kegiatan, $statusFilter, $tipeFilter, $searchFilter, $gudangId), $fileName);
+        } elseif ($kegiatan !== 'muat' && $hasBl) {
             // Use BL data
             $query = Bl::with(['prospek', 'supir'])
                 ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
