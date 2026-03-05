@@ -46,7 +46,7 @@ class ObController extends Controller
         $noVoyage = $request->get('no_voyage');
         $gudangId = $request->get('gudang_id');
 
-        if (($namaKapal && $noVoyage) || ($kegiatan === 'antar_gudang' && $gudangId)) {
+        if ($namaKapal && $noVoyage) {
             // Show OB data table based on kegiatan type
             return $this->showOBData($request, $namaKapal, $noVoyage, $kegiatan);
         }
@@ -108,9 +108,9 @@ class ObController extends Controller
         $normalizedKapal = $this->normalizeShipName($namaKapal);
 
         // Determine data source based on kegiatan
-        // If kegiatan is 'muat' or 'antar_gudang', FORCE use naik_kapal table
+        // If kegiatan is 'muat', FORCE use naik_kapal table
         // If kegiatan is 'bongkar' or not specified, check BL first (legacy behavior)
-        $useMuatData = ($kegiatan === 'muat' || $kegiatan === 'antar_gudang');
+        $useMuatData = ($kegiatan === 'muat');
         
         // Check if we have BL records for this ship/voyage using normalized name
         $hasBl = false;
@@ -120,120 +120,7 @@ class ObController extends Controller
                 ->exists();
         }
         
-        // Handle antar_gudang specific query
-        if ($kegiatan === 'antar_gudang' && $gudangId) {
-            $gudangan = Gudang::find($gudangId);
-            $namaGudang = $gudangan ? $gudangan->nama_gudang : '';
-            
-            $baseQuery = $this->getAntarGudangInventoryQuery($gudangId, $request, $namaGudang);
-            
-            // Apply common filters to the inventory base
-            if ($request->filled('tipe_kontainer')) {
-                $baseQuery->where('tipe_kontainer', $request->tipe_kontainer);
-            }
-            if ($request->filled('size_kontainer')) {
-                $baseQuery->where('size_kontainer', $request->size_kontainer);
-            }
-            if ($request->filled('nomor_kontainer')) {
-                $num = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $request->nomor_kontainer));
-                $baseQuery->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$num}%"]);
-            }
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
-                $baseQuery->where(function($q) use ($search, $searchNum) {
-                    $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]);
-                });
-            }
-
-            // For Antar Gudang, we still want to filter by OB status if requested
-            // This requires joining with NaikKapal
-            if ($request->filled('status_ob')) {
-                $baseQuery->leftJoin('naik_kapal', function($join) use ($namaGudang) {
-                    $join->on('inventory.nomor_kontainer', '=', 'naik_kapal.nomor_kontainer')
-                         ->where('naik_kapal.asal_kontainer', '=', $namaGudang)
-                         ->where('naik_kapal.nama_kapal', '=', "Gudang: " . $namaGudang);
-                });
-                
-                if ($request->status_ob === 'sudah') {
-                    $baseQuery->where('naik_kapal.sudah_ob', true);
-                } elseif ($request->status_ob === 'belum') {
-                    $baseQuery->where(function($q) {
-                        $q->where('naik_kapal.sudah_ob', false)
-                          ->orWhereNull('naik_kapal.sudah_ob');
-                    });
-                }
-            }
-
-            $perPage = $request->get('per_page', 15);
-            $inventoryItems = $baseQuery->paginate($perPage)->withQueryString();
-            
-            // Transform to NaikKapal models (ensuring they exist)
-            $transformedItems = [];
-            foreach ($inventoryItems as $item) {
-                // Determine if we already have a record for this movement
-                $nk = NaikKapal::firstOrCreate(
-                    [
-                        'nomor_kontainer' => $item->nomor_kontainer,
-                        'nama_kapal' => "Gudang: " . $namaGudang,
-                        'no_voyage' => "Antar Gudang",
-                        'asal_kontainer' => $namaGudang,
-                    ],
-                    [
-                        'size_kontainer' => $item->size_kontainer,
-                        'tipe_kontainer' => $item->tipe_kontainer,
-                        'sudah_ob' => false,
-                        'created_by' => Auth::id(),
-                    ]
-                );
-                
-                // Load relations
-                $nk->load(['prospek', 'createdBy', 'updatedBy', 'supir']);
-                $transformedItems[] = $nk;
-            }
-
-            // Create a custom paginator for the view
-            $naikKapals = new \Illuminate\Pagination\LengthAwarePaginator(
-                $transformedItems,
-                $inventoryItems->total(),
-                $inventoryItems->perPage(),
-                $inventoryItems->currentPage(),
-                ['path' => $request->url(), 'query' => $request->query()]
-            );
-
-            $namaKapal = "Gudang: " . $namaGudang;
-            $noVoyage = "Antar Gudang";
-            
-            // Set stats for the footer/header
-            $totalKontainer = $inventoryItems->total();
-            $sudahOB = NaikKapal::where('asal_kontainer', $namaGudang)
-                ->where('nama_kapal', "Gudang: " . $namaGudang)
-                ->where('sudah_ob', true)
-                ->count();
-            $belumOB = $totalKontainer - $sudahOB;
-
-            // Prepare supirs and gudangs for the view
-        $supirs = Karyawan::where('divisi', 'supir')
-                ->whereNull('tanggal_berhenti')
-                ->orderBy('nama_panggilan')
-                ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
-            $gudangs = Gudang::where('status', 'aktif')
-                ->orderBy('nama_gudang')
-                ->get(['id', 'nama_gudang', 'lokasi']);
-
-            // Directly return view for Antar Gudang
-            return view('ob.antar_gudang', compact(
-                'naikKapals', 
-                'namaKapal', 
-                'noVoyage', 
-                'totalKontainer', 
-                'sudahOB', 
-                'belumOB',
-                'supirs',
-                'gudangs',
-                'kegiatan'
-            ));
-        } else if ($kegiatan !== 'muat' && $hasBl) {
+        if ($kegiatan !== 'muat' && $hasBl) {
 
             $queryBl = Bl::with(['prospek', 'supir'])
                 ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
@@ -427,7 +314,7 @@ class ObController extends Controller
             ));
         }
 
-        // Default: Get naik_kapal data for the selected ship and voyage (if not already set by antar_gudang)
+        // Default: Get naik_kapal data for the selected ship and voyage
         if (!isset($query)) {
             $query = NaikKapal::with(['prospek', 'createdBy', 'updatedBy', 'supir'])
                 ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
@@ -488,16 +375,11 @@ class ObController extends Controller
             ->withQueryString();
 
         // Statistics
-        if ($kegiatan === 'antar_gudang' && isset($namaGudang)) {
-            $totalCountQuery = NaikKapal::where('asal_kontainer', $namaGudang);
-            $sudahOBCountQuery = NaikKapal::where('asal_kontainer', $namaGudang)->where('sudah_ob', true);
-        } else {
-            $totalCountQuery = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+        $totalCountQuery = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage);
-            $sudahOBCountQuery = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+        $sudahOBCountQuery = NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage)
                 ->where('sudah_ob', true);
-        }
 
         $totalKontainer = $totalCountQuery->count();
         $sudahOB = $sudahOBCountQuery->count();
@@ -561,8 +443,8 @@ class ObController extends Controller
             ->orderBy('nama_gudang')
             ->get(['id', 'nama_gudang', 'lokasi']);
 
-        // Determine view to use
-        $viewName = ($kegiatan === 'antar_gudang') ? 'ob.antar_gudang' : 'ob.index';
+        // Use index view
+        $viewName = 'ob.index';
 
         return view($viewName, compact(
             'naikKapals', 
@@ -818,56 +700,7 @@ class ObController extends Controller
         }
     }
 
-    /**
-     * Get list of ships from both BL and naik_kapal tables (for antar gudang)
-     */
-    public function getKapalAntarGudang(Request $request)
-    {
-        $user = Auth::user();
 
-        if (!$user->can('ob-view')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        try {
-            $shipsNaik = NaikKapal::select('nama_kapal')
-                ->whereNotNull('nama_kapal')
-                ->where('nama_kapal', '!=', '')
-                ->get()
-                ->map(function($item) {
-                    return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
-                });
-
-            $shipsBl = Bl::select('nama_kapal')
-                ->whereNotNull('nama_kapal')
-                ->where('nama_kapal', '!=', '')
-                ->get()
-                ->map(function($item) {
-                    return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
-                });
-
-            $kapals = $shipsNaik->merge($shipsBl)->unique()->sort()->values()->toArray();
-
-            return response()->json([
-                'success' => true,
-                'kapals' => $kapals
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('getKapalAntarGudang error', ['error' => $e->getMessage()]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data kapal'
-            ], 500);
-        }
-    }
-
-    /**
-     * Get voyages from both BL and naik_kapal tables for specific ship (for antar gudang)
-     */
-    public function getVoyageAntarGudang(Request $request)
-    {
-        return $this->getVoyageByKapal($request);
-    }
 
     /**
      * Redirect to OB operations with selected ship and voyage
@@ -2247,9 +2080,7 @@ class ObController extends Controller
         $kegiatan = $request->get('kegiatan');
         $statusFilter = $request->get('status_ob');
         $tipeFilter = $request->get('tipe_kontainer');
-        $gudangId = $request->get('gudang_id');
-
-        if (($kegiatan !== 'antar_gudang') && (!$namaKapal || !$noVoyage)) {
+        if (!$namaKapal || !$noVoyage) {
             abort(400, 'Nama kapal dan nomor voyage harus diisi');
         }
 
@@ -2265,46 +2096,7 @@ class ObController extends Controller
                 ->exists();
         }
 
-        // Handle antar_gudang
-    if ($kegiatan === 'antar_gudang' && $gudangId) {
-        $gudangan = Gudang::find($gudangId);
-        $namaGudang = $gudangan ? $gudangan->nama_gudang : '';
-        
-        $baseQuery = $this->getAntarGudangInventoryQuery($gudangId, $request, $namaGudang);
-        $inventoryItems = $baseQuery->get();
-        
-        $naikKapals = [];
-        foreach ($inventoryItems as $item) {
-            $nk = NaikKapal::firstOrCreate(
-                [
-                    'nomor_kontainer' => $item->nomor_kontainer,
-                    'nama_kapal' => "Gudang: " . $namaGudang,
-                    'no_voyage' => "Antar Gudang",
-                    'asal_kontainer' => $namaGudang,
-                ],
-                [
-                    'size_kontainer' => $item->size_kontainer,
-                    'tipe_kontainer' => $item->tipe_kontainer,
-                    'sudah_ob' => false,
-                    'created_by' => Auth::id(),
-                ]
-            );
-            $nk->load(['prospek', 'supir']);
-            $naikKapals[] = $nk;
-        }
-
-        $namaKapal = "Gudang: " . $namaGudang;
-        $noVoyage = "Antar Gudang";
-        
-        return view('ob.print', [
-            'naikKapals' => collect($naikKapals),
-            'namaKapal' => $namaKapal,
-            'noVoyage' => $noVoyage,
-            'statusFilter' => $statusFilter,
-            'kegiatan' => $kegiatan
-        ]);
-        
-    } elseif ($kegiatan === 'bongkar' || ($kegiatan !== 'muat' && $hasBl)) {
+        if ($kegiatan === 'bongkar' || ($kegiatan !== 'muat' && $hasBl)) {
             // Use BL data
             $query = Bl::with(['prospek', 'supir'])
                 ->where('nama_kapal', $namaKapal)
@@ -2381,9 +2173,8 @@ class ObController extends Controller
         $statusFilter = $request->get('status_ob');
         $tipeFilter = $request->get('tipe_kontainer');
         $searchFilter = $request->get('search');
-        $gudangId = $request->get('gudang_id');
 
-        if (($kegiatan !== 'antar_gudang') && (!$namaKapal || !$noVoyage)) {
+        if (!$namaKapal || !$noVoyage) {
             abort(400, 'Nama kapal dan nomor voyage harus diisi');
         }
 
@@ -2402,39 +2193,7 @@ class ObController extends Controller
                 ->exists();
         }
 
-        // Handle antar_gudang
-    if ($kegiatan === 'antar_gudang' && $gudangId) {
-        $gudangan = Gudang::find($gudangId);
-        $namaGudang = $gudangan ? $gudangan->nama_gudang : '';
-        $namaKapal = "Gudang: " . $namaGudang;
-        $noVoyage = "Antar Gudang";
-        
-        $baseQuery = $this->getAntarGudangInventoryQuery($gudangId, $request, $namaGudang);
-        $inventoryItems = $baseQuery->get();
-        
-        $data = [];
-        foreach ($inventoryItems as $item) {
-            $nk = NaikKapal::firstOrCreate(
-                [
-                    'nomor_kontainer' => $item->nomor_kontainer,
-                    'nama_kapal' => "Gudang: " . $namaGudang,
-                    'no_voyage' => "Antar Gudang",
-                    'asal_kontainer' => $namaGudang,
-                ],
-                [
-                    'size_kontainer' => $item->size_kontainer,
-                    'tipe_kontainer' => $item->tipe_kontainer,
-                    'sudah_ob' => false,
-                    'created_by' => Auth::id(),
-                ]
-            );
-            $nk->load(['prospek', 'supir']);
-            $data[] = $nk;
-        }
-        
-        $fileName = 'OB_' . str_replace(' ', '_', $namaKapal) . '_' . $noVoyage . '_' . date('Ymd_His') . '.xlsx';
-        return Excel::download(new ObExport(collect($data), $namaKapal, $noVoyage), $fileName);
-    } elseif ($kegiatan !== 'muat' && $hasBl) {
+        if ($kegiatan !== 'muat' && $hasBl) {
         // Use BL data
         $query = Bl::with(['prospek', 'supir'])
                 ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
@@ -2823,63 +2582,7 @@ class ObController extends Controller
         }
     }
 
-    /**
-     * Helper to get common Antar Gudang inventory query
-     */
-    private function getAntarGudangInventoryQuery($gudangId, $request, $namaGudang)
-    {
-        $stockQuery = DB::table('stock_kontainers')
-            ->where('gudangs_id', $gudangId)
-            ->whereIn('status', ['available', 'active'])
-            ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer', 'tipe_kontainer');
-        
-        $kontainerQuery = DB::table('kontainers')
-            ->where('gudangs_id', $gudangId)
-            ->whereIn('status', ['Tersedia', 'active', 'Tersedia '])
-            ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer', 'tipe_kontainer');
-        
-        $unionQuery = $stockQuery->union($kontainerQuery);
-        $baseQuery = DB::table(DB::raw("({$unionQuery->toSql()}) as inventory"))
-            ->mergeBindings($unionQuery);
-            
-        // Apply filters
-        if ($request->filled('tipe_kontainer')) {
-            $baseQuery->where('tipe_kontainer', $request->tipe_kontainer);
-        }
-        if ($request->filled('size_kontainer')) {
-            $baseQuery->where('size_kontainer', $request->size_kontainer);
-        }
-        if ($request->filled('nomor_kontainer')) {
-            $num = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $request->nomor_kontainer));
-            $baseQuery->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$num}%"]);
-        }
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $searchNum = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $search));
-            $baseQuery->where(function($q) use ($search, $searchNum) {
-                $q->whereRaw("REPLACE(REPLACE(REPLACE(UPPER(nomor_kontainer), ' ', ''), '-', ''), '.' , '') like ?", ["%{$searchNum}%"]);
-            });
-        }
 
-        if ($request->filled('status_ob')) {
-            $baseQuery->leftJoin('naik_kapal', function($join) use ($namaGudang) {
-                $join->on('inventory.nomor_kontainer', '=', 'naik_kapal.nomor_kontainer')
-                     ->where('naik_kapal.asal_kontainer', '=', $namaGudang)
-                     ->where('naik_kapal.nama_kapal', '=', "Gudang: " . $namaGudang);
-            });
-            
-            if ($request->status_ob === 'sudah') {
-                $baseQuery->where('naik_kapal.sudah_ob', true);
-            } elseif ($request->status_ob === 'belum') {
-                $baseQuery->where(function($q) {
-                    $q->where('naik_kapal.sudah_ob', false)
-                      ->orWhereNull('naik_kapal.sudah_ob');
-                });
-            }
-        }
-        
-        return $baseQuery;
-    }
 
     /**
      * Process TL Bongkar (Tanda Langsung) - Only mark BL as OB without creating new records

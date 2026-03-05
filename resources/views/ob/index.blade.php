@@ -128,7 +128,7 @@
                     <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Update Size</span>
                 </button>
                 <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
-                    <i class="fas fa-arrow-left md:mr-2"></i><span class="hidden md:inline">{{ request('kegiatan') === 'antar_gudang' ? 'Pilih Gudang Lain' : 'Pilih Kapal Lain' }}</span>
+                    <i class="fas fa-arrow-left md:mr-2"></i><span class="hidden md:inline">Pilih Kapal Lain</span>
                 </a>
             </div>
         </div>
@@ -190,12 +190,8 @@
     {{-- Filter Section --}}
     <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 mb-4 md:mb-6">
         <form method="GET" action="{{ route('ob.index') }}">
-            @if(request('kegiatan') === 'antar_gudang')
-                <input type="hidden" name="gudang_id" value="{{ request('gudang_id') }}">
-            @else
                 <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
                 <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
-            @endif
             @if(request()->has('kegiatan'))
                 <input type="hidden" name="kegiatan" value="{{ request('kegiatan') }}">
             @endif

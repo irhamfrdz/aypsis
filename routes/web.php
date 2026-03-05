@@ -4002,12 +4002,7 @@ Route::middleware(['auth'])->group(function() {
     Route::get('ob/get-voyage-muat', [\App\Http\Controllers\ObController::class, 'getVoyageMuat'])
          ->name('ob.get-voyage-muat')
          ->middleware('can:ob-view');
-    Route::get('ob/get-kapal-antar-gudang', [\App\Http\Controllers\ObController::class, 'getKapalAntarGudang'])
-         ->name('ob.get-kapal-antar-gudang')
-         ->middleware('can:ob-view');
-    Route::get('ob/get-voyage-antar-gudang', [\App\Http\Controllers\ObController::class, 'getVoyageAntarGudang'])
-         ->name('ob.get-voyage-antar-gudang')
-         ->middleware('can:ob-view');
+
     Route::post('ob/select', [\App\Http\Controllers\ObController::class, 'selectShipVoyage'])
          ->name('ob.select')
          ->middleware('can:ob-view');
@@ -4063,6 +4058,14 @@ Route::middleware(['auth'])->group(function() {
         require base_path('fix_cargo_manifests_route.php');
     })->name('ob.fix-cargo-manifests')
       ->middleware('auth');
+
+    // OB Antar Gudang routes
+    Route::get('ob-antar-gudang/select', [\App\Http\Controllers\ObAntarGudangController::class, 'select'])
+         ->name('ob-antar-gudang.select')
+         ->middleware('can:ob-antar-gudang-view');
+    Route::get('ob-antar-gudang', [\App\Http\Controllers\ObAntarGudangController::class, 'index'])
+         ->name('ob-antar-gudang.index')
+         ->middleware('can:ob-antar-gudang-view');
 
     // Tagihan OB routes
     Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])

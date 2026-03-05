@@ -2379,6 +2379,25 @@
                                                             <td><input type="checkbox" name="permissions[pranota-ob][export]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob.export') || (isset($userMatrixPermissions['pranota-ob']['export']) && $userMatrixPermissions['pranota-ob']['export']) || ($user && $user->can('pranota-ob-export'))) checked @endif></td>
                                                         </tr>
 
+                            {{-- OB Antar Gudang --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <span class="module-icon">🏭</span>
+                                            <span class="font-medium">OB Antar Gudang</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[ob-antar-gudang][view]" value="1" class="permission-checkbox" @if(old('permissions.ob-antar-gudang.view') || (isset($userMatrixPermissions['ob-antar-gudang']['view']) && $userMatrixPermissions['ob-antar-gudang']['view']) || ($user && $user->can('ob-antar-gudang-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[ob-antar-gudang][create]" value="1" class="permission-checkbox" @if(old('permissions.ob-antar-gudang.create') || (isset($userMatrixPermissions['ob-antar-gudang']['create']) && $userMatrixPermissions['ob-antar-gudang']['create']) || ($user && $user->can('ob-antar-gudang-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[ob-antar-gudang][update]" value="1" class="permission-checkbox" @if(old('permissions.ob-antar-gudang.update') || (isset($userMatrixPermissions['ob-antar-gudang']['update']) && $userMatrixPermissions['ob-antar-gudang']['update']) || ($user && $user->can('ob-antar-gudang-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[ob-antar-gudang][delete]" value="1" class="permission-checkbox" @if(old('permissions.ob-antar-gudang.delete') || (isset($userMatrixPermissions['ob-antar-gudang']['delete']) && $userMatrixPermissions['ob-antar-gudang']['delete']) || ($user && $user->can('ob-antar-gudang-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
                                     <div class="flex items-center">

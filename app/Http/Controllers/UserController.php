@@ -4036,6 +4036,25 @@ class UserController extends Controller
                         }
                     }
 
+                    // Handle OB Antar Gudang permissions explicitly
+                    if ($module === 'ob-antar-gudang' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'ob-antar-gudang-view',
+                            'create' => 'ob-antar-gudang-create',
+                            'update' => 'ob-antar-gudang-update',
+                            'delete' => 'ob-antar-gudang-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // Handle pranota-rit permissions explicitly
                     if ($module === 'pranota-rit' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export', 'approve'])) {
                         $actionMap = [

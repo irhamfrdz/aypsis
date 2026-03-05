@@ -31,7 +31,6 @@
                         <option value="">--Pilih Kegiatan--</option>
                         <option value="bongkar" {{ request('kegiatan') == 'bongkar' ? 'selected' : '' }}>Bongkar</option>
                         <option value="muat" {{ request('kegiatan') == 'muat' ? 'selected' : '' }}>Muat</option>
-                        <option value="antar_gudang" {{ request('kegiatan') == 'antar_gudang' ? 'selected' : '' }}>Antar Gudang</option>
                     </select>
                 </div>
 
@@ -49,15 +48,7 @@
                     </select>
                 </div>
 
-                <div id="gudang_container" class="hidden">
-                    <label for="gudang_id" class="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">Pilih Gudang <span class="text-red-500">*</span></label>
-                    <select id="gudang_id" name="gudang_id" class="w-full px-3 py-2.5 md:py-2 text-sm md:text-base border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                        <option value="">--Pilih Gudang--</option>
-                        @foreach($gudangs as $gudang)
-                            <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
-                        @endforeach
-                    </select>
-                </div>
+
             </div>
 
             <div class="mt-4 md:mt-6">
@@ -89,36 +80,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const kegiatanSelect = document.getElementById('kegiatan');
     const kapalSelect = document.getElementById('nama_kapal');
     const voyageSelect = document.getElementById('no_voyage');
-    const gudangSelect = document.getElementById('gudang_id');
-    const kapalContainer = document.getElementById('kapal_container');
-    const voyageContainer = document.getElementById('voyage_container');
-    const gudangContainer = document.getElementById('gudang_container');
     const goToOBIndexBtn = document.getElementById('goToOBIndex');
 
     // Handle kegiatan selection
     kegiatanSelect.addEventListener('change', function() {
         const kegiatan = this.value;
-        
-        // Handle UI toggling for Antar Gudang
-        if (kegiatan === 'antar_gudang') {
-            kapalContainer.classList.add('hidden');
-            voyageContainer.classList.add('hidden');
-            gudangContainer.classList.remove('hidden');
-            
-            kapalSelect.required = false;
-            voyageSelect.required = false;
-            gudangSelect.required = true;
-            
-            return; // No need to fetch kapal for antar_gudang
-        } else {
-            kapalContainer.classList.remove('hidden');
-            voyageContainer.classList.remove('hidden');
-            gudangContainer.classList.add('hidden');
-            
-            kapalSelect.required = true;
-            voyageSelect.required = true;
-            gudangSelect.required = false;
-        }
 
         // Reset kapal and voyage
         kapalSelect.innerHTML = '<option value="">Loading...</option>';
@@ -140,8 +106,6 @@ document.addEventListener('DOMContentLoaded', function() {
             url = '{{ route("ob.get-kapal-bongkar", [], false) }}';
         } else if (kegiatan === 'muat') {
             url = '{{ route("ob.get-kapal-muat", [], false) }}';
-        } else if (kegiatan === 'antar_gudang') {
-            url = '{{ route("ob.get-kapal-antar-gudang", [], false) }}';
         }
 
         fetch(url, {
@@ -196,8 +160,6 @@ document.addEventListener('DOMContentLoaded', function() {
             url = `{{ route('ob.get-voyage-bongkar', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
         } else if (kegiatanSelect.value === 'muat') {
             url = `{{ route('ob.get-voyage-muat', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
-        } else if (kegiatanSelect.value === 'antar_gudang') {
-            url = `{{ route('ob.get-voyage-antar-gudang', [], false) }}?nama_kapal=${encodeURIComponent(kapalName)}`;
         }
 
         fetch(url, {
@@ -256,35 +218,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const kegiatan = kegiatanSelect.value;
         const kapalName = kapalSelect.value;
         const voyage = voyageSelect.value;
-        const gudangId = gudangSelect.value;
 
         if (!kegiatan) {
             alert('Silakan pilih kegiatan terlebih dahulu');
             return;
         }
 
-        if (kegiatan === 'antar_gudang') {
-            if (!gudangId) {
-                alert('Silakan pilih gudang terlebih dahulu');
-                return;
-            }
-        } else {
-            if (!kapalName || !voyage) {
-                alert('Silakan pilih kapal dan voyage terlebih dahulu');
-                return;
-            }
+        if (!kapalName || !voyage) {
+            alert('Silakan pilih kapal dan voyage terlebih dahulu');
+            return;
         }
         
         // Redirect to OB Index with filter parameters
         const url = new URL('{{ route("ob.index", [], false) }}', window.location.origin);
         url.searchParams.set('kegiatan', kegiatan);
-        
-        if (kegiatan === 'antar_gudang') {
-            url.searchParams.set('gudang_id', gudangId);
-        } else {
-            url.searchParams.set('nama_kapal', kapalName);
-            url.searchParams.set('no_voyage', voyage);
-        }
+        url.searchParams.set('nama_kapal', kapalName);
+        url.searchParams.set('no_voyage', voyage);
         
         window.location.href = url.toString();
     });
