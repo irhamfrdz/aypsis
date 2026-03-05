@@ -1,19 +1,4 @@
-﻿<script>
-    // Store pricelist buruh data
-    var pricelistBuruhData = {!! json_encode($pricelistBuruh) !!};
-
-    // Store pricelist TKBM data for Biaya TKBM
-    var pricelistTkbmData = {!! json_encode($pricelistTkbm ?? []) !!};
-    
-    // Store kapals data (required for dynamic sections)
-    var allKapalsData = {!! json_encode($kapals) !!};
-
-    // Store pricelist biaya trucking
-    var pricelistBiayaTruckingData = {!! json_encode($pricelistBiayaTrucking ?? []) !!};
-
-    // Store pricelist labuh tambat
-    var pricelistLabuhTambatData = {!! json_encode($pricelistLabuhTambat ?? []) !!};
-
+﻿
     // ============= JENIS BIAYA SEARCHABLE DROPDOWN =============
     var jenisBiayaSearch = document.getElementById('jenis_biaya_search');
     var jenisBiayaContainer = document.getElementById('jenis_biaya_container');
@@ -162,6 +147,10 @@
     var kuantitasAirWrapper = document.getElementById('kuantitas_air_wrapper');
     var kuantitasAirInput = document.getElementById('kuantitas_air');
     var operasionalWrapper = document.getElementById('operasional_wrapper');
+    var jasaAirInput = document.getElementById('jasa_air');
+    var pphAirInput = document.getElementById('pph_air');
+    var grandTotalAirInput = document.getElementById('grand_total_air');
+
     
     // Standard field wrappers
     var nominalWrapper = document.getElementById('nominal_wrapper');
@@ -177,8 +166,10 @@
     const addStuffingSectionBtn = document.getElementById('add_stuffing_section_btn');
     const addStuffingSectionBottomBtn = document.getElementById('add_stuffing_section_bottom_btn');
 
-    // All Kapals Data
-    const allKapalsData = {!! json_encode($kapals) !!};
+    // Store all data for dynamic sections
+    var pricelistBuruhData = {!! json_encode($pricelistBuruh) !!};
+    var allKapalsData = {!! json_encode($kapals) !!};
+
 
     // Pricelist Air Tawar data
     var pricelistAirTawarData = {!! json_encode($pricelistAirTawar) !!};
