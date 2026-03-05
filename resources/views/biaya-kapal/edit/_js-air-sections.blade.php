@@ -572,39 +572,39 @@
         // Iterate through each type container to calculate individual costs
         typeContainers.forEach(container => {
             const select = container.querySelector('.type-select-air');
+            const manualInput = container.querySelector('.type-manual-input-air');
             const checkbox = container.querySelector('.lumpsum-checkbox');
             
-            if (select) {
-                // Determine price from input field now
-                const priceInput = container.querySelector('.price-input-air');
-                const tonaseInput = container.querySelector('.tonase-input-air');
-                const harga = parseFloat(priceInput.value) || 0;
-                
-                let selectedKuantitas = 0;
-                if (tonaseInput && tonaseInput.value !== "") {
-                    selectedKuantitas = parseFloat(tonaseInput.value) || 0;
-                }
-                
-                const isLumpsum = checkbox ? checkbox.checked : false;
-                let currentItemCost = 0;
+            // Get current type text for PPH logic
+            let currentTypeText = '';
+            if (manualInput && !manualInput.classList.contains('hidden')) {
+                currentTypeText = (manualInput.value || '').toLowerCase();
+            } else if (select && select.selectedIndex >= 0) {
+                currentTypeText = (select.options[select.selectedIndex]?.text || '').toLowerCase();
+            }
+            
+            // Determine price and quantity
+            const priceInput = container.querySelector('.price-input-air');
+            const tonaseInput = container.querySelector('.tonase-input-air');
+            const harga = parseFloat(priceInput.value) || 0;
+            
+            let selectedKuantitas = 0;
+            if (tonaseInput && tonaseInput.value !== "") {
+                selectedKuantitas = parseFloat(tonaseInput.value) || 0;
+            }
+            
+            const isLumpsum = checkbox ? checkbox.checked : false;
+            let currentItemCost = isLumpsum ? harga : (harga * selectedKuantitas);
 
-                if (isLumpsum) {
-                    currentItemCost = harga; // Fixed price
-                } else {
-                    currentItemCost = (harga * selectedKuantitas); // Price * Qty
-                }
+            totalCost += currentItemCost;
 
-                totalCost += currentItemCost;
-
-                // For Abqori, only "Biaya Agency" and "Jasa Air" are taxable
-                if (isAbqori) {
-                    const typeText = (select.options[select.selectedIndex]?.text || '').toLowerCase();
-                    if (typeText.includes('agency') || typeText.includes('jasa air')) {
-                        taxableCost += currentItemCost;
-                    }
-                } else {
+            // PPH Logic for Abqori (Only Agency and Jasa Air are taxable)
+            if (isAbqori) {
+                if (currentTypeText.includes('agency') || currentTypeText.includes('jasa air')) {
                     taxableCost += currentItemCost;
                 }
+            } else {
+                taxableCost += currentItemCost;
             }
         });
 
@@ -731,6 +731,8 @@
         
         if (!isManual) {
             const select = div.querySelector('.type-select-air');
-            setTimeout(() => { select.value = typeId; }, 100);
+            select.value = typeId;
+            // Also update price from select immediately
+            updatePriceFromSelect(select);
         }
     };
