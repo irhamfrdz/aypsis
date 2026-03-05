@@ -187,8 +187,6 @@
                  if(nomInput) nomInput.value = parseInt(data.nominal).toLocaleString('id-ID');
             });
             calculateTotalFromAllOperasionalSections();
-        } else if (operasionalSectionsContainer.children.length === 0) {
-            addOperasionalSection();
         }
     }
 

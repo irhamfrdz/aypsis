@@ -272,7 +272,9 @@
         }
 
         // 5. OPERASIONAL SECTIONS
-        initializeOperasionalSections();
+        if (existingOperasionalSections.length > 0) {
+            initializeOperasionalSections();
+        }
 
         // 6. STUFFING SECTIONS
         if (existingStuffingSections.length > 0) {
