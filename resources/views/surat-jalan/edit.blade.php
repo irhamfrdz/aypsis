@@ -472,22 +472,46 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-sm font-medium text-gray-700">Supir</label>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="checkbox-supir-customer" class="mr-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" onchange="toggleSupirCustomer(this)" {{ old('is_supir_customer', $suratJalan->is_supir_customer) ? 'checked' : '' }}>
+                                <label for="checkbox-supir-customer" class="text-xs text-gray-500 cursor-pointer">Supir Customer</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="checkbox-supir-vendor" name="is_supir_vendor" value="1" {{ old('is_supir_vendor') ? 'checked' : '' }} class="mr-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                <label for="checkbox-supir-vendor" class="text-xs text-gray-500 cursor-pointer">Supir Vendor</label>
+                            </div>
+                        </div>
+                    </div>
                     <select name="supir"
                             id="supir-select"
-                            onchange="updateNoPlat()"
+                            onchange="updateNoPlat(); handleSupirCustomerSelection();"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
                         <option value="">Pilih Supir</option>
                         @if(isset($supirs))
                             @foreach($supirs as $supir)
                                 <option value="{{ $supir->nama_panggilan ?? $supir->nama_lengkap }}"
                                         data-plat="{{ $supir->plat }}"
-                                        {{ old('supir', $suratJalan->supir) == ($supir->nama_panggilan ?? $supir->nama_lengkap) ? 'selected' : '' }}>
-                                    {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
+                                        data-supir-customer="0"
+                                        {{ old('supir', $suratJalan->supir) == ($supir->nama_panggilan ?? $supir->nama_lengkap) && !$suratJalan->is_supir_customer ? 'selected' : '' }}>
+                                    @if($supir->nama_panggilan && $supir->nama_lengkap && $supir->nama_panggilan != $supir->nama_lengkap)
+                                        {{ $supir->nama_panggilan }} ({{ $supir->nama_lengkap }})
+                                    @else
+                                        {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
+                                    @endif
                                 </option>
                             @endforeach
                         @endif
+                        <option value="__CUSTOMER__" data-plat="" data-supir-customer="1" {{ old('supir', $suratJalan->is_supir_customer ? '__CUSTOMER__' : $suratJalan->supir) == '__CUSTOMER__' ? 'selected' : '' }}>Supir Customer</option>
                     </select>
+                    <input type="hidden" id="is_supir_customer" name="is_supir_customer" value="{{ old('is_supir_customer', $suratJalan->is_supir_customer ?? 0) }}">
+                    <div id="supir-customer-input" class="mt-2 {{ old('is_supir_customer', $suratJalan->is_supir_customer) ? '' : 'hidden' }}">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nama Supir (Customer)</label>
+                        <input type="text" id="nama-supir-customer" name="nama_supir_customer" value="{{ old('nama_supir_customer', $suratJalan->is_supir_customer ? $suratJalan->supir : '') }}" placeholder="Masukkan nama supir customer"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nama_supir_customer') border-red-500 @enderror">
+                    </div>
                     @error('supir')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -1730,6 +1754,97 @@ document.addEventListener('DOMContentLoaded', function() {
     window.openTujuanKirimPengirimanPopup = function() {
         window.open('/tujuan-kirim/create', 'tujuanKirimPengirimanPopup', 'width=800,height=600,scrollbars=yes');
     }
+
+    // Initial run to update UI if supir customer check is active
+    handleSupirCustomerSelection();
+    
+    // Ensure is_supir_customer updated on submit for edge-case where change event didn't fire
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Guarantee supir customer flag is set correctly just before submit
+            try {
+                handleSupirCustomerSelection();
+            } catch (err) {
+                console.warn('handleSupirCustomerSelection error', err);
+            }
+        });
+    }
 });
+
+function toggleSupirCustomer(checkbox) {
+    const supirSelect = document.getElementById('supir-select');
+    if (!supirSelect) return;
+    
+    if (checkbox.checked) {
+        supirSelect.value = '__CUSTOMER__';
+    } else {
+        // If unchecking, and current value is customer, reset to empty
+        if (supirSelect.value === '__CUSTOMER__') {
+            supirSelect.value = '';
+        }
+    }
+    
+    // Trigger change event to fallback to handleSupirCustomerSelection
+    const event = new Event('change');
+    supirSelect.dispatchEvent(event);
+    
+    // Explicitly call handler just to be sure
+    handleSupirCustomerSelection();
+}
+
+function handleSupirCustomerSelection() {
+    const supirSelect = document.getElementById('supir-select');
+    const isSupplierCustomerInput = document.getElementById('is_supir_customer');
+    const supirCustomerDiv = document.getElementById('supir-customer-input');
+    const namaSupirCustomerInput = document.getElementById('nama-supir-customer');
+    const uangJalanInput = document.getElementById('uang-jalan');
+    const checkboxSupirCustomer = document.getElementById('checkbox-supir-customer');
+
+    if (!supirSelect || !isSupplierCustomerInput || !supirCustomerDiv) return;
+
+    const selectedOption = supirSelect.options[supirSelect.selectedIndex];
+    const dataCustomer = selectedOption ? selectedOption.getAttribute('data-supir-customer') : '0';
+
+    if (dataCustomer === '1' || supirSelect.value === '__CUSTOMER__') {
+        // Mark as customer
+        isSupplierCustomerInput.value = '1';
+        // Show input for nama_supir_customer
+        if (supirCustomerDiv.classList.contains('hidden')) {
+            supirCustomerDiv.classList.remove('hidden');
+        }
+        // Disable uang_jalan and set to 0
+        if (uangJalanInput) {
+            uangJalanInput.value = '0';
+            uangJalanInput.setAttribute('readonly', 'readonly');
+            uangJalanInput.readOnly = true;
+            uangJalanInput.classList.add('bg-gray-100');
+        }
+        
+        // Update checkbox state if it exists and not already checked
+        if (checkboxSupirCustomer && !checkboxSupirCustomer.checked) {
+            checkboxSupirCustomer.checked = true;
+        }
+    } else {
+        // Unset customer
+        isSupplierCustomerInput.value = '0';
+        // Hide input for nama_supir_customer
+        if (!supirCustomerDiv.classList.contains('hidden')) {
+            supirCustomerDiv.classList.add('hidden');
+            if (namaSupirCustomerInput) namaSupirCustomerInput.value = '';
+        }
+        // Re-enable uang_jalan
+        if (uangJalanInput) {
+            uangJalanInput.removeAttribute('readonly');
+            uangJalanInput.readOnly = false;
+            uangJalanInput.classList.remove('bg-gray-100');
+        }
+        
+        // Update checkbox state if it exists and checked
+        if (checkboxSupirCustomer && checkboxSupirCustomer.checked) {
+            checkboxSupirCustomer.checked = false;
+        }
+    }
+}
 </script>
 @endsection

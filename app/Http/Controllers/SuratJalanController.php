@@ -652,6 +652,9 @@ class SuratJalanController extends Controller
             'jumlah_kontainer' => 'nullable|integer|min:1',
             'uang_jalan' => 'nullable|numeric|min:0',
             'rit' => 'nullable|string|max:255',
+            'is_supir_customer' => 'nullable|in:0,1',
+            'nama_supir_customer' => 'nullable|string|max:255',
+            'is_supir_vendor' => 'nullable|in:0,1',
             'aktifitas' => 'nullable|string',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:draft,active,belum masuk checkpoint,sudah_checkpoint,approved,fully_approved,rejected,completed,cancelled',
@@ -659,6 +662,15 @@ class SuratJalanController extends Controller
 
         try {
             $data = $request->except(['gambar']);
+
+            // Jika supir customer, gunakan nama_supir_customer
+            if (isset($data['is_supir_customer']) && $data['is_supir_customer']) {
+                if (!empty($request->input('nama_supir_customer'))) {
+                    $data['supir'] = $request->input('nama_supir_customer');
+                } else {
+                    $data['supir'] = $data['supir'] ?? '__CUSTOMER__';
+                }
+            }
 
             // Map nomor_kontainer to no_kontainer (database column name)
             if (isset($data['nomor_kontainer'])) {
