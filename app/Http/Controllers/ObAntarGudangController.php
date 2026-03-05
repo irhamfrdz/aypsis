@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\Gudang;
 use App\Models\StockKontainer;
 use App\Models\Kontainer;
+use App\Models\Karyawan;
+use App\Models\TagihanOb;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ObAntarGudangController extends Controller
 {
@@ -116,6 +120,11 @@ class ObAntarGudangController extends Controller
             ->pluck('total', 'ukuran')
             ->toArray();
 
+        // Fetch supirs for the modal
+        $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+
         return view('ob-antar-gudang.index', compact(
             'gudang',
             'gudangs',
@@ -129,7 +138,51 @@ class ObAntarGudangController extends Controller
             'search',
             'filterStatus',
             'filterUkuran',
-            'filterTipe'
+            'filterTipe',
+            'supirs'
         ));
+    }
+
+    /**
+     * Store a newly created tagihan ob antar gudang.
+     */
+    public function storeTagihan(Request $request)
+    {
+        $validated = $request->validate([
+            'nomor_kontainer' => 'required|string',
+            'ukuran' => 'required|string',
+            'nama_supir' => 'required|string',
+            'status_kontainer' => 'required|in:full,empty',
+            'gudang_id' => 'required|exists:gudangs,id',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $tagihan = new TagihanOb();
+            $tagihan->kapal = 'ANTAR GUDANG';
+            $tagihan->voyage = 'ANTAR GUDANG';
+            $tagihan->kegiatan = 'ANTAR GUDANG';
+            $tagihan->nomor_kontainer = $validated['nomor_kontainer'];
+            $tagihan->size_kontainer = $validated['ukuran'];
+            $tagihan->nama_supir = $validated['nama_supir'];
+            $tagihan->status_kontainer = $validated['status_kontainer'];
+            $tagihan->barang = 'KOSONGAN / ISI (ANTAR GUDANG)';
+            $tagihan->keterangan = $validated['keterangan'] ?? 'Tagihan OB dari fitur Antar Gudang';
+            $tagihan->created_by = Auth::id();
+
+            // Sederhanakan perhitungan biaya untuk Antar Gudang atau ambil dari pricelist jika ada
+            $tagihan->biaya = TagihanOb::calculateBiayaFromPricelist($validated['ukuran'], $validated['status_kontainer']);
+            
+            $tagihan->save();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Tagihan OB Antar Gudang berhasil dibuat untuk kontainer ' . $validated['nomor_kontainer']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal membuat tagihan: ' . $e->getMessage());
+        }
     }
 }

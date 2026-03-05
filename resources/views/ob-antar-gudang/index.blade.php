@@ -224,23 +224,17 @@
                             <span class="text-gray-600">Gudang:</span>
                             <span class="font-medium text-gray-900">{{ $sk->gudang->nama_gudang ?? '-' }}</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Tgl Masuk:</span>
-                            <span class="text-gray-900">{{ $sk->tanggal_masuk ? $sk->tanggal_masuk->format('d/m/Y') : '-' }}</span>
-                        </div>
-                        @if($sk->tahun_pembuatan)
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Tahun:</span>
-                            <span class="text-gray-900">{{ $sk->tahun_pembuatan }}</span>
-                        </div>
-                        @endif
-                        @if($sk->keterangan)
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Keterangan:</span>
-                            <span class="text-gray-900 text-right">{{ Str::limit($sk->keterangan, 40) }}</span>
-                        </div>
-                        @endif
                     </div>
+                    @can('ob-antar-gudang-create')
+                    <div class="mt-3">
+                        <button type="button" 
+                                onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}')"
+                                style="background-color: #0d9488;"
+                                class="w-full text-center bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded text-[10px] font-medium transition duration-200">
+                            <i class="fas fa-file-invoice mr-1"></i>Buat Tagihan
+                        </button>
+                    </div>
+                    @endcan
                 </div>
             @empty
                 <div class="text-center text-gray-500 py-6">
@@ -261,10 +255,7 @@
                         <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tipe</th>
                         <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
                         <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Gudang</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tgl Masuk</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tgl Keluar</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tahun</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Keterangan</th>
+                        <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-tight">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -288,14 +279,22 @@
                             </span>
                         </td>
                         <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $sk->gudang->nama_gudang ?? '-' }}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $sk->tanggal_masuk ? $sk->tanggal_masuk->format('d/m/Y') : '-' }}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $sk->tanggal_keluar ? $sk->tanggal_keluar->format('d/m/Y') : '-' }}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $sk->tahun_pembuatan ?: '-' }}</td>
-                        <td class="px-2 py-2 text-xs text-gray-900 max-w-xs truncate" title="{{ $sk->keterangan }}">{{ Str::limit($sk->keterangan, 50) ?: '-' }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center">
+                            @can('ob-antar-gudang-create')
+                            <button type="button" 
+                                    onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}')"
+                                    style="background-color: #0d9488;"
+                                    class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-[10px] font-medium transition duration-200">
+                                <i class="fas fa-file-invoice mr-1"></i>Tagihan
+                            </button>
+                            @else
+                            -
+                            @endcan
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-2"></i>
                             <p>Tidak ada data stock kontainer di gudang {{ $gudang->nama_gudang }}</p>
                         </td>
@@ -350,21 +349,17 @@
                             <span class="text-gray-600">Gudang:</span>
                             <span class="font-medium text-gray-900">{{ $k->gudang->nama_gudang ?? '-' }}</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Mulai Sewa:</span>
-                            <span class="text-gray-900">{{ $k->tanggal_mulai_sewa ? $k->tanggal_mulai_sewa->format('d/m/Y') : '-' }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Selesai Sewa:</span>
-                            <span class="text-gray-900">{{ $k->tanggal_selesai_sewa ? $k->tanggal_selesai_sewa->format('d/m/Y') : '-' }}</span>
-                        </div>
-                        @if($k->keterangan)
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Keterangan:</span>
-                            <span class="text-gray-900 text-right">{{ Str::limit($k->keterangan, 40) }}</span>
-                        </div>
-                        @endif
                     </div>
+                    @can('ob-antar-gudang-create')
+                    <div class="mt-3">
+                        <button type="button" 
+                                onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}')"
+                                style="background-color: #0d9488;"
+                                class="w-full text-center bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded text-[10px] font-medium transition duration-200">
+                            <i class="fas fa-file-invoice mr-1"></i>Buat Tagihan
+                        </button>
+                    </div>
+                    @endcan
                 </div>
             @empty
                 <div class="text-center text-gray-500 py-6">
@@ -386,9 +381,7 @@
                         <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Vendor</th>
                         <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
                         <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Gudang</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Mulai Sewa</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Selesai Sewa</th>
-                        <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Keterangan</th>
+                        <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-tight">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -413,13 +406,22 @@
                             </span>
                         </td>
                         <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $k->gudang->nama_gudang ?? '-' }}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $k->tanggal_mulai_sewa ? $k->tanggal_mulai_sewa->format('d/m/Y') : '-' }}</td>
-                        <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">{{ $k->tanggal_selesai_sewa ? $k->tanggal_selesai_sewa->format('d/m/Y') : '-' }}</td>
-                        <td class="px-2 py-2 text-xs text-gray-900 max-w-xs truncate" title="{{ $k->keterangan }}">{{ Str::limit($k->keterangan, 50) ?: '-' }}</td>
+                        <td class="px-2 py-2 whitespace-nowrap text-center">
+                            @can('ob-antar-gudang-create')
+                            <button type="button" 
+                                    onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}')"
+                                    style="background-color: #0d9488;"
+                                    class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-[10px] font-medium transition duration-200">
+                                <i class="fas fa-file-invoice mr-1"></i>Tagihan
+                            </button>
+                            @else
+                            -
+                            @endcan
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="8" class="px-4 py-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-2"></i>
                             <p>Tidak ada data kontainer sewa di gudang {{ $gudang->nama_gudang }}</p>
                         </td>
@@ -437,3 +439,106 @@
     </div>
 </div>
 @endsection
+
+@can('ob-antar-gudang-create')
+{{-- Modal Buat Tagihan --}}
+<div id="tagihanModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        {{-- Overlay --}}
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onclick="closeTagihanModal()"></div>
+
+        {{-- Modal Content --}}
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form action="{{ route('ob-antar-gudang.store-tagihan') }}" method="POST">
+                @csrf
+                <input type="hidden" name="gudang_id" value="{{ $gudang->id }}">
+                <input type="hidden" id="modal_nomor_kontainer" name="nomor_kontainer">
+                <input type="hidden" id="modal_ukuran" name="ukuran">
+
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-file-invoice text-teal-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Buat Tagihan OB Antar Gudang
+                            </h3>
+                            <div class="mt-2 p-3 bg-gray-50 rounded border border-gray-100">
+                                <p class="text-xs text-gray-500">No Kontainer: <span id="display_nomor_kontainer" class="font-bold text-gray-800"></span></p>
+                                <p class="text-xs text-gray-500">Ukuran: <span id="display_ukuran" class="font-bold text-gray-800"></span> ft</p>
+                            </div>
+
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label for="nama_supir" class="block text-sm font-medium text-gray-700 mb-1">Pilih Supir <span class="text-red-500">*</span></label>
+                                    <select name="nama_supir" id="nama_supir" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
+                                        <option value="">--Pilih Supir--</option>
+                                        @foreach($supirs as $supir)
+                                            <option value="{{ $supir->nama_lengkap }}">{{ $supir->nama_lengkap }} {{ $supir->nama_panggilan ? '(' . $supir->nama_panggilan . ')' : '' }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Kontainer <span class="text-red-500">*</span></label>
+                                    <div class="flex gap-4 mt-1">
+                                        <label class="inline-flex items-center">
+                                            <input type="radio" name="status_kontainer" value="empty" checked class="form-radio text-teal-600 focus:ring-teal-500 h-4 w-4 border-gray-300">
+                                            <span class="ml-2 text-sm text-gray-700">Empty</span>
+                                        </label>
+                                        <label class="inline-flex items-center">
+                                            <input type="radio" name="status_kontainer" value="full" class="form-radio text-teal-600 focus:ring-teal-500 h-4 w-4 border-gray-300">
+                                            <span class="ml-2 text-sm text-gray-700">Full</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-1">Keterangan (Opsional)</label>
+                                    <textarea name="keterangan" id="keterangan" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" placeholder="Catatan tambahan..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" style="background-color: #0d9488;" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 sm:ml-3 sm:w-auto sm:text-sm transition-all">
+                        Simpan Tagihan
+                    </button>
+                    <button type="button" onclick="closeTagihanModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openTagihanModal(nomor, ukuran) {
+        document.getElementById('modal_nomor_kontainer').value = nomor;
+        document.getElementById('modal_ukuran').value = ukuran;
+        document.getElementById('display_nomor_kontainer').innerText = nomor;
+        document.getElementById('display_ukuran').innerText = ukuran;
+        
+        const modal = document.getElementById('tagihanModal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    function closeTagihanModal() {
+        const modal = document.getElementById('tagihanModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto'; // Re-enable scrolling
+    }
+
+    // Close modal on escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeTagihanModal();
+        }
+    });
+</script>
+@endcan
