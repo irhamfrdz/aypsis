@@ -17,10 +17,10 @@
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                <button type="button" onclick="window.location.reload()" style="background-color: #3b82f6;" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Refresh Data</span>
                 </button>
-                <a href="{{ route('ob-antar-gudang.select') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                <a href="{{ route('ob-antar-gudang.select') }}" style="background-color: #6b7280;" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-arrow-left md:mr-2"></i><span class="hidden md:inline">Pilih Gudang Lain</span>
                 </a>
             </div>
@@ -178,11 +178,11 @@
             </div>
 
             <div class="flex flex-wrap gap-2 mt-3 md:mt-4">
-                <button type="submit" class="flex-1 md:flex-none bg-teal-600 hover:bg-teal-700 text-white px-3 md:px-4 py-2 rounded-md transition duration-200 inline-flex items-center justify-center text-sm">
+                <button type="submit" style="background-color: #0d9488;" class="flex-1 md:flex-none bg-teal-600 hover:bg-teal-700 text-white px-3 md:px-4 py-2 rounded-md transition duration-200 inline-flex items-center justify-center text-sm">
                     <i class="fas fa-search mr-2"></i>
                     Filter
                 </button>
-                <a href="{{ route('ob-antar-gudang.index', ['gudang_id' => $gudang->id]) }}" class="flex-1 md:flex-none bg-gray-500 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-md transition duration-200 inline-flex items-center justify-center text-sm">
+                <a href="{{ route('ob-antar-gudang.index', ['gudang_id' => $gudang->id]) }}" style="background-color: #6b7280;" class="flex-1 md:flex-none bg-gray-500 hover:bg-gray-600 text-white px-3 md:px-4 py-2 rounded-md transition duration-200 inline-flex items-center justify-center text-sm">
                     <i class="fas fa-times mr-2"></i>
                     Reset
                 </a>
