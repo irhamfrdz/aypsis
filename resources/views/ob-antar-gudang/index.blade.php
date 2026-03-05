@@ -228,7 +228,7 @@
                     @can('ob-antar-gudang-create')
                     <div class="mt-3">
                         <button type="button" 
-                                onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}')"
+                                onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock')"
                                 style="background-color: #0d9488;"
                                 class="w-full text-center bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded text-[10px] font-medium transition duration-200">
                             <i class="fas fa-file-invoice mr-1"></i>Buat Tagihan
@@ -282,7 +282,7 @@
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             @can('ob-antar-gudang-create')
                             <button type="button" 
-                                    onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}')"
+                                    onclick="openTagihanModal('{{ $sk->nomor_kontainer }}', '{{ $sk->ukuran }}', 'stock')"
                                     style="background-color: #0d9488;"
                                     class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-[10px] font-medium transition duration-200">
                                 <i class="fas fa-file-invoice mr-1"></i>Tagihan
@@ -353,7 +353,7 @@
                     @can('ob-antar-gudang-create')
                     <div class="mt-3">
                         <button type="button" 
-                                onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}')"
+                                onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer')"
                                 style="background-color: #0d9488;"
                                 class="w-full text-center bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded text-[10px] font-medium transition duration-200">
                             <i class="fas fa-file-invoice mr-1"></i>Buat Tagihan
@@ -409,7 +409,7 @@
                         <td class="px-2 py-2 whitespace-nowrap text-center">
                             @can('ob-antar-gudang-create')
                             <button type="button" 
-                                    onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}')"
+                                    onclick="openTagihanModal('{{ $k->nomor_kontainer }}', '{{ $k->ukuran }}', 'kontainer')"
                                     style="background-color: #0d9488;"
                                     class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-1 rounded text-[10px] font-medium transition duration-200">
                                 <i class="fas fa-file-invoice mr-1"></i>Tagihan
@@ -455,6 +455,7 @@
                 <input type="hidden" name="gudang_id" value="{{ $gudang->id }}">
                 <input type="hidden" id="modal_nomor_kontainer" name="nomor_kontainer">
                 <input type="hidden" id="modal_ukuran" name="ukuran">
+                <input type="hidden" id="modal_source" name="source">
 
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
@@ -468,6 +469,7 @@
                             <div class="mt-2 p-3 bg-gray-50 rounded border border-gray-100">
                                 <p class="text-xs text-gray-500">No Kontainer: <span id="display_nomor_kontainer" class="font-bold text-gray-800"></span></p>
                                 <p class="text-xs text-gray-500">Ukuran: <span id="display_ukuran" class="font-bold text-gray-800"></span> ft</p>
+                                <p class="text-xs text-gray-500">Gudang Asal: <span class="font-bold text-gray-800">{{ $gudang->nama_gudang }}</span></p>
                             </div>
 
                             <div class="mt-4 space-y-4">
@@ -482,17 +484,29 @@
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Kontainer <span class="text-red-500">*</span></label>
-                                    <div class="flex gap-4 mt-1">
-                                        <label class="inline-flex items-center">
-                                            <input type="radio" name="status_kontainer" value="empty" checked class="form-radio text-teal-600 focus:ring-teal-500 h-4 w-4 border-gray-300">
-                                            <span class="ml-2 text-sm text-gray-700">Empty</span>
-                                        </label>
-                                        <label class="inline-flex items-center">
-                                            <input type="radio" name="status_kontainer" value="full" class="form-radio text-teal-600 focus:ring-teal-500 h-4 w-4 border-gray-300">
-                                            <span class="ml-2 text-sm text-gray-700">Full</span>
-                                        </label>
-                                    </div>
+                                    <label for="pricelist_id" class="block text-sm font-medium text-gray-700 mb-1">Harga OB <span class="text-red-500">*</span></label>
+                                    <select name="pricelist_id" id="pricelist_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
+                                        <option value="">--Pilih Harga OB--</option>
+                                        @foreach($pricelists as $pl)
+                                            <!-- Menghilangkan 'ft' dari size untuk matching dengan ukuran kontainer yang hanya berupa angka -->
+                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}">
+                                                {{ ucfirst($pl->status_kontainer) }} - Rp {{ number_format($pl->biaya, 0, ',', '.') }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="text-[10px] text-gray-500 mt-1">*Opsi yang tampil menyesuaikan dengan ukuran kontainer (20/40)</p>
+                                </div>
+
+                                <div>
+                                    <label for="gudang_tujuan_id" class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan <span class="text-red-500">*</span></label>
+                                    <select name="gudang_tujuan_id" id="gudang_tujuan_id" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
+                                        <option value="">--Pilih Gudang Tujuan--</option>
+                                        @foreach($gudangs as $g)
+                                            @if($g->id != $gudang->id)
+                                                <option value="{{ $g->id }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
+                                            @endif
+                                        @endforeach
+                                    </select>
                                 </div>
 
                                 <div>
@@ -517,11 +531,28 @@
 </div>
 
 <script>
-    function openTagihanModal(nomor, ukuran) {
+    function openTagihanModal(nomor, ukuran, source) {
         document.getElementById('modal_nomor_kontainer').value = nomor;
         document.getElementById('modal_ukuran').value = ukuran;
+        document.getElementById('modal_source').value = source;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
         document.getElementById('display_ukuran').innerText = ukuran;
+        
+        // Filter dropdown Harga OB berdasarkan ukuran kontainer
+        const pricelistSelect = document.getElementById('pricelist_id');
+        pricelistSelect.value = ''; // Reset selection
+        
+        Array.from(pricelistSelect.options).forEach(option => {
+            if(option.value === '') return; // Skip placeholder option
+            
+            if (option.getAttribute('data-ukuran') === ukuran) {
+                option.style.display = '';    // Tampilkan
+                option.disabled = false;      // Enable option
+            } else {
+                option.style.display = 'none'; // Sembunyikan
+                option.disabled = true;        // Disable option
+            }
+        });
         
         const modal = document.getElementById('tagihanModal');
         modal.classList.remove('hidden');

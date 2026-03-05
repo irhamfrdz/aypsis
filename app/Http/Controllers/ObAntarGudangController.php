@@ -8,6 +8,7 @@ use App\Models\StockKontainer;
 use App\Models\Kontainer;
 use App\Models\Karyawan;
 use App\Models\TagihanOb;
+use App\Models\MasterPricelistOb;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -125,6 +126,9 @@ class ObAntarGudangController extends Controller
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'nama_panggilan']);
 
+        // Fetch pricelists for Harga OB logic
+        $pricelists = MasterPricelistOb::all();
+
         return view('ob-antar-gudang.index', compact(
             'gudang',
             'gudangs',
@@ -139,7 +143,8 @@ class ObAntarGudangController extends Controller
             'filterStatus',
             'filterUkuran',
             'filterTipe',
-            'supirs'
+            'supirs',
+            'pricelists'
         ));
     }
 
@@ -152,13 +157,19 @@ class ObAntarGudangController extends Controller
             'nomor_kontainer' => 'required|string',
             'ukuran' => 'required|string',
             'nama_supir' => 'required|string',
-            'status_kontainer' => 'required|in:full,empty',
+            'pricelist_id' => 'required|exists:master_pricelist_ob,id',
             'gudang_id' => 'required|exists:gudangs,id',
+            'gudang_tujuan_id' => 'required|exists:gudangs,id',
+            'source' => 'required|in:stock,kontainer',
             'keterangan' => 'nullable|string',
         ]);
 
         try {
             DB::beginTransaction();
+
+            $gudangAsal = Gudang::find($validated['gudang_id']);
+            $gudangTujuan = Gudang::find($validated['gudang_tujuan_id']);
+            $pricelist = MasterPricelistOb::find($validated['pricelist_id']);
 
             $tagihan = new TagihanOb();
             $tagihan->kapal = 'ANTAR GUDANG';
@@ -167,19 +178,37 @@ class ObAntarGudangController extends Controller
             $tagihan->nomor_kontainer = $validated['nomor_kontainer'];
             $tagihan->size_kontainer = $validated['ukuran'];
             $tagihan->nama_supir = $validated['nama_supir'];
-            $tagihan->status_kontainer = $validated['status_kontainer'];
+            $tagihan->status_kontainer = $pricelist->status_kontainer;
             $tagihan->barang = 'KOSONGAN / ISI (ANTAR GUDANG)';
-            $tagihan->keterangan = $validated['keterangan'] ?? 'Tagihan OB dari fitur Antar Gudang';
+            $tagihan->keterangan = $validated['keterangan'] 
+                ?? ('Antar Gudang: ' . ($gudangAsal->nama_gudang ?? '-') . ' → ' . ($gudangTujuan->nama_gudang ?? '-'));
             $tagihan->created_by = Auth::id();
 
-            // Sederhanakan perhitungan biaya untuk Antar Gudang atau ambil dari pricelist jika ada
-            $tagihan->biaya = TagihanOb::calculateBiayaFromPricelist($validated['ukuran'], $validated['status_kontainer']);
+            // Gunakan harga langsung dari pricelist yang dipilih
+            $tagihan->biaya = $pricelist->biaya;
             
             $tagihan->save();
 
+            // Update gudang_id pada kontainer terkait (pindahkan ke gudang tujuan)
+            if ($validated['source'] === 'stock') {
+                StockKontainer::where('gudangs_id', $validated['gudang_id'])
+                    ->where(function($q) use ($validated) {
+                        $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
+                          ->orWhere(DB::raw("CONCAT(awalan_kontainer, nomor_seri_kontainer)"), $validated['nomor_kontainer']);
+                    })
+                    ->update(['gudangs_id' => $validated['gudang_tujuan_id']]);
+            } else {
+                Kontainer::where('gudangs_id', $validated['gudang_id'])
+                    ->where(function($q) use ($validated) {
+                        $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
+                          ->orWhere(DB::raw("CONCAT(awalan_kontainer, nomor_seri_kontainer)"), $validated['nomor_kontainer']);
+                    })
+                    ->update(['gudangs_id' => $validated['gudang_tujuan_id']]);
+            }
+
             DB::commit();
 
-            return redirect()->back()->with('success', 'Tagihan OB Antar Gudang berhasil dibuat untuk kontainer ' . $validated['nomor_kontainer']);
+            return redirect()->back()->with('success', 'Tagihan OB Antar Gudang berhasil dibuat. Kontainer ' . $validated['nomor_kontainer'] . ' dipindahkan ke ' . ($gudangTujuan->nama_gudang ?? 'gudang tujuan') . '.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal membuat tagihan: ' . $e->getMessage());
