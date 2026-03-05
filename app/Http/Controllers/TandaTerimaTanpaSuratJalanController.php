@@ -678,6 +678,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
                 Prospek::create([
                     'tanggal' => $validated['tanggal_tanda_terima'],
+                    'no_surat_jalan' => $tandaTerima->no_tanda_terima,
                     'nama_supir' => $validated['supir'] ?: 'Supir Customer',
                     'barang' => $validated['nama_barang'] ?? $validated['jenis_barang'] ?? 'Barang',
                     'pt_pengirim' => $pengirim,

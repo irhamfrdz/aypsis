@@ -1110,6 +1110,7 @@ class TandaTerimaLclController extends Controller
             // Prepare data for prospek
             $prospekData = [
                 'tanggal' => $tandaTerima->tanggal_tanda_terima->format('Y-m-d'),
+                'no_surat_jalan' => $tandaTerima->nomor_tanda_terima,
                 'nama_supir' => $tandaTerima->supir ?? '',
                 'barang' => $tandaTerima->nama_barang ?? '',
                 'pt_pengirim' => $tandaTerima->nama_pengirim ?? '',
@@ -1282,6 +1283,7 @@ class TandaTerimaLclController extends Controller
             // Prepare data for prospek
             $prospekData = [
                 'tanggal' => now()->format('Y-m-d'),
+                'no_surat_jalan' => $tandaTerimas->pluck('nomor_tanda_terima')->unique()->implode(', '),
                 'nama_supir' => $firstTandaTerima->supir ?? '',
                 'barang' => $allBarang->unique()->implode(', '),
                 'pt_pengirim' => $allPengirim->unique()->implode(', '),
