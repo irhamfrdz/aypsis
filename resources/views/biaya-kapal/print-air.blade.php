@@ -287,9 +287,8 @@
             <thead>
                 <tr>
                     <th style="width: 8%;">No</th>
-                    <th style="width: 20%;">Tanggal Ref.</th>
-                    <th style="width: 20%;">Referensi</th>
-                    <th style="width: 32%;">Jenis Biaya</th>
+                    <th style="width: 25%;">Tanggal Ref.</th>
+                    <th style="width: 47%;">Referensi</th>
                     <th style="width: 20%;">Total</th>
                 </tr>
             </thead>
@@ -322,7 +321,7 @@
                         @endforeach
                         @if($references->isEmpty()) - @endif
                     </td>
-                    <td>Biaya Air {{ $kapalName }}</td>
+
                     <td class="text-right">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</td>
                 </tr>
                 @empty
@@ -331,7 +330,7 @@
                 </tr>
                 @endforelse
                 <tr class="total-row">
-                    <td colspan="4" class="text-right">TOTAL PEMBAYARAN</td>
+                    <td colspan="3" class="text-right">TOTAL PEMBAYARAN</td>
                     <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
