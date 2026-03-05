@@ -457,7 +457,10 @@ class ObController extends Controller
             ->orderBy('nama_gudang')
             ->get(['id', 'nama_gudang', 'lokasi']);
 
-        return view('ob.index', compact(
+        // Determine view to use
+        $viewName = ($kegiatan === 'antar_gudang') ? 'ob.antar_gudang' : 'ob.index';
+
+        return view($viewName, compact(
             'naikKapals', 
             'namaKapal', 
             'noVoyage', 
