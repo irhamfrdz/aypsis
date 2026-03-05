@@ -1216,7 +1216,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     'pt_pengirim' => $tandaTerimaTanpaSuratJalan->pengirim ?? 'Tidak ada pengirim',
                     'ukuran' => $ukuran,
                     'tipe' => $tipeProspek,
-                    'nomor_kontainer' => $noKontainer === 'CARGO' ? null : $noKontainer,
+                    'nomor_kontainer' => $noKontainer,
                     'no_seal' => $currentSeal,
                     'no_surat_jalan' => $tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima,
                     'tujuan_pengiriman' => $tandaTerimaTanpaSuratJalan->tujuan_pengiriman ?: 'Tidak ada tujuan',
