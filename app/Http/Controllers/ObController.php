@@ -751,10 +751,12 @@ class ObController extends Controller
         $request->validate([
             'nama_kapal' => 'required|string',
             'no_voyage' => 'required|string',
+            'kegiatan' => 'required|string',
         ]);
 
         $namaKapal = $request->nama_kapal;
         $voyage = $request->no_voyage;
+        $kegiatan = $request->kegiatan;
 
         // Store selection in session for use in OB operations
         // try to find kode_kapal (if any) from naik_kapal records
@@ -762,6 +764,7 @@ class ObController extends Controller
         $kodeKapal = $naikKapalRecord->kode_kapal ?? null;
 
         session([
+            'ob_kegiatan' => $kegiatan,
             'selected_ob_ship' => [
                 'nama_kapal' => $namaKapal,
                 'kode_kapal' => $kodeKapal,
@@ -769,8 +772,9 @@ class ObController extends Controller
             'selected_ob_voyage' => $voyage
         ]);
 
-        // Redirect to tagihan OB with filters
-        return redirect()->route('tagihan-ob.index', [
+        // Redirect to OB operations with filters
+        return redirect()->route('ob.index', [
+            'kegiatan' => $kegiatan,
             'nama_kapal' => $namaKapal,
             'no_voyage' => $voyage
         ])->with('success', "Berhasil memilih kapal {$namaKapal} dengan voyage {$voyage}");
