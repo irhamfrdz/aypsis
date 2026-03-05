@@ -60,14 +60,6 @@
 @include('biaya-kapal.edit._styles')
 @endpush
 
-{{-- ===== JAVASCRIPT (Edit Mode Init - Data Preparation) ===== --}}
-@push('scripts')
-<script>
-@include('biaya-kapal.edit._js-edit-init')
-</script>
-@endpush
-
-{{-- ===== JAVASCRIPT (Main Script Block) ===== --}}
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -86,5 +78,8 @@
 @include('biaya-kapal.edit._js-thc-sections')
 @include('biaya-kapal.edit._js-lolo-sections')
 @include('biaya-kapal.edit._js-storage-sections')
+
+{{-- Init must be last after all functions are defined --}}
+@include('biaya-kapal.edit._js-edit-init')
 </script>
 @endpush

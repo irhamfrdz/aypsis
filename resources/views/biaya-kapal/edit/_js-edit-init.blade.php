@@ -29,7 +29,7 @@
             });
             foreach($groupedAir as $key => $items) {
                  $parts = explode('|||', $key);
-                 if(count($parts) >= 10) {
+                 if(count($parts) >= 9) {
                      $editAirSections[] = [
                          'kapal' => $parts[0],
                          'voyage' => $parts[1],
@@ -145,7 +145,6 @@
         }
     @endphp
 
-    var allKapalsData = @json($kapals);
     var existingKapalSections = @json($editKapalSections);
     var existingAirSections = @json($editAirSections);
     var existingTkbmSections = @json($editTkbmSections);

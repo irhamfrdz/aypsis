@@ -32,7 +32,6 @@
     var kapalSectionCounter = 0;
     var kapalSectionsContainer = document.getElementById('kapal_sections_container');
     var addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
-    var allKapalsData = @json($kapals);
     
     function initializeKapalSections() {
         kapalSectionsContainer.innerHTML = '';

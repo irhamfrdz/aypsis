@@ -203,21 +203,7 @@
                 calculatePphDokumen();
             }
         }
-            // PPH = 2% dari nominal
-            const pph = Math.round(nominal * 0.02);
-            pphDokumenInput.value = pph > 0 ? pph.toLocaleString('id-ID') : '0';
-            
-            // Grand Total = Nominal - PPH
-            const grandTotal = nominal - pph;
-            grandTotalDokumenInput.value = grandTotal > 0 ? grandTotal.toLocaleString('id-ID') : '0';
-            
-            // Recalculate based on trucking section totals if needed
-            calculateTotalFromAllTruckingSections();
-        }
-        if (storageWrapper) storageWrapper.classList.add('hidden');
-            clearAllStorageSections();
-
-            // Show THC wrapper if "Biaya THC" is selected
+        // Show THC wrapper if "Biaya THC" is selected
         else if (selectedText.toLowerCase().includes('thc')) {
             if (thcWrapper) thcWrapper.classList.remove('hidden');
             if (thcSectionsContainer && thcSectionsContainer.children.length === 0) {
@@ -338,10 +324,7 @@
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
         }
-        if (storageWrapper) storageWrapper.classList.add('hidden');
-            clearAllStorageSections();
-
-            // Show LOLO wrapper if "Biaya Lolo" is selected
+        // Show LOLO wrapper if "Biaya Lolo" is selected
         else if (selectedValue === 'KB043' || selectedText.toLowerCase().includes('lolo')) {
             if (loloWrapper) loloWrapper.classList.remove('hidden');
             initializeLoloSections();
@@ -455,10 +438,7 @@
             if (loloWrapper) loloWrapper.classList.add('hidden');
             clearAllLoloSections();
         }
-        if (storageWrapper) storageWrapper.classList.add('hidden');
-            clearAllStorageSections();
-
-            // Show barang wrapper if "Biaya Buruh" is selected
+        // Show barang wrapper if "Biaya Buruh" is selected
         else if (selectedText.toLowerCase().includes('buruh')) {
             barangWrapper.classList.remove('hidden');
             initializeKapalSections();
@@ -514,10 +494,7 @@
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
         }
-        if (storageWrapper) storageWrapper.classList.add('hidden');
-            clearAllStorageSections();
-
-            // Show TKBM wrapper if "Biaya KTKBM" is selected
+        // Show TKBM wrapper if "Biaya KTKBM" is selected
         else if (selectedText.toLowerCase().includes('ktkbm')) {
             document.getElementById('tkbm_wrapper').classList.remove('hidden');
             initializeTkbmSections();
@@ -686,10 +663,7 @@
             sisaPembayaranWrapper.classList.remove('hidden');
             calculateSisaPembayaran();
         }
-        if (storageWrapper) storageWrapper.classList.add('hidden');
-            clearAllStorageSections();
-
-            // Show Trucking wrapper if "Biaya Trucking" is selected
+        // Show Trucking wrapper if "Biaya Trucking" is selected
         else if (selectedText.toLowerCase().includes('trucking')) {
             const truckingWrapper = document.getElementById('trucking_wrapper');
             if (truckingWrapper) truckingWrapper.classList.remove('hidden');
