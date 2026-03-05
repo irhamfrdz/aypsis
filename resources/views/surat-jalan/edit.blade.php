@@ -428,6 +428,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Kontainer</label>
                     <input type="number"
                            name="jumlah_kontainer"
+                           id="jumlah_kontainer_input"
                            value="{{ old('jumlah_kontainer', $suratJalan->jumlah_kontainer ?? 1) }}"
                            min="1"
                            placeholder="Jumlah kontainer"
@@ -436,6 +437,7 @@
                     @error('jumlah_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <p id="jumlah_kontainer_note" class="text-xs text-gray-500 mt-1"></p>
                 </div>
 
                 <div>
@@ -787,7 +789,7 @@ function autoFillKontainerDetails() {
         
         // Update search input to show selected value
         if (searchNomorKontainerInput) {
-            searchNomorKontainerInput.value = selectedOption.textContent;
+            searchNomorKontainerInput.value = selectedOption.textContent.trim();
         }
         
         // Set kontainer_id
@@ -1154,12 +1156,12 @@ function createSearchableDropdown(config) {
         options.forEach(option => {
             const div = document.createElement('div');
             div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
-            div.textContent = option.text;
+            div.textContent = option.text.trim();
             div.setAttribute('data-value', option.value);
 
             div.addEventListener('click', function() {
                 const value = this.getAttribute('data-value');
-                const text = this.textContent;
+                const text = this.textContent.trim();
 
                 // Set the select value
                 selectElement.value = value;
@@ -1252,7 +1254,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pengirimSelect && pengirimSelect.value && searchPengirimInput) {
         const selectedOption = pengirimSelect.options[pengirimSelect.selectedIndex];
         if (selectedOption && selectedOption.text) {
-            searchPengirimInput.value = selectedOption.text;
+            searchPengirimInput.value = selectedOption.text.trim();
         }
     }
 
@@ -1275,8 +1277,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Option already selected
             const selectedOption = jenisBarangSelect.options[jenisBarangSelect.selectedIndex];
             if (selectedOption && selectedOption.text) {
-                searchJenisBarangInput.value = selectedOption.text;
-                console.log('Set search input from selected option:', selectedOption.text);
+                searchJenisBarangInput.value = selectedOption.text.trim();
+                console.log('Set search input from selected option:', selectedOption.text.trim());
             }
         } else if (storedValue && storedValue !== '') {
             // No option selected but we have stored value, try to match and select
@@ -1322,8 +1324,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Option already selected
             const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
             if (selectedOption && selectedOption.text) {
-                searchTujuanPengambilanInput.value = selectedOption.text;
-                console.log('Set search input from selected option:', selectedOption.text);
+                searchTujuanPengambilanInput.value = selectedOption.text.trim();
+                console.log('Set search input from selected option:', selectedOption.text.trim());
             }
         } else if (storedValue && storedValue !== '') {
             // No option selected but we have stored value, try to match and select
@@ -1369,8 +1371,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Option already selected
             const selectedOption = tujuanPengirimanSelect.options[tujuanPengirimanSelect.selectedIndex];
             if (selectedOption && selectedOption.text) {
-                searchTujuanPengirimanInput.value = selectedOption.text;
-                console.log('Set search input from selected option:', selectedOption.text);
+                searchTujuanPengirimanInput.value = selectedOption.text.trim();
+                console.log('Set search input from selected option:', selectedOption.text.trim());
             }
         } else if (storedValue && storedValue !== '') {
             // No option selected but we have stored value, try to match and select
@@ -1416,8 +1418,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Option already selected
             const selectedOption = nomorKontainerSelect.options[nomorKontainerSelect.selectedIndex];
             if (selectedOption && selectedOption.text) {
-                searchNomorKontainerInput.value = selectedOption.text;
-                console.log('Set search input from selected option:', selectedOption.text);
+                searchNomorKontainerInput.value = selectedOption.text.trim();
+                console.log('Set search input from selected option:', selectedOption.text.trim());
             }
         } else if (storedValue && storedValue !== '') {
             // No option selected but we have stored value, try to match and select
