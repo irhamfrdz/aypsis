@@ -202,7 +202,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>PERMOHONAN TRANSFER (OPERASIONAL)</h1>
+            <h1>PERMOHONAN TRANSFER</h1>
         </div>
 
         <!-- Info Section -->
