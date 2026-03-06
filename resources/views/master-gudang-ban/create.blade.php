@@ -36,9 +36,13 @@
 
                     <div>
                         <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">Lokasi <span class="text-red-500">*</span></label>
-                        <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('lokasi') border-red-500 @enderror"
-                               placeholder="Contoh: Batam">
+                        <select name="lokasi" id="lokasi" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('lokasi') border-red-500 @enderror">
+                            <option value="">-- Pilih Lokasi --</option>
+                            <option value="Jakarta" {{ old('lokasi') == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                            <option value="Batam" {{ old('lokasi') == 'Batam' ? 'selected' : '' }}>Batam</option>
+                            <option value="Pinang" {{ old('lokasi') == 'Pinang' ? 'selected' : '' }}>Pinang</option>
+                        </select>
                         @error('lokasi')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
