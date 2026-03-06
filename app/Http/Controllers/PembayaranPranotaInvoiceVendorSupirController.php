@@ -26,10 +26,13 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('nomor_pembayaran', 'like', "%{$search}%")
-                  ->orWhereHas('vendor', function($q) use ($search) {
-                      $q->where('nama_vendor', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_pembayaran', 'like', "%{$search}%")
+                  ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                  ->orWhereHas('vendor', function($vendorQ) use ($search) {
+                      $vendorQ->where('nama_vendor', 'like', "%{$search}%");
                   });
+            });
         }
 
         $pembayarans = $query->latest()->paginate(15);
@@ -73,6 +76,9 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'vendor_id' => 'required|exists:vendor_supirs,id',
             'total_pembayaran' => 'required|numeric|min:0',
+            'total_tagihan_penyesuaian' => 'nullable|numeric',
+            'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
+            'alasan_penyesuaian' => 'nullable|string',
             'metode_pembayaran' => 'required|string',
             'pranota_ids' => 'required|array|min:1',
             'nominal_bayar' => 'required|array',
@@ -86,6 +92,9 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'vendor_id' => $request->vendor_id,
                 'total_pembayaran' => $request->total_pembayaran,
+                'total_tagihan_penyesuaian' => $request->total_tagihan_penyesuaian,
+                'total_tagihan_setelah_penyesuaian' => $request->total_tagihan_setelah_penyesuaian,
+                'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'metode_pembayaran' => $request->metode_pembayaran,
                 'bank' => $request->bank,
                 'keterangan' => $request->keterangan,

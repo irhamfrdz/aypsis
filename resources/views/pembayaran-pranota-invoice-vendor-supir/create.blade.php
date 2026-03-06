@@ -139,9 +139,8 @@
                             <div>
                                 <label for="metode_pembayaran" class="{{ $labelClasses }}">Metode Pembayaran</label>
                                 <select name="metode_pembayaran" id="metode_pembayaran" class="{{ $inputClasses }}" required>
-                                    <option value="transfer" {{ old('metode_pembayaran') == 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
-                                    <option value="cash" {{ old('metode_pembayaran') == 'cash' ? 'selected' : '' }}>Tunai / Kas</option>
-                                    <option value="cheque" {{ old('metode_pembayaran') == 'cheque' ? 'selected' : '' }}>Cek / Giro</option>
+                                    <option value="debit" {{ old('metode_pembayaran') == 'debit' ? 'selected' : '' }}>Debit</option>
+                                    <option value="kredit" {{ old('metode_pembayaran') == 'kredit' ? 'selected' : '' }}>Kredit</option>
                                 </select>
                             </div>
                         </div>
@@ -220,15 +219,43 @@
                 </div>
             </div>
 
-            <!-- Total Pembayaran & Keterangan -->
+            <!-- Total Pembayaran, Penyesuaian & Keterangan -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
-                <div class="lg:col-span-2">
-                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 h-full">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Total Pembayaran</h4>
-                        <div class="flex items-center justify-between mt-4">
-                            <span class="text-sm font-medium text-gray-700">Total Nominal:</span>
-                            <div class="text-3xl font-bold text-indigo-700" id="displayTotal">Rp 0</div>
+                <div class="lg:col-span-2 space-y-3">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Penyesuaian Tagihan (Opsional)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                            <div>
+                                <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Nominal Penyesuaian (+/-)</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">Rp</span>
+                                    </div>
+                                    <input type="number" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian"
+                                        class="mt-1 block w-full pl-8 rounded-md border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 text-sm p-2 transition-colors text-right"
+                                        placeholder="0" value="{{ old('total_tagihan_penyesuaian', 0) }}">
+                                </div>
+                                <span class="text-[10px] text-gray-500">Gunakan minus (-) untuk potongan</span>
+                            </div>
+                            <div>
+                                <label for="alasan_penyesuaian" class="{{ $labelClasses }}">Alasan Penyesuaian</label>
+                                <input type="text" name="alasan_penyesuaian" id="alasan_penyesuaian"
+                                    class="{{ $inputClasses }}" placeholder="Contoh: Potongan Claim" value="{{ old('alasan_penyesuaian') }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
+                        <h4 class="text-sm font-semibold text-indigo-900 mb-2">Total Pembayaran</h4>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-medium text-gray-600">Total Tagihan:</span>
+                            <div class="text-sm font-semibold text-gray-700" id="displayTotalAwal">Rp 0</div>
                             <input type="hidden" name="total_pembayaran" id="total_pembayaran" value="0">
+                        </div>
+                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-indigo-200">
+                            <span class="text-sm font-bold text-indigo-900">Total Bayar Final:</span>
+                            <div class="text-2xl font-bold text-indigo-700" id="displayTotal">Rp 0</div>
+                            <input type="hidden" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian" value="0">
                         </div>
                     </div>
                 </div>
@@ -336,8 +363,11 @@
         const checkboxes = document.querySelectorAll('.pranota-checkbox');
         const nominalInputs = document.querySelectorAll('.nominal-input');
         const selectAll = document.getElementById('selectAll');
+        const displayTotalAwal = document.getElementById('displayTotalAwal');
         const displayTotal = document.getElementById('displayTotal');
         const inputTotal = document.getElementById('total_pembayaran');
+        const inputPenyesuaian = document.getElementById('total_tagihan_penyesuaian');
+        const inputTotalFinal = document.getElementById('total_tagihan_setelah_penyesuaian');
         const submitBtn = document.getElementById('submitBtn');
 
         function calculateTotal() {
@@ -352,11 +382,17 @@
                 }
             });
             
-            displayTotal.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+            const penyesuaian = parseFloat(inputPenyesuaian.value) || 0;
+            const totalFinal = total + penyesuaian;
+
+            if (displayTotalAwal) displayTotalAwal.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
             inputTotal.value = total;
             
+            displayTotal.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalFinal);
+            if (inputTotalFinal) inputTotalFinal.value = totalFinal;
+            
             if (submitBtn) {
-                submitBtn.disabled = checkedCount === 0 || total <= 0;
+                submitBtn.disabled = checkedCount === 0 || totalFinal <= 0;
             }
         }
 
@@ -367,6 +403,10 @@
         nominalInputs.forEach((input) => {
             input.addEventListener('input', calculateTotal);
         });
+
+        if (inputPenyesuaian) {
+            inputPenyesuaian.addEventListener('input', calculateTotal);
+        }
 
         if (selectAll) {
             selectAll.addEventListener('change', function() {
