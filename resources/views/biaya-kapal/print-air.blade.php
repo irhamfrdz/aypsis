@@ -344,9 +344,8 @@
             <thead>
                 <tr>
                     <th style="width: 8%;">No</th>
-                    <th style="width: 37%;">Jenis Barang</th>
+                    <th style="width: 57%;">Jenis Barang</th>
                     <th style="width: 15%;">Jumlah</th>
-                    <th style="width: 20%;">Harga Satuan</th>
                     <th style="width: 20%;">Subtotal</th>
                 </tr>
             </thead>
@@ -359,13 +358,6 @@
                         <td class="text-center">{{ $no++ }}</td>
                         <td>{{ strtoupper($typeName) }}</td>
                         <td class="text-center">{{ rtrim(rtrim(number_format($data['qty'], 2, ',', '.'), '0'), ',') }}</td>
-                        <td class="text-right">
-                            @if($data['qty'] > 0)
-                                Rp {{ number_format(round($data['cost'] / $data['qty']), 0, ',', '.') }}
-                            @else
-                                -
-                            @endif
-                        </td>
                         <td class="text-right">Rp {{ number_format($data['cost'], 0, ',', '.') }}</td>
                     </tr>
                     @endif
@@ -376,7 +368,6 @@
                     <td class="text-center">{{ $no++ }}</td>
                     <td>JASA AIR</td>
                     <td class="text-center">{{ $countJasaAir }}</td>
-                    <td class="text-right">Rp {{ number_format($totalJasaAir / $countJasaAir, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($totalJasaAir, 0, ',', '.') }}</td>
                 </tr>
                 @endif
@@ -387,12 +378,11 @@
                     <td>PPH (2%)</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 
                 <tr class="total-row">
-                    <td colspan="4" class="text-right">TOTAL</td>
+                    <td colspan="3" class="text-right">TOTAL</td>
                     <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
