@@ -3028,33 +3028,36 @@
             </div>
 
             {{-- Copy Permission Feature --}}
-            <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <svg class="w-5 h-5 text-indigo-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
-                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+            <div class="copy-permission-section rounded-xl shadow-md p-6 mb-8 mt-4 border border-indigo-100 overflow-hidden relative">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+                <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0 bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-sm">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
                             </svg>
                         </div>
-                        <div class="ml-3">
-                            <h4 class="text-sm font-medium text-indigo-800">Copy Permission dari User Lain</h4>
-                            <p class="text-sm text-indigo-700 mt-1">
-                                Pilih user yang sudah ada untuk menyalin semua izin aksesnya ke user ini.
-                            </p>
+                        <div>
+                            <h4 class="text-lg font-bold text-white tracking-wide">Copy Permission dari User Lain</h4>
+                            <p class="text-indigo-100 text-sm mt-0.5">Salin semua hak akses dari user yang sudah ada secara instan.</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <select id="copy_user_select" class="text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">-- Pilih User --</option>
-                            @foreach($users as $existingUser)
-                                <option value="{{ $existingUser->id }}">
-                                    {{ $existingUser->username }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <button type="button" id="copy_permissions_btn" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            Copy Permission
+                    
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div class="min-w-[240px]">
+                            <select id="copy_user_select" class="block w-full text-gray-900 border-0 rounded-lg focus:ring-2 focus:ring-white">
+                                <option value="">-- Pilih User Sumber --</option>
+                                @foreach($users as $existingUser)
+                                    @if($existingUser->id != $user->id) 
+                                        <option value="{{ $existingUser->id }}">
+                                            {{ $existingUser->username }} ({{ $existingUser->karyawan ? $existingUser->karyawan->nama : 'Tanpa Karyawan' }})
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="button" id="copy_permissions_btn" class="inline-flex items-center justify-center px-6 py-2.5 bg-white text-indigo-700 font-bold rounded-lg hover:bg-indigo-50 active:scale-95 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="mr-2">📋</span> Copy Permission
                         </button>
                     </div>
                 </div>
@@ -3346,9 +3349,15 @@
                         return;
                     }
 
+                    // Confirm before overwriting
+                    if (!confirm('Apakah Anda yakin ingin menyalin permission? Ini akan menimpa pengaturan permission saat ini.')) {
+                        return;
+                    }
+
                     // Show loading state
+                    const originalHTML = this.innerHTML;
                     this.disabled = true;
-                    this.innerHTML = 'Loading...';
+                    this.innerHTML = '<span class="animate-spin mr-2">⏳</span> Loading...';
 
                     // Fetch user permissions via AJAX
                     fetch(`/master/user/${userId}/permissions-for-copy`)
@@ -3359,7 +3368,10 @@
                                 const userName = data.user.username;
 
                                 // Uncheck all permissions first
-                                document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = false);
+                                document.querySelectorAll('.permission-checkbox').forEach(cb => {
+                                    cb.checked = false;
+                                    cb.indeterminate = false;
+                                });
 
                                 // Apply permissions from the copied user
                                 Object.keys(permissions).forEach(module => {
@@ -3373,20 +3385,53 @@
                                     }
                                 });
 
-                                showToast(`Berhasil menyalin permission dari ${userName}`, 'success');
+                                // CRITICAL: Update all header checkboxes to reflect new state
+                                updateAllHeaderCheckboxes();
+                                
+                                // Specific logic for Karyawan main permission
+                                if (typeof updateKaryawanMainPermission === 'function') {
+                                    updateKaryawanMainPermission();
+                                }
+
+                                // Show Toast
+                                showToast(`✅ Berhasil menyalin permission dari ${userName}`, 'success');
+                                
+                                // Scroll to matrix to show changes
+                                document.querySelector('.permission-matrix').scrollIntoView({ behavior: 'smooth', block: 'start' });
                             } else {
-                                showToast('Gagal mengambil data permission', 'error');
+                                showToast('❌ Gagal mengambil data permission: ' + (data.message || 'Unknown error'), 'error');
                             }
                         })
                         .catch(error => {
                             console.error('Error:', error);
-                            showToast('Terjadi kesalahan saat mengambil data', 'error');
+                            showToast('❌ Terjadi kesalahan saat mengambil data', 'error');
                         })
                         .finally(() => {
                             // Reset button state
                             this.disabled = false;
-                            this.innerHTML = '📋 Copy Permission';
+                            this.innerHTML = originalHTML;
                         });
+                });
+            }
+
+            function updateAllHeaderCheckboxes() {
+                // List of all update functions
+                const updateFunctions = [
+                    updateMasterHeaderCheckboxes,
+                    updateUserHeaderCheckboxes,
+                    updateOperationalHeaderCheckboxes,
+                    updateAktivitasHeaderCheckboxes,
+                    updateApprovalHeaderCheckboxes,
+                    updateMasterTarifHeaderCheckboxes,
+                    updateAktivaHeaderCheckboxes,
+                    updateAktivitasLainnyaHeaderCheckboxes,
+                    updateAuditLogHeaderCheckboxes
+                ];
+
+                updateFunctions.forEach(fn => {
+                    if (typeof fn === 'function') {
+                        try { fn(); } catch(e) { console.error('Error updating header:', e); }
+                    }
                 });
             }
 
