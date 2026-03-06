@@ -804,6 +804,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Gudang Ban --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Gudang Ban</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang-ban']['view']) && $userMatrixPermissions['master-gudang-ban']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang-ban']['create']) && $userMatrixPermissions['master-gudang-ban']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang-ban']['update']) && $userMatrixPermissions['master-gudang-ban']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang-ban']['delete']) && $userMatrixPermissions['master-gudang-ban']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-gudang-ban']['export']) && $userMatrixPermissions['master-gudang-ban']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Master Alat Berat --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

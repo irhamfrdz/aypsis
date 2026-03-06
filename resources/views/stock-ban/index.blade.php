@@ -185,9 +185,27 @@
                 </button>
             </div>
             
-            <a href="{{ route('stock-ban.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 whitespace-nowrap">
-                <i class="fas fa-plus"></i> Tambah Stock
-            </a>
+            <!-- Dropdown Tambah Stock -->
+            <div class="relative inline-block text-left" id="add-stock-container">
+                <button type="button" 
+                        id="add-stock-dropdown-btn"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fas fa-plus"></i> Tambah Stock
+                    <i class="fas fa-chevron-down text-xs ml-1"></i>
+                </button>
+                
+                <div id="add-stock-dropdown-menu" 
+                     class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-[100]">
+                    <div class="py-1" role="none">
+                        <a href="{{ route('stock-ban.create') }}" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2">
+                             <i class="fas fa-circle text-[8px] text-blue-500"></i> Ban Luar Reguler
+                        </a>
+                        <a href="{{ route('stock-ban-luar-batam.create') }}" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 border-t border-gray-100">
+                             <i class="fas fa-circle text-[8px] text-orange-500"></i> Ban Luar Batam
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -593,9 +611,7 @@
         <!-- Tab: Ban Luar Batam -->
         <div id="tab-ban-luar-batam" class="tab-content p-4">
             @php
-                $banBatamList = $stockBans->filter(function($ban) {
-                    return stripos($ban->lokasi, 'batam') !== false && $ban->status === 'Stok';
-                });
+                $banBatamList = $stockBanLuarBatams;
             @endphp
 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -787,15 +803,15 @@
                                             </button>
                                         @endif
 
-                                        <a href="{{ route('stock-ban.show', $ban->id) }}" class="text-purple-600 hover:text-purple-900" title="Lihat Detail">
+                                        <a href="{{ route('stock-ban-luar-batam.show', $ban->id) }}" class="text-purple-600 hover:text-purple-900" title="Lihat Detail">
                                             <i class="fas fa-eye"></i>
                                         </a>
 
-                                        <a href="{{ route('stock-ban.edit', $ban->id) }}" class="text-blue-600 hover:text-blue-900" title="Edit">
+                                        <a href="{{ route('stock-ban-luar-batam.edit', $ban->id) }}" class="text-blue-600 hover:text-blue-900" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
 
-                                        <form action="{{ route('stock-ban.destroy', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus data ini?')">
+                                        <form action="{{ route('stock-ban-luar-batam.destroy', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus data ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
@@ -1936,6 +1952,23 @@
                 document.getElementById(tab.dataset.target).classList.add('active');
             });
         });
+
+        // Toggle Tambah Stock Dropdown
+        const dropdownBtn = document.getElementById('add-stock-dropdown-btn');
+        const dropdownMenu = document.getElementById('add-stock-dropdown-menu');
+        
+        if (dropdownBtn && dropdownMenu) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownMenu.classList.toggle('hidden');
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.add('hidden');
+                }
+            });
+        }
 
         // Bulk Action & Check All Logic (specific for Ban Luar)
         const bulkActionContainer = document.getElementById('bulk-action-container');

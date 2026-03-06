@@ -305,18 +305,14 @@
                                 </div>
                                 <div class="custom-select-options" id="lokasi-options-list">
                                     <div class="custom-select-option" data-value="" data-text="-- Pilih Lokasi --">-- Pilih Lokasi --</div>
-                                    <div class="custom-select-option {{ old('lokasi', 'Ruko 10') == 'Ruko 10' ? 'selected' : '' }}" 
-                                         data-value="Ruko 10" 
-                                         data-search="ruko 10"
-                                         data-text="Ruko 10">
-                                        Ruko 10
-                                    </div>
-                                    <div class="custom-select-option {{ old('lokasi') == 'Garasi Pluit' ? 'selected' : '' }}" 
-                                         data-value="Garasi Pluit" 
-                                         data-search="garasi pluit"
-                                         data-text="Garasi Pluit">
-                                        Garasi Pluit
-                                    </div>
+                                    @foreach($masterGudangBans as $gudangBan)
+                                        <div class="custom-select-option {{ old('lokasi', 'Ruko 10') == $gudangBan->nama_gudang ? 'selected' : '' }}" 
+                                             data-value="{{ $gudangBan->nama_gudang }}" 
+                                             data-search="{{ strtolower($gudangBan->nama_gudang) }}"
+                                             data-text="{{ $gudangBan->nama_gudang }}">
+                                            {{ $gudangBan->nama_gudang }}
+                                        </div>
+                                    @endforeach
                                 </div>
                                 <div id="no-lokasi-results" class="hidden p-4 text-center text-sm text-gray-500">
                                     Lokasi tidak ditemukan

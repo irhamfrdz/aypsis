@@ -1594,7 +1594,38 @@ Route::middleware([
          ->name('master-gudang.destroy')
          ->middleware('can:master-gudang-delete');
 
-    // � Stock Ban (Tire Stock) Management with permissions
+    // 🏢 Master Gudang Ban Management
+    Route::get('master-gudang-ban/template/download', [\App\Http\Controllers\MasterGudangBanController::class, 'template'])
+         ->name('master-gudang-ban.template')
+         ->middleware('can:master-gudang-ban-view');
+    
+    Route::post('master-gudang-ban/import', [\App\Http\Controllers\MasterGudangBanController::class, 'import'])
+         ->name('master-gudang-ban.import')
+         ->middleware('can:master-gudang-ban-create');
+
+    Route::get('master-gudang-ban', [\App\Http\Controllers\MasterGudangBanController::class, 'index'])
+         ->name('master-gudang-ban.index')
+         ->middleware('can:master-gudang-ban-view');
+    Route::get('master-gudang-ban/create', [\App\Http\Controllers\MasterGudangBanController::class, 'create'])
+         ->name('master-gudang-ban.create')
+         ->middleware('can:master-gudang-ban-create');
+    Route::post('master-gudang-ban', [\App\Http\Controllers\MasterGudangBanController::class, 'store'])
+         ->name('master-gudang-ban.store')
+         ->middleware('can:master-gudang-ban-create');
+    Route::get('master-gudang-ban/{id}', [\App\Http\Controllers\MasterGudangBanController::class, 'show'])
+         ->name('master-gudang-ban.show')
+         ->middleware('can:master-gudang-ban-view');
+    Route::get('master-gudang-ban/{id}/edit', [\App\Http\Controllers\MasterGudangBanController::class, 'edit'])
+         ->name('master-gudang-ban.edit')
+         ->middleware('can:master-gudang-ban-edit');
+    Route::put('master-gudang-ban/{id}', [\App\Http\Controllers\MasterGudangBanController::class, 'update'])
+         ->name('master-gudang-ban.update')
+         ->middleware('can:master-gudang-ban-edit');
+    Route::delete('master-gudang-ban/{id}', [\App\Http\Controllers\MasterGudangBanController::class, 'destroy'])
+         ->name('master-gudang-ban.destroy')
+         ->middleware('can:master-gudang-ban-delete');
+
+    //  Stock Ban (Tire Stock) Management with permissions
     Route::get('stock-ban-dalam/{id}/use', [\App\Http\Controllers\StockBanController::class, 'useBanDalam'])->name('stock-ban-dalam.use')->middleware('can:stock-ban-update');
     Route::post('stock-ban-dalam/{id}/use', [\App\Http\Controllers\StockBanController::class, 'storeUsageBanDalam'])->name('stock-ban-dalam.store-usage')->middleware('can:stock-ban-update');
     Route::get('stock-ban-dalam/{id}', [\App\Http\Controllers\StockBanController::class, 'showBanDalam'])->name('stock-ban-dalam.show')->middleware('can:stock-ban-view');
@@ -1628,6 +1659,26 @@ Route::middleware([
     Route::delete('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'destroy'])
          ->name('stock-ban.destroy')
          ->middleware('can:stock-ban-delete');
+
+    // 💰 Stock Ban Luar Batam Management with permissions
+    Route::get('stock-ban-luar-batam/create', [\App\Http\Controllers\StockBanLuarBatamController::class, 'create'])
+         ->name('stock-ban-luar-batam.create')
+         ->middleware('can:stock-ban-create');
+    Route::post('stock-ban-luar-batam', [\App\Http\Controllers\StockBanLuarBatamController::class, 'store'])
+         ->name('stock-ban-luar-batam.store')
+         ->middleware('can:stock-ban-create');
+    Route::get('stock-ban-luar-batam/{id}/edit', [\App\Http\Controllers\StockBanLuarBatamController::class, 'edit'])
+         ->name('stock-ban-luar-batam.edit')
+         ->middleware('can:stock-ban-update');
+    Route::put('stock-ban-luar-batam/{id}', [\App\Http\Controllers\StockBanLuarBatamController::class, 'update'])
+         ->name('stock-ban-luar-batam.update')
+         ->middleware('can:stock-ban-update');
+    Route::delete('stock-ban-luar-batam/{id}', [\App\Http\Controllers\StockBanLuarBatamController::class, 'destroy'])
+         ->name('stock-ban-luar-batam.destroy')
+         ->middleware('can:stock-ban-delete');
+    Route::get('stock-ban-luar-batam/{id}', [\App\Http\Controllers\StockBanLuarBatamController::class, 'show'])
+         ->name('stock-ban-luar-batam.show')
+         ->middleware('can:stock-ban-view');
 
     // 💰 Pricelist Uang Jalan Batam Management with permissions
     // Download Template & Import (must be before resource routes)

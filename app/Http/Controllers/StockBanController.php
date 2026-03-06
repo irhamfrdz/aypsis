@@ -22,6 +22,7 @@ class StockBanController extends Controller
     public function index()
     {
         $stockBans = StockBan::with('mobil')->latest()->get();
+        $stockBanLuarBatams = \App\Models\StockBanLuarBatam::with('mobil')->latest()->get();
         // Separate Ban Dalam, Ban Perut, and Lock Kontainer
         $stockBanDalamsOriginal = \App\Models\StockBanDalam::with('namaStockBan')->latest()->get();
         $stockBanDalams = $stockBanDalamsOriginal->filter(function($item) {
@@ -59,7 +60,7 @@ class StockBanController extends Controller
             ->get();
         $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockLainLains', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals'));
+        return view('stock-ban.index', compact('stockBans', 'stockBanLuarBatams', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockLainLains', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals'));
     }
 
     /**
@@ -71,9 +72,10 @@ class StockBanController extends Controller
         $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
         $merkBans = MerkBan::orderBy('nama')->get();
         $gudangs = Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
+        $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
         $nextInvoice = StockBan::generateNextInvoice(); // Using the same generator for now
-        return view('stock-ban.create', compact('mobils', 'namaStockBans', 'merkBans', 'gudangs', 'karyawans', 'nextInvoice'));
+        return view('stock-ban.create', compact('mobils', 'namaStockBans', 'merkBans', 'gudangs', 'masterGudangBans', 'karyawans', 'nextInvoice'));
     }
 
     /**

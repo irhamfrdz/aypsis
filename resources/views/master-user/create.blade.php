@@ -626,6 +626,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Gudang Ban --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Gudang Ban</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td><input type="checkbox" name="permissions[master-gudang-ban][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
                             {{-- Aktivitas Supir --}}
                             <tr class="module-row" data-module="aktivitas-supir">
                                 <td class="module-header">

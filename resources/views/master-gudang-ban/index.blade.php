@@ -1,0 +1,198 @@
+@extends('layouts.app')
+
+@section('title', 'Master Gudang Ban')
+@section('page_title', 'Master Gudang Ban')
+
+@section('content')
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Master Gudang Ban</h1>
+                <p class="text-gray-600 mt-1">Kelola data gudang ban (lokasi penyimpanan ban)</p>
+            </div>
+            <div class="flex items-center space-x-2">
+                @if(auth()->user()->can('master-gudang-ban-create') || auth()->user()->can('stock-ban-create'))
+                <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-file-excel mr-2"></i>Import Excel
+                </button>
+                <a href="{{ route('master-gudang-ban.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>Tambah Gudang Ban
+                </a>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <i class="fas fa-check-circle mr-2"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- Filter Section -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <form method="GET" action="{{ route('master-gudang-ban.index') }}">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
+                    <input type="text"
+                           name="search"
+                           value="{{ request('search') }}"
+                           placeholder="Nama gudang, lokasi..."
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Status</option>
+                        <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                    </select>
+                </div>
+
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
+                        <i class="fas fa-search mr-2"></i>Filter
+                    </button>
+                    <a href="{{ route('master-gudang-ban.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
+                        <i class="fas fa-times mr-2"></i>Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table Section -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Gudang</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($gudangs as $key => $gudang)
+                    <tr class="hover:bg-gray-50 transition duration-150">
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $gudangs->firstItem() + $key }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{{ $gudang->nama_gudang }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $gudang->lokasi }}</td>
+                        <td class="px-4 py-4 text-sm text-gray-900">{{ $gudang->keterangan ?: '-' }}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm">
+                            @if($gudang->status == 'aktif')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Aktif
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <i class="fas fa-times-circle mr-1"></i>
+                                    Nonaktif
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('master-gudang-ban.show', $gudang->id) }}" class="text-blue-600 hover:text-blue-900" title="Lihat Detail">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if(auth()->user()->can('master-gudang-ban-edit') || auth()->user()->can('stock-ban-update'))
+                                <a href="{{ route('master-gudang-ban.edit', $gudang->id) }}" class="text-yellow-600 hover:text-yellow-900" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                @endif
+                                @if(auth()->user()->can('master-gudang-ban-delete') || auth()->user()->can('stock-ban-delete'))
+                                <form action="{{ route('master-gudang-ban.destroy', $gudang->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus gudang ban ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-inbox text-4xl mb-3 text-gray-400"></i>
+                                <p class="text-lg font-medium">Tidak ada data gudang ban</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($gudangs->hasPages())
+            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 sm:px-6">
+                {{ $gudangs->links() }}
+            </div>
+        @endif
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div id="importModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Import Data Gudang Ban</h3>
+            <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <form action="{{ route('master-gudang-ban.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel</label>
+                <input type="file" name="file" accept=".xlsx,.xls" required
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="mt-1 text-xs text-gray-500">Format: .xlsx atau .xls</p>
+            </div>
+
+            <div class="mb-4 p-3 bg-blue-50 rounded-md">
+                <p class="text-sm text-blue-800 mb-2"><strong>Format Excel:</strong></p>
+                <ul class="text-xs text-blue-700 list-disc list-inside space-y-1">
+                    <li>Kolom 1: Nama Gudang</li>
+                    <li>Kolom 2: Lokasi</li>
+                    <li>Kolom 3: Keterangan (opsional)</li>
+                    <li>Kolom 4: Status (aktif/nonaktif)</li>
+                </ul>
+                <a href="{{ route('master-gudang-ban.template') }}" class="text-xs text-blue-600 hover:text-blue-800 mt-2 inline-block">
+                    <i class="fas fa-download mr-1"></i>Download Template
+                </a>
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')"
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
+                    Batal
+                </button>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-upload mr-2"></i>Import
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
