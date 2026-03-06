@@ -172,4 +172,28 @@ class PranotaInvoiceVendorSupirController extends Controller
         $pranota = PranotaInvoiceVendorSupir::with(['vendor', 'invoiceTagihanVendors.tagihanSupirVendors.suratJalan.prospeks'])->findOrFail($id);
         return view('pranota-invoice-vendor-supir.print', compact('pranota'));
     }
+
+    public function addPph($id)
+    {
+        try {
+            DB::beginTransaction();
+            $pranota = PranotaInvoiceVendorSupir::findOrFail($id);
+            
+            // Calculate 2% of total_nominal
+            $pph = $pranota->total_nominal * 0.02;
+            $grandTotal = $pranota->total_nominal - $pph;
+            
+            $pranota->update([
+                'pph' => $pph,
+                'grand_total' => $grandTotal,
+                'updated_by' => Auth::id()
+            ]);
+            
+            DB::commit();
+            return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'PPH 2% berhasil ditambahkan ke Pranota.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

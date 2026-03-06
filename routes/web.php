@@ -2828,6 +2828,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('pranota-invoice-vendor-supir/{id}/print', [\App\Http\Controllers\PranotaInvoiceVendorSupirController::class, 'print'])
          ->name('pranota-invoice-vendor-supir.print')
          ->middleware('can:pranota-invoice-vendor-supir-view');
+         
+    Route::post('pranota-invoice-vendor-supir/{id}/add-pph', [\App\Http\Controllers\PranotaInvoiceVendorSupirController::class, 'addPph'])
+         ->name('pranota-invoice-vendor-supir.add-pph')
+         ->middleware('can:pranota-invoice-vendor-supir-update');
 
     Route::resource('pranota-invoice-vendor-supir', \App\Http\Controllers\PranotaInvoiceVendorSupirController::class)
          ->middleware([

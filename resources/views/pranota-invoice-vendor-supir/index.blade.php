@@ -128,6 +128,16 @@
                                 <button type="button" onclick="confirmDelete('{{ $pranota->id }}')" class="text-red-500 hover:text-red-700 transition-colors" title="Hapus Pranota">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
+                                
+                                @if(auth()->user()->can('pranota-invoice-vendor-supir-update') && $pranota->pph <= 0)
+                                <button type="button" onclick="confirmAddPph('{{ $pranota->id }}')" class="text-emerald-500 hover:text-emerald-700 transition-colors" title="Tambahkan PPH 2%">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
+                                </button>
+                                <form id="add-pph-form-{{ $pranota->id }}" action="{{ route('pranota-invoice-vendor-supir.add-pph', $pranota->id) }}" method="POST" class="hidden">
+                                    @csrf
+                                </form>
+                                @endif
+
                                 <form id="delete-form-{{ $pranota->id }}" action="{{ route('pranota-invoice-vendor-supir.destroy', $pranota->id) }}" method="POST" class="hidden">
                                     @csrf
                                     @method('DELETE')
@@ -163,6 +173,12 @@
     function confirmDelete(id) {
         if(confirm('Apakah Anda yakin ingin menghapus pranota ini? Data invoice di dalamnya tidak akan terhapus, hanya dilepaskan kembali.')) {
             document.getElementById('delete-form-' + id).submit();
+        }
+    }
+
+    function confirmAddPph(id) {
+        if(confirm('Apakah Anda yakin ingin menambahkan PPH 2% pada pranota ini? Total nominal akan dikurangi 2% dan disimpan sebagai PPH.')) {
+            document.getElementById('add-pph-form-' + id).submit();
         }
     }
 </script>
