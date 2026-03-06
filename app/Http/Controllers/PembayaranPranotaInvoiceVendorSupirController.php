@@ -6,6 +6,7 @@ use App\Models\PembayaranPranotaVendorSupir;
 use App\Models\PembayaranPranotaVendorSupirItem;
 use App\Models\PranotaInvoiceVendorSupir;
 use App\Models\VendorSupir;
+use App\Models\Coa; // Added Coa model
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -50,12 +51,19 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                 ->get();
         }
 
+        // Get akun COA for bank selection
+        $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
+                      ->orWhere('nama_akun', 'LIKE', '%bank%')
+                      ->orWhere('nama_akun', 'LIKE', '%kas%')
+                      ->orderBy('nama_akun')
+                      ->get();
+
         // Generate nomor pembayaran
         $lastPayment = PembayaranPranotaVendorSupir::latest()->first();
         $nextId = $lastPayment ? $lastPayment->id + 1 : 1;
         $nomorPembayaran = 'PAY-VS-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
-        return view('pembayaran-pranota-invoice-vendor-supir.create', compact('vendors', 'pranotas', 'selectedVendorId', 'nomorPembayaran'));
+        return view('pembayaran-pranota-invoice-vendor-supir.create', compact('vendors', 'pranotas', 'selectedVendorId', 'nomorPembayaran', 'akunCoa'));
     }
 
     public function store(Request $request)
@@ -74,12 +82,12 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
         try {
             $pembayaran = PembayaranPranotaVendorSupir::create([
                 'nomor_pembayaran' => $request->nomor_pembayaran,
+                'nomor_accurate' => $request->nomor_accurate,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'vendor_id' => $request->vendor_id,
                 'total_pembayaran' => $request->total_pembayaran,
                 'metode_pembayaran' => $request->metode_pembayaran,
                 'bank' => $request->bank,
-                'no_referensi' => $request->no_referensi,
                 'keterangan' => $request->keterangan,
                 'created_by' => Auth::id(),
             ]);

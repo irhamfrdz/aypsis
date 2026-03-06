@@ -8,12 +8,12 @@ class PembayaranPranotaVendorSupir extends Model
 {
     protected $fillable = [
         'nomor_pembayaran',
+        'nomor_accurate', // Added nomor_accurate
         'tanggal_pembayaran',
         'vendor_id',
         'total_pembayaran',
         'metode_pembayaran',
         'bank',
-        'no_referensi',
         'keterangan',
         'bukti_pembayaran',
         'created_by',
