@@ -3368,7 +3368,7 @@
 
                 // Copy permission functionality
                 copyBtn.addEventListener('click', function(){
-                    const userId = select.value;
+                    const userId = selectElement.value;
 
                     if (!userId) {
                         showToast('Pilih user terlebih dahulu', 'warning');
