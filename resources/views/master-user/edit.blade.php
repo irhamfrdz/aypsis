@@ -3028,8 +3028,8 @@
             </div>
 
             {{-- Copy Permission Feature --}}
-            <div class="copy-permission-section rounded-xl shadow-md p-6 mb-8 mt-4 border border-indigo-100 overflow-hidden relative">
-                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full"></div>
+            <div class="copy-permission-section rounded-xl shadow-md p-6 mb-8 mt-4 border border-indigo-100 relative">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full pointer-events-none"></div>
                 <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div class="flex items-center space-x-4">
                         <div class="flex-shrink-0 bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-sm">
@@ -3128,38 +3128,8 @@
                     });
                 }
                 // Also apply Choices to the copy-user select for consistent dropdown behavior
-                const copySelect = document.getElementById('copy_user_select');
-                if (copySelect) {
-                    // Keep instance so we can programmatically open the dropdown when needed
-                    const copyChoices = new Choices(copySelect, {
-                        searchEnabled: true,
-                        shouldSort: false,
-                        placeholder: true,
-                        placeholderValue: '-- Pilih User --'
-                    });
-
-                    // If the dropdown doesn't open normally (e.g. due to container handlers), ensure clicks open it
-                    // Debug helpers: ensure dropdown opens and log events
-                    copySelect.addEventListener('click', function(e) {
-                        console.debug('copySelect clicked', e);
-                        try { copyChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
-                    });
-
-                    // Also try on mousedown on the Choices wrapper and stop propagation so other handlers don't close it
-                    const copyWrapper = copySelect.parentElement;
-                    copyWrapper.addEventListener('mousedown', function(e) {
-                        if (e.target.closest && e.target.closest('.choices')) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.debug('copyWrapper mousedown inside choices');
-                            try { copyChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
-                            // A tiny delay to counteract potential other click handlers
-                            setTimeout(() => {
-                                try { copyChoices.showDropdown(); } catch (err) { /* ignore */ }
-                            }, 50);
-                        }
-                    });
-                }
+                // (Now handled inside initializeCopyPermissions for better encapsulation)
+                // initializeCopyPermissions handles the copy_user_select initialization
             }
 
             // ==========================================
@@ -3330,15 +3300,39 @@
 
             function initializeCopyPermissions() {
                 const copyBtn = document.getElementById('copy_permissions_btn');
-                const select = document.getElementById('copy_user_select');
+                const selectElement = document.getElementById('copy_user_select');
+                
+                if (!copyBtn || !selectElement) return;
 
-                // Enable/disable copy button based on selection
-                select.addEventListener('change', function(){
-                    copyBtn.disabled = !this.value;
-                });
+                // Initialize Choices for this select if not already done
+                let copyChoices = null;
+                try {
+                    copyChoices = new Choices(selectElement, {
+                        searchEnabled: true,
+                        shouldSort: false,
+                        placeholder: true,
+                        placeholderValue: '-- Pilih User Sumber --',
+                        itemSelectText: '',
+                    });
+                } catch (e) {
+                    console.error('Choices initialization failed:', e);
+                }
 
-                // Initialize copy button state
-                copyBtn.disabled = true;
+                const updateBtnState = () => {
+                    const value = selectElement.value;
+                    copyBtn.disabled = !value;
+                    if (!value) {
+                        copyBtn.classList.add('opacity-50');
+                    } else {
+                        copyBtn.classList.remove('opacity-50');
+                    }
+                };
+
+                // Listen for changes
+                selectElement.addEventListener('change', updateBtnState);
+                
+                // Initial state
+                updateBtnState();
 
                 // Copy permission functionality
                 copyBtn.addEventListener('click', function(){
