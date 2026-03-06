@@ -221,10 +221,19 @@
                  voySel.value = data.voyage;
                  voySel.disabled = false;
                  
-                 sec.querySelector('.vendor-select-air').value = data.vendor;
-                 loadTypesForVendor(sectionIndex, data.vendor); // Synchronous
+                 if(data.lokasi) {
+                     sec.querySelector('.lokasi-select-air').value = data.lokasi;
+                     updateVendorsForLokasi(sectionIndex, data.lokasi);
+                 } else {
+                     sec.querySelector('.lokasi-select-air').value = '';
+                     updateVendorsForLokasi(sectionIndex, '');
+                 }
                  
-                 if(data.lokasi) sec.querySelector('.lokasi-select-air').value = data.lokasi;
+                 if (data.vendor) {
+                     sec.querySelector('.vendor-select-air').value = data.vendor;
+                     loadTypesForVendor(sectionIndex, data.vendor); // Synchronous
+                 }
+                 
                  sec.querySelector('.jasa-air-input').value = data.jasa_air;
                  if(data.penerima) sec.querySelector('.penerima-input-air').value = data.penerima;
                  if(data.nomor_rekening) sec.querySelector('.nomor-rekening-input-air').value = data.nomor_rekening;
@@ -354,8 +363,17 @@
                     voyageSelect.disabled = false;
                     
                     if (myData.nomor_referensi) section.querySelector('.no-referensi-input-labuh-tambat').value = myData.nomor_referensi;
-                    if (myData.vendor) section.querySelector('.vendor-select-labuh-tambat').value = myData.vendor;
-                    if (myData.lokasi) section.querySelector('.lokasi-select-labuh-tambat').value = myData.lokasi;
+                    
+                    if (myData.lokasi) {
+                        section.querySelector('.lokasi-select-labuh-tambat').value = myData.lokasi;
+                        updateLabuhTambatVendorsForLokasi(sectionIndex, myData.lokasi);
+                    }
+                    
+                    if (myData.vendor) {
+                        section.querySelector('.vendor-select-labuh-tambat').value = myData.vendor;
+                        loadTypesForLabuhTambatVendor(sectionIndex, myData.vendor);
+                    }
+                    
                     if (myData.penerima) section.querySelector('.penerima-input-labuh-tambat').value = myData.penerima;
                     if (myData.nomor_rekening) section.querySelector('.nomor-rekening-input-labuh-tambat').value = myData.nomor_rekening;
                     if (myData.tanggal_invoice_vendor) section.querySelector('.tanggal-invoice-vendor-input-labuh-tambat').value = myData.tanggal_invoice_vendor;

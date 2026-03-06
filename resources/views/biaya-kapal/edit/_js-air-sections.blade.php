@@ -150,12 +150,18 @@
                     </div>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
+                    <select name="air[${sectionIndex}][lokasi]" class="lokasi-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
+                        ${lokasiOptions}
+                    </select>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Air Tawar</label>
                     <select name="air[${sectionIndex}][vendor]" class="vendor-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" required>
                         ${vendorOptions}
                     </select>
                 </div>
-                <div class="types-wrapper-air-container">
+                <div class="types-wrapper-air-container md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                     <div class="types-list-air space-y-2 mb-2">
                           <div class="flex flex-col gap-1 border p-2 rounded bg-gray-50 relative">
@@ -196,12 +202,7 @@
                         <i class="fas fa-plus"></i> Tambah Type
                     </button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
-                    <select name="air[${sectionIndex}][lokasi]" class="lokasi-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
-                        ${lokasiOptions}
-                    </select>
-                </div>
+                
                 <div class="hidden">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Input)</label>
                     <input type="number" name="air[${sectionIndex}][jasa_air]" class="jasa-air-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="0" placeholder="0">
