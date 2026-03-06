@@ -25,7 +25,8 @@
         // Map Air
         if($biayaKapal->airDetails->count() > 0) {
             $groupedAir = $biayaKapal->airDetails->groupBy(function($item) {
-                return $item->kapal . '|||' . $item->voyage . '|||' . $item->vendor . '|||' . ($item->lokasi ?? '') . '|||' . ($item->jasa_air ?? 0) . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . ($item->tanggal_invoice_vendor ?? '');
+                $tgl = $item->tanggal_invoice_vendor ? \Carbon\Carbon::parse($item->tanggal_invoice_vendor)->format('Y-m-d') : '';
+                return $item->kapal . '|||' . $item->voyage . '|||' . $item->vendor . '|||' . ($item->lokasi ?? '') . '|||' . ($item->jasa_air ?? 0) . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl;
             });
             foreach($groupedAir as $key => $items) {
                  $parts = explode('|||', $key);
@@ -57,7 +58,8 @@
         // Group TKBM
         if($biayaKapal->tkbmDetails->count() > 0) {
             $grouped = $biayaKapal->tkbmDetails->groupBy(function($item) {
-                return $item->kapal . '|||' . $item->voyage . '|||' . ($item->no_referensi ?? '') . '|||' . ($item->tanggal_invoice_vendor ?? '');
+                $tgl = $item->tanggal_invoice_vendor ? \Carbon\Carbon::parse($item->tanggal_invoice_vendor)->format('Y-m-d') : '';
+                return $item->kapal . '|||' . $item->voyage . '|||' . ($item->no_referensi ?? '') . '|||' . $tgl;
             });
             foreach($grouped as $key => $items) {
                  $parts = explode('|||', $key); 
@@ -140,7 +142,7 @@
                 'grand_total' => $labuh->grand_total,
                 'penerima' => $labuh->penerima,
                 'nomor_rekening' => $labuh->nomor_rekening,
-                'tanggal_invoice_vendor' => $labuh->tanggal_invoice_vendor,
+                'tanggal_invoice_vendor' => $labuh->tanggal_invoice_vendor ? \Carbon\Carbon::parse($labuh->tanggal_invoice_vendor)->format('Y-m-d') : null,
             ];
         }
     @endphp
