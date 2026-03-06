@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Stock Ban')
 @section('page_title', 'Stock Ban')
@@ -163,6 +163,7 @@
         <div>
            <div class="flex space-x-1 border-b border-gray-200" id="tabs-container">
                <button class="tab-btn active" data-target="tab-ban-luar">Ban Luar</button>
+               <button class="tab-btn" data-target="tab-ban-luar-batam">Ban Luar Batam</button>
                <button class="tab-btn" data-target="tab-barang-lainnya">Barang Lainnya</button>
            </div>
         </div>
@@ -586,6 +587,232 @@
                     </table>
                 </div>
 
+        </div>
+
+
+        <!-- Tab: Ban Luar Batam -->
+        <div id="tab-ban-luar-batam" class="tab-content p-4">
+            @php
+                $banBatamList = $stockBans->filter(function($ban) {
+                    return stripos($ban->lokasi, 'batam') !== false && $ban->status === 'Stok';
+                });
+            @endphp
+<div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" id="check-all-ban-luar-batam" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seri / Kode</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Faktur</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merk & Ukuran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit / Tujuan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi / Posisi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masak</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($banBatamList as $ban)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($ban->status == 'Stok' && $ban->kondisi != 'afkir')
+                                    <input type="checkbox" name="ids[]" value="{{ $ban->id }}" 
+                                        data-type="{{ ucfirst($ban->kondisi) }}" 
+                                        data-ukuran="{{ $ban->ukuran }}"
+                                        data-status-luar="{{ $ban->status_ban_luar }}"
+                                        data-harga="{{ number_format($ban->harga_beli, 0, ',', '.') }}"
+                                        class="check-item rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 row-number">
+                                    {{ $loop->iteration }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ $ban->nomor_seri ?? '-' }}
+                                    @if($ban->namaStockBan)
+                                    <div class="text-xs text-gray-500">{{ $ban->namaStockBan->nama }}</div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $ban->nomor_faktur ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="font-medium text-gray-800">{{ $ban->merk ?? $ban->merkBan->nama ?? '-' }}</div>
+                                    <div class="text-xs">{{ $ban->ukuran ?? '-' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {{ $ban->kondisi == 'asli' ? 'bg-green-100 text-green-800' : 
+                                           ($ban->kondisi == 'kanisir' ? 'bg-yellow-100 text-yellow-800' : 
+                                           ($ban->kondisi == 'afkir' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')) }}">
+                                        {{ ucfirst($ban->kondisi) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {{ $ban->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
+                                           ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
+                                           ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
+                                           ($ban->status == 'Dikirim Ke Batam' ? 'bg-cyan-100 text-cyan-800' : 
+                                           ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')))) }}">
+                                        {{ $ban->status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    @if($ban->mobil)
+                                        @php
+                                            $displayPlat = $ban->mobil->nomor_polisi;
+                                            // Fallback to no_kir for Buntut if plate is empty
+                                            if (empty($displayPlat) && $ban->mobil->jenis && stripos($ban->mobil->jenis, 'buntut') !== false) {
+                                                $displayPlat = $ban->mobil->no_kir ?? '-';
+                                            }
+                                        @endphp
+                                        <span class="text-blue-600 font-medium">
+                                            <i class="fas fa-truck mr-1"></i> {{ $displayPlat }}
+                                        </span>
+                                        @if($ban->mobil->jenis && stripos($ban->mobil->jenis, 'buntut') !== false)
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                <i class="fas fa-map-marker-alt mr-1"></i> {{ $ban->mobil->lokasi ?? '-' }}
+                                            </div>
+                                        @endif
+                                    @elseif($ban->alatBerat)
+                                        <span class="text-orange-600 font-medium">
+                                            <i class="fas fa-tractor mr-1"></i> {{ $ban->alatBerat->nama }}
+                                        </span>
+                                        <div class="text-xs text-gray-500 mt-1">
+                                            {{ $ban->alatBerat->jenis }} {{ $ban->alatBerat->warna ? '- '.$ban->alatBerat->warna : '' }}
+                                        </div>
+                                    @elseif($ban->status == 'Dikirim Ke Batam' && $ban->kapal)
+                                        <span class="text-cyan-600 font-medium">
+                                            <i class="fas fa-ship mr-1"></i> {{ $ban->kapal->nama_kapal }}
+                                        </span>
+                                        @if($ban->tanggal_kirim)
+                                            <div class="text-[10px] text-gray-500 mt-1">
+                                                Tgl: {{ $ban->tanggal_kirim->format('d-m-Y') }}
+                                            </div>
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $ban->penerima->nama_lengkap ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $ban->lokasi ?? '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ date('d-m-Y', strtotime($ban->tanggal_masuk)) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="flex flex-col">
+                                        <span class="px-2 inline-flex text-[10px] leading-4 font-semibold rounded-full w-fit
+                                            {{ $ban->status_masak == 'sudah' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-600' }}">
+                                            {{ ucfirst($ban->status_masak) }}
+                                        </span>
+                                        @if($ban->jumlah_masak > 0)
+                                            <span class="text-[10px] text-gray-400 mt-1">{{ $ban->jumlah_masak }}x masak</span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div class="flex justify-end gap-2">
+                                        @if($ban->status == 'Stok')
+                                            <button type="button" 
+                                                class="btn-usage-modal text-green-600 hover:text-green-900" 
+                                                data-id="{{ $ban->id }}" 
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Gunakan / Pasang">
+                                                <i class="fas fa-wrench"></i>
+                                            </button>
+                                            
+                                             @if($ban->kondisi != 'kanisir' && $ban->kondisi != 'afkir')
+                                             <form action="{{ route('stock-ban.masak', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin masak ban ini jadi kanisir?')">
+                                                 @csrf
+                                                 @method('PUT')
+                                                 <button type="submit" class="text-orange-600 hover:text-orange-900" title="Masak Kanisir">
+                                                     <i class="fas fa-fire"></i>
+                                                 </button>
+                                             </form>
+                                             @endif
+
+                                             @if($ban->kondisi != 'afkir')
+                                             <button type="button" 
+                                                 class="btn-kirim-modal text-blue-500 hover:text-blue-700" 
+                                                 data-id="{{ $ban->id }}" 
+                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                 title="Kirim Ke Batam">
+                                                 <i class="fas fa-truck-loading"></i>
+                                             </button>
+
+                                             <button type="button" 
+                                                 class="btn-return-shop-modal text-red-500 hover:text-red-700" 
+                                                 data-id="{{ $ban->id }}" 
+                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                 title="Kembalikan ke Toko">
+                                                 <i class="fas fa-undo-alt"></i>
+                                             </button>
+                                             @endif
+                                         @elseif($ban->status == 'Terpakai')
+                                            <button type="button" 
+                                                class="btn-return-modal text-indigo-600 hover:text-indigo-900"
+                                                data-id="{{ $ban->id }}"
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}"
+                                                title="Kembalikan ke Gudang">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        @elseif($ban->status == 'Sedang Dimasak')
+                                            <button type="button" 
+                                                class="btn-return-masak-modal text-teal-600 hover:text-teal-900"
+                                                data-id="{{ $ban->id }}"
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Selesai Masak (Kembali ke Gudang)">
+                                                <i class="fas fa-check-circle"></i>
+                                            </button>
+                                        @elseif($ban->status == 'Dikembalikan')
+                                            <button type="button" 
+                                                class="btn-restore-stock-modal text-green-600 hover:text-green-900"
+                                                data-id="{{ $ban->id }}"
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Jadikan Stok Kembali">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        @endif
+
+                                        <a href="{{ route('stock-ban.show', $ban->id) }}" class="text-purple-600 hover:text-purple-900" title="Lihat Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+
+                                        <a href="{{ route('stock-ban.edit', $ban->id) }}" class="text-blue-600 hover:text-blue-900" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+
+                                        <form action="{{ route('stock-ban.destroy', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus data ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                    <td colspan="13" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data stock ban luar batam</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
         </div>
 
         <!-- Tab: Barang Lainnya (Gabungan semua dalam satu tabel) -->
