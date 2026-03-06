@@ -803,8 +803,11 @@ class BiayaKapalController extends Controller
                         foreach ($section['types'] as $typeIndex => $typeId) {
                             $typeKeterangan = '';
                             $isLumpsum = $section['type_is_lumpsum'][$typeIndex] ?? 0;
-                            $kuantitas = $section['type_tonase'][$typeIndex] ?? 0;
-                            $harga = $section['custom_prices'][$typeIndex] ?? 0;
+                            $kuantitasRaw = $section['type_tonase'][$typeIndex] ?? '0';
+                            $kuantitas = floatval(str_replace(',', '.', (string)$kuantitasRaw));
+
+                            $hargaRaw = $section['custom_prices'][$typeIndex] ?? '0';
+                            $harga = floatval(str_replace(',', '.', (string)$hargaRaw));
 
                             if ($typeId === 'MANUAL') {
                                 $typeKeterangan = $section['manual_names'][$typeIndex] ?? 'MANUAL';
@@ -1096,12 +1099,8 @@ class BiayaKapalController extends Controller
                                     $typeKeterangan = isset($section['manual_names'][$typeIndex]) ? $section['manual_names'][$typeIndex] : 'Manual Type';
                                     
                                     // Clean price input
-                                    $manualPriceRaw = isset($section['custom_prices'][$typeIndex]) ? $section['custom_prices'][$typeIndex] : 0;
-                                    if (is_string($manualPriceRaw)) {
-                                        $typeHarga = floatval(str_replace(',', '.', str_replace('.', '', $manualPriceRaw)));
-                                    } else {
-                                        $typeHarga = floatval($manualPriceRaw);
-                                    }
+                                    $manualPriceRaw = isset($section['custom_prices'][$typeIndex]) ? (string)$section['custom_prices'][$typeIndex] : '0';
+                                    $typeHarga = floatval(str_replace(',', '.', $manualPriceRaw));
                                     
                                     $actualTypeId = null; // No ID for manual
                                 } else {
@@ -1111,7 +1110,9 @@ class BiayaKapalController extends Controller
                                         ->first();
                                     
                                     $typeKeterangan = $typeData ? $typeData->keterangan : null;
-                                    $typeHarga = $typeData ? floatval($typeData->harga) : 0;
+                                    // Use custom_prices if available to preserve history price, fallback to master
+                                    $manualPriceRaw = isset($section['custom_prices'][$typeIndex]) ? (string)$section['custom_prices'][$typeIndex] : (string)($typeData ? $typeData->harga : 0);
+                                    $typeHarga = floatval(str_replace(',', '.', $manualPriceRaw));
                                     $actualTypeId = $typeId;
                                 }
                                 
@@ -1120,7 +1121,7 @@ class BiayaKapalController extends Controller
                                 
                                 $currentKuantitas = 0;
                                 if (isset($section['type_tonase'][$typeIndex]) && $section['type_tonase'][$typeIndex] !== '') {
-                                    $currentKuantitas = floatval($section['type_tonase'][$typeIndex]);
+                                    $currentKuantitas = floatval(str_replace(',', '.', (string)$section['type_tonase'][$typeIndex]));
                                 }
 
                                 // Apply Jasa Air ONLY on the first record to avoid double counting
@@ -2196,12 +2197,8 @@ class BiayaKapalController extends Controller
                                     $typeKeterangan = isset($section['manual_names'][$typeIndex]) ? $section['manual_names'][$typeIndex] : 'Manual Type';
                                     
                                     // Clean price input
-                                    $manualPriceRaw = isset($section['custom_prices'][$typeIndex]) ? $section['custom_prices'][$typeIndex] : 0;
-                                    if (is_string($manualPriceRaw)) {
-                                        $typeHarga = floatval(str_replace(',', '.', str_replace('.', '', $manualPriceRaw)));
-                                    } else {
-                                        $typeHarga = floatval($manualPriceRaw);
-                                    }
+                                    $manualPriceRaw = isset($section['custom_prices'][$typeIndex]) ? (string)$section['custom_prices'][$typeIndex] : '0';
+                                    $typeHarga = floatval(str_replace(',', '.', $manualPriceRaw));
                                     
                                     $actualTypeId = null; // No ID for manual
                                 } else {
@@ -2211,7 +2208,11 @@ class BiayaKapalController extends Controller
                                         ->first();
                                     
                                     $typeKeterangan = $typeData ? $typeData->keterangan : null;
-                                    $typeHarga = $typeData ? floatval($typeData->harga) : 0;
+                                    
+                                    // Use custom_prices if available to preserve history price, fallback to master
+                                    $manualPriceRaw = isset($section['custom_prices'][$typeIndex]) ? (string)$section['custom_prices'][$typeIndex] : (string)($typeData ? $typeData->harga : 0);
+                                    $typeHarga = floatval(str_replace(',', '.', $manualPriceRaw));
+                                    
                                     $actualTypeId = $typeId;
                                 }
                                 
@@ -2220,7 +2221,7 @@ class BiayaKapalController extends Controller
                                 
                                 $currentKuantitas = 0;
                                 if (isset($section['type_tonase'][$typeIndex]) && $section['type_tonase'][$typeIndex] !== '') {
-                                    $currentKuantitas = floatval($section['type_tonase'][$typeIndex]);
+                                    $currentKuantitas = floatval(str_replace(',', '.', (string)$section['type_tonase'][$typeIndex]));
                                 }
 
                                 // Apply Jasa Air ONLY on the first record to avoid double counting
@@ -2553,9 +2554,12 @@ class BiayaKapalController extends Controller
                             foreach ($section['types'] as $typeIndex => $typeId) {
                                 $typeKeterangan = '';
                                 $isLumpsum = $section['type_is_lumpsum'][$typeIndex] ?? 0;
-                                $kuantitas = $section['type_tonase'][$typeIndex] ?? 0;
-                                $hargaRaw = $section['custom_prices'][$typeIndex] ?? 0;
-                                $harga = is_string($hargaRaw) ? floatval(str_replace(',', '.', str_replace('.', '', $hargaRaw))) : floatval($hargaRaw);
+                                
+                                $kuantitasRaw = $section['type_tonase'][$typeIndex] ?? '0';
+                                $kuantitas = floatval(str_replace(',', '.', (string)$kuantitasRaw));
+
+                                $hargaRaw = $section['custom_prices'][$typeIndex] ?? '0';
+                                $harga = floatval(str_replace(',', '.', (string)$hargaRaw));
 
                                 if ($typeId === 'MANUAL') {
                                     $typeKeterangan = $section['manual_names'][$typeIndex] ?? 'MANUAL';

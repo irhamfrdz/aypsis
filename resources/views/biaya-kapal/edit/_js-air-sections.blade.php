@@ -733,7 +733,6 @@
         if (!isManual) {
             const select = div.querySelector('.type-select-air');
             select.value = typeId;
-            // Also update price from select immediately
-            updatePriceFromSelect(select);
+            // Do NOT call updatePriceFromSelect(select) here to preserve the historically saved DB price
         }
     };

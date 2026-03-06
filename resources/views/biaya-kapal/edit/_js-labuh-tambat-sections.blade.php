@@ -299,7 +299,7 @@
         } else {
             const sel = last.querySelector('.type-select-labuh-tambat');
             sel.value = typeId;
-            updateLabuhTambatPriceFromSelect(sel);
+            // Do NOT call updateLabuhTambatPriceFromSelect(sel) to preserve the historically saved DB price
         }
         last.querySelector('.tonase-input-labuh-tambat').value = q;
         const cb = last.querySelector('.lumpsum-checkbox');
