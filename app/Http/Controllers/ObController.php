@@ -1734,9 +1734,45 @@ class ObController extends Controller
                 'naik_kapal_id' => 'required|exists:naik_kapal,id'
             ]);
 
+            DB::beginTransaction();
+
             $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
             
-            // Reset OB status
+            // Hapus record pada table bls dan table manifests jika membatalkan OB Muat
+            // GAGAL: Query sebelumnya terlalu luas (hanya kontainer, kapal, voyage)
+            // Untuk CARGO, nomor_kontainer seringkali sama ("CARGO" atau semacamnya)
+            // Sehingga harus menggunakan prospek_id dan no_seal untuk membedakan antar item cargo
+            
+            $blQuery = Bl::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                ->where('no_voyage', $naikKapal->no_voyage)
+                ->where('nama_kapal', $naikKapal->nama_kapal);
+            
+            if ($naikKapal->prospek_id) {
+                $blQuery->where('prospek_id', $naikKapal->prospek_id);
+            }
+
+            // Gunakan nama_barang sebagai filter tambahan terutama untuk CARGO
+            if ($naikKapal->jenis_barang) {
+                $blQuery->where('nama_barang', $naikKapal->jenis_barang);
+            }
+            
+            $blQuery->delete();
+
+            $mnfQuery = Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                ->where('no_voyage', $naikKapal->no_voyage)
+                ->where('nama_kapal', $naikKapal->nama_kapal);
+                
+            if ($naikKapal->prospek_id) {
+                $mnfQuery->where('prospek_id', $naikKapal->prospek_id);
+            }
+
+            if ($naikKapal->jenis_barang) {
+                $mnfQuery->where('nama_barang', $naikKapal->jenis_barang);
+            }
+            
+            $mnfQuery->delete();
+
+            // Reset OB status di naik_kapal
             $naikKapal->sudah_ob = false;
             $naikKapal->supir_id = null;
             $naikKapal->tanggal_ob = null;
@@ -1750,11 +1786,14 @@ class ObController extends Controller
                 $naikKapal->prospek->save();
             }
 
+            DB::commit();
+
             return response()->json([
                 'success' => true,
-                'message' => 'Status OB kontainer berhasil dibatalkan dan status Prospek dikembalikan ke ACTIVE'
+                'message' => 'Status OB kontainer muat berhasil dibatalkan. Record BLS dan Manifest terkait telah dihapus.'
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             \Log::error('Unmark OB error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
