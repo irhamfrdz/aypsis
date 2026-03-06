@@ -215,7 +215,7 @@
             @endforeach
             <tr>
                 <td colspan="3" class="text-right font-bold">SUBTOTAL KESELURUHAN</td>
-                <td class="text-right font-bold">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
+                <td class="text-right font-bold">Rp {{ number_format($pranota->total_nominal + $pranota->pph, 0, ',', '.') }}</td>
             </tr>
             @if($pranota->pph > 0)
             <tr>

@@ -76,8 +76,11 @@
                 <!-- Kolom Kanan -->
                 <div class="space-y-4">
                     <div class="p-4 bg-rose-50 border border-rose-100 rounded-lg">
-                        <div class="text-sm font-medium text-rose-800 mb-1">Total Nominal</div>
-                        <div class="text-2xl font-bold text-rose-900">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</div>
+                        <div class="text-sm font-medium text-rose-800 mb-1">Total Setelah PPH (Grand Total)</div>
+                        <div class="text-2xl font-bold text-rose-900 mb-1">Rp {{ number_format($pranota->grand_total > 0 ? $pranota->grand_total : $pranota->total_nominal, 0, ',', '.') }}</div>
+                        @if($pranota->pph > 0)
+                            <div class="text-xs text-rose-600 line-through">Rp {{ number_format($pranota->total_nominal + $pranota->pph, 0, ',', '.') }}</div>
+                        @endif
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4 mt-2">
@@ -150,9 +153,23 @@
                 @if($pranota->invoiceTagihanVendors->count() > 0)
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-700">Total Keseluruhan</td>
-                        <td class="px-6 py-4 text-right font-bold text-rose-800 whitespace-nowrap">
-                            Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}
+                        <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-700">Subtotal</td>
+                        <td class="px-6 py-4 text-right font-bold text-gray-700 whitespace-nowrap">
+                            Rp {{ number_format($pranota->total_nominal + $pranota->pph, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                    @if($pranota->pph > 0)
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-700">PPH 2%</td>
+                        <td class="px-6 py-4 text-right font-bold text-red-600 whitespace-nowrap">
+                            - Rp {{ number_format($pranota->pph, 0, ',', '.') }}
+                        </td>
+                    </tr>
+                    @endif
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-900 border-t-2 border-gray-200">Total Keseluruhan</td>
+                        <td class="px-6 py-4 text-right font-bold text-rose-800 whitespace-nowrap border-t-2 border-gray-200">
+                            Rp {{ number_format($pranota->grand_total > 0 ? $pranota->grand_total : $pranota->total_nominal, 0, ',', '.') }}
                         </td>
                     </tr>
                 </tfoot>

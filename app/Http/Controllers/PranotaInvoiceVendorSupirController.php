@@ -75,20 +75,20 @@ class PranotaInvoiceVendorSupirController extends Controller
                 return back()->with('error', 'Tidak ada invoice valid yang dipilih.');
             }
 
-            $totalNominal = $invoices->sum('total_nominal');
+            $totalInvoices = $invoices->sum('total_nominal');
             $pph = 0;
             
             if ($request->has('potong_pph')) {
-                $pph = $totalNominal * 0.02;
+                $pph = $totalInvoices * 0.02;
             }
             
-            $grandTotal = $totalNominal - $pph;
+            $grandTotal = $totalInvoices - $pph;
 
             $pranota = PranotaInvoiceVendorSupir::create([
                 'no_pranota' => $request->no_pranota,
                 'vendor_id' => $request->vendor_id,
                 'tanggal_pranota' => $request->tanggal_pranota,
-                'total_nominal' => $totalNominal,
+                'total_nominal' => $grandTotal, // Kurangi total_nominal asli dengan PPH agar masuk ke pembayaran dengan nilai terpotong
                 'pph' => $pph,
                 'grand_total' => $grandTotal,
                 'status_pembayaran' => 'belum_dibayar',
@@ -179,12 +179,13 @@ class PranotaInvoiceVendorSupirController extends Controller
             DB::beginTransaction();
             $pranota = PranotaInvoiceVendorSupir::findOrFail($id);
             
-            // Calculate 2% of total_nominal
+            // Calculate 2% of total_nominal (yang pada saat belum di PPH adalah subtotal utuh)
             $pph = $pranota->total_nominal * 0.02;
             $grandTotal = $pranota->total_nominal - $pph;
             
             $pranota->update([
                 'pph' => $pph,
+                'total_nominal' => $grandTotal, // Simpan total_nominal baru yang sudah dipotong PPH
                 'grand_total' => $grandTotal,
                 'updated_by' => Auth::id()
             ]);

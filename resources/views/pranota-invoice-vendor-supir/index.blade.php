@@ -93,8 +93,11 @@
                         </td>
                         <td class="px-6 py-4 font-medium">{{ $pranota->vendor->nama_vendor ?? '-' }}</td>
                         <td class="px-6 py-4">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</td>
-                        <td class="px-6 py-4 font-bold text-gray-900">
-                            Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-900">Rp {{ number_format($pranota->grand_total > 0 ? $pranota->grand_total : $pranota->total_nominal, 0, ',', '.') }}</div>
+                            @if($pranota->pph > 0)
+                                <div class="text-[10px] text-gray-500 mt-0.5">Subtotal: Rp {{ number_format($pranota->total_nominal + $pranota->pph, 0, ',', '.') }}</div>
+                            @endif
                         </td>
                         <td class="px-6 py-4 text-center">
                             @if($pranota->status_pembayaran == 'lunas')
