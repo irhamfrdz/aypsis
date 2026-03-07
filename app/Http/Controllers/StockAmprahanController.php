@@ -325,20 +325,51 @@ class StockAmprahanController extends Controller
                 'adjustment' => $data['adjustment'] ?? 0,
                 'keterangan' => $data['keterangan'],
                 'items' => $data['items'],
-                'status' => 'draft',
+                'status' => 'approved', // Langsung approved atau draft? User di pranota lain biasanya approved
                 'created_by' => Auth::id(),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil memasukkan ke pranota',
-                'redirect' => route('stock-amprahan.index')
+                'redirect' => route('pranota-stock.index')
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal memasukkan ke pranota: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function pranotaIndex(Request $request)
+    {
+        $query = \App\Models\PranotaStock::with('creator')->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('nomor_pranota', 'like', "%{$search}%")
+                  ->orWhere('nomor_accurate', 'like', "%{$search}%");
+        }
+
+        $items = $query->paginate(20);
+        return view('pranota-stock.index', compact('items'));
+    }
+
+    public function pranotaPrint($id)
+    {
+        $pranota = \App\Models\PranotaStock::with('creator')->findOrFail($id);
+        return view('pranota-stock.print', compact('pranota'));
+    }
+
+    public function pranotaDestroy($id)
+    {
+        try {
+            $pranota = \App\Models\PranotaStock::findOrFail($id);
+            $pranota->delete();
+            return redirect()->route('pranota-stock.index')->with('success', 'Pranota berhasil dihapus');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
         }
     }
 }

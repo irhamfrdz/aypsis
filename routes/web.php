@@ -4681,6 +4681,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::post('stock-amprahan/masuk-pranota', [\App\Http\Controllers\StockAmprahanController::class, 'masukPranota'])
         ->name('stock-amprahan.masuk-pranota')
         ->middleware('can:stock-amprahan-view');
+
+    // Pranota Stock Routes
+    Route::get('pranota-stock', [\App\Http\Controllers\StockAmprahanController::class, 'pranotaIndex'])->name('pranota-stock.index');
+    Route::get('pranota-stock/{id}/print', [\App\Http\Controllers\StockAmprahanController::class, 'pranotaPrint'])->name('pranota-stock.print');
+    Route::delete('pranota-stock/{id}', [\App\Http\Controllers\StockAmprahanController::class, 'pranotaDestroy'])->name('pranota-stock.destroy');
     Route::post('stock-amprahan/{id}/usage', [\App\Http\Controllers\StockAmprahanController::class, 'storeUsage'])
         ->name('stock-amprahan.usage')
         ->middleware('can:stock-amprahan-update');
