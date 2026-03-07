@@ -122,7 +122,12 @@
         const blDropdown = section.querySelector('.trucking-bl-dropdown');
         const vendorSelect = section.querySelector('.trucking-vendor-select');
         
-        kapalSelect.addEventListener('change', function() {
+        $(kapalSelect).select2({
+            placeholder: "-- Pilih Kapal --",
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        }).on('change', function() {
             loadVoyagesForTruckingSection(sectionIndex, this.value);
         });
         
@@ -160,6 +165,7 @@
     window.removeTruckingSection = function(index) {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${index}"]`);
         if (section) {
+            $(section).find('.trucking-kapal-select').select2('destroy');
             section.remove();
             calculateTotalFromAllTruckingSections();
         }

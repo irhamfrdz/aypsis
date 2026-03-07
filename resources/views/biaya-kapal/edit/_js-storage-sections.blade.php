@@ -11,7 +11,7 @@
                         const section = addStorageSection();
                         const sIdx = section.getAttribute('data-storage-section-index');
                         
-                        section.querySelector('.storage-kapal-select').value = "{{ $detail->kapal }}";
+                        $(section.querySelector('.storage-kapal-select')).val("{{ $detail->kapal }}").trigger('change');
                         section.querySelector('.storage-lokasi-select').value = "{{ $detail->lokasi }}";
                         section.querySelector('.storage-vendor-select').value = "{{ $detail->vendor }}";
                         
@@ -279,9 +279,14 @@
         
         storageSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener
+        // Setup kapal change listener with Select2
         const kapalSelect = section.querySelector('.storage-kapal-select');
-        kapalSelect.addEventListener('change', function() {
+        $(kapalSelect).select2({
+            placeholder: "-- Pilih Kapal --",
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        }).on('change', function() {
             loadVoyagesForStorageSection(sectionIndex, this.value);
         });
 
@@ -447,6 +452,7 @@
     window.removeStorageSection = function(sectionIndex) {
         const section = document.querySelector(`[data-storage-section-index="${sectionIndex}"]`);
         if (section) {
+            $(section).find('.storage-kapal-select').select2('destroy');
             section.remove();
             calculateTotalFromAllStorageSections();
         }

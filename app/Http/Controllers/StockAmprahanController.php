@@ -273,4 +273,72 @@ class StockAmprahanController extends Controller
 
         return view('stock-amprahan.history', compact('usages'));
     }
+    public function generateNomorPranota()
+    {
+        try {
+            $kode = 'PSA'; // Pranota Stock Amprahan
+            $bulan = now()->format('m');
+            $tahun = now()->format('y');
+            
+            $prefix = "{$kode}-{$bulan}-{$tahun}-";
+            $lastPranota = \App\Models\PranotaStock::where('nomor_pranota', 'like', $prefix . '%')
+                ->orderBy('nomor_pranota', 'desc')
+                ->first();
+            
+            if ($lastPranota) {
+                $lastNumber = (int) substr($lastPranota->nomor_pranota, -6);
+                $runningNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+            } else {
+                $runningNumber = '000001';
+            }
+            
+            $nomorPranota = "{$prefix}{$runningNumber}";
+            
+            return response()->json([
+                'success' => true,
+                'nomor_pranota' => $nomorPranota
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate nomor pranota: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function masukPranota(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'nomor_pranota' => 'required|string|unique:pranota_stocks,nomor_pranota',
+                'tanggal_pranota' => 'required|date',
+                'nomor_accurate' => 'nullable|string',
+                'adjustment' => 'nullable|numeric',
+                'keterangan' => 'nullable|string',
+                'items' => 'required|array',
+            ]);
+
+            $pranota = \App\Models\PranotaStock::create([
+                'nomor_pranota' => $data['nomor_pranota'],
+                'tanggal_pranota' => $data['tanggal_pranota'],
+                'nomor_accurate' => $data['nomor_accurate'],
+                'adjustment' => $data['adjustment'] ?? 0,
+                'keterangan' => $data['keterangan'],
+                'items' => $data['items'],
+                'status' => 'draft',
+                'created_by' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil memasukkan ke pranota',
+                'redirect' => route('stock-amprahan.index')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memasukkan ke pranota: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

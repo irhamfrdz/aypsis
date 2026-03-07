@@ -355,6 +355,67 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Listen for message from popup
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'penerima-added') {
+                const newData = event.data.data;
+                
+                // Add to both Penerima and Notify Party dropdowns if they exist
+                ['penerima_id', 'notify_party_id'].forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    if (select) {
+                        const option = new Option(newData.nama, newData.id);
+                        option.setAttribute('data-alamat', newData.alamat || '');
+                        option.setAttribute('data-kontak', newData.kontak || '');
+                        select.add(option);
+                        
+                        // We need to trigger a refresh of the searchable dropdown
+                        // But since createSearchableDropdown uses closure variables, 
+                        // we might need to manually trigger a re-render or 
+                        // just let the user re-search.
+                        // Actually, the easiest way is to re-initialize or 
+                        // make createSearchableDropdown return an object with an update method.
+                    }
+                });
+
+                // Let's reload the page or re-fetch? 
+                // Better to just update the UI without reload.
+                // Re-initialize dropdowns to include the new option in originalOptions
+                initDropdowns();
+                
+                // Set the value to the newly added item for the one that opened it
+                // We don't easily know which one opened it without a state, 
+                // but the current implementation opens the same route for both.
+                // Usually it's the Penerima one that's most common.
+            }
+        });
+
+        // Function to initialize or re-initialize dropdowns
+        function initDropdowns() {
+            // First clear any existing searchable dropdown containers if needed
+            // But here they are already in the HTML.
+            
+            // Initialize Penerima dropdown
+            createSearchableDropdown({
+                selectId: 'penerima_id',
+                searchId: 'search_penerima',
+                dropdownId: 'dropdown_options_penerima',
+                containerClass: 'dropdown-container-penerima',
+                alamatId: 'alamat_penerima',
+                kontakId: 'kontak_penerima'
+            });
+
+            // Initialize Notify Party dropdown
+            createSearchableDropdown({
+                selectId: 'notify_party_id',
+                searchId: 'search_notify_party',
+                dropdownId: 'dropdown_options_notify_party',
+                containerClass: 'dropdown-container-notify-party'
+            });
+        }
+
+        initDropdowns();
+
         // Function to create searchable dropdown
         function createSearchableDropdown(config) {
             const selectElement = document.getElementById(config.selectId);
@@ -471,24 +532,6 @@
                 }
             });
         }
-
-        // Initialize Penerima dropdown
-        createSearchableDropdown({
-            selectId: 'penerima_id',
-            searchId: 'search_penerima',
-            dropdownId: 'dropdown_options_penerima',
-            containerClass: 'dropdown-container-penerima',
-            alamatId: 'alamat_penerima',
-            kontakId: 'kontak_penerima'
-        });
-
-        // Initialize Notify Party dropdown
-        createSearchableDropdown({
-            selectId: 'notify_party_id',
-            searchId: 'search_notify_party',
-            dropdownId: 'dropdown_options_notify_party',
-            containerClass: 'dropdown-container-notify-party'
-        });
 
         // Handle Penerima "Tambah" link logic
         const addPenerimaLink = document.getElementById('add_penerima_link');

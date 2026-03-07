@@ -166,4 +166,48 @@ class PenerimaController extends Controller
 
         return 'MR' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Show the form for creating from Order form (popup mode)
+     */
+    public function createForOrder(Request $request)
+    {
+        $nextKode = $this->generateCode();
+        $search = $request->get('search', '');
+        $isPopup = $request->has('popup');
+        
+        return view('master-penerima.create-for-order', compact('nextKode', 'search', 'isPopup'));
+    }
+
+    /**
+     * Store for Order form (popup mode)
+     */
+    public function storeForOrder(Request $request)
+    {
+        $request->validate([
+            'nama_penerima' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string',
+            'npwp' => 'nullable|string',
+            'nitku' => 'nullable|string',
+            'catatan' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+            'iu_bp_kawasan' => 'nullable|in:ada,tidak ada',
+        ]);
+
+        $request->merge(['kode' => $this->generateCode()]);
+        
+        $penerima = Penerima::create($request->all());
+
+        if ($request->has('popup')) {
+            // Return HTML with postMessage script for popup mode
+            return view('master-penerima.popup-success', [
+                'penerima' => $penerima,
+                'message' => 'Penerima berhasil ditambahkan!'
+            ]);
+        }
+
+        return redirect()->route('penerima.index')
+            ->with('success', 'Penerima berhasil ditambahkan!');
+    }
 }

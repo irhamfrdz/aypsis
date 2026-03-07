@@ -145,9 +145,14 @@
         
         thcSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener
+        // Setup kapal change listener with Select2
         const kapalSelect = section.querySelector('.thc-kapal-select');
-        kapalSelect.addEventListener('change', function() {
+        $(kapalSelect).select2({
+            placeholder: "-- Pilih Kapal --",
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        }).on('change', async function() {
             loadVoyagesForTHCSection(sectionIndex, this.value);
         });
 
@@ -205,6 +210,7 @@
     window.removeTHCSection = function(index) {
         const section = document.querySelector(`.thc-section[data-thc-section-index="${index}"]`);
         if (section) {
+            $(section).find('.thc-kapal-select').select2('destroy');
             section.remove();
             calculateTotalFromAllTHCSections();
         }
@@ -379,7 +385,7 @@
                         const section = addTHCSection();
                         const sIdx = section.getAttribute('data-thc-section-index');
                         
-                        section.querySelector('.thc-kapal-select').value = "{{ $detail->kapal }}";
+                        $(section.querySelector('.thc-kapal-select')).val("{{ $detail->kapal }}").trigger('change');
                         section.querySelector('.thc-vendor-select').value = "{{ $detail->vendor }}";
                         
                         // Load voyages

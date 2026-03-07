@@ -1836,9 +1836,9 @@ Route::middleware([
          ->name('order.pengirim.store');
 
     // 📥 Penerima - Special routes for Order form (no permission required, using MasterPengirimPenerimaController)
-    Route::get('order/penerima/create', [MasterPengirimPenerimaController::class, 'createForOrder'])
+    Route::get('order/penerima/create', [PenerimaController::class, 'createForOrder'])
          ->name('order.penerima.create');
-    Route::post('order/penerima/store', [MasterPengirimPenerimaController::class, 'storeForOrder'])
+    Route::post('order/penerima/store', [PenerimaController::class, 'storeForOrder'])
          ->name('order.penerima.store');
 
     // 🎯 Tujuan Kirim - Special routes for Order form (no permission required)
@@ -4674,6 +4674,12 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     // 📦 Stock Amprahan
     Route::get('stock-amprahan/history/all', [\App\Http\Controllers\StockAmprahanController::class, 'allHistory'])
         ->name('stock-amprahan.all-history')
+        ->middleware('can:stock-amprahan-view');
+    Route::get('stock-amprahan/generate-nomor-pranota', [\App\Http\Controllers\StockAmprahanController::class, 'generateNomorPranota'])
+        ->name('stock-amprahan.generate-nomor-pranota')
+        ->middleware('can:stock-amprahan-view');
+    Route::post('stock-amprahan/masuk-pranota', [\App\Http\Controllers\StockAmprahanController::class, 'masukPranota'])
+        ->name('stock-amprahan.masuk-pranota')
         ->middleware('can:stock-amprahan-view');
     Route::post('stock-amprahan/{id}/usage', [\App\Http\Controllers\StockAmprahanController::class, 'storeUsage'])
         ->name('stock-amprahan.usage')

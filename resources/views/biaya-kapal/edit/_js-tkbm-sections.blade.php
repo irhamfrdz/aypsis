@@ -108,9 +108,14 @@
         
         tkbmSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener
+        // Setup kapal change listener with Select2
         const kapalSelect = section.querySelector('.tkbm-kapal-select');
-        kapalSelect.addEventListener('change', function() {
+        $(kapalSelect).select2({
+            placeholder: "-- Pilih Kapal --",
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        }).on('change', function() {
             loadVoyagesForTkbmSection(sectionIndex, this.value);
         });
 
@@ -159,6 +164,8 @@
     window.removeTkbmSection = function(sectionIndex) {
         const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
         if (section) {
+            // Destroy Select2 before removing element to prevent memory leaks
+            $(section).find('.tkbm-kapal-select').select2('destroy');
             section.remove();
             calculateTotalFromAllTkbmSections();
         }

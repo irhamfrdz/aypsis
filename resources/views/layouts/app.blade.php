@@ -349,7 +349,7 @@
 
                         @if($hasUmumPermissions)
                         <div class="mx-2 mb-3">
-                            <button id="master-umum-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 group {{ $isUmumRoute ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}"
+                            <button id="master-umum-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 group {{ $isUmumRoute ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                                 <span class="text-xs font-medium">Master Umum</span>
                                 <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isUmumRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>

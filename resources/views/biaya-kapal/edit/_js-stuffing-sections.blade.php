@@ -99,9 +99,14 @@
         
         stuffingSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener
+        // Setup kapal change listener with Select2
         const kapalSelect = section.querySelector('.stuffing-kapal-select');
-        kapalSelect.addEventListener('change', function() {
+        $(kapalSelect).select2({
+            placeholder: "-- Pilih Kapal --",
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        }).on('change', async function() {
             loadVoyagesForStuffingSection(sectionIndex, this.value);
         });
 
@@ -131,6 +136,7 @@
     window.removeStuffingSection = function(sectionIndex) {
         const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);
         if (section) {
+            $(section).find('.stuffing-kapal-select').select2('destroy');
             section.remove();
         }
     };

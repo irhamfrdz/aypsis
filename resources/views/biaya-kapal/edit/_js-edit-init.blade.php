@@ -178,7 +178,7 @@
                 const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
                 
                 if(section) {
-                    section.querySelector('.kapal-select').value = myData.kapal;
+                    $(section.querySelector('.kapal-select')).val(myData.kapal).trigger('change');
                     
                     const voySel = section.querySelector('.voyage-select');
                     voySel.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
@@ -216,7 +216,7 @@
                  const sec = sections[sections.length - 1]; // Last one
                  const sectionIndex = sec.getAttribute('data-section-index');
                  
-                 sec.querySelector('.kapal-select-air').value = data.kapal;
+                  $(sec.querySelector('.kapal-select-air')).val(data.kapal).trigger('change');
                  
                  const voySel = sec.querySelector('.voyage-select-air');
                  voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
@@ -261,7 +261,7 @@
                 const sectionIndex = tkbmSectionCounter;
                 const sec = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
                 
-                sec.querySelector('.tkbm-kapal-select').value = data.kapal;
+                $(sec.querySelector('.tkbm-kapal-select')).val(data.kapal).trigger('change');
                 
                 const voySel = sec.querySelector('.tkbm-voyage-select');
                 voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
@@ -296,7 +296,7 @@
                 const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);
                 
                 if (section) {
-                    section.querySelector('.stuffing-kapal-select').value = myData.kapal;
+                    $(section.querySelector('.stuffing-kapal-select')).val(myData.kapal).trigger('change');
                     
                     // Trigger voyage load or set manually
                     const voySel = section.querySelector('.stuffing-voyage-select');
@@ -327,7 +327,7 @@
                 const section = document.querySelector(`[data-trucking-section-index="${sectionIndex}"]`);
                 
                 if (section) {
-                    section.querySelector('.trucking-kapal-select').value = myData.kapal;
+                    $(section.querySelector('.trucking-kapal-select')).val(myData.kapal).trigger('change');
                     
                     const voyageSelect = section.querySelector('.trucking-voyage-select');
                     voyageSelect.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
@@ -357,7 +357,7 @@
                 const section = document.querySelector(`.labuh-tambat-section[data-section-index="${sectionIndex}"]`);
                 
                 if (section) {
-                    section.querySelector('.kapal-select-labuh-tambat').value = myData.kapal;
+                    $(section.querySelector('.kapal-select-labuh-tambat')).val(myData.kapal).trigger('change');
                     
                     const voyageSelect = section.querySelector('.voyage-select-labuh-tambat');
                     voyageSelect.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;

@@ -100,14 +100,15 @@
         
         kapalSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener
+        // Setup kapal change listener with Select2
         const kapalSelect = section.querySelector('.kapal-select');
-        const voyageSelectArray = section.querySelectorAll('.voyage-select'); // Use querySelector because it's único per section or querySelectorAll if needed? Just one.
         const voyageSelect = section.querySelector('.voyage-select');
-        
-        kapalSelect.addEventListener('change', function() {
-            loadVoyagesForSection(sectionIndex, this.value);
-        });
+        $(kapalSelect).select2({
+            placeholder: "-- Pilih Kapal --",
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        }).on('change', async function() {
         
         // Setup voyage change listener for auto-fill barang
         voyageSelect.addEventListener('change', function() {
@@ -290,6 +291,8 @@
     window.removeKapalSection = function(sectionIndex) {
         const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
         if (section) {
+            // Destroy Select2 before removing element to prevent memory leaks
+            $(section).find('.kapal-select').select2('destroy');
             section.remove();
             calculateTotalFromAllSections();
         }

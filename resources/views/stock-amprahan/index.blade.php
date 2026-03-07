@@ -41,6 +41,38 @@
     </div>
     @endif
 
+    {{-- Bulk Actions --}}
+    <div id="bulkActions" class="hidden mb-6 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm p-4 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="p-2 bg-indigo-100 rounded-full text-indigo-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <span class="text-sm font-bold text-indigo-900"><span id="selected-count">0</span> Item Terpilih</span>
+                    <p class="text-xs text-indigo-600">Pilih item untuk dimasukkan ke dalam pranota</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" 
+                        id="btnBulkPranota"
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Masukan ke Pranota
+                </button>
+                <button type="button" 
+                        id="btnCancelSelection"
+                        class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
     {{-- Search Section --}}
     <div class="mb-6">
         <form method="GET" action="{{ route('stock-amprahan.index') }}" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
@@ -84,6 +116,9 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                            <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        </th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No. Bukti</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
@@ -99,6 +134,16 @@
                 <tbody class="bg-white divide-y divide-gray-100">
                     @forelse($items as $item)
                     <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <input type="checkbox" class="item-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                                value="{{ $item->id }}"
+                                data-nama="{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}"
+                                data-kode="{{ $item->nomor_bukti ?? '-' }}"
+                                data-harga="{{ $item->harga_satuan ?? 0 }}"
+                                data-jumlah="{{ $item->jumlah ?? 0 }}"
+                                data-satuan="{{ $item->satuan ?? '-' }}"
+                            >
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}
                         </td>
@@ -160,7 +205,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="11" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
@@ -472,7 +517,13 @@
         const fullHistoryLink = document.getElementById('fullHistoryLink');
         fullHistoryLink.href = `/stock-amprahan/${id}/history`;
 
-        fetch(`/stock-amprahan/${id}/history`)
+        fetch(`/stock-amprahan/${id}/history`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('historyTableBody');
@@ -933,5 +984,360 @@
             submitBtn.textContent = originalText;
         });
     });
+
+    // Bulk Selection Logic
+    const selectAll = document.getElementById('selectAll');
+    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCountLabel = document.getElementById('selected-count');
+    const btnBulkPranota = document.getElementById('btnBulkPranota');
+    const btnCancelSelection = document.getElementById('btnCancelSelection');
+
+    let selectedIds = [];
+
+    function updateBulkActions() {
+        const checkedBoxes = Array.from(itemCheckboxes).filter(cb => cb.checked);
+        selectedIds = checkedBoxes.map(cb => cb.value);
+
+        if (selectedCountLabel) {
+            selectedCountLabel.textContent = selectedIds.length;
+        }
+
+        if (bulkActions) {
+            if (selectedIds.length > 0) {
+                bulkActions.classList.remove('hidden');
+            } else {
+                bulkActions.classList.add('hidden');
+            }
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            itemCheckboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+            updateBulkActions();
+        });
+    }
+
+    itemCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            updateBulkActions();
+            if (selectAll) {
+                const allChecked = Array.from(itemCheckboxes).every(cb => cb.checked);
+                selectAll.checked = allChecked;
+                selectAll.indeterminate = !allChecked && selectedIds.length > 0;
+            }
+        });
+    });
+
+    if (btnCancelSelection) {
+        btnCancelSelection.addEventListener('click', function() {
+            itemCheckboxes.forEach(cb => {
+                cb.checked = false;
+            });
+            if (selectAll) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+            updateBulkActions();
+        });
+    }
+
+    if (btnBulkPranota) {
+        btnBulkPranota.addEventListener('click', function() {
+            if (selectedIds.length === 0) return;
+            openPranotaModal();
+        });
+    }
+
+    // Modal Functions
+    const getPranotaModal = () => document.getElementById('pranotaModal');
+
+    function openPranotaModal() {
+        const tbody = document.getElementById('pranota-items');
+        tbody.innerHTML = '';
+        
+        let totalBiaya = 0;
+        let count = 0;
+
+        itemCheckboxes.forEach(cb => {
+            if (cb.checked) {
+                count++;
+                const nama = cb.dataset.nama || '-';
+                const kode = cb.dataset.kode || '-';
+                const harga = parseFloat(cb.dataset.harga || 0);
+                const jumlah = parseFloat(cb.dataset.jumlah || 0);
+                const biaya = harga * jumlah;
+                totalBiaya += biaya;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap text-gray-500">${count}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="font-bold text-gray-900">${nama}</div>
+                        <div class="text-[10px] text-gray-400">Bukti: ${kode}</div>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-center font-bold text-gray-800">${jumlah.toLocaleString('id-ID')}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-indigo-600">Rp ${biaya.toLocaleString('id-ID')}</td>
+                `;
+                tbody.appendChild(row);
+            }
+        });
+
+        document.getElementById('total-count-display').textContent = count;
+        const totalDisplay = document.getElementById('total-biaya-display');
+        totalDisplay.dataset.original = totalBiaya;
+        updateTotalBiayaDisplay();
+
+        const modal = getPranotaModal();
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+        generateNomorPranota();
+    }
+
+    function closePranotaModal() {
+        const modal = getPranotaModal();
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    function updateTotalBiayaDisplay() {
+        const display = document.getElementById('total-biaya-display');
+        const original = parseFloat(display.dataset.original || 0);
+        const adj = parseFloat(document.getElementById('adjustment').value || 0);
+        const total = original + adj;
+        display.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+    }
+
+    const adjInput = document.getElementById('adjustment');
+    if (adjInput) {
+        adjInput.addEventListener('input', updateTotalBiayaDisplay);
+    }
+
+    function generateNomorPranota() {
+        const input = document.getElementById('nomor_pranota');
+        input.value = 'Generating...';
+        
+        fetch("{{ route('stock-amprahan.generate-nomor-pranota') }}", {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    input.value = data.nomor_pranota;
+                } else {
+                    alert(data.message || 'Gagal generate nomor');
+                    input.value = '';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                input.value = 'Error';
+            });
+    }
+
+    const btnConfirm = document.getElementById('btnConfirmPranota');
+    if (btnConfirm) {
+        btnConfirm.addEventListener('click', function() {
+            const nomor = document.getElementById('nomor_pranota').value;
+            const tanggal = document.getElementById('tanggal_pranota').value;
+            const accurate = document.getElementById('nomor_accurate').value;
+            const adj = document.getElementById('adjustment').value;
+            const ket = document.getElementById('keterangan_pranota').value;
+            
+            if (!nomor || nomor === 'Generating...' || nomor === 'Error') {
+                alert('Nomor pranota belum tersedia');
+                return;
+            }
+
+            const items = [];
+            itemCheckboxes.forEach(cb => {
+                if (cb.checked) {
+                    items.push({
+                        id: cb.value,
+                        nama: cb.dataset.nama,
+                        kode: cb.dataset.kode,
+                        harga: cb.dataset.harga,
+                        jumlah: cb.dataset.jumlah,
+                        satuan: cb.dataset.satuan
+                    });
+                }
+            });
+
+            const btn = this;
+            btn.disabled = true;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+
+            fetch("{{ route('stock-amprahan.masuk-pranota') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    nomor_pranota: nomor,
+                    tanggal_pranota: tanggal,
+                    nomor_accurate: accurate,
+                    adjustment: adj,
+                    keterangan: ket,
+                    items: items
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Terjadi kesalahan');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Terjadi kesalahan saat menghubungi server');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            });
+        });
+    }
+
+    window.onclick = function(event) {
+        const modal = getPranotaModal();
+        if (event.target == modal) {
+            closePranotaModal();
+        }
+    }
 </script>
+
+<!-- Modal Masuk Pranota -->
+<div id="pranotaModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 transition-opacity duration-300">
+    <div class="relative top-20 mx-auto p-8 border w-11/12 max-w-2xl shadow-2xl rounded-2xl bg-white">
+        <div class="mt-3">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+                <h3 class="text-xl font-bold text-gray-800">Konfirmasi Masuk Pranota</h3>
+                <button type="button" onclick="closePranotaModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="mt-6">
+                <p class="text-sm text-gray-600 leading-relaxed mb-6">Berikut adalah detail barang yang akan dimasukkan ke pranota. Semua barang yang telah Anda pilih akan diproses.</p>
+                
+                <div class="mb-6">
+                    <label for="nomor_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Nomor Pranota <span class="text-red-500">*</span>
+                    </label>
+                    <div class="flex gap-3">
+                        <div class="relative flex-1">
+                            <input type="text" id="nomor_pranota" name="nomor_pranota" required readonly
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700 font-medium"
+                                   placeholder="Loading nomor pranota...">
+                        </div>
+                        <button type="button" onclick="generateNomorPranota()" 
+                                class="px-5 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95"
+                                title="Generate nomor baru">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-gray-500 mt-2 font-medium">Format: PSA-MM-YY-000001 (auto-generate)</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="tanggal_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Tanggal <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="tanggal_pranota" name="tanggal_pranota" required
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
+                               value="{{ date('Y-m-d') }}">
+                    </div>
+                    <div>
+                        <label for="nomor_accurate" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Nomor Accurate
+                        </label>
+                        <input type="text" id="nomor_accurate" name="nomor_accurate"
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
+                               placeholder="Masukkan nomor accurate...">
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto rounded-xl border border-gray-200 mb-6 font-mono text-xs">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                                <th class="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider text-center">Jumlah</th>
+                                <th class="px-4 py-3 text-left font-bold text-gray-500 uppercase tracking-wider text-right">Biaya</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pranota-items" class="bg-white divide-y divide-gray-100">
+                            <!-- Items will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="flex flex-col gap-2 mb-6 border-t border-gray-100 pt-4">
+                    <div class="flex justify-between text-sm font-medium text-gray-600">
+                        <span>Total item yang dipilih:</span>
+                        <span id="total-count-display" class="font-bold text-gray-900">0</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold text-gray-900">
+                        <span>Total Biaya:</span>
+                        <span id="total-biaya-display" class="text-indigo-600">Rp 0</span>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label for="adjustment" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Adjustment (Opsional)
+                    </label>
+                    <input type="number" id="adjustment" name="adjustment"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                           placeholder="Masukkan nilai adjustment (bisa negatif)...">
+                    <p class="text-[11px] text-gray-500 mt-2 font-medium italic">Nilai ini akan ditambahkan ke total biaya. Gunakan nilai negatif for pengurangan.</p>
+                </div>
+
+                <div class="mb-2">
+                    <label for="keterangan_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Keterangan
+                    </label>
+                    <textarea id="keterangan_pranota" name="keterangan_pranota" rows="3"
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                              placeholder="Masukkan keterangan for pranota..."></textarea>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-8">
+                <button type="button" onclick="closePranotaModal()"
+                        class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-xl transition-all active:scale-95">
+                    Batal
+                </button>
+                <button type="button" id="btnConfirmPranota"
+                        class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Konfirmasi Masuk Pranota
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+

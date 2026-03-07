@@ -81,18 +81,26 @@
         
         operasionalSectionsContainer.appendChild(section);
         
-        // Add event listener for kapal change
+        // Add event listener for kapal change with Select2
         const kapalSelect = section.querySelector('.kapal-select-operasional');
         const voyageSelect = section.querySelector('.voyage-select-operasional');
 
-        kapalSelect.addEventListener('change', function() {
+        $(kapalSelect).select2({
+            placeholder: "-- Pilih Kapal --",
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        }).on('change', function() {
             loadVoyageForOperasional(this, voyageSelect);
         });
     }
 
     function removeOperasionalSection(index) {
         const section = document.querySelector(`.operasional-section[data-section-index="${index}"]`);
-        if (section) section.remove();
+        if (section) {
+            $(section).find('.kapal-select-operasional').select2('destroy');
+            section.remove();
+        }
         calculateTotalFromAllOperasionalSections();
     }
     
@@ -176,7 +184,7 @@
                  const sec = operasionalSectionsContainer.lastElementChild;
                  const sectionIndex = sec.getAttribute('data-section-index');
                  
-                 sec.querySelector('.kapal-select-operasional').value = data.kapal;
+                 $(sec.querySelector('.kapal-select-operasional')).val(data.kapal).trigger('change');
                  
                  const voySel = sec.querySelector('.voyage-select-operasional');
                  voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;

@@ -176,6 +176,7 @@
     window.removeLoloSection = function(index) {
         const section = document.querySelector(`.lolo-section[data-lolo-section-index="${index}"]`);
         if (section) {
+            $(section).find('.lolo-kapal-select').select2('destroy');
             section.remove();
             calculateTotalFromAllLoloSections();
         }
@@ -194,7 +195,12 @@
         const searchInput = section.querySelector('.lolo-kontainer-search');
         const adjInput = section.querySelector('.lolo-adjustment-input');
         
-        kapalSelect.addEventListener('change', async function() {
+        $(kapalSelect).select2({
+            placeholder: "-- Pilih Kapal --",
+            allowClear: true,
+            width: '100%',
+            minimumResultsForSearch: 0
+        }).on('change', async function() {
             const kapalName = this.value;
             voyageSelect.innerHTML = '<option value="">-- Memuat Voyage... --</option>';
             voyageSelect.disabled = true;
@@ -398,7 +404,7 @@
                         const section = addLoloSection();
                         const sIdx = section.getAttribute('data-lolo-section-index');
                         
-                        section.querySelector('.lolo-kapal-select').value = "{{ $detail->kapal }}";
+                        $(section.querySelector('.lolo-kapal-select')).val("{{ $detail->kapal }}").trigger('change');
                         section.querySelector('.lolo-lokasi-select').value = "{{ $detail->lokasi }}";
                         
                         // Populate vendors
