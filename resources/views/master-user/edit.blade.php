@@ -2129,6 +2129,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pranota Stock Amprahan --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pranota Stock Amprahan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-stock-amprahan.view') || (isset($userMatrixPermissions['pranota-stock-amprahan']['view']) && $userMatrixPermissions['pranota-stock-amprahan']['view']) || ($user && $user->can('pranota-stock-amprahan-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][create]" value="1" class="permission-checkbox" @if(old('permissions.pranota-stock-amprahan.create') || (isset($userMatrixPermissions['pranota-stock-amprahan']['create']) && $userMatrixPermissions['pranota-stock-amprahan']['create']) || ($user && $user->can('pranota-stock-amprahan-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][update]" value="1" class="permission-checkbox" @if(old('permissions.pranota-stock-amprahan.update') || (isset($userMatrixPermissions['pranota-stock-amprahan']['update']) && $userMatrixPermissions['pranota-stock-amprahan']['update']) || ($user && $user->can('pranota-stock-amprahan-edit'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][delete]" value="1" class="permission-checkbox" @if(old('permissions.pranota-stock-amprahan.delete') || (isset($userMatrixPermissions['pranota-stock-amprahan']['delete']) && $userMatrixPermissions['pranota-stock-amprahan']['delete']) || ($user && $user->can('pranota-stock-amprahan-delete'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][approve]" value="1" class="permission-checkbox" @if(old('permissions.pranota-stock-amprahan.approve') || (isset($userMatrixPermissions['pranota-stock-amprahan']['approve']) && $userMatrixPermissions['pranota-stock-amprahan']['approve']) || ($user && $user->can('pranota-stock-amprahan-approval'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][print]" value="1" class="permission-checkbox" @if(old('permissions.pranota-stock-amprahan.print') || (isset($userMatrixPermissions['pranota-stock-amprahan']['print']) && $userMatrixPermissions['pranota-stock-amprahan']['print']) || ($user && $user->can('pranota-stock-amprahan-print'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][export]" value="1" class="permission-checkbox" @if(old('permissions.pranota-stock-amprahan.export') || (isset($userMatrixPermissions['pranota-stock-amprahan']['export']) && $userMatrixPermissions['pranota-stock-amprahan']['export']) || ($user && $user->can('pranota-stock-amprahan-export'))) checked @endif></td>
+                            </tr>
+
                             {{-- Pranota Uang Rit --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">

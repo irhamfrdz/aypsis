@@ -1150,6 +1150,23 @@
                                 <td class="empty-cell text-center text-gray-400">-</td>
                             </tr>
 
+                            {{-- Pranota Stock Amprahan --}}
+                            <tr class="submodule-row" data-parent="aktivitas-lainnya">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pranota Stock Amprahan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-stock-amprahan][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
                             {{-- Pembayaran --}}
                             <tr class="module-row" data-module="pembayaran">
                                 <td class="module-header">
