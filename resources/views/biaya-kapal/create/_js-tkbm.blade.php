@@ -114,6 +114,18 @@
             loadVoyagesForTkbmSection(sectionIndex, this.value);
         });
 
+        // Setup voyage change listener to auto-fill barang similar to buruh logic
+        const voyageSelectEl = section.querySelector('.tkbm-voyage-select');
+        voyageSelectEl.addEventListener('change', function() {
+            const currentSection = this.closest('.tkbm-section');
+            const currentIndex = parseInt(currentSection.getAttribute('data-tkbm-section-index'));
+            const kapalNama = currentSection.querySelector('.tkbm-kapal-select').value;
+            const voyageValue = this.value;
+            if (kapalNama && voyageValue) {
+                autoFillBarangForTkbmSection(currentIndex, kapalNama, voyageValue);
+            }
+        });
+
         // Setup manual voyage toggle
         const voyageSelect = section.querySelector('.tkbm-voyage-select');
         const voyageInput = section.querySelector('.tkbm-voyage-input');
@@ -232,6 +244,117 @@
             calculateTotalFromAllTkbmSections();
         });
     };
+
+    // Add barang to TKBM section with pre-filled values
+    window.addBarangToTkbmSectionWithValue = function(sectionIndex, barangId, jumlah) {
+        const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.tkbm-barang-container');
+        const barangIndex = container.children.length;
+
+        let barangOptions = '<option value="">Pilih Nama Barang</option>';
+        pricelistTkbmData.forEach(pricelist => {
+            const selected = pricelist.id == barangId ? 'selected' : '';
+            // Use nama_barang or cargo field if present
+            const label = pricelist.nama_barang ?? pricelist.cargo ?? ('TKBM ' + pricelist.id);
+            barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif || pricelist.tarif_20f || 0}" ${selected}>${label}</option>`;
+        });
+
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-2 mb-2';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <select name="tkbm_sections[${sectionIndex}][barang][${barangIndex}][barang_id]" class="tkbm-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-amber-500" required>
+                    ${barangOptions}
+                </select>
+            </div>
+            <div class="w-24">
+                <input type="number" step="any" name="tkbm_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" value="${jumlah}" class="tkbm-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-amber-500" placeholder="0" required>
+            </div>
+            <button type="button" onclick="removeBarangFromTkbmSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                <i class="fas fa-trash text-xs"></i>
+            </button>
+        `;
+
+        container.appendChild(inputGroup);
+
+        // Add event listeners
+        const barangSelect = inputGroup.querySelector('.tkbm-barang-select-item');
+        const jumlahInput = inputGroup.querySelector('.tkbm-jumlah-input-item');
+
+        barangSelect.addEventListener('change', function() {
+            calculateTotalFromAllTkbmSections();
+        });
+
+        jumlahInput.addEventListener('input', function() {
+            calculateTotalFromAllTkbmSections();
+        });
+    };
+
+    // Auto-fill TKBM barang based on container counts similar to buruh logic
+    function autoFillBarangForTkbmSection(sectionIndex, kapalNama, voyage) {
+        const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.tkbm-barang-container');
+
+        // Show loading
+        container.innerHTML = '<div class="text-sm text-gray-500 italic py-2"><i class="fas fa-spinner fa-spin mr-2"></i>Menghitung kontainer...</div>';
+
+        fetch('{{ url("biaya-kapal/get-container-counts") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ kapal: kapalNama, voyage: voyage })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.counts) {
+                container.innerHTML = '';
+                let barangAdded = false;
+
+                // Map pricelistTkbm to container types heuristically
+                const pricelistIds = { '20_full': null, '20_empty': null, '40_full': null, '40_empty': null };
+                pricelistTkbmData.forEach(p => {
+                    const name = (p.nama_barang || p.cargo || '').toLowerCase();
+                    if (name.includes('20') && name.includes('full')) pricelistIds['20_full'] = p.id;
+                    if (name.includes('20') && name.includes('empty')) pricelistIds['20_empty'] = p.id;
+                    if (name.includes('40') && name.includes('full')) pricelistIds['40_full'] = p.id;
+                    if (name.includes('40') && name.includes('empty')) pricelistIds['40_empty'] = p.id;
+                });
+
+                if (data.counts['20'] && data.counts['20'].full > 0 && pricelistIds['20_full']) {
+                    addBarangToTkbmSectionWithValue(sectionIndex, pricelistIds['20_full'], data.counts['20'].full);
+                    barangAdded = true;
+                }
+                if (data.counts['20'] && data.counts['20'].empty > 0 && pricelistIds['20_empty']) {
+                    addBarangToTkbmSectionWithValue(sectionIndex, pricelistIds['20_empty'], data.counts['20'].empty);
+                    barangAdded = true;
+                }
+                if (data.counts['40'] && data.counts['40'].full > 0 && pricelistIds['40_full']) {
+                    addBarangToTkbmSectionWithValue(sectionIndex, pricelistIds['40_full'], data.counts['40'].full);
+                    barangAdded = true;
+                }
+                if (data.counts['40'] && data.counts['40'].empty > 0 && pricelistIds['40_empty']) {
+                    addBarangToTkbmSectionWithValue(sectionIndex, pricelistIds['40_empty'], data.counts['40'].empty);
+                    barangAdded = true;
+                }
+
+                if (!barangAdded) {
+                    addBarangToTkbmSection(sectionIndex);
+                }
+
+                calculateTotalFromAllTkbmSections();
+            } else {
+                container.innerHTML = '';
+                addBarangToTkbmSection(sectionIndex);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching container counts for TKBM:', error);
+            container.innerHTML = '';
+            addBarangToTkbmSection(sectionIndex);
+        });
+    }
     
     window.removeBarangFromTkbmSection = function(button) {
         const container = button.closest('.tkbm-barang-container');
