@@ -4,6 +4,31 @@
 @section('page_title', 'Edit Stock Amprahan')
 
 @section('content')
+@push('styles')
+<style>
+    .rounded-xl { border-radius: 0.75rem; }
+    .focus-ring-premium {
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+    }
+    .group:focus-within label i {
+        transform: scale(1.1);
+    }
+    label i {
+        transition: transform 0.2s ease;
+    }
+    .btn-submit-premium {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border: none;
+    }
+    .btn-submit-premium:hover {
+        background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+    }
+</style>
+@endpush
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto">
         {{-- Breadcrumb --}}
@@ -140,10 +165,10 @@
                         </div>
                     </div>
 
-                    <div class="mt-8 flex items-center justify-end space-x-4">
-                        <a href="{{ route('stock-amprahan.index') }}" class="px-6 py-2.5 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors">Batal</a>
-                        <button type="submit" class="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl shadow-md shadow-indigo-200 transition-all duration-200 focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2">
-                            Perbarui Stock
+                    <div class="pt-6 border-t border-gray-100 flex items-center justify-end space-x-4">
+                        <a href="{{ route('stock-amprahan.index') }}" class="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-800 transition-colors">Batal</a>
+                        <button type="submit" class="btn-submit-premium px-10 py-3 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95">
+                            <i class="fas fa-save mr-2"></i>Perbarui Stock
                         </button>
                     </div>
                 </form>
