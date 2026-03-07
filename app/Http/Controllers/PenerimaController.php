@@ -150,19 +150,12 @@ class PenerimaController extends Controller
 
     public function generateCode()
     {
-        // Cari nomor terakhir dari kode yang sudah ada dengan format MR
-        // MR = Master Receiver? Or Just R? Or MP (Master Penerima)? 
-        // Pengirim uses MP. Let's use MR for Penerima.
-        $lastCode = Penerima::where('kode', 'like', 'MR%')
-            ->orderBy('kode', 'desc')
-            ->first();
-
-        if ($lastCode) {
-            $lastNumber = (int) substr($lastCode->kode, 2);
-            $nextNumber = $lastNumber + 1;
-        } else {
-            $nextNumber = 1;
-        }
+        // Because the 'penerimas' table doesn't have a 'kode' column,
+        // we use the 'id' to generate a unique MR number.
+        // If we want a sequential number independent of ID, we might need to add the column.
+        // For now, let's use the max ID + 1.
+        $lastId = Penerima::max('id') ?: 0;
+        $nextNumber = $lastId + 1;
 
         return 'MR' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
@@ -195,9 +188,10 @@ class PenerimaController extends Controller
             'iu_bp_kawasan' => 'nullable|in:ada,tidak ada',
         ]);
 
-        $request->merge(['kode' => $this->generateCode()]);
+        $kode = $this->generateCode();
         
         $penerima = Penerima::create($request->all());
+        $penerima->kode = $kode; // Add virtual property for the success view
 
         if ($request->has('popup')) {
             // Return HTML with postMessage script for popup mode
