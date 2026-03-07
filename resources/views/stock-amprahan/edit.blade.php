@@ -27,6 +27,26 @@
     .btn-submit-premium:hover {
         background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
     }
+    /* Make form controls match the Create form appearance */
+    .max-w-2xl .p-8 input,
+    .max-w-2xl .p-8 select,
+    .max-w-2xl .p-8 textarea {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: #f8fafc; /* bg-gray-50 */
+        border: 1px solid #e5e7eb; /* border-gray-200 */
+        border-radius: 0.75rem; /* rounded-xl */
+        color: #374151; /* text-gray-700 */
+        box-shadow: none;
+    }
+    .max-w-2xl .p-8 input[readonly],
+    .max-w-2xl .p-8 input[disabled],
+    .max-w-2xl .p-8 textarea[readonly],
+    .max-w-2xl .p-8 select[disabled] {
+        background: #f3f4f6; /* lighter when readonly/disabled */
+        cursor: not-allowed;
+    }
 </style>
 @endpush
 <div class="container mx-auto px-4 py-8">
