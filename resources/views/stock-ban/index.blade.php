@@ -198,7 +198,7 @@
                      class="hidden absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-[100]">
                     <div class="py-1" role="none">
                         <a href="{{ route('stock-ban.create') }}" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2">
-                             <i class="fas fa-circle text-[8px] text-blue-500"></i> Ban Luar Reguler
+                             <i class="fas fa-circle text-[8px] text-blue-500"></i> Ban Luar Jakarta
                         </a>
                         <a href="{{ route('stock-ban-luar-batam.create') }}" class="text-gray-700 block px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 border-t border-gray-100">
                              <i class="fas fa-circle text-[8px] text-orange-500"></i> Ban Luar Batam
