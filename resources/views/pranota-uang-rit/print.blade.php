@@ -217,7 +217,20 @@
                     @foreach($supirDetails as $detail)
                     <tr>
                         <td class="text-center">{{ $no++ }}</td>
-                        <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
+                        @php
+                            $nik = null;
+                            if(!empty($detail->nik)) {
+                                $nik = $detail->nik;
+                            } elseif(!empty($detail->karyawan_nik)) {
+                                $nik = $detail->karyawan_nik;
+                            } else {
+                                $karyawan = \App\Models\Karyawan::where('nama_panggilan', $detail->supir_nama)
+                                    ->orWhere('nama_lengkap', $detail->supir_nama)
+                                    ->first();
+                                $nik = $karyawan ? $karyawan->nik : null;
+                            }
+                        @endphp
+                        <td class="text-center">{{ $nik ?? str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                         <td class="text-left">{{ strtoupper($detail->supir_nama) }}</td>
                         <td class="text-center">{{ $detail->total_uang_supir > 0 ? round($detail->total_uang_supir / 85000) : 0 }}</td>
                         <td class="text-right">{{ number_format($detail->total_uang_supir, 0, ',', '.') }}</td>
@@ -237,11 +250,16 @@
                     @foreach($uniqueSupir as $index => $supir)
                     @php
                         $totalUangSupir = $pranotaUangRit->uang_rit_supir / count($uniqueSupir);
+                        $supirName = trim($supir);
+                        $karyawan = \App\Models\Karyawan::where('nama_panggilan', $supirName)
+                            ->orWhere('nama_lengkap', $supirName)
+                            ->first();
+                        $nik = $karyawan ? $karyawan->nik : null;
                     @endphp
                     <tr>
                         <td class="text-center">{{ $no++ }}</td>
-                        <td class="text-center">{{ str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
-                        <td class="text-left">{{ strtoupper(trim($supir)) }}</td>
+                        <td class="text-center">{{ $nik ?? str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
+                        <td class="text-left">{{ strtoupper($supirName) }}</td>
                         <td class="text-center">{{ $totalUangSupir > 0 ? round($totalUangSupir / 85000) : 0 }}</td>
                         <td class="text-right">{{ number_format($totalUangSupir, 0, ',', '.') }}</td>
                         <td class="text-right">-</td>

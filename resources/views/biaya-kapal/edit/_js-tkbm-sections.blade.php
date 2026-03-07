@@ -156,6 +156,11 @@
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
+
+        // Add change listener for auto-fill when voyage changes
+        voyageSelect.addEventListener('change', function() {
+            loadBlDataForTkbmSection(sectionIndex, this.value);
+        });
         
         // Add first barang input
         addBarangToTkbmSection(sectionIndex);
@@ -203,8 +208,64 @@
                 voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
             });
     }
+
+    function loadBlDataForTkbmSection(sectionIndex, voyage) {
+        if (!voyage) return;
+
+        fetch("{{ url('biaya-kapal/get-bls-by-voyages') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ 
+                voyages: [voyage]
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.bls) {
+                const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
+                const container = section.querySelector('.tkbm-barang-container');
+                container.innerHTML = ''; // Clear existing barang rows
+
+                Object.values(data.bls).forEach(bl => {
+                    // Normalize BL data
+                    const blNamaBarang = (bl.nama_barang || '').trim().toUpperCase();
+                    const blSize = (bl.size || '').toString().toUpperCase().replace('FT', '');
+                    const blTipe = (bl.tipe || '').trim().toUpperCase();
+                    
+                    // Case 1: Explicit "Empty Container"
+                    if (blNamaBarang.includes('EMPTY CONTAINER')) {
+                        const targetName = blSize ? `KONTAINER ${blSize}FT EMPTY` : 'KONTAINER 20FT EMPTY';
+                        addBarangToTkbmSection(sectionIndex, targetName, 1);
+                        return;
+                    }
+
+                    // Case 2: Regular item auto-fill (skip common generic names)
+                    if (bl.nama_barang && !['---', '.', '-'].includes(blNamaBarang)) {
+                        addBarangToTkbmSection(sectionIndex, bl.nama_barang, 1);
+                    }
+                    
+                    // Case 3: Container size/type logic
+                    if (blSize && blSize !== '0') {
+                        let resolvedType = blTipe || 'FULL';
+                        if (blNamaBarang.includes('EMPTY')) resolvedType = 'EMPTY';
+                        
+                        const containerItemName = `KONTAINER ${blSize}FT ${resolvedType}`.toUpperCase();
+                        addBarangToTkbmSection(sectionIndex, containerItemName, 1);
+                    }
+                });
+
+                calculateTotalFromAllTkbmSections();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching BL data for TKBM:', error);
+        });
+    }
     
-    window.addBarangToTkbmSection = function(sectionIndex) {
+    window.addBarangToTkbmSection = function(sectionIndex, defaultBarangName = '', defaultJumlah = '') {
         const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.tkbm-barang-container');
         const barangIndex = container.children.length;
@@ -212,7 +273,20 @@
         // Use TKBM pricelist data instead of Buruh pricelist data
         let barangOptions = '<option value="">Pilih Nama Barang</option>';
         pricelistTkbmData.forEach(pricelist => {
-            barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}">${pricelist.nama_barang}</option>`;
+            const pricelistName = pricelist.nama_barang.toUpperCase();
+            const searchName = defaultBarangName.toUpperCase();
+            
+            // Smarter matching:
+            // 1. Exact match
+            // 2. Pricelist name is contained in the BL name (e.g. BL: "20FT EMPTY" matches PRICELIST: "KONTAINER 20FT EMPTY")
+            // 3. BL name is contained in the Pricelist name (e.g. BL: "CARGO" matches PRICELIST: "CARGO")
+            const isSelected = defaultBarangName && 
+                             (pricelistName === searchName || 
+                              pricelistName.includes(searchName) || 
+                              searchName.includes(pricelistName))
+                             ? 'selected' : '';
+            
+            barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}" ${isSelected}>${pricelist.nama_barang}</option>`;
         });
         
         const inputGroup = document.createElement('div');
@@ -224,7 +298,7 @@
                 </select>
             </div>
             <div class="w-24">
-                <input type="number" step="any" name="tkbm_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="tkbm-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-amber-500" placeholder="0" required>
+                <input type="number" step="any" name="tkbm_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="tkbm-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-amber-500" placeholder="0" value="${defaultJumlah}" required>
             </div>
             <button type="button" onclick="removeBarangFromTkbmSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
                 <i class="fas fa-trash text-xs"></i>

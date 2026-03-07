@@ -2783,7 +2783,7 @@ class BiayaKapalController extends Controller
 
             // Get BL data with kontainer and seal from bls table for the selected voyages
             $bls = DB::table('bls')
-                ->select('id', 'nomor_kontainer', 'no_seal', 'size_kontainer')
+                ->select('id', 'nomor_kontainer', 'no_seal', 'size_kontainer', 'nama_barang', 'tipe_kontainer')
                 ->whereIn('no_voyage', $voyages)
                 ->whereNotNull('nomor_kontainer')
                 ->where('nomor_kontainer', '!=', '')
@@ -2792,7 +2792,9 @@ class BiayaKapalController extends Controller
                     return [$bl->id => [
                         'kontainer' => $bl->nomor_kontainer ?? 'N/A',
                         'seal' => $bl->no_seal ?? 'N/A',
-                        'size' => $bl->size_kontainer ?? '20'
+                        'size' => $bl->size_kontainer ?? '20',
+                        'nama_barang' => $bl->nama_barang ?? '',
+                        'tipe' => $bl->tipe_kontainer ?? ''
                     ]];
                 });
 
