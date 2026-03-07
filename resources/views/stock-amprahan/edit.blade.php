@@ -45,7 +45,7 @@
                         <div>
                             <div class="flex items-center justify-between mb-1">
                                 <label for="master_nama_barang_amprahan_id" class="text-sm font-semibold text-gray-700">Type Barang <span class="text-red-500">*</span></label>
-                                <a href="{{ route('nama-barang-amprahan.create') }}" id="add_type_barang_link"
+                                <a href="{{ route('master.nama-barang-amprahan.create') }}" id="add_type_barang_link"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTypeBarangLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTypeBarangInput.value.trim();
-            let url = "{{ route('nama-barang-amprahan.create', [], false) }}";
+            let url = "{{ route('master.nama-barang-amprahan.create', [], false) }}";
 
             // Add popup parameter and nama_barang if available
             const params = new URLSearchParams();
