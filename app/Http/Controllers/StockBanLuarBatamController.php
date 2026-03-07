@@ -25,7 +25,7 @@ class StockBanLuarBatamController extends Controller
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
         $nextInvoice = StockBanLuarBatam::generateNextInvoice();
         
-        return view('stock-ban-luar-batam.create', compact('mobils', 'namaStockBans', 'merkBans', 'gudangs', 'masterGudangBans', 'karyawans', 'nextInvoice'));
+        return view('stock-ban-luar-batam.create', compact('mobils', 'namaStockBans', 'merkBans', 'masterGudangBans', 'karyawans', 'nextInvoice'));
     }
 
     /**
@@ -78,11 +78,10 @@ class StockBanLuarBatamController extends Controller
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
         $merkBans = MerkBan::orderBy('nama')->get();
-        $gudangs = Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
         
-        return view('stock-ban-luar-batam.edit', compact('stockBan', 'mobils', 'namaStockBans', 'merkBans', 'gudangs', 'masterGudangBans', 'karyawans'));
+        return view('stock-ban-luar-batam.edit', compact('stockBan', 'mobils', 'namaStockBans', 'merkBans', 'masterGudangBans', 'karyawans'));
     }
 
     /**
