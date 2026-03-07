@@ -184,10 +184,10 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
                         <div class="custom-select-container" id="lokasi-select-container">
-                            <input type="hidden" name="lokasi" id="lokasi" value="{{ old('lokasi', 'Batam') }}">
+                            <input type="hidden" name="lokasi" id="lokasi" value="{{ old('lokasi', 'Gudang Batam') }}">
                             <button type="button" id="lokasi-select-button" class="custom-select-button">
                                 <span id="lokasi-selected-text">
-                                    {{ old('lokasi', 'Batam') }}
+                                    {{ old('lokasi', 'Gudang Batam') }}
                                 </span>
                                 <i class="fas fa-chevron-down text-gray-400"></i>
                             </button>
@@ -198,7 +198,7 @@
                                 <div class="custom-select-options" id="lokasi-options-list">
                                     <div class="custom-select-option" data-value="" data-text="-- Pilih Lokasi --">-- Pilih Lokasi --</div>
                                     @foreach($masterGudangBans as $g)
-                                        <div class="custom-select-option" 
+                                        <div class="custom-select-option {{ old('lokasi', 'Gudang Batam') == $g->nama_gudang ? 'selected' : '' }}" 
                                              data-value="{{ $g->nama_gudang }}" 
                                              data-search="{{ strtolower($g->nama_gudang) }}"
                                              data-text="{{ $g->nama_gudang }}">

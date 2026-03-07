@@ -54,7 +54,7 @@ class StockBanLuarBatamController extends Controller
         $data = $request->all();
         $data['created_by'] = Auth::id();
         $data['status'] = 'Stok';
-        $data['lokasi'] = $request->lokasi ?? 'Batam';
+        $data['lokasi'] = $request->lokasi ?? 'Gudang Batam';
 
         // Handle merk_id from dropdown
         if ($request->filled('merk_id')) {
