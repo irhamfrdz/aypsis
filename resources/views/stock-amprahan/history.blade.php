@@ -23,22 +23,52 @@
                 @endif
             </p>
         </div>
-        <div class="mt-4 md:mt-0 flex space-x-2">
+        <div class="mt-4 md:mt-0 flex space-x-2 no-print">
             <a href="{{ route('stock-amprahan.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
                 Kembali ke Stock
             </a>
-            @if(isset($item))
-            <button type="button" onclick="window.print()" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+            <a href="{{ route('stock-amprahan.history.print', array_merge(request()->all(), ['id' => isset($item) ? $item->id : null])) }}" 
+               target="_blank"
+               class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                 </svg>
                 Cetak Laporan
-            </button>
-            @endif
+            </a>
         </div>
+    </div>
+
+    {{-- Filter Section --}}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8 no-print">
+        <form action="{{ url()->current() }}" method="GET" class="flex flex-col md:flex-row md:items-end gap-4">
+            <div class="flex-1">
+                <label for="from_date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" 
+                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+            </div>
+            <div class="flex-1">
+                <label for="to_date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" 
+                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+            </div>
+            <div class="flex space-x-2">
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    Filter
+                </button>
+                <a href="{{ url()->current() }}" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Reset
+                </a>
+            </div>
+        </form>
     </div>
 
     {{-- Stats Cards (If specific item) --}}
@@ -166,22 +196,10 @@
             </table>
         </div>
 
-        {{-- Pagination for All History --}}
-        @if(!isset($item) && $history->hasPages())
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
-            {{ $history->links() }}
-        </div>
-        @endif
+    @if(!isset($item) && $history->hasPages())
+    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 no-print">
+        {{ $history->links() }}
     </div>
+    @endif
 </div>
-
-<style>
-    @media print {
-        .no-print { display: none !important; }
-        body { background: white !important; }
-        .container { max-width: 100% !important; width: 100% !important; padding: 0 !important; }
-        .shadow-sm { shadow: none !important; }
-        .border { border-color: #eee !important; }
-    }
-</style>
 @endsection

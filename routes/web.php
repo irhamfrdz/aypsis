@@ -4689,8 +4689,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::post('stock-amprahan/{id}/usage', [\App\Http\Controllers\StockAmprahanController::class, 'storeUsage'])
         ->name('stock-amprahan.usage')
         ->middleware('can:stock-amprahan-update');
-    Route::get('stock-amprahan/{id}/history', [\App\Http\Controllers\StockAmprahanController::class, 'history'])->name('stock-amprahan.history')
-        ->middleware('can:stock-amprahan-view');
+    Route::get('stock-amprahan/history/print', [\App\Http\Controllers\StockAmprahanController::class, 'historyPrint'])->name('stock-amprahan.history.print')->middleware('can:stock-amprahan-view');
+    Route::get('stock-amprahan/{id}/history', [\App\Http\Controllers\StockAmprahanController::class, 'history'])->name('stock-amprahan.history')->middleware('can:stock-amprahan-view');
     Route::resource('stock-amprahan', \App\Http\Controllers\StockAmprahanController::class)
           ->names('stock-amprahan')
           ->middleware([
