@@ -130,13 +130,6 @@
                 </div>
                 <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Global</span>
             </div>
-            <div>
-                <p class="text-3xl font-black text-gray-800 tracking-tight">{{ number_format($stats['total_qty'], 0, ',', '.') }}</p>
-                <p class="text-[10px] font-bold text-gray-500 uppercase mt-1 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                    Total Quantity
-                </p>
-            </div>
         </div>
 
         {{-- Jakarta --}}
@@ -148,9 +141,6 @@
                     </svg>
                 </div>
                 <span class="text-[10px] font-black {{ request('lokasi') == 'KANTOR AYP JAKARTA' ? 'text-emerald-600' : 'text-gray-400' }} uppercase tracking-widest">Jakarta</span>
-            </div>
-            <div>
-                <p class="text-3xl font-black text-gray-800 tracking-tight">{{ number_format($stats['jakarta'], 0, ',', '.') }}</p>
             </div>
         </a>
 
@@ -164,9 +154,6 @@
                 </div>
                 <span class="text-[10px] font-black {{ request('lokasi') == 'KANTOR AYP BATAM' ? 'text-orange-600' : 'text-gray-400' }} uppercase tracking-widest">Batam</span>
             </div>
-            <div>
-                <p class="text-3xl font-black text-gray-800 tracking-tight">{{ number_format($stats['batam'], 0, ',', '.') }}</p>
-            </div>
         </a>
 
         {{-- Lainnya --}}
@@ -178,9 +165,6 @@
                     </svg>
                 </div>
                 <span class="text-[10px] font-black {{ request('lokasi') == 'LAINNYA' ? 'text-amber-600' : 'text-gray-400' }} uppercase tracking-widest">Lainnya</span>
-            </div>
-            <div>
-                <p class="text-3xl font-black text-gray-800 tracking-tight">{{ number_format($stats['lainnya'], 0, ',', '.') }}</p>
             </div>
         </a>
     </div>
