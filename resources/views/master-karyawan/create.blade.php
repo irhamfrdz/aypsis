@@ -843,7 +843,7 @@
                     btn.disabled = true;
                     btn.innerHTML = 'Memuat...';
 
-                    fetch('{{ route('karyawan.get-next-nik') }}', {
+                    fetch('{{ route('master.karyawan.get-next-nik') }}', {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
                     })
                     .then(function(response) {
