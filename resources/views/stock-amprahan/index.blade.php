@@ -140,7 +140,7 @@
                                 data-nama="{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}"
                                 data-kode="{{ $item->nomor_bukti ?? '-' }}"
                                 data-harga="{{ $item->harga_satuan ?? 0 }}"
-                                data-jumlah="{{ $item->jumlah ?? 0 }}"
+                                data-jumlah="{{ ($item->jumlah ?? 0) + ($item->usages_sum_jumlah ?? 0) }}"
                                 data-satuan="{{ $item->satuan ?? '-' }}"
                             >
                         </td>

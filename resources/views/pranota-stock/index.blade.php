@@ -67,9 +67,12 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        @can('pranota-stock-print')
                         <a href="{{ route('pranota-stock.print', $item->id) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 mr-3">
                             <i class="fas fa-print"></i> Cetak
                         </a>
+                        @endcan
+                        @can('pranota-stock-delete')
                         <form action="{{ route('pranota-stock.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota ini?')">
                             @csrf
                             @method('DELETE')
@@ -77,6 +80,7 @@
                                 <i class="fas fa-trash"></i> Hapus
                             </button>
                         </form>
+                        @endcan
                     </td>
                 </tr>
                 @empty

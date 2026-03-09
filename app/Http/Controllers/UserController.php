@@ -619,7 +619,8 @@ class UserController extends Controller
                 'tagihan-supir-vendor' => 'tagihan-supir-vendor',
                 'invoice-tagihan-vendor' => 'invoice-tagihan-vendor',
                 'pranota-invoice-vendor-supir' => 'pranota-invoice-vendor-supir',
-                'pembayaran-pranota-invoice-vendor-supir' => 'pembayaran-pranota-invoice-vendor-supir'
+                'pembayaran-pranota-invoice-vendor-supir' => 'pembayaran-pranota-invoice-vendor-supir',
+                'pranota-stock' => 'pranota-stock'
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -4109,6 +4110,26 @@ class UserController extends Controller
                                     $permissionIds[] = $fallbackPermission->id;
                                     $found = true;
                                 }
+                            }
+                        }
+                    }
+                    
+                    // Handle pranota-stock permissions explicitly
+                    if ($module === 'pranota-stock' && in_array($action, ['view', 'create', 'print', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'pranota-stock-view',
+                            'create' => 'pranota-stock-create',
+                            'print' => 'pranota-stock-print',
+                            'delete' => 'pranota-stock-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                                continue; // Skip to next action
                             }
                         }
                     }

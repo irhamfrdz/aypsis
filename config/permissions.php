@@ -71,6 +71,17 @@ return [
             'description' => 'Menu pembayaran pranota memo',
             'required' => true,
         ],
+        'pranota-stock' => [
+            'name' => 'Pranota Stock Amprahan',
+            'description' => 'Menu riwayat pranota stock amprahan',
+            'required' => true,
+            'sub_modules' => [
+                'pranota-stock-view' => 'View Riwayat',
+                'pranota-stock-create' => 'Buat Pranota',
+                'pranota-stock-print' => 'Cetak Pranota',
+                'pranota-stock-delete' => 'Hapus Pranota',
+            ]
+        ],
     ],
 
     'menu_permissions' => [
@@ -94,5 +105,8 @@ return [
 
         // Pembayaran Pranota Memo - butuh pembayaran-pranota-supir
         'pembayaran-pranota-supir' => ['pembayaran-pranota-supir'],
+
+        // Pranota Stock Amprahan - butuh pranota-stock-view
+        'pranota-stock' => ['pranota-stock-view'],
     ]
 ];
