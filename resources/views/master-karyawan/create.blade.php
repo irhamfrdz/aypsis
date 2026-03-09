@@ -86,7 +86,16 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
-                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }} bg-white" required value="{{ old('nik') }}" placeholder="Masukkan NIK">
+                        <div class="flex items-center gap-2 mt-1">
+                            <input type="text" name="nik" id="nik" class="block w-full rounded-md border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5" required value="{{ old('nik') }}" placeholder="Masukkan NIK">
+                            <button type="button" id="btnAmbilNik" title="Ambil NIK terakhir dari database"
+                                class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 whitespace-nowrap">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Auto NIK
+                            </button>
+                        </div>
                         <div id="nikError" class="text-xs text-red-600 mt-1 hidden">NIK wajib diisi</div>
                     </div>
 
@@ -823,6 +832,39 @@
 
                 noHpInput.addEventListener('blur', function() {
                     validateNoHp(this, noHpError);
+                });
+            }
+
+            // Tombol Ambil NIK Terakhir
+            const btnAmbilNik = document.getElementById('btnAmbilNik');
+            if (btnAmbilNik && nikInput) {
+                btnAmbilNik.addEventListener('click', function() {
+                    const btn = this;
+                    btn.disabled = true;
+                    btn.innerHTML = 'Memuat...';
+
+                    fetch('{{ route('karyawan.get-next-nik') }}', {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(function(response) {
+                        if (!response.ok) throw new Error('Gagal mengambil NIK');
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data.success && data.nik) {
+                            nikInput.value = data.nik;
+                            nikInput.dispatchEvent(new Event('input'));
+                        } else {
+                            alert('Gagal mengambil NIK: ' + (data.message || 'Terjadi kesalahan'));
+                        }
+                    })
+                    .catch(function(err) {
+                        alert('Gagal mengambil NIK: ' + err.message);
+                    })
+                    .finally(function() {
+                        btn.disabled = false;
+                        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> Auto NIK';
+                    });
                 });
             }
 

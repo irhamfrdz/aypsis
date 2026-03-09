@@ -11,7 +11,11 @@
 <div class="mt-3 flex items-center justify-between text-sm text-gray-600">
     <div class="flex items-center space-x-2">
         <span>Tampilkan</span>
-        <form method="GET" action="{{ route($routeName) }}" class="inline">
+        @php
+            $routeParameters = request()->route() ? request()->route()->parameters() : [];
+            $formAction = $routeName ? route($routeName, $routeParameters) : url()->current();
+        @endphp
+        <form method="GET" action="{{ $formAction }}" class="inline">
             {{-- Preserve existing search and sort parameters --}}
             @foreach(request()->query() as $key => $value)
                 @if($key !== 'per_page' && $key !== 'page')
