@@ -381,6 +381,9 @@ class StockAmprahanController extends Controller
                   });
             });
         }
+        if ($request->filled('lokasi')) {
+            $additionsQuery->where('lokasi', $request->lokasi);
+        }
 
         $additions = $additionsQuery->get()->map(function($item) {
             $totalUsage = $item->usages->sum('jumlah');
@@ -413,6 +416,11 @@ class StockAmprahanController extends Controller
         }
         if ($request->filled('to_date')) {
             $usagesQuery->whereDate('tanggal_pengambilan', '<=', $request->to_date);
+        }
+        if ($request->filled('lokasi')) {
+            $usagesQuery->whereHas('stockAmprahan', function($q) use ($request) {
+                $q->where('lokasi', $request->lokasi);
+            });
         }
 
         $usages = $usagesQuery->get()->map(function($usage) {
@@ -493,6 +501,9 @@ class StockAmprahanController extends Controller
                       });
                 });
             }
+            if ($request->filled('lokasi')) {
+                $additionsQuery->where('lokasi', $request->lokasi);
+            }
             $additions = $additionsQuery->get()->map(function($item) {
                 $totalUsage = $item->usages->sum('jumlah');
                 $initialStock = $item->jumlah + $totalUsage;
@@ -522,6 +533,11 @@ class StockAmprahanController extends Controller
         }
         if ($request->filled('to_date')) {
             $usagesQuery->whereDate('tanggal_pengambilan', '<=', $request->to_date);
+        }
+        if ($request->filled('lokasi')) {
+            $usagesQuery->whereHas('stockAmprahan', function($q) use ($request) {
+                $q->where('lokasi', $request->lokasi);
+            });
         }
 
         $usages = $usagesQuery->get()->map(function($usage) {

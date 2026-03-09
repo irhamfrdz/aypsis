@@ -54,6 +54,14 @@
                 <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" 
                     class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
             </div>
+            <div class="flex-1">
+                <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
+                <select name="lokasi" id="lokasi" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <option value="">Semua Lokasi</option>
+                    <option value="KANTOR AYP JAKARTA" {{ request('lokasi') == 'KANTOR AYP JAKARTA' ? 'selected' : '' }}>Jakarta</option>
+                    <option value="KANTOR AYP BATAM" {{ request('lokasi') == 'KANTOR AYP BATAM' ? 'selected' : '' }}>Batam</option>
+                </select>
+            </div>
             <div class="flex space-x-2">
                 <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,6 +112,7 @@
                         <th class="px-6 py-4 text-center">Tipe</th>
                         @if(!isset($item))
                         <th class="px-6 py-4 text-left">Nama Barang</th>
+                        <th class="px-6 py-4 text-left font-bold text-gray-700">Lokasi</th>
                         @endif
                         <th class="px-6 py-4 text-center">Jumlah</th>
                         <th class="px-6 py-4 text-left">Penerima</th>
@@ -137,9 +146,18 @@
                             @endif
                         </td>
                         @if(!isset($item))
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-semibold text-gray-900">{{ $usage->stockAmprahan->nama_barang ?? ($usage->stockAmprahan->masterNamaBarangAmprahan->nama_barang ?? '-') }}</div>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-bold italic">
+                            <div class="text-sm font-semibold text-gray-900">{{ $usage->nama_barang ?? ($usage->stockAmprahan->nama_barang ?? ($usage->stockAmprahan->masterNamaBarangAmprahan->nama_barang ?? '-')) }}</div>
                             <div class="text-xs text-gray-400">ID: #{{ str_pad($usage->stockAmprahan->id, 5, '0', STR_PAD_LEFT) }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-xs font-black">
+                            @php
+                                $lokasi = $usage->lokasi ?? ($usage->stockAmprahan->lokasi ?? '-');
+                                $colorClass = 'text-gray-500';
+                                if (strpos(strtoupper($lokasi), 'JAKARTA') !== false) $colorClass = 'text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded';
+                                if (strpos(strtoupper($lokasi), 'BATAM') !== false) $colorClass = 'text-orange-700 bg-orange-100 px-2 py-0.5 rounded';
+                            @endphp
+                            <span class="{{ $colorClass }} uppercase tracking-widest">{{ $lokasi == 'KANTOR AYP JAKARTA' ? 'JAKARTA' : ($lokasi == 'KANTOR AYP BATAM' ? 'BATAM' : $lokasi) }}</span>
                         </td>
                         @endif
                         <td class="px-6 py-4 whitespace-nowrap text-center">
