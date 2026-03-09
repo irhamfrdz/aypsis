@@ -113,9 +113,17 @@
                 <td>{{ $usage->penerima->nama_lengkap ?? '-' }}</td>
                 <td>
                     @if($usage->mobil) {{ $usage->mobil->nomor_polisi }}
-                    @elseif($usage->kapal) {{ $usage->kapal->nama_kapal }}
-                    @elseif($usage->alatBerat) {{ $usage->alatBerat->kode_alat }}
-                    @else - @endif
+                    @endif
+                    @if($usage->buntut) 
+                        {{ $usage->mobil ? ' / ' : '' }} {{ $usage->buntut->no_kir ?? $usage->buntut->nomor_polisi }} (Buntut)
+                    @endif
+                    @if($usage->kapal) 
+                        {{ ($usage->mobil || $usage->buntut) ? ' / ' : '' }} {{ $usage->kapal->nama_kapal }}
+                    @endif
+                    @if($usage->alatBerat) 
+                        {{ ($usage->mobil || $usage->buntut || $usage->kapal) ? ' / ' : '' }} {{ $usage->alatBerat->kode_alat }}
+                    @endif
+                    @if(!$usage->mobil && !$usage->buntut && !$usage->kapal && !$usage->alatBerat) - @endif
                 </td>
                 <td>{{ $usage->kilometer ?? '-' }}</td>
                 <td>{{ $usage->keterangan }}</td>

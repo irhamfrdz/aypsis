@@ -291,7 +291,7 @@
                                 @enderror
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {{-- Mobil --}}
                                 <div class="group">
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Mobil</label>
@@ -307,6 +307,27 @@
                                         <div id="dropdown_options_mobil" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
                                     </div>
                                     @error('mobil_id')
+                                        <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- Buntut --}}
+                                <div class="group">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Buntut</label>
+                                    <div class="dropdown-container-buntut relative">
+                                        <input type="text" id="search_buntut" placeholder="Cari buntut..." autocomplete="off"
+                                               class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                        <select name="buntut_id" id="buntut_id" class="hidden">
+                                            <option value="">-- Pilih Buntut --</option>
+                                            @foreach($mobils as $m)
+                                                <option value="{{ $m->id }}" {{ old('buntut_id') == $m->id ? 'selected' : '' }}>
+                                                    {{ $m->no_kir ?: ($m->nomor_polisi ?: 'No KIR: -') }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div id="dropdown_options_buntut" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
+                                    </div>
+                                    @error('buntut_id')
                                         <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -498,6 +519,13 @@ document.addEventListener('DOMContentLoaded', function() {
         searchId: 'search_mobil',
         dropdownId: 'dropdown_options_mobil',
         containerClass: 'dropdown-container-mobil'
+    });
+ 
+    createSearchableDropdown({
+        selectId: 'buntut_id',
+        searchId: 'search_buntut',
+        dropdownId: 'dropdown_options_buntut',
+        containerClass: 'dropdown-container-buntut'
     });
 
     createSearchableDropdown({

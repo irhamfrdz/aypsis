@@ -16,6 +16,7 @@ class StockAmprahanUsage extends Model
         'stock_amprahan_id',
         'penerima_id',
         'mobil_id',
+        'buntut_id',
         'kapal_id',
         'alat_berat_id',
         'kilometer',
@@ -42,6 +43,11 @@ class StockAmprahanUsage extends Model
     public function mobil()
     {
         return $this->belongsTo(Mobil::class, 'mobil_id');
+    }
+
+    public function buntut()
+    {
+        return $this->belongsTo(Mobil::class, 'buntut_id');
     }
 
     public function kapal()

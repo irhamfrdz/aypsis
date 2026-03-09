@@ -373,6 +373,36 @@
                                         </div>
 
                                         <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Buntut (Opsional)</label>
+                                            <div class="relative" id="buntut_dropdown">
+                                                <input type="hidden" name="buntut_id" id="buntut_id_hidden">
+                                                
+                                                <div class="relative">
+                                                    <input type="text" id="buntut_search_input" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white" placeholder="Pilih Buntut..." autocomplete="off">
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="toggleBuntutDropdown()">
+                                                        <svg class="h-5 w-5 transition-transform duration-200" id="buntut_dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+
+                                                <div id="buntut_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
+                                                    @if($mobils->count() > 0)
+                                                        @foreach($mobils as $buntut)
+                                                            <div class="buntut-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                                 data-value="{{ $buntut->id }}" 
+                                                                 data-name="{{ $buntut->no_kir }} {{ $buntut->nomor_polisi }}"
+                                                                 onclick="selectBuntut('{{ $buntut->id }}', '{{ $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-') }}')">
+                                                                <span class="block truncate font-medium">{{ $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-') }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                    <div id="buntut_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada buntut yang cocok</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Alat Berat (Opsional)</label>
                                             <div class="relative" id="alat_berat_dropdown">
                                                 <input type="hidden" name="alat_berat_id" id="alat_berat_id_hidden">
@@ -506,6 +536,7 @@
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buntut</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
                                                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alat Berat</th>
                                                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM</th>
@@ -571,7 +602,7 @@
     function openHistoryModal(id, name) {
         document.getElementById('historyModal').classList.remove('hidden');
         document.getElementById('historyItemName').textContent = name;
-        document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td></tr>';
+        document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="11" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td></tr>';
         
         // Update full history link
         const fullHistoryLink = document.getElementById('fullHistoryLink');
@@ -606,6 +637,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${item.type === 'Masuk' ? 'text-green-600' : 'text-orange-600'}">${item.type === 'Masuk' ? '+' : '-'}${item.jumlah}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.penerima}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.mobil || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.buntut || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kapal || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.alat_berat || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kilometer || '-'}</td>
@@ -721,6 +753,12 @@
         filterMobilOptions('');
         closeMobilDropdown();
 
+        // Reset buntut dropdown state
+        buntutHidden.value = '';
+        buntutInput.value = '';
+        filterBuntutOptions('');
+        closeBuntutDropdown();
+
         // Reset kapal dropdown state
         kapalHidden.value = '';
         kapalInput.value = '';
@@ -825,6 +863,15 @@
             }
         }
 
+        // Buntut Dropdown
+        const buntutDropdown = document.getElementById('buntut_dropdown');
+        if (buntutDropdown && !buntutDropdown.contains(e.target)) {
+            closeBuntutDropdown();
+            if (buntutInput.value === '') {
+                buntutHidden.value = '';
+            }
+        }
+
         // Kapal Dropdown
         const kapalDropdown = document.getElementById('kapal_dropdown');
         if (kapalDropdown && !kapalDropdown.contains(e.target)) {
@@ -843,6 +890,74 @@
             }
         }
     });
+
+    // SEARCHABLE DROPDOWN BUNTUT LOGIC
+    const buntutInput = document.getElementById('buntut_search_input');
+    const buntutList = document.getElementById('buntut_options_list');
+    const buntutHidden = document.getElementById('buntut_id_hidden');
+    const buntutDropdownArrow = document.getElementById('buntut_dropdown_arrow');
+    const buntutOptions = document.querySelectorAll('.buntut-option');
+    const buntutNoResults = document.getElementById('buntut_no_results');
+
+    function toggleBuntutDropdown() {
+        const isHidden = buntutList.classList.contains('hidden');
+        if (isHidden) {
+            openBuntutDropdown();
+        } else {
+            closeBuntutDropdown();
+        }
+    }
+
+    function openBuntutDropdown() {
+        buntutList.classList.remove('hidden');
+        buntutDropdownArrow.style.transform = 'rotate(180deg)';
+        buntutInput.focus();
+    }
+
+    function closeBuntutDropdown() {
+        buntutList.classList.add('hidden');
+        buntutDropdownArrow.style.transform = 'rotate(0deg)';
+    }
+
+    function selectBuntut(id, name) {
+        buntutHidden.value = id;
+        buntutInput.value = name;
+        closeBuntutDropdown();
+    }
+
+    buntutInput.addEventListener('focus', function() {
+        openBuntutDropdown();
+    });
+
+    buntutInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        filterBuntutOptions(value);
+        openBuntutDropdown();
+    });
+
+    // Add click event for dropdown arrow
+    document.getElementById('buntut_dropdown_arrow').addEventListener('click', function() {
+        toggleBuntutDropdown();
+    });
+
+    function filterBuntutOptions(value) {
+        let hasVisible = false;
+        buntutOptions.forEach(option => {
+            const name = option.getAttribute('data-name').toLowerCase();
+            if (name.includes(value)) {
+                option.classList.remove('hidden');
+                hasVisible = true;
+            } else {
+                option.classList.add('hidden');
+            }
+        });
+
+        if (!hasVisible) {
+            buntutNoResults.classList.remove('hidden');
+        } else {
+            buntutNoResults.classList.add('hidden');
+        }
+    }
 
     // SEARCHABLE DROPDOWN KAPAL LOGIC
     const kapalInput = document.getElementById('kapal_search_input');
