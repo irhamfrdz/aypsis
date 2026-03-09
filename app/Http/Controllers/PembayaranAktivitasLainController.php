@@ -305,59 +305,71 @@ class PembayaranAktivitasLainController extends Controller
             'nomor_accurate' => 'nullable|string',
         ]);
 
-        try {
-            DB::beginTransaction();
+        $maxAttempts = 3;
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            try {
+                DB::beginTransaction();
 
-            // Generate nomor pembayaran
-            $nomor = PembayaranAktivitasLain::generateNomor();
+                // Generate nomor pembayaran (uses lockForUpdate inside transaction)
+                $nomor = PembayaranAktivitasLain::generateNomor();
 
-            // Get selected invoices
-            $invoiceIds = $request->selected_invoices;
-            $invoices = InvoiceAktivitasLain::whereIn('id', $invoiceIds)->get();
-            
-            // Calculate total from selected invoices
-            $totalInvoice = $invoices->sum('total');
+                // Get selected invoices
+                $invoiceIds = $request->selected_invoices;
+                $invoices = InvoiceAktivitasLain::whereIn('id', $invoiceIds)->get();
+                
+                // Calculate total from selected invoices
+                $totalInvoice = $invoices->sum('total');
 
-            // Create payment record - save to pembayaran_aktivitas_lains table
-            $pembayaran = PembayaranAktivitasLain::create([
-                'nomor' => $nomor,
-                'nomor_accurate' => $validated['nomor_accurate'] ?? null,
-                'tanggal' => $validated['tanggal'],
-                'jenis_aktivitas' => $validated['jenis_aktivitas'] ?? 'Pembayaran Multiple Invoice',
-                'penerima' => $validated['penerima'] ?? 'Multiple',
-                'jumlah' => $validated['jumlah'],
-                'debit_kredit' => $validated['debit_kredit'],
-                'akun_coa_id' => $validated['akun_coa_id'],
-                'akun_bank_id' => $validated['akun_bank_id'],
-                'keterangan' => $validated['keterangan'] ?? 'Pembayaran dari ' . count($invoiceIds) . ' invoice',
-                'invoice_ids' => $validated['invoice_ids'],
-                'created_by' => Auth::id(),
-            ]);
-
-            // Attach invoices to payment with amount (many-to-many relationship)
-            foreach ($invoices as $invoice) {
-                $pembayaran->invoices()->attach($invoice->id, [
-                    'jumlah_dibayar' => $invoice->total,
+                // Create payment record - save to pembayaran_aktivitas_lains table
+                $pembayaran = PembayaranAktivitasLain::create([
+                    'nomor' => $nomor,
+                    'nomor_accurate' => $validated['nomor_accurate'] ?? null,
+                    'tanggal' => $validated['tanggal'],
+                    'jenis_aktivitas' => $validated['jenis_aktivitas'] ?? 'Pembayaran Multiple Invoice',
+                    'penerima' => $validated['penerima'] ?? 'Multiple',
+                    'jumlah' => $validated['jumlah'],
+                    'debit_kredit' => $validated['debit_kredit'],
+                    'akun_coa_id' => $validated['akun_coa_id'],
+                    'akun_bank_id' => $validated['akun_bank_id'],
+                    'keterangan' => $validated['keterangan'] ?? 'Pembayaran dari ' . count($invoiceIds) . ' invoice',
+                    'invoice_ids' => $validated['invoice_ids'],
+                    'created_by' => Auth::id(),
                 ]);
 
-                // Update invoice status
-                $invoice->update([
-                    'status' => 'paid',
-                ]);
+                // Attach invoices to payment with amount (many-to-many relationship)
+                foreach ($invoices as $invoice) {
+                    $pembayaran->invoices()->attach($invoice->id, [
+                        'jumlah_dibayar' => $invoice->total,
+                    ]);
+
+                    // Update invoice status
+                    $invoice->update([
+                        'status' => 'paid',
+                    ]);
+                }
+
+                // Create double book journal entries
+                $this->createDoubleBookJournalFromInvoice($pembayaran, $validated);
+
+                DB::commit();
+
+                return redirect()->route('pembayaran-aktivitas-lain.index')
+                    ->with('success', 'Pembayaran dari ' . count($invoiceIds) . ' invoice berhasil disimpan');
+
+            } catch (\Illuminate\Database\QueryException $e) {
+                DB::rollBack();
+                // Retry on duplicate nomor (race condition) up to $maxAttempts times
+                if ($e->errorInfo[1] === 1062 && $attempt < $maxAttempts) {
+                    continue;
+                }
+                return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
             }
-
-            // Create double book journal entries
-            $this->createDoubleBookJournalFromInvoice($pembayaran, $validated);
-
-            DB::commit();
-
-            return redirect()->route('pembayaran-aktivitas-lain.index')
-                ->with('success', 'Pembayaran dari ' . count($invoiceIds) . ' invoice berhasil disimpan');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
         }
+
+        return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: tidak dapat menghasilkan nomor unik setelah beberapa percobaan.');
     }
 
     public function store(Request $request)
