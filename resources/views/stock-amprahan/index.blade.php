@@ -100,44 +100,7 @@
     </h3>
 
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        {{-- Total Jenis --}}
-        <a href="{{ route('stock-amprahan.index') }}" class="group bg-gradient-to-br from-white to-blue-50/30 p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 {{ !request('lokasi') ? 'ring-2 ring-blue-500 bg-blue-50/50' : '' }}">
-            <div class="flex items-center justify-between mb-3">
-                <div class="p-2.5 rounded-lg {{ !request('lokasi') ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-blue-100 text-blue-600' }} group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                    </svg>
-                </div>
-                <span class="text-[10px] font-black {{ !request('lokasi') ? 'text-blue-600' : 'text-gray-400' }} uppercase tracking-widest">Semua</span>
-            </div>
-            <div>
-                <p class="text-3xl font-black text-gray-800 tracking-tight">{{ $stats['total_jenis'] }}</p>
-                <p class="text-[10px] font-bold text-gray-500 uppercase mt-1 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                    Jenis Barang
-                </p>
-            </div>
-        </a>
-
-        {{-- Total Qty --}}
-        <div class="bg-gradient-to-br from-white to-indigo-50/30 p-5 rounded-xl shadow-sm border border-gray-100 transition-all duration-300">
-            <div class="flex items-center justify-between mb-3">
-                <div class="p-2.5 rounded-lg bg-indigo-100 text-indigo-600 group-hover:scale-110 transition-transform duration-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Global</span>
-            </div>
-            <div>
-                <p class="text-3xl font-black text-gray-800 tracking-tight">{{ number_format($stats['total_qty'], 0, ',', '.') }}</p>
-                <p class="text-[10px] font-bold text-gray-500 uppercase mt-1 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                    Total Quantity
-                </p>
-            </div>
-        </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
 
         {{-- Jakarta --}}
         <a href="{{ route('stock-amprahan.index', ['lokasi' => 'KANTOR AYP JAKARTA']) }}" class="group bg-gradient-to-br from-white to-emerald-50/30 p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 {{ request('lokasi') == 'KANTOR AYP JAKARTA' ? 'ring-2 ring-emerald-500 bg-emerald-50/50' : '' }}">
