@@ -158,15 +158,14 @@
         }
 
         .footer {
-            margin-top: 5px;
-            padding-top: 5px;
+            margin-top: 30px;
         }
         
         .signatures {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 5px;
+            gap: 20px;
+            margin-top: 40px;
         }
         
         .signature-box {
@@ -176,9 +175,9 @@
         }
         
         .signature-line {
-            margin-top: 25px;
+            margin-top: 85px;
             border-top: 1px solid #333;
-            padding-top: 2px;
+            padding-top: 5px;
             font-weight: bold;
         }
 
@@ -375,7 +374,7 @@
         </div>
 
         <!-- Signature Section -->
-        <div class="footer">
+        <div class="footer" style="margin-top: 40px;">
             <table style="width: 100%; border-collapse: collapse; text-align: center;">
                 <tr>
                     <td style="width: 33.33%;"><strong>Dibuat Oleh:</strong></td>
@@ -383,9 +382,9 @@
                     <td style="width: 33.33%;"><strong>Disetujui Oleh:</strong></td>
                 </tr>
                 <tr>
-                    <td style="height: 40px;"></td>
-                    <td style="height: 40px;"></td>
-                    <td style="height: 40px;"></td>
+                    <td style="height: 85px;"></td>
+                    <td style="height: 85px;"></td>
+                    <td style="height: 85px;"></td>
                 </tr>
                 <tr>
                     <td>( {{ $biayaKapal->creator->name ?? '__________' }} )</td>

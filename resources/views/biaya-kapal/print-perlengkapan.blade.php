@@ -145,10 +145,10 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            margin-top: 28px;
+            margin-top: 40px;
         }
         .sig-box { text-align: center; }
-        .sig-box .title { font-weight: normal; margin-bottom: 52px; font-size: {{ $currentPaper['fontSize'] }}; }
+        .sig-box .title { font-weight: normal; margin-bottom: 85px; font-size: {{ $currentPaper['fontSize'] }}; }
         .sig-box .line  { border-top: 1px solid #000; width: 80%; margin: 0 auto 3px; }
         .sig-box .name  { font-size: {{ $currentPaper['fontSize'] }}; }
 

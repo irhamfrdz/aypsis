@@ -158,26 +158,26 @@
         }
 
         .footer {
-            margin-top: 15px;
-            padding-top: 10px;
+            margin-top: 30px;
+            padding-top: 15px;
         }
         
         .signatures {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 12px;
+            gap: 20px;
+            margin-top: 25px;
         }
         
         .signature-box {
             text-align: center;
-            font-size: 10px;
+            font-size: 11px;
         }
         
         .signature-line {
-            margin-top: 50px;
+            margin-top: 85px;
             border-top: 1px solid #333;
-            padding-top: 3px;
+            padding-top: 5px;
             font-weight: bold;
         }
 

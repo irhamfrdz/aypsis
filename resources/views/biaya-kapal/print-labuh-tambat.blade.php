@@ -398,7 +398,7 @@
         </div>
         
         <!-- FOOTER SIGNATURES -->
-        <div class="footer">
+        <div class="footer" style="margin-top: 40px;">
             <table class="signature-table">
                 <tr>
                     <td><strong>Dibuat Oleh:</strong></td>
@@ -406,9 +406,9 @@
                     <td><strong>Disetujui Oleh:</strong></td>
                 </tr>
                 <tr>
-                    <td style="height: 40px;"></td>
-                    <td style="height: 40px;"></td>
-                    <td style="height: 40px;"></td>
+                    <td style="height: 85px;"></td>
+                    <td style="height: 85px;"></td>
+                    <td style="height: 85px;"></td>
                 </tr>
                 <tr>
                     <td>( {{ $biayaKapal->creator->name ?? '__________' }} )</td>

@@ -217,14 +217,14 @@
         }
 
         .footer {
-            margin-top: 12px;
+            margin-top: 35px;
             clear: both;
         }
 
         .signatures {
             display: flex;
             justify-content: space-between;
-            margin-top: 12px;
+            margin-top: 40px;
         }
 
         .signature-box {
@@ -233,16 +233,16 @@
 
         .signature-box .title {
             font-weight: bold;
-            margin-bottom: 30px;
+            margin-bottom: 85px;
             font-size: {{ $currentPaper['fontSize'] }};
         }
 
         .signature-box .name {
             font-weight: bold;
             border-top: 1px solid #000;
-            padding-top: 2px;
+            padding-top: 5px;
             display: inline-block;
-            min-width: 120px;
+            min-width: 140px;
             font-size: {{ $currentPaper['fontSize'] }};
         }
 

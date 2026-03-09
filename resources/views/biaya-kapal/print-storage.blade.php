@@ -180,7 +180,7 @@
         }
 
         .footer {
-            margin-top: 20px;
+            margin-top: 30px;
             clear: both;
         }
 
@@ -188,8 +188,8 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            margin-top: 30px;
-            margin-bottom: 20px;
+            margin-top: 40px;
+            margin-bottom: 25px;
         }
 
         .signature-box {
@@ -198,7 +198,7 @@
 
         .signature-box .title {
             font-weight: normal;
-            margin-bottom: 60px;
+            margin-bottom: 85px;
             font-size: {{ $currentPaper['fontSize'] }};
         }
 
