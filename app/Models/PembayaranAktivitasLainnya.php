@@ -94,7 +94,9 @@ class PembayaranAktivitasLainnya extends Model
         $month = date('m');
         $prefix = "PMS{$year}{$month}";
 
-        $lastRecord = self::where('nomor_pembayaran', 'like', $prefix . '%')
+        $lastRecord = self::withTrashed()
+            ->where('nomor_pembayaran', 'like', $prefix . '%')
+            ->lockForUpdate()
             ->orderBy('nomor_pembayaran', 'desc')
             ->first();
 

@@ -100,7 +100,9 @@ class PembayaranInvoiceAktivitasLain extends Model
         $month = date('m');
         $prefix = "PIAL/{$year}/{$month}/";
         
-        $lastRecord = self::where('nomor', 'like', $prefix . '%')
+        $lastRecord = self::withTrashed()
+            ->where('nomor', 'like', $prefix . '%')
+            ->lockForUpdate()
             ->orderBy('nomor', 'desc')
             ->first();
 

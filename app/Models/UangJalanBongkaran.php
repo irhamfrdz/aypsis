@@ -139,8 +139,9 @@ class UangJalanBongkaran extends Model
         
         // Ambil nomor urut terakhir dari semua record (tidak filter berdasarkan bulan/tahun)
         // Urutkan berdasarkan nomor uang jalan untuk mendapatkan running number terbesar
-        $lastRecord = static::whereNotNull('nomor_uang_jalan')
+        $lastRecord = static::withTrashed()->whereNotNull('nomor_uang_jalan')
                            ->where('nomor_uang_jalan', 'LIKE', 'UJB%')
+                           ->lockForUpdate()
                            ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
                            ->first();
         
