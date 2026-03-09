@@ -34,15 +34,39 @@ class StockAmprahanController extends Controller
                   });
             });
         }
+
+        if ($request->filled('lokasi')) {
+            $lokasi = $request->lokasi;
+            if ($lokasi === 'LAINNYA') {
+                $query->where(function($q) {
+                    $q->whereNotIn('lokasi', ['KANTOR AYP JAKARTA', 'KANTOR AYP BATAM'])
+                      ->orWhereNull('lokasi');
+                });
+            } else {
+                $query->where('lokasi', $lokasi);
+            }
+        }
         
-        $items = $query->paginate(20);
+        $items = $query->paginate(20)->withQueryString();
             
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils', 'alatBerats', 'kapals', 'search'));
+        // Stats for Cards
+        $stats = [
+            'total_qty' => StockAmprahan::sum('jumlah'),
+            'total_jenis' => StockAmprahan::count(),
+            'jakarta' => StockAmprahan::where('lokasi', 'KANTOR AYP JAKARTA')->sum('jumlah'),
+            'batam' => StockAmprahan::where('lokasi', 'KANTOR AYP BATAM')->sum('jumlah'),
+            'lainnya' => StockAmprahan::where(function($q) {
+                $q->whereNotIn('lokasi', ['KANTOR AYP JAKARTA', 'KANTOR AYP BATAM'])
+                  ->orWhereNull('lokasi');
+            })->sum('jumlah'),
+        ];
+
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils', 'alatBerats', 'kapals', 'search', 'stats'));
     }
 
     public function create()
