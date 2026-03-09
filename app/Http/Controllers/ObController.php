@@ -2305,6 +2305,7 @@ class ObController extends Controller
                 ->get();
         }
 
+        $fileName = 'OB_Data_' . str_replace(['/', '\\', ' '], '_', $namaKapal) . '_Voy_' . str_replace(['/', '\\', ' '], '_', $noVoyage) . '.xlsx';
         return Excel::download(new ObExport($data, $namaKapal, $noVoyage), $fileName);
     }
 
