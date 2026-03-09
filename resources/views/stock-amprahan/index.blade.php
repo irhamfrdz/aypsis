@@ -443,6 +443,7 @@
                                         <thead class="bg-gray-50">
                                             <tr>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
@@ -455,7 +456,7 @@
                                         </thead>
                                         <tbody id="historyTableBody" class="bg-white divide-y divide-gray-200">
                                             <tr>
-                                                <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
+                                                <td colspan="10" class="px-6 py-4 text-center text-sm text-gray-500">Memuat data...</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -530,15 +531,20 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat pengambilan</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="10" class="px-6 py-4 text-center text-sm text-gray-500">Belum ada riwayat aktivitas</td></tr>';
                     return;
                 }
 
                 data.forEach(item => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.tanggal}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.jumlah}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-l-4 ${item.type === 'Masuk' ? 'border-green-500' : 'border-orange-500'}">${item.tanggal}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${item.type === 'Masuk' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}">
+                                ${item.type}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${item.type === 'Masuk' ? 'text-green-600' : 'text-orange-600'}">${item.type === 'Masuk' ? '+' : '-'}${item.jumlah}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.penerima}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.mobil || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kapal || '-'}</td>
@@ -552,7 +558,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="9" class="px-6 py-4 text-center text-sm text-red-500">Gagal memuat data</td></tr>';
+                document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="10" class="px-6 py-4 text-center text-sm text-red-500">Gagal memuat data</td></tr>';
             });
     }
 

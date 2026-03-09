@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Pemakaian Stock Amprahan')
-@section('page_title', 'Riwayat Pemakaian')
+@section('title', 'Riwayat Stock Amprahan')
+@section('page_title', 'Riwayat Stock')
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
@@ -10,16 +10,16 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-800">
                 @if(isset($item))
-                    Riwayat Pemakaian: {{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? 'Barang') }}
+                    Riwayat Activity: {{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? 'Barang') }}
                 @else
-                    Semua Riwayat Pemakaian Stock Amprahan
+                    Semua Riwayat Stock Amprahan
                 @endif
             </h1>
             <p class="text-gray-500 text-sm mt-1">
                 @if(isset($item))
-                    Daftar lengkap pengambilan untuk item ini.
+                    Daftar lengkap penambahan dan pengambilan untuk item ini.
                 @else
-                    Daftar lengkap seluruh aktivitas pengambilan barang dari stock amprahan.
+                    Daftar lengkap seluruh aktivitas penambahan dan pengambilan barang dari stock amprahan.
                 @endif
             </p>
         </div>
@@ -49,16 +49,16 @@
             <p class="text-2xl font-bold text-gray-800 mt-1">{{ number_format($item->jumlah, 0, ',', '.') }} {{ $item->satuan }}</p>
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Pemakaian</p>
-            <p class="text-2xl font-bold text-indigo-600 mt-1">{{ number_format($usages->sum('jumlah'), 0, ',', '.') }} {{ $item->satuan }}</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Masuk</p>
+            <p class="text-2xl font-bold text-green-600 mt-1">{{ number_format($history->where('type', 'Masuk')->sum('jumlah'), 0, ',', '.') }} {{ $item->satuan }}</p>
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Frekuensi Ambil</p>
-            <p class="text-2xl font-bold text-gray-800 mt-1">{{ $usages->count() }} Kali</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Keluar</p>
+            <p class="text-2xl font-bold text-orange-600 mt-1">{{ number_format($history->where('type', 'Keluar')->sum('jumlah'), 0, ',', '.') }} {{ $item->satuan }}</p>
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi Simpan</p>
-            <p class="text-2xl font-bold text-gray-800 mt-1">{{ $item->lokasi ?? '-' }}</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Aktivitas</p>
+            <p class="text-2xl font-bold text-gray-800 mt-1">{{ $history->count() }} Kali</p>
         </div>
     </div>
     @endif
@@ -71,6 +71,7 @@
                     <tr>
                         <th class="px-6 py-4 text-left">No</th>
                         <th class="px-6 py-4 text-left">Tanggal</th>
+                        <th class="px-6 py-4 text-center">Tipe</th>
                         @if(!isset($item))
                         <th class="px-6 py-4 text-left">Nama Barang</th>
                         @endif
@@ -85,13 +86,24 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
-                    @forelse($usages as $usage)
+                    @forelse($history as $usage)
                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $loop->iteration }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-l-4 border-transparent hover:border-indigo-500">
-                            {{ date('d M Y', strtotime($usage->tanggal_pengambilan)) }}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-l-4 {{ $usage->type == 'Masuk' ? 'border-green-500' : 'border-orange-500' }}">
+                            {{ date('d M Y', strtotime($usage->tanggal_raw)) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            @if($usage->type == 'Masuk')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                    MASUK
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-800">
+                                    KELUAR
+                                </span>
+                            @endif
                         </td>
                         @if(!isset($item))
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -100,11 +112,12 @@
                         </td>
                         @endif
                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold bg-amber-100 text-amber-800">
-                                {{ number_format($usage->jumlah, 0, ',', '.') }} {{ $item->satuan ?? ($usage->stockAmprahan->satuan ?? '') }}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold {{ $usage->type == 'Masuk' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700' }}">
+                                {{ $usage->type == 'Masuk' ? '+' : '-' }}{{ number_format($usage->jumlah, 0, ',', '.') }} {{ $item->satuan ?? ($usage->stockAmprahan->satuan ?? '') }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
+                            @if($usage->penerima->nama_lengkap != '-')
                             <div class="flex items-center">
                                 <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center mr-3">
                                     <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -113,6 +126,9 @@
                                 </div>
                                 <div class="text-sm font-medium text-gray-900">{{ $usage->penerima->nama_lengkap ?? '-' }}</div>
                             </div>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $usage->mobil ? ($usage->mobil->nomor_polisi . ' - ' . $usage->mobil->merek) : '-' }}
@@ -136,12 +152,12 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="{{ isset($item) ? 10 : 11 }}" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="{{ isset($item) ? 11 : 12 }}" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
-                                <p class="text-sm">Belum ada riwayat pengambilan barang.</p>
+                                <p class="text-sm">Belum ada riwayat aktivitas barang.</p>
                             </div>
                         </td>
                     </tr>
@@ -151,9 +167,9 @@
         </div>
 
         {{-- Pagination for All History --}}
-        @if(!isset($item) && $usages->hasPages())
+        @if(!isset($item) && $history->hasPages())
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
-            {{ $usages->links() }}
+            {{ $history->links() }}
         </div>
         @endif
     </div>

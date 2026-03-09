@@ -13,6 +13,7 @@ use App\Models\MasterKapal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class StockAmprahanController extends Controller
 {
@@ -237,42 +238,133 @@ class StockAmprahanController extends Controller
     }
     public function history(Request $request, $id)
     {
-        $item = StockAmprahan::with('masterNamaBarangAmprahan')->findOrFail($id);
-        $usages = StockAmprahanUsage::with(['penerima', 'mobil', 'kapal', 'alatBerat', 'createdBy'])
-            ->where('stock_amprahan_id', $id)
-            ->latest('tanggal_pengambilan')
-            ->get();
+        $item = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'usages'])->findOrFail($id);
+        
+        // Calculate initial stock (current amount + all usages)
+        $totalUsage = $item->usages->sum('jumlah');
+        $initialStock = $item->jumlah + $totalUsage;
+
+        // Addition record (initial purchase)
+        $addition = (object)[
+            'type' => 'Masuk',
+            'is_addition' => true,
+            'id' => $item->id,
+            'tanggal' => $item->tanggal_beli ? $item->tanggal_beli->format('Y-m-d') : $item->created_at->format('Y-m-d'),
+            'tanggal_raw' => $item->tanggal_beli ?? $item->created_at,
+            'jumlah' => $initialStock,
+            'keterangan' => 'Stock Masuk: ' . ($item->nomor_bukti ? 'Bukti #' . $item->nomor_bukti : 'Awal'),
+            'penerima' => (object)['nama_lengkap' => '-'],
+            'mobil' => null,
+            'kapal' => null,
+            'alatBerat' => null,
+            'kilometer' => '-',
+            'createdBy' => $item->createdBy,
+            'stockAmprahan' => $item
+        ];
+
+        // Usage records
+        $usages = $item->usages()->with(['penerima', 'mobil', 'kapal', 'alatBerat', 'createdBy'])
+            ->get()
+            ->map(function($usage) {
+                $usage->type = 'Keluar';
+                $usage->is_addition = false;
+                $usage->tanggal = $usage->tanggal_pengambilan;
+                $usage->tanggal_raw = $usage->tanggal_pengambilan;
+                return $usage;
+            });
+
+        // Combine and sort
+        $combined = collect([$addition])->concat($usages)->sortByDesc(function($item) {
+            return $item->tanggal_raw;
+        })->values();
 
         if ($request->ajax()) {
-            $formattedUsages = $usages->map(function ($usage) {
-                $mobilInfo = $usage->mobil ? ($usage->mobil->nomor_polisi . ' - ' . $usage->mobil->merek) : '-';
-                $kapalInfo = $usage->kapal ? $usage->kapal->nama_kapal : '-';
-                $alatBeratInfo = $usage->alatBerat ? ($usage->alatBerat->kode_alat . ' - ' . $usage->alatBerat->nama . ($usage->alatBerat->merk ? ' - ' . $usage->alatBerat->merk : '')) : '-';
+            $formatted = $combined->map(function ($entry) {
+                $mobilInfo = $entry->mobil ? ($entry->mobil->nomor_polisi . ' - ' . $entry->mobil->merek) : '-';
+                $kapalInfo = $entry->kapal ? $entry->kapal->nama_kapal : '-';
+                $alatBeratInfo = $entry->alatBerat ? ($entry->alatBerat->kode_alat . ' - ' . $entry->alatBerat->nama . ($entry->alatBerat->merk ? ' - ' . $entry->alatBerat->merk : '')) : '-';
+                
                 return [
-                    'tanggal' => date('d-m-Y', strtotime($usage->tanggal_pengambilan)),
-                    'jumlah' => $usage->jumlah,
-                    'penerima' => $usage->penerima->nama_lengkap ?? '-',
+                    'type' => $entry->type,
+                    'is_addition' => $entry->is_addition,
+                    'tanggal' => date('d-m-Y', strtotime($entry->tanggal_raw)),
+                    'jumlah' => $entry->jumlah,
+                    'penerima' => $entry->penerima->nama_lengkap ?? '-',
                     'mobil' => $mobilInfo,
                     'kapal' => $kapalInfo,
                     'alat_berat' => $alatBeratInfo,
-                    'kilometer' => $usage->kilometer ?? '-',
-                    'keterangan' => $usage->keterangan,
-                    'created_by' => $usage->createdBy->name ?? '-',
+                    'kilometer' => $entry->kilometer ?? '-',
+                    'keterangan' => $entry->keterangan,
+                    'created_by' => $entry->createdBy->name ?? '-',
                 ];
             });
-            return response()->json($formattedUsages);
+            return response()->json($formatted);
         }
 
-        return view('stock-amprahan.history', compact('item', 'usages'));
+        return view('stock-amprahan.history', [
+            'item' => $item,
+            'history' => $combined,
+            'usages' => $combined // Still pass as 'usages' for minimal view changes if needed, but renamed to 'history' is better
+        ]);
     }
 
-    public function allHistory()
+    public function allHistory(Request $request)
     {
-        $usages = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'mobil', 'kapal', 'alatBerat', 'createdBy'])
-            ->latest('tanggal_pengambilan')
-            ->paginate(20);
+        // Get all additions
+        $additions = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'usages'])
+            ->get()
+            ->map(function($item) {
+                $totalUsage = $item->usages->sum('jumlah');
+                $initialStock = $item->jumlah + $totalUsage;
+                
+                return (object)[
+                    'type' => 'Masuk',
+                    'is_addition' => true,
+                    'id' => $item->id,
+                    'tanggal' => $item->tanggal_beli ? $item->tanggal_beli->format('Y-m-d') : $item->created_at->format('Y-m-d'),
+                    'tanggal_raw' => $item->tanggal_beli ?? $item->created_at,
+                    'jumlah' => $initialStock,
+                    'keterangan' => 'Stock Masuk: ' . ($item->nomor_bukti ? 'Bukti #' . $item->nomor_bukti : 'Awal'),
+                    'penerima' => (object)['nama_lengkap' => '-'],
+                    'mobil' => null,
+                    'kapal' => null,
+                    'alatBerat' => null,
+                    'kilometer' => '-',
+                    'createdBy' => $item->createdBy,
+                    'stockAmprahan' => $item
+                ];
+            });
 
-        return view('stock-amprahan.history', compact('usages'));
+        // Get all usages
+        $usages = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'mobil', 'kapal', 'alatBerat', 'createdBy'])
+            ->get()
+            ->map(function($usage) {
+                $usage->type = 'Keluar';
+                $usage->is_addition = false;
+                $usage->tanggal_raw = $usage->tanggal_pengambilan;
+                return $usage;
+            });
+
+        // Combine and sort
+        $combined = $additions->concat($usages)->sortByDesc(function($item) {
+            return $item->tanggal_raw;
+        })->values();
+
+        // Manual Pagination
+        $perPage = 20;
+        $page = $request->input('page', 1);
+        $paginated = new \Illuminate\Pagination\LengthAwarePaginator(
+            $combined->forPage($page, $perPage),
+            $combined->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('stock-amprahan.history', [
+            'history' => $paginated,
+            'usages' => $paginated // Pass as both to avoid breaking view for now
+        ]);
     }
     public function generateNomorPranota()
     {
