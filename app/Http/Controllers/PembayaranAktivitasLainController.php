@@ -384,37 +384,50 @@ class PembayaranAktivitasLainController extends Controller
             'akun_bank_id' => 'required|exists:akun_coa,id',
         ]);
 
-        try {
-            DB::beginTransaction();
+        $maxAttempts = 3;
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            try {
+                DB::beginTransaction();
 
-            // Generate nomor pembayaran
-            $validated['nomor'] = PembayaranAktivitasLain::generateNomor();
-            $validated['created_by'] = Auth::id();
+                // Generate nomor pembayaran (uses lockForUpdate inside transaction)
+                $validated['nomor'] = PembayaranAktivitasLain::generateNomor();
+                $validated['created_by'] = Auth::id();
 
-            // Create main payment record
-            $pembayaran = PembayaranAktivitasLain::create($validated);
+                // Create main payment record
+                $pembayaran = PembayaranAktivitasLain::create($validated);
 
-            // Implement Double Book Accounting
-            $this->createDoubleBookJournal($pembayaran, $validated);
+                // Implement Double Book Accounting
+                $this->createDoubleBookJournal($pembayaran, $validated);
 
-            // Logic to delete Prospek record if "Pembayaran Adjusment Uang Jalan" and "pengembalian penuh"
-            if ($validated['jenis_aktivitas'] === 'Pembayaran Adjusment Uang Jalan' && 
-                ($validated['jenis_penyesuaian'] ?? null) === 'pengembalian penuh') {
-                
-                if (!empty($validated['no_surat_jalan'])) {
-                    \App\Models\Prospek::where('no_surat_jalan', $validated['no_surat_jalan'])->delete();
+                // Logic to delete Prospek record if "Pembayaran Adjusment Uang Jalan" and "pengembalian penuh"
+                if ($validated['jenis_aktivitas'] === 'Pembayaran Adjusment Uang Jalan' && 
+                    ($validated['jenis_penyesuaian'] ?? null) === 'pengembalian penuh') {
+                    
+                    if (!empty($validated['no_surat_jalan'])) {
+                        \App\Models\Prospek::where('no_surat_jalan', $validated['no_surat_jalan'])->delete();
+                    }
                 }
+
+                DB::commit();
+
+                return redirect()->route('pembayaran-aktivitas-lain.index')
+                    ->with('success', 'Data pembayaran berhasil disimpan dengan jurnal double book accounting' . 
+                        (($validated['jenis_aktivitas'] === 'Pembayaran Adjusment Uang Jalan' && ($validated['jenis_penyesuaian'] ?? null) === 'pengembalian penuh') ? ' dan Data Prospek dihapus' : ''));
+
+            } catch (\Illuminate\Database\QueryException $e) {
+                DB::rollBack();
+                // Retry on duplicate nomor (race condition) up to $maxAttempts times
+                if ($e->errorInfo[1] === 1062 && $attempt < $maxAttempts) {
+                    continue;
+                }
+                return back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
             }
+        }
 
-            DB::commit();
-
-            return redirect()->route('pembayaran-aktivitas-lain.index')
-                ->with('success', 'Data pembayaran berhasil disimpan dengan jurnal double book accounting' . 
-                    (($validated['jenis_aktivitas'] === 'Pembayaran Adjusment Uang Jalan' && ($validated['jenis_penyesuaian'] ?? null) === 'pengembalian penuh') ? ' dan Data Prospek dihapus' : ''));
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
-    }
+        return back()->withInput()->with('error', 'Gagal menyimpan data: tidak dapat menghasilkan nomor unik setelah beberapa percobaan.');
 }
 
     /**

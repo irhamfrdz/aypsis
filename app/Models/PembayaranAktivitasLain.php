@@ -84,7 +84,11 @@ class PembayaranAktivitasLain extends Model
         $month = date('m');
         $prefix = "PAL/{$year}/{$month}/";
         
+        // lockForUpdate() ensures that inside an active DB transaction no other
+        // concurrent request can read the same last record before we insert ours,
+        // preventing duplicate-nomor race conditions.
         $lastRecord = self::where('nomor', 'like', $prefix . '%')
+            ->lockForUpdate()
             ->orderBy('nomor', 'desc')
             ->first();
 
