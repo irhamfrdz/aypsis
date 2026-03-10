@@ -40,6 +40,7 @@ class AlatBeratImport implements ToCollection, WithHeadingRow, WithValidation
             AlatBerat::create([
                 'kode_alat'  => $kodeAlat,
                 'nama'       => $row['nama'],
+                'nickname'   => $row['nickname'] ?? null,
                 'jenis'      => $row['jenis'] ?? null,
                 'merk'       => $row['merk'] ?? null,
                 'tipe'       => $row['tipe'] ?? null,

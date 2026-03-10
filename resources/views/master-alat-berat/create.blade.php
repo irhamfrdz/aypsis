@@ -34,6 +34,12 @@
                 <input type="text" name="nama" id="nama" value="{{ old('nama') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Contoh: Excavator PC200" required>
             </div>
 
+            <!-- Nickname -->
+            <div>
+                <label for="nickname" class="block text-sm font-medium text-gray-700">Nickname</label>
+                <input type="text" name="nickname" id="nickname" value="{{ old('nickname') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Contoh: EX-01">
+            </div>
+
             <!-- Warna -->
             <div>
                 <label for="warna" class="block text-sm font-medium text-gray-700">Warna</label>

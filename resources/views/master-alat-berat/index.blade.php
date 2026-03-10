@@ -48,7 +48,7 @@
                     <input type="text" 
                            name="search" 
                            value="{{ request('search') }}" 
-                           placeholder="Cari nama, kode, merk..." 
+                           placeholder="Cari nama, kode, nickname, merk..." 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                            autocomplete="off">
                 </div>
@@ -77,6 +77,7 @@
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nickname</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merk/Tipe</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapasitas</th>
@@ -94,6 +95,7 @@
                         <td class="py-2 px-3 text-sm">{{ $alatBerats->firstItem() + $index }}</td>
                         <td class="py-2 px-3 font-mono text-xs">{{ $item->kode_alat }}</td>
                         <td class="py-2 px-3 text-sm font-medium text-gray-900">{{ $item->nama }}</td>
+                        <td class="py-2 px-3 text-sm text-gray-700">{{ $item->nickname ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $item->jenis }}</td>
                         <td class="py-2 px-3 text-sm">
                             {{ $item->merk }} 
@@ -142,7 +144,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="12" class="py-8 px-3 text-center text-gray-500">
+                        <td colspan="13" class="py-8 px-3 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center">
                                 <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>

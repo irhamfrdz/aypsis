@@ -15,6 +15,7 @@ class AlatBerat extends Model
     protected $fillable = [
         'kode_alat',
         'nama',
+        'nickname',
         'warna',
         'jenis',
         'merk',

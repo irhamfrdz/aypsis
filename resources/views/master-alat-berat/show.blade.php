@@ -54,6 +54,10 @@
                         <dt class="text-sm font-medium text-gray-500">Nama Alat</dt>
                         <dd class="mt-1 text-sm text-gray-900 font-medium">{{ $alatBerat->nama }}</dd>
                     </div>
+                    <div class="sm:col-span-2">
+                        <dt class="text-sm font-medium text-gray-500">Nickname</dt>
+                        <dd class="mt-1 text-sm text-gray-900 font-semibold">{{ $alatBerat->nickname ?? '-' }}</dd>
+                    </div>
                     <div class="sm:col-span-1">
                         <dt class="text-sm font-medium text-gray-500">Jenis</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ $alatBerat->jenis ?? '-' }}</dd>

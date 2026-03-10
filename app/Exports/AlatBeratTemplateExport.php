@@ -15,6 +15,7 @@ class AlatBeratTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
         return [
             'kode_alat',
             'nama',
+            'nickname',
             'jenis',
             'merk',
             'tipe',
@@ -33,6 +34,7 @@ class AlatBeratTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
             [
                 '(Kosongkan = Auto)', // kode_alat example
                 'Contoh Alat Berat', // nama
+                'AB-01', // nickname example
                 'Excavator', // jenis
                 'Komatsu', // merk
                 'PC200-8', // tipe

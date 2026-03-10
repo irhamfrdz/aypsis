@@ -18,6 +18,7 @@ class AlatBeratController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nickname', 'like', "%{$search}%")
                   ->orWhere('kode_alat', 'like', "%{$search}%")
                   ->orWhere('merk', 'like', "%{$search}%")
                   ->orWhere('tipe', 'like', "%{$search}%")
@@ -52,6 +53,7 @@ class AlatBeratController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255',
+            'nickname' => 'nullable|string|max:255',
             'jenis' => 'nullable|string|max:255',
             'merk' => 'nullable|string|max:255',
             'tipe' => 'nullable|string|max:255',
@@ -100,6 +102,7 @@ class AlatBeratController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255',
+            'nickname' => 'nullable|string|max:255',
             'jenis' => 'nullable|string|max:255',
             'merk' => 'nullable|string|max:255',
             'tipe' => 'nullable|string|max:255',
