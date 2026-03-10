@@ -5,66 +5,66 @@
 @push('styles')
 <style>
     @page {
-        size: 21.5cm 16.5cm; /* Half folio size (setengah folio) */
-        margin: 1cm;
+        size: landscape; /* Use landscape for wide tables */
+        margin: 0.5cm;
     }
     
     @media print {
         body {
-            width: 21.5cm;
-            height: 16.5cm;
+            width: 100%;
+            height: auto;
         }
         .print-container {
             width: 100%;
-            height: 100%;
         }
     }
     
-    /* Adjust font sizes for smaller paper */
+    /* Adjust font sizes for better fit */
     .print-container h2 {
-        font-size: 14px;
+        font-size: 18px;
     }
     .print-container p, .print-container td, .print-container th {
-        font-size: 10px;
-    }
-    .print-container table {
-        font-size: 11px;
+        font-size: 9px;
     }
     
     /* Pertebal border table */
     .print-container table,
     .print-container table th,
     .print-container table td {
-        border: 2px solid #000 !important;
+        border: 1px solid #000 !important;
         border-collapse: collapse;
-    }
-    .print-container table {
-        border: 3px solid #000 !important;
+        padding: 2px 4px !important;
     }
     
     /* Pertebal border untuk semua elemen table */
     table.border-collapse,
     table.border-collapse th,
     table.border-collapse td {
-        border: 2px solid #000 !important;
+        border: 1px solid #000 !important;
     }
 </style>
 @endpush
 
 @section('content')
-    <div class="p-2 bg-white print-container">
+    <div class="p-1 bg-white print-container">
         <div style="margin-bottom: 4px;">
-            <h2 class="font-bold" style="margin: 0 0 2px 0; font-size: 24px;">Pranota OB</h2>
-            <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
-            <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
-            <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Tanggal OB: {{ $pranota->tanggal_ob ? \Carbon\Carbon::parse($pranota->tanggal_ob)->format('d/m/Y') : '-' }}</p>
-            @if($pranota->nomor_accurate)
-                <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Nomor Accurate: {{ $pranota->nomor_accurate }}</p>
-            @endif
+            <h2 class="font-bold" style="margin: 0 0 2px 0;">Pranota OB</h2>
+            <div style="display: flex; gap: 20px;">
+                <div>
+                    <p class="font-bold" style="margin: 0; line-height: 1.2;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
+                    <p class="font-bold" style="margin: 0; line-height: 1.2;">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-bold" style="margin: 0; line-height: 1.2;">Tanggal OB: {{ $pranota->tanggal_ob ? \Carbon\Carbon::parse($pranota->tanggal_ob)->format('d/m/Y') : '-' }}</p>
+                    @if($pranota->nomor_accurate)
+                        <p class="font-bold" style="margin: 0; line-height: 1.2;">Nomor Accurate: {{ $pranota->nomor_accurate }}</p>
+                    @endif
+                </div>
+            </div>
         </div>
 
         <div class="mb-2">
-            <h4 class="font-medium" style="margin: 0 0 2px 0; font-size: 10px;">Ringkasan Per Supir</h4>
+            <h4 class="font-medium" style="margin: 0 0 2px 0; font-size: 9px;">Ringkasan Per Supir</h4>
             @php
                     // Hanya tampilkan supir yang memiliki nama (exclude TL / Perusahaan / kosong / '-' dll)
                     $normalizeName = function($n) {
@@ -84,6 +84,10 @@
                         return $k !== '' && $k !== 'perusahaan';
                     })->toArray();
 
+                    $supirCount = count($filteredPerSupirCounts);
+                    $tableFontSize = $supirCount > 10 ? '7px' : ($supirCount > 6 ? '8px' : '9px');
+                    $tablePadding = $supirCount > 6 ? '1px 2px' : '2px 4px';
+
                     // Calculate totals from filtered data before rendering table
                     $totalFull20 = 0;
                     $totalEmpty20 = 0;
@@ -99,36 +103,36 @@
 
                     $grandTotalKontainer = $totalFull20 + $totalEmpty20 + $totalFull40 + $totalEmpty40;
                 @endphp
-            <table class="min-w-full table-auto border-collapse" style="font-size: 10px;">
+            <table class="min-w-full table-auto border-collapse" style="font-size: {{ $tableFontSize }};">
                 <thead>
                     <tr>
-                        <th class="border px-2 py-1 text-center" rowspan="2"></th>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;" rowspan="2"></th>
                         @foreach($filteredPerSupirCounts as $supirName => $counts)
-                            <th class="border px-2 py-1 text-center" colspan="2">{{ $supirName }}</th>
+                            <th class="border text-center" style="padding: {{ $tablePadding }} !important; max-width: 60px; word-wrap: break-word;" colspan="2">{{ $supirName }}</th>
                         @endforeach
-                        <th class="border px-2 py-1 text-center" colspan="2">TOTAL</th>
-                        <th class="border px-2 py-1 text-center" rowspan="2">JUMLAH</th>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;" colspan="2">TOTAL</th>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;" rowspan="2">JUMLAH</th>
                     </tr>
                     <tr>
                         @foreach($filteredPerSupirCounts as $supirName => $counts)
-                            <th class="border px-2 py-1 text-center">FULL</th>
-                            <th class="border px-2 py-1 text-center">EMPTY</th>
+                            <th class="border text-center" style="padding: {{ $tablePadding }} !important;">F</th>
+                            <th class="border text-center" style="padding: {{ $tablePadding }} !important;">E</th>
                         @endforeach
-                        <th class="border px-2 py-1 text-center">FULL</th>
-                        <th class="border px-2 py-1 text-center">EMPTY</th>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;">F</th>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;">E</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{-- Baris 20" --}}
                     <tr>
-                        <td class="border px-2 py-1 text-center">20"</td>
+                        <td class="border text-center" style="padding: {{ $tablePadding }} !important;">20"</td>
                         @foreach($filteredPerSupirCounts as $supirName => $counts)
                             @php
                                 $full20 = $counts['sizes']['20']['full'] ?? 0;
                                 $empty20 = $counts['sizes']['20']['empty'] ?? 0;
                             @endphp
-                            <td class="border px-2 py-1 text-center">{{ $full20 > 0 ? $full20 : '-' }}</td>
-                            <td class="border px-2 py-1 text-center">{{ $empty20 > 0 ? $empty20 : '-' }}</td>
+                            <td class="border text-center" style="padding: {{ $tablePadding }} !important;">{{ $full20 > 0 ? $full20 : '-' }}</td>
+                            <td class="border text-center" style="padding: {{ $tablePadding }} !important;">{{ $empty20 > 0 ? $empty20 : '-' }}</td>
                         @endforeach
                         <td class="border px-2 py-1 text-center">{{ $totalFull20 > 0 ? $totalFull20 : '-' }}</td>
                         <td class="border px-2 py-1 text-center">{{ $totalEmpty20 > 0 ? $totalEmpty20 : '-' }}</td>
