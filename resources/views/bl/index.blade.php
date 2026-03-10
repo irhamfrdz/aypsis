@@ -74,6 +74,12 @@
                         </div>
                     </div>
                     <div class="flex gap-2">
+                        @can('bl-edit')
+                        <button type="button" onclick="bulkUpdateSize(event)" 
+                           class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                            <i class="fas fa-sync-alt mr-2"></i> Update Size
+                        </button>
+                        @endcan
                         <a href="{{ route('bl.export', request()->all()) }}" 
                            class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
                             <i class="fas fa-file-excel mr-2"></i> Download Excel
@@ -723,6 +729,7 @@
             (val) => ({ nomor_bl: val })
         );
         
+        
         // 2. Size Kontainer
         setupInlineEditor(
             '.size-kontainer-container', 
@@ -735,7 +742,57 @@
             (val) => ({ size_kontainer: val })
         );
         
-
     });
+
+    // 3. Bulk Update Size
+    window.bulkUpdateSize = function(event) {
+        const shipName = "{{ request('nama_kapal') }}";
+        const voyage = "{{ request('no_voyage') }}";
+        
+        if (!shipName || !voyage) {
+            alert('Filter kapal dan voyage harus aktif untuk menggunakan fitur ini.');
+            return;
+        }
+
+        if (!confirm(`Apakah Anda yakin ingin memperbarui size kontainer untuk kapal "${shipName}" voyage "${voyage}"? Data akan diambil dari table stock_kontainers dan kontainers.`)) {
+            return;
+        }
+
+        // Show loading
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+
+        fetch("{{ route('bl.bulk-update-size') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                nama_kapal: shipName,
+                no_voyage: voyage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Gagal: ' + (data.message || 'Terjadi kesalahan sistem.'));
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Terjadi kesalahan sistem.');
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        });
+    };
 </script>
 @endpush

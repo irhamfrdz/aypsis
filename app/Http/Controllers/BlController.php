@@ -386,6 +386,76 @@ class BlController extends Controller
     }
 
     /**
+     * Bulk update size kontainer for BLs based on kapal and voyage
+     */
+    public function bulkUpdateSize(Request $request)
+    {
+        $user = Auth::user();
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-edit")
+                ->exists();
+            if (!$hasPermission) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+        }
+
+        $request->validate([
+            'nama_kapal' => 'required|string',
+            'no_voyage' => 'required|string',
+        ]);
+
+        try {
+            $nama_kapal = $request->nama_kapal;
+            $no_voyage = $request->no_voyage;
+
+            $bls = Bl::where('nama_kapal', $nama_kapal)
+                ->where('no_voyage', $no_voyage)
+                ->get();
+
+            $updatedCount = 0;
+            foreach ($bls as $bl) {
+                if (!$bl->nomor_kontainer) continue;
+                
+                $ukuran = null;
+                
+                // Seek in StockKontainer
+                $stock = StockKontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)->first();
+                if ($stock) {
+                    $ukuran = $stock->ukuran;
+                }
+
+                if (!$ukuran) {
+                    // Seek in Kontainer
+                    $kontainer = Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)->first();
+                    if ($kontainer) {
+                        $ukuran = $kontainer->ukuran;
+                    }
+                }
+
+                if ($ukuran && $bl->size_kontainer != $ukuran) {
+                    $bl->update(['size_kontainer' => $ukuran]);
+                    $updatedCount++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil memperbarui {$updatedCount} size kontainer.",
+                'updated_count' => $updatedCount
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in bulkUpdateSize: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Validate containers for bulk operations
      */
     public function validateContainers(Request $request)

@@ -4845,11 +4845,13 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                
           Route::post('bl/get-pt-pengirim', [\App\Http\Controllers\BlController::class, 'getPtPengirim'])->name('bl.get-pt-pengirim')
                ->middleware('can:bl-edit');
-               
-          Route::post('bl/bulk-split', [\App\Http\Controllers\BlController::class, 'bulkSplit'])->name('bl.bulk-split')
-               ->middleware('can:bl-edit');
-               
-          Route::get('bl-api/by-kapal-voyage', [\App\Http\Controllers\BlController::class, 'getByKapalVoyage'])->name('bl.api.by-kapal-voyage')
+                         Route::post('bl/bulk-split', [\App\Http\Controllers\BlController::class, 'bulkSplit'])->name('bl.bulk-split')
+                ->middleware('can:bl-edit');
+                
+           Route::post('bl/bulk-update-size', [\App\Http\Controllers\BlController::class, 'bulkUpdateSize'])->name('bl.bulk-update-size')
+                ->middleware('can:bl-edit');
+                
+           Route::get('bl-api/by-kapal-voyage', [\App\Http\Controllers\BlController::class, 'getByKapalVoyage'])->name('bl.api.by-kapal-voyage')
                ->middleware('can:bl-view');
                
           Route::delete('bl/{bl}', [\App\Http\Controllers\BlController::class, 'destroy'])->name('bl.destroy')
