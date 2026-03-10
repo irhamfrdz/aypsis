@@ -615,4 +615,30 @@ class SuratJalan extends Model
     {
         return $this->hasMany(Prospek::class, 'surat_jalan_id');
     }
+
+    /**
+     * Get vendor invoice/pranota status
+     */
+    public function getVendorInvoiceStatusAttribute()
+    {
+        $tagihan = $this->tagihanSupirVendor;
+        if (!$tagihan) {
+            return 'belum_tagihan';
+        }
+
+        if (!$tagihan->invoice_tagihan_vendor_id) {
+            return 'sudah_tagihan';
+        }
+
+        $invoice = $tagihan->invoice;
+        if (!$invoice) {
+            return 'sudah_invoice'; // Fallback if invoice_id exists but relation failed
+        }
+
+        if ($invoice->pranota_invoice_vendor_supir_id) {
+            return 'sudah_pranota';
+        }
+
+        return 'sudah_invoice';
+    }
 }

@@ -85,7 +85,7 @@ class SuratJalanController extends Controller
             $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
         }
 
-        $suratJalans = $query->with('order')
+        $suratJalans = $query->with(['order', 'tagihanSupirVendor.invoice'])
                     ->withCount('pranotaUangRit')
                             ->orderBy('created_at', 'desc')
                             ->orderBy('tanggal_surat_jalan', 'desc')

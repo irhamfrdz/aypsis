@@ -201,6 +201,7 @@ use Illuminate\Support\Str;
                             
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Status<div class="resize-handle"></div></th>
                             <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28" style="position: relative;">Pembayaran<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28" style="position: relative;">Pranota Vendor<div class="resize-handle"></div></th>
                             <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Aksi</th>
                         </tr>
                     </thead>
@@ -392,6 +393,28 @@ use Illuminate\Support\Str;
                                     </span>
                                 @endif
                             </td>
+                            <td class="px-2 py-2 whitespace-nowrap">
+                                @php
+                                    $vendorStatus = $suratJalan->vendor_invoice_status;
+                                @endphp
+                                @if($vendorStatus == 'sudah_pranota')
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800" title="No Invoice: {{ $suratJalan->tagihanSupirVendor->invoice->no_invoice ?? '-' }}">
+                                        Sudah Pranota
+                                    </span>
+                                @elseif($vendorStatus == 'sudah_invoice')
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800" title="No Invoice: {{ $suratJalan->tagihanSupirVendor->invoice->no_invoice ?? '-' }}">
+                                        Sudah Invoice
+                                    </span>
+                                @elseif($vendorStatus == 'sudah_tagihan')
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Sudah Tagihan
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 text-center block w-full">
+                                        -
+                                    </span>
+                                @endif
+                            </td>
                             <td class="px-2 py-2 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center space-x-2">
                                     {{-- Tombol Detail --}}
@@ -453,7 +476,7 @@ use Illuminate\Support\Str;
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="15" class="px-6 py-8 text-center text-sm text-gray-500">
+                            <td colspan="16" class="px-6 py-8 text-center text-sm text-gray-500">
                                 <div class="flex flex-col items-center justify-center py-8">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
