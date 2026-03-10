@@ -42,39 +42,24 @@
         border: 3px solid #000 !important;
     }
     
-    /* Detail Table Optimization */
-    .detail-table {
-        width: 100%;
-        border-collapse: collapse !important;
-        table-layout: fixed;
-    }
-    .detail-table th,
-    .detail-table td {
-        border: 1px solid #000 !important;
-        padding: 0 1px !important;
-        font-size: 7.5px !important;
-        line-height: 1 !important;
-        height: 10px !important;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .detail-table th {
-        background-color: #f3f4f6 !important;
-        font-weight: bold;
+    /* Pertebal border untuk semua elemen table */
+    table.border-collapse,
+    table.border-collapse th,
+    table.border-collapse td {
+        border: 2px solid #000 !important;
     }
 </style>
 @endpush
 
 @section('content')
     <div class="p-2 bg-white print-container">
-        <div style="margin-bottom: 2px;">
-            <h2 class="font-bold" style="margin: 0 0 1px 0; font-size: 18px;">Pranota OB</h2>
-            <p class="font-bold" style="margin: 0; font-size: 11px; line-height: 1.1;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
-            <p class="font-bold" style="margin: 0; font-size: 11px; line-height: 1.1;">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
-            <p class="font-bold" style="margin: 0; font-size: 11px; line-height: 1.1;">Tanggal OB: {{ $pranota->tanggal_ob ? \Carbon\Carbon::parse($pranota->tanggal_ob)->format('d/m/Y') : '-' }}</p>
+        <div style="margin-bottom: 4px;">
+            <h2 class="font-bold" style="margin: 0 0 2px 0; font-size: 24px;">Pranota OB</h2>
+            <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Nomor: {{ $pranota->nomor_pranota ?? '-' }}</p>
+            <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Voyage: {{ $pranota->no_voyage ?? '-' }}</p>
+            <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Tanggal OB: {{ $pranota->tanggal_ob ? \Carbon\Carbon::parse($pranota->tanggal_ob)->format('d/m/Y') : '-' }}</p>
             @if($pranota->nomor_accurate)
-                <p class="font-bold" style="margin: 0; font-size: 11px; line-height: 1.1;">Nomor Accurate: {{ $pranota->nomor_accurate }}</p>
+                <p class="font-bold" style="margin: 0; font-size: 14px; line-height: 1.3;">Nomor Accurate: {{ $pranota->nomor_accurate }}</p>
             @endif
         </div>
 
@@ -271,9 +256,9 @@
     <div style="page-break-after: always;"></div>
 
     {{-- Halaman 2: Detail Kontainer Per Supir --}}
-    <div class="p-1 bg-white print-container">
-        <div style="margin-bottom: 4px;">
-            <h2 class="font-semibold" style="margin: 0; font-size: 10px;">{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-m-Y') : date('d-m-Y') }}</h2>
+    <div class="p-2 bg-white print-container">
+        <div style="margin-bottom: 8px;">
+            <h2 class="font-semibold" style="margin: 0 0 2px 0; font-size: 11px;">{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-m-Y') : date('d-m-Y') }}</h2>
         </div>
 
         @php
@@ -313,67 +298,87 @@
             $rightItems = $sortedItems->skip($halfCount);
         @endphp
 
-        <div style="display: flex; gap: 4px;">
+        <div style="display: flex; gap: 8px;">
             {{-- Kolom Kiri --}}
             <div style="flex: 1;">
-                <table class="detail-table">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 11px;">
                     <thead>
-                        <tr>
-                            <th style="width: 25px; text-align: center;">No</th>
-                            <th style="text-align: left;">No. Container</th>
-                            <th style="width: 30px; text-align: center;">Size</th>
-                            <th style="text-align: left;">Nama Supir</th>
+                        <tr style="background-color: #f3f4f6;">
+                            <th class="border px-1 py-0.5 text-center" style="width: 5%;">No</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 25%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 10%;">Size</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 60%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $no = 1; @endphp
-                        @foreach($leftItems as $item)
+                        @forelse($leftItems as $item)
                             <tr>
-                                <td style="text-align: center;">{{ $no++ }}</td>
-                                <td>{{ $item['nomor_kontainer'] ?? '-' }}</td>
-                                <td style="text-align: center;">
+                                <td class="border px-1 py-0.5 text-center">{{ $no++ }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-0.5 text-center">
                                     @php
                                         $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
-                                        if (str_contains($size, '40')) echo '40';
-                                        elseif (str_contains($size, '20')) echo '20';
-                                        else echo $size;
+                                        if (str_contains($size, '40')) {
+                                            echo '40 ft';
+                                        } elseif (str_contains($size, '20')) {
+                                            echo '20 ft';
+                                        } else {
+                                            echo $size;
+                                        }
                                     @endphp
                                 </td>
-                                <td>{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="4" class="border px-1 py-0.5 text-center text-gray-500">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
             {{-- Kolom Kanan --}}
             <div style="flex: 1;">
-                <table class="detail-table">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 11px;">
                     <thead>
-                        <tr>
-                            <th style="width: 25px; text-align: center;">No</th>
-                            <th style="text-align: left;">No. Container</th>
-                            <th style="width: 30px; text-align: center;">Size</th>
-                            <th style="text-align: left;">Nama Supir</th>
+                        <tr style="background-color: #f3f4f6;">
+                            <th class="border px-1 py-0.5 text-center" style="width: 5%;">No</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 25%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 10%;">Size</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 60%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $no = $halfCount + 1; @endphp
-                        @foreach($rightItems as $item)
+                        @forelse($rightItems as $item)
                             <tr>
-                                <td style="text-align: center;">{{ $no++ }}</td>
-                                <td>{{ $item['nomor_kontainer'] ?? '-' }}</td>
-                                <td style="text-align: center;">
+                                <td class="border px-1 py-0.5 text-center">{{ $no++ }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-0.5 text-center">
                                     @php
                                         $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
-                                        if (str_contains($size, '40')) echo '40';
-                                        elseif (str_contains($size, '20')) echo '20';
-                                        else echo $size;
+                                        if (str_contains($size, '40')) {
+                                            echo '40 ft';
+                                        } elseif (str_contains($size, '20')) {
+                                            echo '20 ft';
+                                        } else {
+                                            echo $size;
+                                        }
                                     @endphp
                                 </td>
-                                <td>{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="4" class="border px-1 py-0.5 text-center text-gray-500">
+                                    Tidak ada data
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
