@@ -40,6 +40,31 @@ class PranotaOb extends Model
     public function getEnrichedItems(): array
     {
         $enrichedItems = [];
+        
+        // Fetch karyawans for nickname mapping
+        $karyawanData = \DB::table('karyawans')
+            ->select('nama_lengkap', 'nama_panggilan')
+            ->get();
+        
+        $nicknameMap = [];
+        foreach ($karyawanData as $k) {
+            $fullName = strtolower(trim($k->nama_lengkap ?? ''));
+            $nickname = trim($k->nama_panggilan ?? '');
+            
+            if ($fullName && $nickname) {
+                $nicknameMap[$fullName] = $nickname;
+            }
+        }
+
+        $resolveNickname = function($name) use ($nicknameMap) {
+            if (empty($name) || $name === '-') return $name;
+            $cleanName = strtolower(trim($name));
+            if (isset($nicknameMap[$cleanName])) {
+                return $nicknameMap[$cleanName];
+            }
+            return $name;
+        };
+
         // Prefer using pivot if exists
         try {
             $pivotRows = $this->itemsPivot()->get();
@@ -51,7 +76,7 @@ class PranotaOb extends Model
                 $enrichedItems[] = [
                     'nomor_kontainer' => $p->nomor_kontainer ?? '-',
                     'nama_barang' => $p->nama_barang ?? '-',
-                    'supir' => $p->supir ?? '-',
+                    'supir' => $resolveNickname($p->supir ?? '-'),
                     'size' => $p->size ?? '-',
                     'biaya' => $p->biaya ?? null,
                 ];
@@ -68,7 +93,7 @@ class PranotaOb extends Model
                 $enrichedItems[] = [
                     'nomor_kontainer' => $item['nomor_kontainer'] ?? '-',
                     'nama_barang' => $item['nama_barang'] ?? ($item['jenis_barang'] ?? '-'),
-                    'supir' => $item['supir'] ?? '-',
+                    'supir' => $resolveNickname($item['supir'] ?? '-'),
                     'size' => $item['size'] ?? ($item['size_kontainer'] ?? '-'),
                     'biaya' => $item['biaya'] ?? null,
                 ];
@@ -79,7 +104,7 @@ class PranotaOb extends Model
                 $enrichedItems[] = [
                     'nomor_kontainer' => $item['nomor_kontainer'] ?? ('ID: ' . ($item['id'] ?? '?')),
                     'nama_barang' => $item['nama_barang'] ?? ('Type: ' . ($item['type'] ?? '?')),
-                    'supir' => $item['supir'] ?? '-',
+                    'supir' => $resolveNickname($item['supir'] ?? '-'),
                     'size' => $item['size'] ?? '-',
                     'biaya' => $item['biaya'] ?? null,
                 ];
@@ -93,7 +118,7 @@ class PranotaOb extends Model
                         $supirName = '-';
                         if ($bl->supir_id) {
                             $supir = \DB::table('karyawans')->find($bl->supir_id);
-                            $supirName = $supir ? ($supir->nama_lengkap ?? $supir->name ?? '-') : '-';
+                            $supirName = $supir ? ($supir->nama_panggilan ?? $supir->nama_lengkap ?? $supir->name ?? '-') : '-';
                         }
                         $enrichedItems[] = [
                             'nomor_kontainer' => $bl->nomor_kontainer ?? '-',
@@ -127,7 +152,7 @@ class PranotaOb extends Model
                         $supirName = '-';
                         if (!empty($nk->supir_id)) {
                             $sup = \DB::table('karyawans')->find($nk->supir_id);
-                            $supirName = $sup ? ($sup->nama_lengkap ?? $sup->name ?? '-') : '-';
+                            $supirName = $sup ? ($sup->nama_panggilan ?? $sup->nama_lengkap ?? $sup->name ?? '-') : '-';
                         }
                         $enrichedItems[] = [
                             'nomor_kontainer' => $nk->nomor_kontainer ?? '-',
