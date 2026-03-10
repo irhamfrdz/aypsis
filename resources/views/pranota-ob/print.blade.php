@@ -103,94 +103,89 @@
 
                     $grandTotalKontainer = $totalFull20 + $totalEmpty20 + $totalFull40 + $totalEmpty40;
                 @endphp
-            <table class="min-w-full table-auto border-collapse" style="font-size: 10px;">
+            <table class="min-w-full table-auto border-collapse" style="font-size: {{ $tableFontSize }};">
                 <thead>
-                    <tr style="background-color: #f3f4f6;">
-                        <th class="border px-2 py-1 text-left" rowspan="2">NAMA SUPIR</th>
-                        <th class="border px-1 py-1 text-center" colspan="2">20"</th>
-                        <th class="border px-1 py-1 text-center" colspan="2">40"</th>
-                        <th class="border px-2 py-1 text-center" rowspan="2">TOTAL<br>QTY</th>
-                        <th class="border px-2 py-1 text-right" rowspan="2">TOTAL<br>BIAYA (Rp)</th>
+                    <tr>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;" rowspan="2"></th>
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
+                            <th class="border text-center" style="padding: {{ $tablePadding }} !important; max-width: 60px; word-wrap: break-word;" colspan="2">{{ $supirName }}</th>
+                        @endforeach
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;" colspan="2">TOTAL</th>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;" rowspan="2">JUMLAH</th>
                     </tr>
-                    <tr style="background-color: #f3f4f6;">
-                        <th class="border px-1 py-0.5 text-center">F</th>
-                        <th class="border px-1 py-0.5 text-center">E</th>
-                        <th class="border px-1 py-0.5 text-center">F</th>
-                        <th class="border px-1 py-0.5 text-center">E</th>
+                    <tr>
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
+                            <th class="border text-center" style="padding: {{ $tablePadding }} !important;">F</th>
+                            <th class="border text-center" style="padding: {{ $tablePadding }} !important;">E</th>
+                        @endforeach
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;">F</th>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;">E</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @php
-                        $grandTotalF20 = 0;
-                        $grandTotalE20 = 0;
-                        $grandTotalF40 = 0;
-                        $grandTotalE40 = 0;
-                        $grandTotalQty = 0;
-                        $grandTotalAllBiaya = 0;
-                    @endphp
-                    @foreach($filteredPerSupirCounts as $supirName => $counts)
-                        @php
-                            $f20 = $counts['sizes']['20']['full'] ?? 0;
-                            $e20 = $counts['sizes']['20']['empty'] ?? 0;
-                            $f40 = $counts['sizes']['40']['full'] ?? 0;
-                            $e40 = $counts['sizes']['40']['empty'] ?? 0;
-                            $totalQ = $f20 + $e20 + $f40 + $e40;
-                            $jumlahRp = $filteredPerSupir[$supirName] ?? 0;
-                            
-                            $grandTotalF20 += $f20;
-                            $grandTotalE20 += $e20;
-                            $grandTotalF40 += $f40;
-                            $grandTotalE40 += $e40;
-                            $grandTotalQty += $totalQ;
-                            $grandTotalAllBiaya += $jumlahRp;
-                        @endphp
-                        <tr>
-                            <td class="border px-2 py-1 font-medium">{{ $supirName }}</td>
-                            <td class="border px-1 py-1 text-center">{{ $f20 > 0 ? $f20 : '-' }}</td>
-                            <td class="border px-1 py-1 text-center">{{ $e20 > 0 ? $e20 : '-' }}</td>
-                            <td class="border px-1 py-1 text-center">{{ $f40 > 0 ? $f40 : '-' }}</td>
-                            <td class="border px-1 py-1 text-center">{{ $e40 > 0 ? $e40 : '-' }}</td>
-                            <td class="border px-2 py-1 text-center font-bold">{{ $totalQ }}</td>
-                            <td class="border px-2 py-1 text-right font-bold">{{ number_format($jumlahRp, 0, ',', '.') }}</td>
-                        </tr>
-                    @endforeach
+                    {{-- Baris 20" --}}
+                    <tr>
+                        <td class="border text-center" style="padding: {{ $tablePadding }} !important;">20"</td>
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
+                            @php
+                                $full20 = $counts['sizes']['20']['full'] ?? 0;
+                                $empty20 = $counts['sizes']['20']['empty'] ?? 0;
+                            @endphp
+                            <td class="border text-center" style="padding: {{ $tablePadding }} !important;">{{ $full20 > 0 ? $full20 : '-' }}</td>
+                            <td class="border text-center" style="padding: {{ $tablePadding }} !important;">{{ $empty20 > 0 ? $empty20 : '-' }}</td>
+                        @endforeach
+                        <td class="border px-2 py-1 text-center">{{ $totalFull20 > 0 ? $totalFull20 : '-' }}</td>
+                        <td class="border px-2 py-1 text-center">{{ $totalEmpty20 > 0 ? $totalEmpty20 : '-' }}</td>
+                        <td class="border px-2 py-1 text-right">{{ ($biayaPerSize['20'] ?? 0) > 0 ? number_format($biayaPerSize['20'], 0, ',', '.') : '-' }}</td>
+                    </tr>
+
+                    {{-- Baris 40" --}}
+                    <tr>
+                        <td class="border px-2 py-1 text-center">40"</td>
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
+                            @php
+                                $full40 = $counts['sizes']['40']['full'] ?? 0;
+                                $empty40 = $counts['sizes']['40']['empty'] ?? 0;
+                            @endphp
+                            <td class="border px-2 py-1 text-center">{{ $full40 > 0 ? $full40 : '-' }}</td>
+                            <td class="border px-2 py-1 text-center">{{ $empty40 > 0 ? $empty40 : '-' }}</td>
+                        @endforeach
+                        <td class="border px-2 py-1 text-center">{{ $totalFull40 > 0 ? $totalFull40 : '-' }}</td>
+                        <td class="border px-2 py-1 text-center">{{ $totalEmpty40 > 0 ? $totalEmpty40 : '-' }}</td>
+                        <td class="border px-2 py-1 text-right">{{ ($biayaPerSize['40'] ?? 0) > 0 ? number_format($biayaPerSize['40'], 0, ',', '.') : '-' }}</td>
+                    </tr>
+
+                    {{-- Baris curah --}}
+                    <tr>
+                        <td class="border px-2 py-1 text-center">curah</td>
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
+                            <td class="border px-2 py-1 text-center" colspan="2">-</td>
+                        @endforeach
+                        <td class="border px-2 py-1 text-center" colspan="2">-</td>
+                        <td class="border px-2 py-1 text-center">-</td>
+                    </tr>
+
+                    {{-- Baris curah pipa --}}
+                    <tr>
+                        <td class="border px-2 py-1 text-center">curah pipa</td>
+                        @foreach($filteredPerSupirCounts as $supirName => $counts)
+                            <td class="border px-2 py-1 text-center" colspan="2">-</td>
+                        @endforeach
+                        <td class="border px-2 py-1 text-center" colspan="2">-</td>
+                        <td class="border px-2 py-1 text-center">-</td>
+                    </tr>
                 </tbody>
                 <tfoot>
-                    <tr class="font-bold" style="background-color: #f9fafb;">
-                        <td class="border px-2 py-1 text-center">GRAND TOTAL</td>
-                        <td class="border px-1 py-1 text-center">{{ $grandTotalF20 > 0 ? $grandTotalF20 : '-' }}</td>
-                        <td class="border px-1 py-1 text-center">{{ $grandTotalE20 > 0 ? $grandTotalE20 : '-' }}</td>
-                        <td class="border px-1 py-1 text-center">{{ $grandTotalF40 > 0 ? $grandTotalF40 : '-' }}</td>
-                        <td class="border px-1 py-1 text-center">{{ $grandTotalE40 > 0 ? $grandTotalE40 : '-' }}</td>
-                        <td class="border px-2 py-1 text-center">{{ $grandTotalQty }}</td>
-                        <td class="border px-2 py-1 text-right">{{ number_format($grandTotalAllBiaya, 0, ',', '.') }}</td>
+                    <tr class="font-semibold">
+                        <td class="border px-2 py-1 text-center">JUMLAH</td>
+                        @foreach($filteredPerSupir as $supirName => $sumBiaya)
+                            <td class="border px-2 py-1 text-right" colspan="2">{{ number_format($sumBiaya, 0, ',', '.') }}</td>
+                        @endforeach
+                        <td class="border px-2 py-1 text-center" colspan="2"></td>
+                        <td class="border px-2 py-1 text-right">{{ number_format($totalBiaya, 0, ',', '.') }}</td>
                     </tr>
                 </tfoot>
             </table>
-
-            <div style="margin-top: 10px; display: flex; gap: 20px;">
-                <div style="flex: 0 0 auto;">
-                    <h4 class="font-medium" style="margin: 0 0 2px 0; font-size: 9px;">Ringkasan Biaya Per Ukuran</h4>
-                    <table class="table-auto border-collapse" style="font-size: 9px;">
-                        <thead>
-                            <tr style="background-color: #f3f4f6;">
-                                <th class="border px-2 py-1">Ukuran</th>
-                                <th class="border px-2 py-1 text-right">Biaya (Rp)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="border px-2 py-1">20" Total</td>
-                                <td class="border px-2 py-1 text-right">{{ number_format($biayaPerSize['20'] ?? 0, 0, ',', '.') }}</td>
-                            </tr>
-                            <tr>
-                                <td class="border px-2 py-1">40" Total</td>
-                                <td class="border px-2 py-1 text-right">{{ number_format($biayaPerSize['40'] ?? 0, 0, ',', '.') }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
         <div style="margin-top: 8px;">
