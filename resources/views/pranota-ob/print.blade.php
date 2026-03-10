@@ -296,93 +296,109 @@
                 }
                 return $item;
             })->sortBy('supir')->values();
+
             $totalItems = $sortedItems->count();
-            $halfCount = ceil($totalItems / 2);
-            $leftItems = $sortedItems->take($halfCount);
-            $rightItems = $sortedItems->skip($halfCount);
+            $col1Count = ceil($totalItems / 3);
+            $col2Count = ceil(($totalItems - $col1Count) / 2);
+            
+            $col1Items = $sortedItems->slice(0, $col1Count);
+            $col2Items = $sortedItems->slice($col1Count, $col2Count);
+            $col3Items = $sortedItems->slice($col1Count + $col2Count);
         @endphp
 
-        <div style="display: flex; gap: 8px;">
-            {{-- Kolom Kiri --}}
+        <div style="display: flex; gap: 6px;">
+            {{-- Kolom 1 --}}
             <div style="flex: 1;">
-                <table class="table-auto border-collapse" style="width: 100%; font-size: 11px;">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 10px;">
                     <thead>
                         <tr style="background-color: #f3f4f6;">
                             <th class="border px-1 py-0.5 text-center" style="width: 5%;">No</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 25%;">No.Container</th>
-                            <th class="border px-1 py-0.5 text-center" style="width: 10%;">Size</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 60%;">NamaSupir</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 35%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 15%;">Size</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 45%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $no = 1; @endphp
-                        @forelse($leftItems as $item)
+                        @foreach($col1Items as $item)
                             <tr>
                                 <td class="border px-1 py-0.5 text-center">{{ $no++ }}</td>
-                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
-                                <td class="border px-1 py-0.5 text-center">
+                                <td class="border px-1 py-0.5" style="font-size: 9px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-0.5 text-center" style="font-size: 9px;">
                                     @php
                                         $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
-                                        if (str_contains($size, '40')) {
-                                            echo '40 ft';
-                                        } elseif (str_contains($size, '20')) {
-                                            echo '20 ft';
-                                        } else {
-                                            echo $size;
-                                        }
+                                        if (str_contains($size, '40')) echo '40 ft';
+                                        elseif (str_contains($size, '20')) echo '20 ft';
+                                        else echo $size;
                                     @endphp
                                 </td>
-                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 9px;">{{ $item['supir'] ?? '-' }}</td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="border px-1 py-0.5 text-center text-gray-500">
-                                    Tidak ada data
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
 
-            {{-- Kolom Kanan --}}
+            {{-- Kolom 2 --}}
             <div style="flex: 1;">
-                <table class="table-auto border-collapse" style="width: 100%; font-size: 11px;">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 10px;">
                     <thead>
                         <tr style="background-color: #f3f4f6;">
                             <th class="border px-1 py-0.5 text-center" style="width: 5%;">No</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 25%;">No.Container</th>
-                            <th class="border px-1 py-0.5 text-center" style="width: 10%;">Size</th>
-                            <th class="border px-1 py-0.5 text-left" style="width: 60%;">NamaSupir</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 35%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 15%;">Size</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 45%;">NamaSupir</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @php $no = $halfCount + 1; @endphp
-                        @forelse($rightItems as $item)
+                        @php $no = $col1Count + 1; @endphp
+                        @foreach($col2Items as $item)
                             <tr>
                                 <td class="border px-1 py-0.5 text-center">{{ $no++ }}</td>
-                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
-                                <td class="border px-1 py-0.5 text-center">
+                                <td class="border px-1 py-0.5" style="font-size: 9px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-0.5 text-center" style="font-size: 9px;">
                                     @php
                                         $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
-                                        if (str_contains($size, '40')) {
-                                            echo '40 ft';
-                                        } elseif (str_contains($size, '20')) {
-                                            echo '20 ft';
-                                        } else {
-                                            echo $size;
-                                        }
+                                        if (str_contains($size, '40')) echo '40 ft';
+                                        elseif (str_contains($size, '20')) echo '20 ft';
+                                        else echo $size;
                                     @endphp
                                 </td>
-                                <td class="border px-1 py-0.5" style="font-size: 10px;">{{ $item['supir'] ?? ($item['nama_supir'] ?? '-') }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 9px;">{{ $item['supir'] ?? '-' }}</td>
                             </tr>
-                        @empty
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Kolom 3 --}}
+            <div style="flex: 1;">
+                <table class="table-auto border-collapse" style="width: 100%; font-size: 10px;">
+                    <thead>
+                        <tr style="background-color: #f3f4f6;">
+                            <th class="border px-1 py-0.5 text-center" style="width: 5%;">No</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 35%;">No.Container</th>
+                            <th class="border px-1 py-0.5 text-center" style="width: 15%;">Size</th>
+                            <th class="border px-1 py-0.5 text-left" style="width: 45%;">NamaSupir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $no = $col1Count + $col2Count + 1; @endphp
+                        @foreach($col3Items as $item)
                             <tr>
-                                <td colspan="4" class="border px-1 py-0.5 text-center text-gray-500">
-                                    Tidak ada data
+                                <td class="border px-1 py-0.5 text-center">{{ $no++ }}</td>
+                                <td class="border px-1 py-0.5" style="font-size: 9px;">{{ $item['nomor_kontainer'] ?? '-' }}</td>
+                                <td class="border px-1 py-0.5 text-center" style="font-size: 9px;">
+                                    @php
+                                        $size = $item['size'] ?? ($item['size_kontainer'] ?? ($item['ukuran_kontainer'] ?? '-'));
+                                        if (str_contains($size, '40')) echo '40 ft';
+                                        elseif (str_contains($size, '20')) echo '20 ft';
+                                        else echo $size;
+                                    @endphp
                                 </td>
+                                <td class="border px-1 py-0.5" style="font-size: 9px;">{{ $item['supir'] ?? '-' }}</td>
                             </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
