@@ -171,6 +171,14 @@ class SuratJalanBongkaran extends Model
     }
 
     /**
+     * Relationship to Karyawan as Supir 2
+     */
+    public function supir2Karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'supir2', 'nama_panggilan');
+    }
+
+    /**
      * Relationship to Karyawan as Kenek
      */
     public function kenekKaryawan()
