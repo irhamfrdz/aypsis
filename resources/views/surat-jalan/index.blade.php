@@ -324,13 +324,13 @@ use Illuminate\Support\Str;
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs text-gray-900">
-                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil ?? '-' }}">
-                                    {{ $suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil ?? '-' }}
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->tujuan_pengambilan ?? '-' }}">
+                                    {{ $suratJalan->tujuan_pengambilan ?? '-' }}
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs text-gray-900">
-                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? '-' }}">
-                                    {{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? '-' }}
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->tujuan_pengiriman ?? '-' }}">
+                                    {{ $suratJalan->tujuan_pengiriman ?? '-' }}
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs text-gray-900">
