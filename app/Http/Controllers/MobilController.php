@@ -55,6 +55,7 @@ class MobilController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('kode_no', 'like', "%{$search}%")
                   ->orWhere('nomor_polisi', 'like', "%{$search}%")
+                  ->orWhere('nickname', 'like', "%{$search}%")
                   ->orWhere('no_kir', 'like', "%{$search}%")
                   ->orWhere('merek', 'like', "%{$search}%")
                   ->orWhere('jenis', 'like', "%{$search}%")
@@ -124,6 +125,7 @@ class MobilController extends Controller
         $validated = $request->validate([
             'kode_no' => 'nullable|string|max:50|unique:mobils,kode_no',
             'nomor_polisi' => 'nullable|string|max:20|unique:mobils,nomor_polisi',
+            'nickname' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
@@ -258,6 +260,7 @@ class MobilController extends Controller
         $validated = $request->validate([
             'kode_no' => 'required|string|max:50|unique:mobils,kode_no,' . $id,
             'nomor_polisi' => 'nullable|string|max:20|unique:mobils,nomor_polisi,' . $id,
+            'nickname' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',

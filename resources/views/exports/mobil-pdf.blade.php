@@ -96,17 +96,18 @@
                     <th style="width: 3%;">No</th>
                     <th style="width: 8%;">Kode Aktiva</th>
                     <th style="width: 8%;">No. Polisi</th>
-                    <th style="width: 10%;">Karyawan</th>
+                    <th style="width: 8%;">Nickname</th>
+                    <th style="width: 9%;">Karyawan</th>
                     <th style="width: 6%;">Lokasi</th>
-                    <th style="width: 8%;">Merek</th>
-                    <th style="width: 8%;">Jenis</th>
+                    <th style="width: 7%;">Merek</th>
+                    <th style="width: 7%;">Jenis</th>
                     <th style="width: 5%;">Tahun</th>
                     <th style="width: 7%;">BPKB</th>
                     <th style="width: 8%;">No. Mesin</th>
                     <th style="width: 8%;">No. Rangka</th>
                     <th style="width: 6%;">Pajak STNK</th>
                     <th style="width: 6%;">No. KIR</th>
-                    <th style="width: 9%;">Atas Nama</th>
+                    <th style="width: 6%;">Atas Nama</th>
                 </tr>
             </thead>
             <tbody>
@@ -115,6 +116,7 @@
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td>{{ $mobil->kode_no ?? '-' }}</td>
                         <td>{{ $mobil->nomor_polisi ?? '-' }}</td>
+                        <td>{{ $mobil->nickname ?? '-' }}</td>
                         <td>
                             @if($mobil->karyawan)
                                 {{ $mobil->karyawan->nama_lengkap }}

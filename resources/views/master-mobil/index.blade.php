@@ -15,7 +15,7 @@
                     <input type="text" 
                            name="search" 
                            value="{{ request('search') }}" 
-                           placeholder="Cari kode aktiva, nomor polisi, nomor KIR, merek, jenis, atau nama karyawan..." 
+                           placeholder="Cari kode aktiva, nomor polisi, nickname, nomor KIR, merek, jenis, atau nama karyawan..." 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                            autocomplete="off">
                 </div>
@@ -308,6 +308,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nickname</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Kendaraan</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
@@ -322,6 +323,7 @@
                 @forelse ($mobils as $index => $mobil)
                     <tr class="hover:bg-gray-50">
                         <td class="py-2 px-3 text-sm">{{ $mobils->firstItem() + $index }}</td>
+                        <td class="py-2 px-3 text-sm font-semibold">{{ $mobil->nickname ?? '-' }}</td>
                         <td class="py-2 px-3 font-mono text-xs">{{ $mobil->kode_no }}</td>
                         <td class="py-2 px-3">
                             <div class="space-y-1">
@@ -420,7 +422,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="py-6 px-3 text-center text-gray-500">
+                        <td colspan="10" class="py-6 px-3 text-center text-gray-500">
                             <div class="flex flex-col items-center py-4">
                                 <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>

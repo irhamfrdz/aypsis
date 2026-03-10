@@ -105,6 +105,12 @@
                         </p>
                     </div>
                     <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Nickname</label>
+                        <p class="text-xs bg-white p-2 rounded border font-semibold">
+                            {{ $mobil->nickname ?? '-' }}
+                        </p>
+                    </div>
+                    <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Nomor KIR</label>
                         <p class="text-xs bg-white p-2 rounded border">
                             @if($mobil->no_kir)

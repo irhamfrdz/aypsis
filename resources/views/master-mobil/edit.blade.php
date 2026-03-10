@@ -62,6 +62,15 @@
                     @enderror
                 </div>
 
+                <!-- Nickname -->
+                <div>
+                    <label for="nickname" class="block text-sm font-medium text-gray-700">Nickname</label>
+                    <input type="text" name="nickname" id="nickname" value="{{ old('nickname', $mobil->nickname) }}" class="{{ $inputClasses }}" maxlength="50" placeholder="Contoh: Truck 01, Box 05">
+                    @error('nickname')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Lokasi -->
                 <div>
                     <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi</label>

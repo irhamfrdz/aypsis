@@ -86,25 +86,26 @@ class MasterMobilImportController extends Controller
                     // Map Excel columns to variables
                     $kodeAktiva = trim($row[0] ?? '');
                     $nomorPolisi = trim($row[1] ?? '');
-                    $nik = trim($row[2] ?? '');
-                    $namaLengkap = trim($row[3] ?? '');
-                    $lokasi = trim($row[4] ?? '');
-                    $merek = trim($row[5] ?? '');
-                    $jenis = trim($row[6] ?? '');
-                    $tahunPembuatan = trim($row[7] ?? '');
-                    $bpkb = trim($row[8] ?? '');
-                    $noMesin = trim($row[9] ?? '');
-                    $noRangka = trim($row[10] ?? '');
-                    $pajakStnk = trim($row[11] ?? '');
-                    $pajakPlat = trim($row[12] ?? '');
-                    $noKir = trim($row[13] ?? '');
-                    $pajakKir = trim($row[14] ?? '');
-                    $atasNama = trim($row[15] ?? '');
-                    $pemakai = trim($row[16] ?? '');
-                    $asuransi = trim($row[17] ?? '');
-                    $jteAsuransi = trim($row[18] ?? '');
-                    $warnaPlat = trim($row[19] ?? '');
-                    $catatan = trim($row[20] ?? '');
+                    $nickname = trim($row[2] ?? '');
+                    $nik = trim($row[3] ?? '');
+                    $namaLengkap = trim($row[4] ?? '');
+                    $lokasi = trim($row[5] ?? '');
+                    $merek = trim($row[6] ?? '');
+                    $jenis = trim($row[7] ?? '');
+                    $tahunPembuatan = trim($row[8] ?? '');
+                    $bpkb = trim($row[9] ?? '');
+                    $noMesin = trim($row[10] ?? '');
+                    $noRangka = trim($row[11] ?? '');
+                    $pajakStnk = trim($row[12] ?? '');
+                    $pajakPlat = trim($row[13] ?? '');
+                    $noKir = trim($row[14] ?? '');
+                    $pajakKir = trim($row[15] ?? '');
+                    $atasNama = trim($row[16] ?? '');
+                    $pemakai = trim($row[17] ?? '');
+                    $asuransi = trim($row[18] ?? '');
+                    $jteAsuransi = trim($row[19] ?? '');
+                    $warnaPlat = trim($row[20] ?? '');
+                    $catatan = trim($row[21] ?? '');
 
                     // Skip only if both kode aktiva and nomor polisi are empty
                     if (empty($kodeAktiva) && empty($nomorPolisi)) {
@@ -159,6 +160,7 @@ class MasterMobilImportController extends Controller
                     $data = [
                         'kode_no' => $kodeAktiva ?: null,
                         'nomor_polisi' => $nomorPolisi ?: null,
+                        'nickname' => $nickname ?: null,
                         'lokasi' => $lokasi ?: null,
                         'merek' => $merek ?: null,
                         'jenis' => $jenis ?: null,
@@ -388,6 +390,7 @@ class MasterMobilImportController extends Controller
                 'No',
                 'Kode Aktiva',
                 'Nomor Polisi', 
+                'Nickname',
                 'NIK Karyawan',
                 'Nama Karyawan',
                 'Lokasi',
@@ -417,6 +420,7 @@ class MasterMobilImportController extends Controller
                     $index + 1,
                     $mobil->kode_no ?? '',
                     $mobil->nomor_polisi ?? '',
+                    $mobil->nickname ?? '',
                     $mobil->karyawan->nik ?? '',
                     $mobil->karyawan->nama_lengkap ?? '',
                     $mobil->lokasi ?? '',

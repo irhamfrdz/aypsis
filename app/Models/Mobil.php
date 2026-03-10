@@ -27,6 +27,7 @@ class Mobil extends Model
     protected $fillable = [
         'kode_no',
         'nomor_polisi',
+        'nickname',
         'lokasi',
         'merek',
         'jenis',
