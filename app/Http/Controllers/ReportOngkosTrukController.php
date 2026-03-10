@@ -236,7 +236,7 @@ class ReportOngkosTrukController extends Controller
             $driverData = $this->resolveDriverData($sj);
 
             $data->push([
-                'tanggal' => (($sj->tandaTerima && $sj->tandaTerima->tanggal) ? $sj->tandaTerima->tanggal : $sj->tanggal_surat_jalan)->format('d/m/Y'),
+                'tanggal' => ($sj->tandaTerima && $sj->tandaTerima->tanggal) ? $sj->tandaTerima->tanggal : $sj->tanggal_surat_jalan,
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'no_plat' => $sj->no_plat,
                 'nama_lengkap_supir' => $driverData['nama'],
@@ -277,7 +277,7 @@ class ReportOngkosTrukController extends Controller
             $driverData = $this->resolveDriverData($sjb);
 
             $data->push([
-                'tanggal' => (($sjb->tandaTerima && $sjb->tandaTerima->tanggal_tanda_terima) ? $sjb->tandaTerima->tanggal_tanda_terima : $sjb->tanggal_surat_jalan)->format('d/m/Y'),
+                'tanggal' => ($sjb->tandaTerima && $sjb->tandaTerima->tanggal_tanda_terima) ? $sjb->tandaTerima->tanggal_tanda_terima : $sjb->tanggal_surat_jalan,
                 'no_surat_jalan' => $sjb->nomor_surat_jalan,
                 'no_plat' => $sjb->no_plat,
                 'nama_lengkap_supir' => $driverData['nama'],
