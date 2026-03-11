@@ -322,6 +322,36 @@
                     <span class="text-xs font-medium menu-text">Dashboard Asuransi Asset</span>
                 </a>
 
+                {{-- Monitoring Section --}}
+                @php
+                    $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.*');
+                    $hasMonitoringPermissions = $user && ($user->can('monitoring-cek-kendaraan-view') || $user->can('monitoring-cek-kendaraan-daily-view'));
+                @endphp
+
+                @if($hasMonitoringPermissions)
+                <div class="mt-4 mb-6">
+                    <button id="monitoring-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-sm font-medium {{ $isMonitoringRoute ? 'bg-green-50 text-green-700' : '' }}">
+                        <span class="text-sm font-semibold">Monitoring</span>
+                        <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isMonitoringRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="monitoring-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isMonitoringRoute) style="display: block;" @endif>
+                        @if($user && $user->can('monitoring-cek-kendaraan-view'))
+                            <a href="{{ route('admin.cek-kendaraan.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.index') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">Monitoring Cek Kendaraan</span>
+                            </a>
+                        @endif
+
+                        @if($user && $user->can('monitoring-cek-kendaraan-daily-view'))
+                            <a href="{{ route('admin.cek-kendaraan.daily') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.daily') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">Dashboard Cek Harian</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
                 <!-- Master Data Section -->
                 @php
                     $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*');
@@ -860,22 +890,6 @@
         </div>
         @endif
 
-        {{-- Monitoring Cek Kendaraan --}}
-        @if($user && $user->can('monitoring-cek-kendaraan-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('admin.cek-kendaraan.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.index') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Monitoring Cek Kendaraan</span>
-            </a>
-        </div>
-        @endif
-
-        @if($user && $user->can('monitoring-cek-kendaraan-daily-view'))
-        <div class="mx-2 mb-3">
-            <a href="{{ route('admin.cek-kendaraan.daily') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.daily') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                <span class="text-xs font-medium">Dashboard Cek Harian</span>
-            </a>
-        </div>
-        @endif
 
         {{-- Master Alat Berat --}}
         @if($user && $user->can('master-alat-berat-view'))
@@ -2104,6 +2118,7 @@
         setupDropdown('kontainer-menu-toggle', 'kontainer-menu-content');
         setupDropdown('tagihan-kontainer-menu-toggle', 'tagihan-kontainer-menu-content');
         setupDropdown('report-menu-toggle', 'report-menu-content');
+        setupDropdown('monitoring-menu-toggle', 'monitoring-menu-content');
 
         // Sidebar search functionality
         const sidebarSearch = document.getElementById('sidebar-search');
