@@ -1207,7 +1207,7 @@
                                         <span>Monitoring Cek Kendaraan</span>
                                     </div>
                                 </td>
-                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['monitoring-cek-kendaraan']['view']) && $userMatrixPermissions['monitoring-cek-kendaraan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan][view]" value="1" class="permission-checkbox" @if(old('permissions.monitoring-cek-kendaraan.view') || (isset($userMatrixPermissions['monitoring-cek-kendaraan']['view']) && $userMatrixPermissions['monitoring-cek-kendaraan']['view']) || ($user && $user->can('monitoring-cek-kendaraan-view'))) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
@@ -1224,7 +1224,7 @@
                                         <span>Dashboard Cek Harian</span>
                                     </div>
                                 </td>
-                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan-daily][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['monitoring-cek-kendaraan-daily']['view']) && $userMatrixPermissions['monitoring-cek-kendaraan-daily']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan-daily][view]" value="1" class="permission-checkbox" @if(old('permissions.monitoring-cek-kendaraan-daily.view') || (isset($userMatrixPermissions['monitoring-cek-kendaraan-daily']['view']) && $userMatrixPermissions['monitoring-cek-kendaraan-daily']['view']) || ($user && $user->can('monitoring-cek-kendaraan-daily-view'))) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

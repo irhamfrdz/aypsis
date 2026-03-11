@@ -620,7 +620,9 @@ class UserController extends Controller
                 'invoice-tagihan-vendor' => 'invoice-tagihan-vendor',
                 'pranota-invoice-vendor-supir' => 'pranota-invoice-vendor-supir',
                 'pembayaran-pranota-invoice-vendor-supir' => 'pembayaran-pranota-invoice-vendor-supir',
-                'pranota-stock' => 'pranota-stock'
+                'pranota-stock' => 'pranota-stock',
+                'monitoring-cek-kendaraan-daily' => 'monitoring-cek-kendaraan-daily',
+                'monitoring-cek-kendaraan' => 'monitoring-cek-kendaraan'
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -4139,6 +4141,39 @@ class UserController extends Controller
                         $actionMap = [
                             'view' => 'audit-log-view',
                             'export' => 'audit-log-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+
+                    // Handle monitoring-cek-kendaraan permissions explicitly
+                    if ($module === 'monitoring-cek-kendaraan' && in_array($action, ['view'])) {
+                        $actionMap = [
+                            'view' => 'monitoring-cek-kendaraan-view',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle monitoring-cek-kendaraan-daily permissions explicitly
+                    if ($module === 'monitoring-cek-kendaraan-daily' && in_array($action, ['view'])) {
+                        $actionMap = [
+                            'view' => 'monitoring-cek-kendaraan-daily-view',
                         ];
 
                         if (isset($actionMap[$action])) {
