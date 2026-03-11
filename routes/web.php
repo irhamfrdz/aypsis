@@ -4895,6 +4895,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->middleware('can:stock-ban-create');
                
           // Custom Actions for StockBan
+          Route::post('stock-ban/store-quantity-usage', [\App\Http\Controllers\StockBanController::class, 'storeStockUsage'])
+               ->name('stock-ban.store-quantity-usage')
+               ->middleware('can:stock-ban-update');
           Route::put('stock-ban/{stock_ban}/masak', [\App\Http\Controllers\StockBanController::class, 'masak'])
                ->name('stock-ban.masak')
                ->middleware('can:stock-ban-update');
