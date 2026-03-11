@@ -78,7 +78,7 @@
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-sm font-medium text-gray-700">Nomor Seri / Kode Ban</label>
                             <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition">
-                                <input type="checkbox" id="no_serial_checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <input type="checkbox" name="no_serial_checkbox" id="no_serial_checkbox" value="1" {{ old('no_serial_checkbox') ? 'checked' : '' }} class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                 <span>Tanpa Nomor Seri</span>
                             </label>
                         </div>
@@ -1157,20 +1157,23 @@
 
             if (!noSerialCheckbox || !nomorSeriInput) return;
 
-            noSerialCheckbox.addEventListener('change', function() {
-                if (this.checked) {
-                    // Disable and clear nomor seri input
+            function toggleNomorSeri() {
+                if (noSerialCheckbox.checked) {
                     nomorSeriInput.value = '';
                     nomorSeriInput.disabled = true;
                     nomorSeriInput.classList.add('bg-gray-100', 'cursor-not-allowed');
                     nomorSeriInput.placeholder = 'Tanpa nomor seri';
                 } else {
-                    // Enable nomor seri input
                     nomorSeriInput.disabled = false;
                     nomorSeriInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
                     nomorSeriInput.placeholder = 'Masukkan nomor seri ban';
                 }
-            });
+            }
+
+            noSerialCheckbox.addEventListener('change', toggleNomorSeri);
+            
+            // Check state on load (for old validation errors)
+            toggleNomorSeri();
         }
 
         // Call init functions
