@@ -323,6 +323,7 @@
                 </a>
 
                 <!-- Dashboard Dokumen Kapal Alexindo -->
+                @can('dashboard-dokumen-kapal-alexindo-view')
                 @php
                     $isDokumenKapalDashboard = Request::routeIs('dashboard-dokumen-kapal-alexindo');
                 @endphp
@@ -332,6 +333,7 @@
                     </svg>
                     <span class="text-xs font-medium menu-text">Dashboard Dokumen Kapal</span>
                 </a>
+                @endcan
 
                 {{-- Monitoring Section --}}
                 @php

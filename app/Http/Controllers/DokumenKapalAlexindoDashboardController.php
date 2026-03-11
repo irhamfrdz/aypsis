@@ -14,6 +14,7 @@ class DokumenKapalAlexindoDashboardController extends Controller
      */
     public function index()
     {
+        $this->authorize('dashboard-dokumen-kapal-alexindo-view');
         $today = Carbon::today();
         $thirtyDaysLater = $today->copy()->addDays(30);
         
