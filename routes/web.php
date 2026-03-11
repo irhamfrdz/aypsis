@@ -1483,6 +1483,8 @@ Route::middleware([
          ]);
 
     Route::resource('master-dokumen-kapal-alexindo', \App\Http\Controllers\MasterDokumenKapalAlexindoController::class);
+    Route::get('dashboard-dokumen-kapal-alexindo', [\App\Http\Controllers\DokumenKapalAlexindoDashboardController::class, 'index'])
+         ->name('dashboard-dokumen-kapal-alexindo');
 
     // 💰 Biaya Kapal (Ship Costs) Management with permissions
     Route::get('biaya-kapal/get-next-invoice-number', [\App\Http\Controllers\BiayaKapalController::class, 'getNextInvoiceNumber'])
