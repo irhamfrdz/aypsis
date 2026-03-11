@@ -1,4 +1,4 @@
-﻿    // ============= STUFFING SECTIONS MANAGEMENT =============
+    // ============= STUFFING SECTIONS MANAGEMENT =============
     let stuffingSectionCounter = 0;
     
     function initializeStuffingSections() {
@@ -101,14 +101,11 @@
         
         // Setup kapal change listener with Select2
         const kapalSelect = section.querySelector('.stuffing-kapal-select');
-        $(kapalSelect).select2({
-            placeholder: "-- Pilih Kapal --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 0
-        }).on('change', async function() {
-            loadVoyagesForStuffingSection(sectionIndex, this.value);
-        });
+        if (kapalSelect) {
+            kapalSelect.addEventListener('change', async function() {
+                loadVoyagesForStuffingSection(sectionIndex, this.value);
+            });
+        }
 
         // Setup manual voyage toggle
         const voyageSelect = section.querySelector('.stuffing-voyage-select');
@@ -136,7 +133,7 @@
     window.removeStuffingSection = function(sectionIndex) {
         const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);
         if (section) {
-            $(section).find('.stuffing-kapal-select').select2('destroy');
+             // No destroy needed for vanilla select
             section.remove();
         }
     };

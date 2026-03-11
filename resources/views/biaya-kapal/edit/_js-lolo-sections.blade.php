@@ -1,4 +1,4 @@
-﻿    // ============= LOLO SECTIONS MANAGEMENT (EDIT MODE) =============
+    // ============= LOLO SECTIONS MANAGEMENT (EDIT MODE) =============
     function clearAllLoloSections() {
         if (!loloSectionsContainer) return;
         loloSectionsContainer.innerHTML = '';
@@ -176,7 +176,7 @@
     window.removeLoloSection = function(index) {
         const section = document.querySelector(`.lolo-section[data-lolo-section-index="${index}"]`);
         if (section) {
-            $(section).find('.lolo-kapal-select').select2('destroy');
+             // No destroy needed for vanilla select
             section.remove();
             calculateTotalFromAllLoloSections();
         }
@@ -195,41 +195,38 @@
         const searchInput = section.querySelector('.lolo-kontainer-search');
         const adjInput = section.querySelector('.lolo-adjustment-input');
         
-        $(kapalSelect).select2({
-            placeholder: "-- Pilih Kapal --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 0
-        }).on('change', async function() {
-            const kapalName = this.value;
-            voyageSelect.innerHTML = '<option value="">-- Memuat Voyage... --</option>';
-            voyageSelect.disabled = true;
-            kontainerList.innerHTML = '';
-            
-            if (!kapalName) {
-                voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
-                return;
-            }
-            
-            try {
-                const res = await fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalName)}`);
-                const data = await res.json();
-                voyageSelect.innerHTML = '<option value="">-- Pilih No. Voyage --</option>';
-                if (data.voyages && data.voyages.length > 0) {
-                    data.voyages.forEach(v => {
-                        voyageSelect.innerHTML += `<option value="${v}">${v}</option>`;
-                    });
-                    voyageSelect.disabled = false;
-                } else {
-                    voyageSelect.innerHTML = '<option value="">-- Tidak ada voyage ditemukan --</option>';
-                    voyageSelect.classList.add('hidden');
-                    voyageInput.classList.remove('hidden');
-                    voyageInput.disabled = false;
+        if (kapalSelect) {
+            kapalSelect.addEventListener('change', async function() {
+                const kapalName = this.value;
+                voyageSelect.innerHTML = '<option value="">-- Memuat Voyage... --</option>';
+                voyageSelect.disabled = true;
+                kontainerList.innerHTML = '';
+                
+                if (!kapalName) {
+                    voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+                    return;
                 }
-            } catch (err) {
-                console.error('Error fetching voyages:', err);
-            }
-        });
+                
+                try {
+                    const res = await fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalName)}`);
+                    const data = await res.json();
+                    voyageSelect.innerHTML = '<option value="">-- Pilih No. Voyage --</option>';
+                    if (data.voyages && data.voyages.length > 0) {
+                        data.voyages.forEach(v => {
+                            voyageSelect.innerHTML += `<option value="${v}">${v}</option>`;
+                        });
+                        voyageSelect.disabled = false;
+                    } else {
+                        voyageSelect.innerHTML = '<option value="">-- Tidak ada voyage ditemukan --</option>';
+                        voyageSelect.classList.add('hidden');
+                        voyageInput.classList.remove('hidden');
+                        voyageInput.disabled = false;
+                    }
+                } catch (err) {
+                    console.error('Error fetching voyages:', err);
+                }
+            });
+        }
         
         voyageManualBtn.addEventListener('click', function() {
             if (voyageSelect.classList.contains('hidden')) {
@@ -404,7 +401,11 @@
                         const section = addLoloSection();
                         const sIdx = section.getAttribute('data-lolo-section-index');
                         
-                        $(section.querySelector('.lolo-kapal-select')).val("{{ $detail->kapal }}").trigger('change');
+                        const kapalSel = section.querySelector('.lolo-kapal-select');
+                        if (kapalSel) {
+                            kapalSel.value = "{{ $detail->kapal }}";
+                            kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
                         section.querySelector('.lolo-lokasi-select').value = "{{ $detail->lokasi }}";
                         
                         // Populate vendors

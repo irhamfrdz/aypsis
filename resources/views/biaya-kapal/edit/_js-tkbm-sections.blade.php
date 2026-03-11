@@ -1,4 +1,4 @@
-﻿    // ============= TKBM SECTIONS MANAGEMENT =============
+    // ============= TKBM SECTIONS MANAGEMENT =============
     var tkbmSectionCounter = 0;
     var tkbmSectionsContainer = document.getElementById('tkbm_sections_container');
     var addTkbmSectionBtn = document.getElementById('add_tkbm_section_btn');
@@ -110,14 +110,11 @@
         
         // Setup kapal change listener with Select2
         const kapalSelect = section.querySelector('.tkbm-kapal-select');
-        $(kapalSelect).select2({
-            placeholder: "-- Pilih Kapal --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 0
-        }).on('change', function() {
-            loadVoyagesForTkbmSection(sectionIndex, this.value);
-        });
+        if (kapalSelect) {
+            kapalSelect.addEventListener('change', function() {
+                loadVoyagesForTkbmSection(sectionIndex, this.value);
+            });
+        }
 
         // Setup adjustment listener
         const adjustmentInput = section.querySelector('.tkbm-adjustment-input');
@@ -170,7 +167,7 @@
         const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
         if (section) {
             // Destroy Select2 before removing element to prevent memory leaks
-            $(section).find('.tkbm-kapal-select').select2('destroy');
+             // No destroy needed for vanilla select
             section.remove();
             calculateTotalFromAllTkbmSections();
         }

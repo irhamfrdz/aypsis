@@ -1,4 +1,4 @@
-﻿    // ============= THC SECTION LOGIC =============
+    // ============= THC SECTION LOGIC =============
     function addTHCSection() {
         if (!thcSectionsContainer) return;
         thcSectionCounter++;
@@ -147,14 +147,11 @@
         
         // Setup kapal change listener with Select2
         const kapalSelect = section.querySelector('.thc-kapal-select');
-        $(kapalSelect).select2({
-            placeholder: "-- Pilih Kapal --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 0
-        }).on('change', async function() {
-            loadVoyagesForTHCSection(sectionIndex, this.value);
-        });
+        if (kapalSelect) {
+            kapalSelect.addEventListener('change', async function() {
+                loadVoyagesForTHCSection(sectionIndex, this.value);
+            });
+        }
 
         // Setup manual voyage toggle
         const voyageSelect = section.querySelector('.thc-voyage-select');
@@ -210,7 +207,7 @@
     window.removeTHCSection = function(index) {
         const section = document.querySelector(`.thc-section[data-thc-section-index="${index}"]`);
         if (section) {
-            $(section).find('.thc-kapal-select').select2('destroy');
+             // No destroy needed for vanilla select
             section.remove();
             calculateTotalFromAllTHCSections();
         }
@@ -385,7 +382,11 @@
                         const section = addTHCSection();
                         const sIdx = section.getAttribute('data-thc-section-index');
                         
-                        $(section.querySelector('.thc-kapal-select')).val("{{ $detail->kapal }}").trigger('change');
+                        const kapalSel = section.querySelector('.thc-kapal-select');
+                        if (kapalSel) {
+                            kapalSel.value = "{{ $detail->kapal }}";
+                            kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
                         section.querySelector('.thc-vendor-select').value = "{{ $detail->vendor }}";
                         
                         // Load voyages

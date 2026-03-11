@@ -1,4 +1,4 @@
-﻿    // ============= LABUH TAMBAT SECTIONS MANAGEMENT =============
+    // ============= LABUH TAMBAT SECTIONS MANAGEMENT =============
     let labuhTambatSectionCounter = 0;
     const labuhTambatSectionsContainer = document.getElementById('labuh_tambat_sections_container');
     const addLabuhTambatSectionBtn = document.getElementById('add_labuh_tambat_section_btn');
@@ -107,14 +107,11 @@
         
         // Setup kapal change listener with Select2
         const kapalSelectLt = section.querySelector('.kapal-select-labuh-tambat');
-        $(kapalSelectLt).select2({
-            placeholder: "-- Pilih Kapal --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 0
-        }).on('change', async function() {
-            loadVoyagesForLabuhTambatSection(sectionIndex, this.value);
-        });
+        if (kapalSelectLt) {
+            kapalSelectLt.addEventListener('change', async function() {
+                loadVoyagesForLabuhTambatSection(sectionIndex, this.value);
+            });
+        }
         section.querySelector('.lokasi-select-labuh-tambat').addEventListener('change', function() { updateLabuhTambatVendorsForLokasi(sectionIndex, this.value); });
         section.querySelector('.vendor-select-labuh-tambat').addEventListener('change', function() { loadTypesForLabuhTambatVendor(sectionIndex, this.value); });
         
@@ -292,7 +289,7 @@
     window.removeLabuhTambatSection = (idx) => {
         const s = document.querySelector(`.labuh-tambat-section[data-section-index="${idx}"]`);
         if (s) {
-            $(s).find('.kapal-select-labuh-tambat').select2('destroy');
+             // No destroy needed for vanilla select
             s.remove();
             calculateTotalFromAllLabuhTambatSections();
         }

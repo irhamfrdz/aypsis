@@ -1,4 +1,4 @@
-﻿    // ============= STORAGE SECTIONS MANAGEMENT =============
+    // ============= STORAGE SECTIONS MANAGEMENT =============
     let storageSectionCounter = 0;
     
     function initializeStorageSections() {
@@ -11,7 +11,11 @@
                         const section = addStorageSection();
                         const sIdx = section.getAttribute('data-storage-section-index');
                         
-                        $(section.querySelector('.storage-kapal-select')).val("{{ $detail->kapal }}").trigger('change');
+                        const kapalSel = section.querySelector('.storage-kapal-select');
+                        if (kapalSel) {
+                            kapalSel.value = "{{ $detail->kapal }}";
+                            kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
                         section.querySelector('.storage-lokasi-select').value = "{{ $detail->lokasi }}";
                         section.querySelector('.storage-vendor-select').value = "{{ $detail->vendor }}";
                         
@@ -281,14 +285,11 @@
         
         // Setup kapal change listener with Select2
         const kapalSelect = section.querySelector('.storage-kapal-select');
-        $(kapalSelect).select2({
-            placeholder: "-- Pilih Kapal --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 0
-        }).on('change', function() {
-            loadVoyagesForStorageSection(sectionIndex, this.value);
-        });
+        if (kapalSelect) {
+            kapalSelect.addEventListener('change', function() {
+                loadVoyagesForStorageSection(sectionIndex, this.value);
+            });
+        }
 
         // Setup manual voyage toggle
         const voyageSelect = section.querySelector('.storage-voyage-select');
@@ -452,7 +453,7 @@
     window.removeStorageSection = function(sectionIndex) {
         const section = document.querySelector(`[data-storage-section-index="${sectionIndex}"]`);
         if (section) {
-            $(section).find('.storage-kapal-select').select2('destroy');
+             // No destroy needed for vanilla select
             section.remove();
             calculateTotalFromAllStorageSections();
         }

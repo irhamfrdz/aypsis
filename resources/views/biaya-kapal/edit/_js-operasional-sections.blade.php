@@ -1,4 +1,4 @@
-﻿    // ============= OPERASIONAL SECTION LOGIC =============
+    // ============= OPERASIONAL SECTION LOGIC =============
     var operasionalSectionCounter = 0;
     var operasionalSectionsContainer = document.getElementById('operasional_sections_container');
     var addOperasionalSectionBtn = document.getElementById('add_operasional_section_btn');
@@ -85,20 +85,17 @@
         const kapalSelect = section.querySelector('.kapal-select-operasional');
         const voyageSelect = section.querySelector('.voyage-select-operasional');
 
-        $(kapalSelect).select2({
-            placeholder: "-- Pilih Kapal --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 0
-        }).on('change', function() {
-            loadVoyageForOperasional(this, voyageSelect);
-        });
+        if (kapalSelect) {
+            kapalSelect.addEventListener('change', function() {
+                loadVoyageForOperasional(this, voyageSelect);
+            });
+        }
     }
 
     function removeOperasionalSection(index) {
         const section = document.querySelector(`.operasional-section[data-section-index="${index}"]`);
         if (section) {
-            $(section).find('.kapal-select-operasional').select2('destroy');
+             // No destroy needed for vanilla select
             section.remove();
         }
         calculateTotalFromAllOperasionalSections();
@@ -184,7 +181,11 @@
                  const sec = operasionalSectionsContainer.lastElementChild;
                  const sectionIndex = sec.getAttribute('data-section-index');
                  
-                 $(sec.querySelector('.kapal-select-operasional')).val(data.kapal).trigger('change');
+                 const kapalSel = sec.querySelector('.kapal-select-operasional');
+                  if (kapalSel) {
+                      kapalSel.value = data.kapal;
+                      kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
+                  }
                  
                  const voySel = sec.querySelector('.voyage-select-operasional');
                  voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;

@@ -1,4 +1,4 @@
-﻿    // ============= TRUCKING SECTIONS MANAGEMENT =============
+    // ============= TRUCKING SECTIONS MANAGEMENT =============
     let truckingSectionCounter = 0;
     const truckingSectionsContainer = document.getElementById('trucking_sections_container');
     const addTruckingSectionBtn = document.getElementById('add_trucking_section_btn');
@@ -122,14 +122,11 @@
         const blDropdown = section.querySelector('.trucking-bl-dropdown');
         const vendorSelect = section.querySelector('.trucking-vendor-select');
         
-        $(kapalSelect).select2({
-            placeholder: "-- Pilih Kapal --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 0
-        }).on('change', function() {
-            loadVoyagesForTruckingSection(sectionIndex, this.value);
-        });
+        if (kapalSelect) {
+            kapalSelect.addEventListener('change', function() {
+                loadVoyagesForTruckingSection(sectionIndex, this.value);
+            });
+        }
         
         voyageSelect.addEventListener('change', function() {
             loadBlsForTruckingSection(sectionIndex, this.value);
@@ -165,7 +162,7 @@
     window.removeTruckingSection = function(index) {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${index}"]`);
         if (section) {
-            $(section).find('.trucking-kapal-select').select2('destroy');
+             // No destroy needed for vanilla select
             section.remove();
             calculateTotalFromAllTruckingSections();
         }

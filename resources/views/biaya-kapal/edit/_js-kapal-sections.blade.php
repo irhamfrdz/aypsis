@@ -100,63 +100,65 @@
         
         kapalSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener with Select2
+        // Setup kapal change listener (Vanilla JS)
         const kapalSelect = section.querySelector('.kapal-select');
         const voyageSelect = section.querySelector('.voyage-select');
-        $(kapalSelect).select2({
-            placeholder: "-- Pilih Kapal --",
-            allowClear: true,
-            width: '100%',
-            minimumResultsForSearch: 0
-        }).on('change', function() {
-            const kapalNama = $(this).val();
-            if (kapalNama) {
-                loadVoyagesForSection(sectionIndex, kapalNama);
-            } else {
-                voyageSelect.disabled = true;
-                voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
-            }
-        });
+        
+        if (kapalSelect) {
+            kapalSelect.addEventListener('change', function() {
+                const kapalNama = this.value;
+                if (kapalNama) {
+                    loadVoyagesForSection(sectionIndex, kapalNama);
+                } else {
+                    voyageSelect.disabled = true;
+                    voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+                }
+            });
+        }
         
         // Setup voyage change listener for auto-fill barang
-        voyageSelect.addEventListener('change', function() {
-            const kapalNama = kapalSelect.value;
-            const voyageValue = this.value;
-            if (kapalNama && voyageValue) {
-                autoFillBarangForSection(sectionIndex, kapalNama, voyageValue);
-            }
-        });
+        if (voyageSelect) {
+            voyageSelect.addEventListener('change', function() {
+                const kapalNama = kapalSelect.value;
+                const voyageValue = this.value;
+                if (kapalNama && voyageValue) {
+                    autoFillBarangForSection(sectionIndex, kapalNama, voyageValue);
+                }
+            });
+        }
 
         // Setup manual voyage toggle
         const voyageInput = section.querySelector('.voyage-input');
         const voyageManualBtn = section.querySelector('.voyage-manual-btn');
 
-        voyageManualBtn.addEventListener('click', function() {
-            if (voyageInput.classList.contains('hidden')) {
-                // Switch to manual input
-                voyageSelect.classList.add('hidden');
-                voyageSelect.disabled = true;
-                
-                voyageInput.classList.remove('hidden');
-                voyageInput.disabled = false;
-                voyageInput.focus();
-                
-                this.classList.remove('bg-gray-200', 'text-gray-600');
-                this.classList.add('bg-blue-200', 'text-blue-700');
-                this.innerHTML = '<i class="fas fa-list"></i>';
-            } else {
-                // Switch to select list
-                voyageInput.classList.add('hidden');
-                voyageInput.disabled = true;
-                
-                voyageSelect.classList.remove('hidden');
-                voyageSelect.disabled = false;
-                
-                this.classList.add('bg-gray-200', 'text-gray-600');
-                this.classList.remove('bg-blue-200', 'text-blue-700');
-                this.innerHTML = '<i class="fas fa-keyboard"></i>';
-            }
-        });
+        if (voyageManualBtn) {
+            voyageManualBtn.addEventListener('click', function() {
+                if (voyageInput.classList.contains('hidden')) {
+                    // Switch to manual input
+                    voyageSelect.classList.add('hidden');
+                    voyageSelect.disabled = true;
+                    
+                    voyageInput.classList.remove('hidden');
+                    voyageInput.disabled = false;
+                    voyageInput.focus();
+                    
+                    this.classList.remove('bg-gray-200', 'text-gray-600');
+                    this.classList.add('bg-blue-200', 'text-blue-700');
+                    this.innerHTML = '<i class="fas fa-list"></i>';
+                } else {
+                    // Switch to select list
+                    voyageInput.classList.add('hidden');
+                    voyageInput.disabled = true;
+                    
+                    voyageSelect.classList.remove('hidden');
+                    voyageSelect.disabled = false;
+                    
+                    this.classList.add('bg-gray-200', 'text-gray-600');
+                    this.classList.remove('bg-blue-200', 'text-blue-700');
+                    this.innerHTML = '<i class="fas fa-keyboard"></i>';
+                }
+            });
+        }
         
         // Add first barang input
         addBarangToSection(sectionIndex);
