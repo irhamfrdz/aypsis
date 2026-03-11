@@ -317,13 +317,25 @@
                 </div>
 
                 <div class="overflow-x-auto bg-white rounded-lg border border-gray-200">
-                    <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                        <div class="text-sm text-gray-600">
-                            <strong>Tip:</strong> Gunakan tombol "Centang Semua" untuk memberikan semua izin akses, atau centang secara manual untuk kontrol lebih detail.
+                    <div class="p-4 bg-gray-50 border-b border-gray-200 flex flex-wrap gap-4 justify-between items-center">
+                        <div class="flex-1 min-w-[300px]">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </span>
+                                <input type="text" id="permission_search" placeholder="Cari modul atau sub-modul..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out">
+                            </div>
                         </div>
-                        <button type="button" id="check_all_permissions" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
-                            Centang Semua
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <div class="text-sm text-gray-600 hidden md:block mr-2">
+                                <strong>Tip:</strong> Gunakan search untuk mencari ijin akses
+                            </div>
+                            <button type="button" id="check_all_permissions" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                                Centang Semua
+                            </button>
+                        </div>
                     </div>
                     <table class="permission-matrix">
                         <thead>
@@ -1187,6 +1199,40 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
+                            {{-- Monitoring Cek Kendaraan --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Monitoring Cek Kendaraan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['monitoring-cek-kendaraan']['view']) && $userMatrixPermissions['monitoring-cek-kendaraan']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Monitoring Cek Harian --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Dashboard Cek Harian</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan-daily][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['monitoring-cek-kendaraan-daily']['view']) && $userMatrixPermissions['monitoring-cek-kendaraan-daily']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
                             {{-- Gate In --}}
                             <tr class="submodule-row" data-parent="operational">
@@ -3146,6 +3192,9 @@
             // Initialize permission controls
             initializePermissionControls();
 
+            // Initialize permission search
+            initializePermissionSearch();
+
             // ==========================================
             // KARYAWAN SELECT INITIALIZATION
             // ==========================================
@@ -3215,6 +3264,100 @@
                         });
                     }
                 });
+            }
+
+            function initializePermissionSearch() {
+                const searchInput = document.getElementById('permission_search');
+                if (!searchInput) return;
+
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.toLowerCase().trim();
+                    const moduleRows = document.querySelectorAll('.module-row');
+                    const submoduleRows = document.querySelectorAll('.submodule-row');
+                    const singleRows = document.querySelectorAll('tbody tr:not(.module-row):not(.submodule-row)');
+
+                    if (query === '') {
+                        moduleRows.forEach(row => {
+                            row.style.display = '';
+                            const textElem = row.querySelector('.module-header .font-semibold');
+                            if (textElem) textElem.innerHTML = textElem.textContent;
+                        });
+                        submoduleRows.forEach(row => {
+                            row.style.display = (row.classList.contains('visible') ? 'table-row' : 'none');
+                            const textElem = row.querySelector('.submodule span:not(.text-sm)');
+                            if (textElem) textElem.innerHTML = textElem.textContent;
+                        });
+                        singleRows.forEach(row => {
+                            row.style.display = '';
+                            const span = row.querySelector('td:first-child span:not(.text-sm)');
+                            if (span) span.innerHTML = span.textContent;
+                        });
+                        return;
+                    }
+
+                    const visibleModules = new Set();
+                    const matchedSubmodules = new Set();
+
+                    submoduleRows.forEach(row => {
+                        const textElement = row.querySelector('.submodule span:not(.text-sm)');
+                        if (!textElement) return;
+                        const text = textElement.textContent.toLowerCase();
+                        if (text.includes(query)) {
+                            visibleModules.add(row.dataset.parent);
+                            matchedSubmodules.add(row);
+                            highlightText(textElement, query);
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    moduleRows.forEach(row => {
+                        const textElement = row.querySelector('.module-header .font-semibold');
+                        if (!textElement) return;
+                        const text = textElement.textContent.toLowerCase();
+                        const moduleName = row.dataset.module;
+
+                        if (text.includes(query) || visibleModules.has(moduleName)) {
+                            row.style.display = '';
+                            if (text.includes(query)) {
+                                highlightText(textElement, query);
+                            } else {
+                                textElement.innerHTML = textElement.textContent;
+                            }
+                            
+                            submoduleRows.forEach(subRow => {
+                                if (subRow.dataset.parent === moduleName) {
+                                    if (text.includes(query) || matchedSubmodules.has(subRow)) {
+                                        subRow.style.display = 'table-row';
+                                    } else {
+                                        subRow.style.display = 'none';
+                                    }
+                                }
+                            });
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    singleRows.forEach(row => {
+                        const textElement = row.querySelector('td:first-child span:not(.text-sm)');
+                        if (textElement) {
+                            const text = textElement.textContent.toLowerCase();
+                            if (text.includes(query)) {
+                                row.style.display = '';
+                                highlightText(textElement, query);
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+
+                function highlightText(element, query) {
+                    const text = element.textContent;
+                    const regex = new RegExp(`(${query})`, 'gi');
+                    element.innerHTML = text.replace(regex, '<mark class="bg-yellow-200 rounded px-0.5">$1</mark>');
+                }
             }
 
             function expandModule(moduleName) {

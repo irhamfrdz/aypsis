@@ -5064,15 +5064,15 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
             Route::prefix('admin')->name('admin.')->group(function() {
                 Route::get('cek-kendaraan', [\App\Http\Controllers\CekKendaraanController::class, 'index'])
                     ->name('cek-kendaraan.index')
-                    ->middleware('can:master-mobil-view');
+                    ->middleware('can:monitoring-cek-kendaraan-view');
 
                 Route::get('cek-kendaraan-daily', [\App\Http\Controllers\CekKendaraanController::class, 'dailyDashboard'])
                     ->name('cek-kendaraan.daily')
-                    ->middleware('can:master-mobil-view');
+                    ->middleware('can:monitoring-cek-kendaraan-daily-view');
 
                 Route::get('cek-kendaraan/{cekKendaraan}', [\App\Http\Controllers\CekKendaraanController::class, 'show'])
                     ->name('cek-kendaraan.show')
-                    ->middleware('can:master-mobil-view');
+                    ->middleware('can:monitoring-cek-kendaraan-view');
             });
 
     // 🛡️ APPROVAL TANDA TERIMA (INSURANCE)

@@ -861,13 +861,15 @@
         @endif
 
         {{-- Monitoring Cek Kendaraan --}}
-        @if($user && $user->can('master-mobil-view'))
+        @if($user && $user->can('monitoring-cek-kendaraan-view'))
         <div class="mx-2 mb-3">
             <a href="{{ route('admin.cek-kendaraan.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.index') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Monitoring Cek Kendaraan</span>
             </a>
         </div>
+        @endif
 
+        @if($user && $user->can('monitoring-cek-kendaraan-daily-view'))
         <div class="mx-2 mb-3">
             <a href="{{ route('admin.cek-kendaraan.daily') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.daily') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Dashboard Cek Harian</span>
@@ -1868,6 +1870,7 @@
                 <span class="ml-auto text-xs text-gray-400 italic">(soon)</span>
             @endif
         </a>
+
 
         {{-- Report Rit --}}
         <a href="{{ route('report.rit.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.rit.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
