@@ -20,7 +20,7 @@ return new class extends Migration
         ];
 
         foreach ($permissions as $permission) {
-            DB::table('permissions')->updateOrInsert(
+            $id = DB::table('permissions')->updateOrInsert(
                 ['name' => $permission['name']],
                 [
                     'description' => $permission['description'],
@@ -28,6 +28,15 @@ return new class extends Migration
                     'updated_at' => now()
                 ]
             );
+
+            // Give permission to admin (user_id = 1)
+            $permissionId = DB::table('permissions')->where('name', $permission['name'])->value('id');
+            if ($permissionId) {
+                DB::table('user_permissions')->updateOrInsert(
+                    ['user_id' => 1, 'permission_id' => $permissionId],
+                    []
+                );
+            }
         }
     }
 

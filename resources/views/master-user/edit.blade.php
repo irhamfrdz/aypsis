@@ -867,6 +867,23 @@
                                 <td><input type="checkbox" name="permissions[master-dokumen-kapal-alexindo][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-dokumen-kapal-alexindo']['export']) && $userMatrixPermissions['master-dokumen-kapal-alexindo']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Dashboard Dokumen Kapal Alexindo --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-indigo-600 font-bold">Dashboard Dokumen Kapal</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[dashboard-dokumen-kapal-alexindo][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['dashboard-dokumen-kapal-alexindo']['view']) && $userMatrixPermissions['dashboard-dokumen-kapal-alexindo']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
                             {{-- Master Tarif --}}
                             <tr class="module-row" data-module="master-tarif">

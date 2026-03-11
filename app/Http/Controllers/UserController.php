@@ -622,7 +622,8 @@ class UserController extends Controller
                 'pembayaran-pranota-invoice-vendor-supir' => 'pembayaran-pranota-invoice-vendor-supir',
                 'pranota-stock' => 'pranota-stock',
                 'monitoring-cek-kendaraan-daily' => 'monitoring-cek-kendaraan-daily',
-                'monitoring-cek-kendaraan' => 'monitoring-cek-kendaraan'
+                'monitoring-cek-kendaraan' => 'monitoring-cek-kendaraan',
+                'dashboard-dokumen-kapal-alexindo' => 'dashboard-dokumen-kapal-alexindo'
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -2000,6 +2001,17 @@ class UserController extends Controller
                                         $found = true;
                                         continue; // Skip to next action
                                     }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle dashboard-dokumen-kapal-alexindo permissions explicitly
+                            if ($module === 'dashboard-dokumen-kapal-alexindo' && in_array($action, ['view'])) {
+                                $permissionName = 'dashboard-dokumen-kapal-alexindo-view';
+                                $directPermission = Permission::where('name', $permissionName)->first();
+                                if ($directPermission) {
+                                    $permissionIds[] = $directPermission->id;
+                                    $found = true;
+                                    continue; // Skip to next action
                                 }
                             }
 
