@@ -90,9 +90,27 @@
                                     {{ \Carbon\Carbon::parse($usage->tanggal_keluar)->format('d/m/Y') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
-                                        {{ $usage->mobil->nomor_polisi }}
-                                    </span>
+                                    @if($usage->mobil)
+                                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded" title="Mobil">
+                                            <i class="fas fa-truck mr-1"></i>{{ $usage->mobil->nomor_polisi }}
+                                        </span>
+                                    @elseif($usage->kapal)
+                                        <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded" title="Kapal">
+                                            <i class="fas fa-ship mr-1"></i>{{ $usage->kapal->nama_kapal }}
+                                        </span>
+                                    @elseif($usage->gudang)
+                                        <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded" title="Gudang">
+                                            <i class="fas fa-warehouse mr-1"></i>{{ $usage->gudang->nama_gudang }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                    
+                                    @if($usage->penerima)
+                                        <div class="text-[10px] text-gray-500 mt-1">
+                                            <i class="fas fa-user mr-1"></i>{{ $usage->penerima->nama_lengkap }}
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
                                     {{ $usage->qty }}

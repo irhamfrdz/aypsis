@@ -820,4 +820,88 @@ class StockBanController extends Controller
             return back()->with('error', 'Gagal menyimpan pemakaian: ' . $e->getMessage());
         }
     }
+    /**
+     * Show all movement history (Inbound and Outbound) for quantity-based items.
+     */
+    public function allUsageHistory()
+    {
+        // 1. Get Inbound (Creation of StockBanDalam, RingVelg, Velg)
+        $inboundBan = \App\Models\StockBanDalam::with(['namaStockBan'])->get()->map(function($item) {
+            return (object)[
+                'tanggal' => $item->tanggal_masuk,
+                'created_at' => $item->created_at,
+                'jenis_pergerakan' => 'MASUK',
+                'nama' => ($item->namaStockBan->nama ?? 'Barang Lainnya'),
+                'qty' => $item->qty_awal ?? $item->qty,
+                'pelaku' => 'System / Purchase',
+                'tujuan_penerima' => $item->lokasi ?? '-',
+                'keterangan' => $item->keterangan ?? '-',
+                'item_id' => $item->id
+            ];
+        });
+
+        $inboundRing = \App\Models\StockRingVelg::with(['namaStockBan'])->get()->map(function($item) {
+            return (object)[
+                'tanggal' => $item->tanggal_masuk,
+                'created_at' => $item->created_at,
+                'jenis_pergerakan' => 'MASUK',
+                'nama' => 'Ring Velg: ' . ($item->namaStockBan->nama ?? $item->ukuran),
+                'qty' => $item->qty,
+                'pelaku' => 'System / Purchase',
+                'tujuan_penerima' => $item->lokasi ?? '-',
+                'keterangan' => $item->keterangan ?? '-',
+                'item_id' => $item->id
+            ];
+        });
+
+        $inboundVelg = \App\Models\StockVelg::with(['namaStockBan'])->get()->map(function($item) {
+            return (object)[
+                'tanggal' => $item->tanggal_masuk,
+                'created_at' => $item->created_at,
+                'jenis_pergerakan' => 'MASUK',
+                'nama' => 'Velg: ' . ($item->namaStockBan->nama ?? $item->ukuran),
+                'qty' => $item->qty,
+                'pelaku' => 'System / Purchase',
+                'tujuan_penerima' => $item->lokasi ?? '-',
+                'keterangan' => $item->keterangan ?? '-',
+                'item_id' => $item->id
+            ];
+        });
+
+        $inbound = $inboundBan->concat($inboundRing)->concat($inboundVelg);
+
+        // 2. Get Outbound (Usage)
+        $outbound = \App\Models\StockBanDalamUsage::with(['stockBanDalam.namaStockBan', 'penerima', 'mobil', 'kapal', 'gudang'])->get()->map(function($item) {
+            $tujuan = '-';
+            if ($item->mobil) $tujuan = $item->mobil->nomor_polisi;
+            elseif ($item->kapal) $tujuan = $item->kapal->nama_kapal;
+            elseif ($item->gudang) $tujuan = $item->gudang->nama_gudang;
+
+            $nama = $item->stockBanDalam->namaStockBan->nama ?? 'Barang Lainnya';
+            
+            // If it's a generic reference (Velg/Ring Velg recorded in keterangan)
+            if (!$item->stock_ban_dalam_id && preg_match('/\[(.*?) ID: (.*?)\]/', $item->keterangan, $matches)) {
+                $nama = $matches[1] . " (Ref ID: " . $matches[2] . ")";
+            }
+
+            return (object)[
+                'tanggal' => $item->tanggal_keluar,
+                'created_at' => $item->created_at,
+                'jenis_pergerakan' => 'KELUAR',
+                'nama' => $nama,
+                'qty' => $item->qty,
+                'pelaku' => $item->penerima->nama_lengkap ?? '-',
+                'tujuan_penerima' => $tujuan,
+                'keterangan' => $item->keterangan ?? '-',
+                'item_id' => $item->stock_ban_dalam_id ?? 'N/A'
+            ];
+        });
+
+        // 3. Merge and Sort
+        $history = $inbound->concat($outbound)->sortByDesc(function($item) {
+            return $item->tanggal . $item->created_at;
+        });
+            
+        return view('stock-ban.all-usage-history', compact('history'));
+    }
 }

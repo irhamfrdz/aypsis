@@ -853,9 +853,14 @@
             @if($paintStats->count() > 0 || $majunQty > 0)
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Summary</h3>
-                <button type="button" id="btn-reset-filter-barang" class="hidden text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 transition-all" onclick="filterBarangLainnya(null)">
-                    <i class="fas fa-sync-alt mr-1"></i> Reset Filter
-                </button>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('stock-ban.all-usage-history') }}" class="text-xs font-bold text-gray-600 hover:text-blue-600 bg-white px-3 py-1 rounded-lg border border-gray-200 transition-all shadow-sm">
+                        <i class="fas fa-history mr-1 text-blue-500"></i> History Pemakaian
+                    </a>
+                    <button type="button" id="btn-reset-filter-barang" class="hidden text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 transition-all" onclick="filterBarangLainnya(null)">
+                        <i class="fas fa-sync-alt mr-1"></i> Reset Filter
+                    </button>
+                </div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
                 @foreach($paintStats as $name => $data)
@@ -1064,8 +1069,11 @@
                                         </button>
                                     @endif
                                     
-                                    <a href="{{ $item->url_detail }}" class="text-blue-600 hover:text-blue-900" title="Detail / History">
+                                    <a href="{{ $item->url_detail }}" class="text-blue-600 hover:text-blue-900" title="Informasi Lengkap">
                                         <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ $item->url_detail }}" class="text-gray-500 hover:text-blue-600" title="Riwayat Keluar/Masuk">
+                                        <i class="fas fa-history"></i>
                                     </a>
                                 </div>
                             </td>
