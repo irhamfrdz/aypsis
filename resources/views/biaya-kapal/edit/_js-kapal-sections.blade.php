@@ -1,4 +1,4 @@
-﻿    
+    
     // Function to clear BL selections
     function clearBlSelections() {
         selectedBls = {};
@@ -108,7 +108,15 @@
             allowClear: true,
             width: '100%',
             minimumResultsForSearch: 0
-        }).on('change', async function() {
+        }).on('change', function() {
+            const kapalNama = $(this).val();
+            if (kapalNama) {
+                loadVoyagesForSection(sectionIndex, kapalNama);
+            } else {
+                voyageSelect.disabled = true;
+                voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            }
+        });
         
         // Setup voyage change listener for auto-fill barang
         voyageSelect.addEventListener('change', function() {
