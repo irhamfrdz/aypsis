@@ -20,8 +20,7 @@ class SertifikatKapalController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('nama_sertifikat', 'like', '%' . $search . '%')
                   ->orWhere('name_certificate', 'like', '%' . $search . '%')
-                  ->orWhere('nickname', 'like', '%' . $search . '%')
-                  ->orWhere('jenis_dokumen', 'like', '%' . $search . '%');
+                  ->orWhere('nickname', 'like', '%' . $search . '%');
             });
         }
 
@@ -51,7 +50,6 @@ class SertifikatKapalController extends Controller
             'nama_sertifikat' => 'required|string|max:255',
             'name_certificate' => 'nullable|string|max:255',
             'nickname' => 'nullable|string|max:255',
-            'jenis_dokumen' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,nonaktif'
         ]);
 
@@ -86,7 +84,6 @@ class SertifikatKapalController extends Controller
             'nama_sertifikat' => 'required|string|max:255',
             'name_certificate' => 'nullable|string|max:255',
             'nickname' => 'nullable|string|max:255',
-            'jenis_dokumen' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,nonaktif'
         ]);
 

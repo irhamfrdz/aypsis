@@ -16,7 +16,6 @@ class SertifikatKapal extends Model
         'nama_sertifikat',
         'name_certificate',
         'nickname',
-        'jenis_dokumen',
         'status'
     ];
 

@@ -63,10 +63,7 @@
                         <p class="text-lg font-semibold text-gray-900">{{ $master_sertifikat_kapal->nickname ?? '-' }}</p>
                     </div>
 
-                    <div>
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Jenis Dokumen</h3>
-                        <p class="text-lg font-semibold text-gray-900">{{ $master_sertifikat_kapal->jenis_dokumen ?? '-' }}</p>
-                    </div>
+
                 </div>
 
                 <div class="pt-6 border-t border-gray-100 grid grid-cols-2 gap-4 text-center">
