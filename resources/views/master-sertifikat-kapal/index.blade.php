@@ -68,13 +68,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ ($sertifikats->currentPage() - 1) * $sertifikats->perPage() + $loop->iteration }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4">
                             <div class="text-sm font-semibold text-gray-900">{{ $sertifikat->nama_sertifikat }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4">
                             <div class="text-sm text-gray-900">{{ $sertifikat->name_certificate ?? '-' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4">
                             <div class="text-sm text-gray-900">{{ $sertifikat->nickname ?? '-' }}</div>
                         </td>
 
