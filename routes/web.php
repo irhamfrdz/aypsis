@@ -1653,6 +1653,13 @@ Route::middleware([
     Route::get('stock-ban-dalam/{id}/use', [\App\Http\Controllers\StockBanController::class, 'useBanDalam'])->name('stock-ban-dalam.use')->middleware('can:stock-ban-update');
     Route::post('stock-ban-dalam/{id}/use', [\App\Http\Controllers\StockBanController::class, 'storeUsageBanDalam'])->name('stock-ban-dalam.store-usage')->middleware('can:stock-ban-update');
     Route::get('stock-ban-dalam/{id}', [\App\Http\Controllers\StockBanController::class, 'showBanDalam'])->name('stock-ban-dalam.show')->middleware('can:stock-ban-view');
+    // Custom Actions for Quantity-based Stock
+    Route::post('stock-ban/store-quantity-usage', [\App\Http\Controllers\StockBanController::class, 'storeStockUsage'])
+         ->name('stock-ban.store-quantity-usage')
+         ->middleware('can:stock-ban-update');
+    Route::get('stock-ban/all-usage-history', [\App\Http\Controllers\StockBanController::class, 'allUsageHistory'])
+         ->name('stock-ban.all-usage-history')
+         ->middleware('can:stock-ban-view');
     Route::get('stock-ban', [\App\Http\Controllers\StockBanController::class, 'index'])
          ->name('stock-ban.index')
          ->middleware('can:stock-ban-view');
@@ -4895,12 +4902,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->middleware('can:stock-ban-create');
                
           // Custom Actions for StockBan
-          Route::post('stock-ban/store-quantity-usage', [\App\Http\Controllers\StockBanController::class, 'storeStockUsage'])
-               ->name('stock-ban.store-quantity-usage')
-               ->middleware('can:stock-ban-update');
-          Route::get('stock-ban/all-usage-history', [\App\Http\Controllers\StockBanController::class, 'allUsageHistory'])
-               ->name('stock-ban.all-usage-history')
-               ->middleware('can:stock-ban-view');
+
           Route::put('stock-ban/{stock_ban}/masak', [\App\Http\Controllers\StockBanController::class, 'masak'])
                ->name('stock-ban.masak')
                ->middleware('can:stock-ban-update');
