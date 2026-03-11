@@ -64,7 +64,14 @@
                                     <span id="sertifikat-selected-text">
                                         @if(old('sertifikat_kapal_id') ?? $dokumen->sertifikat_kapal_id)
                                             @php $selected = $sertifikat_kapals->firstWhere('id', old('sertifikat_kapal_id') ?? $dokumen->sertifikat_kapal_id); @endphp
-                                            {{ $selected ? $selected->nama_sertifikat : '-- Pilih Dokumen/Sertifikat --' }}
+                                            @if($selected)
+                                                {{ $selected->nama_sertifikat }}
+                                                @if($selected->nickname)
+                                                    <span class="text-xs text-blue-600 font-normal ml-1">({{ $selected->nickname }})</span>
+                                                @endif
+                                            @else
+                                                -- Pilih Dokumen/Sertifikat --
+                                            @endif
                                         @else
                                             -- Pilih Dokumen/Sertifikat --
                                         @endif
@@ -77,13 +84,19 @@
                                         <input type="text" id="sertifikat-search-input" placeholder="Cari dokumen..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500">
                                     </div>
                                     <div class="custom-select-options" id="sertifikat-options-list">
-                                        <div class="custom-select-option" data-value="" data-text="-- Pilih Dokumen/Sertifikat --">-- Pilih Dokumen/Sertifikat --</div>
+                                        <div class="custom-select-option" data-value="" data-text="-- Pilih Dokumen/Sertifikat --" data-nickname="">-- Pilih Dokumen/Sertifikat --</div>
                                         @foreach($sertifikat_kapals as $sertifikat)
                                             <div class="custom-select-option" 
                                                  data-value="{{ $sertifikat->id }}" 
-                                                 data-search="{{ strtolower($sertifikat->nama_sertifikat) }}"
-                                                 data-text="{{ $sertifikat->nama_sertifikat }}">
-                                                {{ $sertifikat->nama_sertifikat }}
+                                                 data-search="{{ strtolower($sertifikat->nama_sertifikat) }} {{ strtolower($sertifikat->nickname ?? '') }}"
+                                                 data-text="{{ $sertifikat->nama_sertifikat }}"
+                                                 data-nickname="{{ $sertifikat->nickname ?? '' }}">
+                                                <div class="flex flex-col py-0.5">
+                                                    <span class="font-medium text-gray-800">{{ $sertifikat->nama_sertifikat }}</span>
+                                                    @if($sertifikat->nickname)
+                                                        <span class="text-xs text-blue-600 font-normal mt-0.5">{{ $sertifikat->nickname }}</span>
+                                                    @endif
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
@@ -172,9 +185,13 @@
                 });
             }
 
-            function selectOption(id, text) {
+            function selectOption(id, text, nickname) {
                 hiddenInput.value = id;
-                selectedText.textContent = text;
+                if (nickname) {
+                    selectedText.innerHTML = text + ' <span style="font-size:0.75rem;color:#2563eb;font-weight:400;margin-left:4px">('+nickname+')</span>';
+                } else {
+                    selectedText.textContent = text;
+                }
                 closeDropdown();
                 updateSelectedState(id);
             }
@@ -269,7 +286,11 @@
                 const option = e.target.closest('.custom-select-option');
                 if (option) {
                     e.stopPropagation();
-                    selectOption(option.getAttribute('data-value'), option.getAttribute('data-text'));
+                    selectOption(
+                        option.getAttribute('data-value'),
+                        option.getAttribute('data-text'),
+                        option.getAttribute('data-nickname')
+                    );
                 }
             });
 
