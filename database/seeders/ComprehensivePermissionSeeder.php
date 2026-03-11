@@ -267,6 +267,14 @@ class ComprehensivePermissionSeeder extends Seeder
             'master-vendor-bengkel-delete' => 'Menghapus Data Vendor Bengkel',
 
             // ═══════════════════════════════════════════════════════════════════════
+            // 🛡️ MASTER VENDOR ASURANSI PERMISSIONS (4)
+            // ═══════════════════════════════════════════════════════════════════════
+            'master-vendor-asuransi-view' => 'Melihat Data Vendor Asuransi',
+            'master-vendor-asuransi-create' => 'Membuat Data Vendor Asuransi',
+            'master-vendor-asuransi-update' => 'Mengupdate Data Vendor Asuransi',
+            'master-vendor-asuransi-delete' => 'Menghapus Data Vendor Asuransi',
+
+            // ═══════════════════════════════════════════════════════════════════════
             // 🔢 MASTER KODE NOMOR PERMISSIONS (4)
             // ═══════════════════════════════════════════════════════════════════════
             'master-kode-nomor-view' => 'Melihat Data Kode Nomor',

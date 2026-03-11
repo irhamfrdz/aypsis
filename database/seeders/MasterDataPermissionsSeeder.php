@@ -34,6 +34,12 @@ class MasterDataPermissionsSeeder extends Seeder
             'master-vendor-bengkel-update',
             'master-vendor-bengkel-delete',
 
+            // Vendor Asuransi Permissions
+            'master-vendor-asuransi-view',
+            'master-vendor-asuransi-create',
+            'master-vendor-asuransi-update',
+            'master-vendor-asuransi-delete',
+
             // Kode Nomor Permissions
             'master-kode-nomor-view',
             'master-kode-nomor-create',

@@ -20,4 +20,19 @@ class StockBanDalamUsage extends Model
     {
         return $this->belongsTo(Mobil::class);
     }
+
+    public function penerima()
+    {
+        return $this->belongsTo(Karyawan::class, 'penerima_id');
+    }
+
+    public function kapal()
+    {
+        return $this->belongsTo(MasterKapal::class, 'kapal_id');
+    }
+
+    public function gudang()
+    {
+        return $this->belongsTo(MasterGudangBan::class, 'gudang_id');
+    }
 }

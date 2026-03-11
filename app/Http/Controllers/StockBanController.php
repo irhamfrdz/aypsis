@@ -59,8 +59,9 @@ class StockBanController extends Controller
             ->orderBy('vendor')
             ->get();
         $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
+        $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanLuarBatams', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockLainLains', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals'));
+        return view('stock-ban.index', compact('stockBans', 'stockBanLuarBatams', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockLainLains', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals', 'masterGudangBans'));
     }
 
     /**
@@ -750,5 +751,73 @@ class StockBanController extends Controller
         ]);
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dikembalikan ke stok.');
+    }
+    /**
+     * Store stock usage for quantity-based items.
+     */
+    public function storeStockUsage(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required',
+            'item_jenis' => 'required',
+            'qty' => 'required|integer|min:1',
+            'penerima_id' => 'required|exists:karyawans,id',
+            'gudang_id' => 'nullable|exists:master_gudang_bans,id',
+            'kapal_id' => 'nullable|exists:master_kapals,id',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        $itemId = $request->item_id;
+        $jenis = $request->item_jenis;
+        $qtyUsed = $request->qty;
+
+        DB::beginTransaction();
+        try {
+            $item = null;
+            $tableName = '';
+            
+            if (in_array($jenis, ['Ban Dalam', 'Ban Perut', 'Lock Kontainer', 'Cat', 'Majun', 'Lainnya'])) {
+                $item = \App\Models\StockBanDalam::findOrFail($itemId);
+                $tableName = 'stock_ban_dalams';
+            } elseif ($jenis == 'Ring Velg') {
+                $item = \App\Models\StockRingVelg::findOrFail($itemId);
+                $tableName = 'stock_ring_velgs';
+            } elseif ($jenis == 'Velg') {
+                $item = \App\Models\StockVelg::findOrFail($itemId);
+                $tableName = 'stock_velgs';
+            }
+
+            if (!$item) {
+                throw new \Exception('Jenis barang tidak dikenal.');
+            }
+
+            if ($item->qty < $qtyUsed) {
+                return back()->with('error', 'Stok tidak mencukupi.');
+            }
+
+            // Update qty
+            $item->decrement('qty', $qtyUsed);
+
+            // Record usage
+            // We'll use StockBanDalamUsage as a general usage record for now
+            // If it's not StockBanDalam, we store the ID in keterangan for traceability
+            \App\Models\StockBanDalamUsage::create([
+                'stock_ban_dalam_id' => ($tableName == 'stock_ban_dalams') ? $item->id : null,
+                'qty' => $qtyUsed,
+                'penerima_id' => $request->penerima_id,
+                'gudang_id' => $request->gudang_id,
+                'kapal_id' => $request->kapal_id,
+                'tanggal_keluar' => now(),
+                'keterangan' => ($tableName != 'stock_ban_dalams') 
+                    ? "[$jenis ID: $itemId] " . $request->keterangan 
+                    : $request->keterangan,
+            ]);
+
+            DB::commit();
+            return redirect()->route('stock-ban.index')->with('success', 'Pemakaian stok berhasil disimpan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menyimpan pemakaian: ' . $e->getMessage());
+        }
     }
 }

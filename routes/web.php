@@ -49,6 +49,8 @@ use App\Http\Controllers\PembayaranUangMukaController;
 use App\Http\Controllers\PembayaranObController;
 use App\Http\Controllers\RealisasiUangMukaController;
 use App\Http\Controllers\VendorBengkelController;
+use App\Http\Controllers\VendorAsuransiController;
+use App\Http\Controllers\VendorSupirController;
 use App\Http\Controllers\TipeAkunController;
 use App\Http\Controllers\PengirimController;
 use App\Http\Controllers\PenerimaController;
@@ -1390,6 +1392,26 @@ Route::middleware([
              'edit' => 'can:master-vendor-bengkel-update',
              'update' => 'can:master-vendor-bengkel-update',
              'destroy' => 'can:master-vendor-bengkel-delete'
+         ]);
+
+    // 🛡️ Master Vendor Asuransi (Insurance Vendor)
+    Route::get('master/vendor-asuransi/export-template', [VendorAsuransiController::class, 'exportTemplate'])
+         ->name('master.vendor-asuransi.export-template')
+         ->middleware('can:master-vendor-asuransi-view');
+    Route::post('master/vendor-asuransi/import', [VendorAsuransiController::class, 'import'])
+         ->name('master.vendor-asuransi.import')
+         ->middleware('can:master-vendor-asuransi-create');
+
+    Route::resource('master/vendor-asuransi', VendorAsuransiController::class)
+         ->names('master.vendor-asuransi')
+         ->middleware([
+             'index' => 'can:master-vendor-asuransi-view',
+             'show' => 'can:master-vendor-asuransi-view',
+             'create' => 'can:master-vendor-asuransi-create',
+             'store' => 'can:master-vendor-asuransi-create',
+             'edit' => 'can:master-vendor-asuransi-update',
+             'update' => 'can:master-vendor-asuransi-update',
+             'destroy' => 'can:master-vendor-asuransi-delete'
          ]);
 
     // 🚐 Master Vendor Supir

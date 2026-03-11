@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Stock Ban')
 @section('page_title', 'Stock Ban')
@@ -992,10 +992,13 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end gap-2">
-                                    @if($item->qty > 0 && $item->jenis == 'Ban Dalam')
-                                        <a href="{{ $item->url_use }}" class="text-green-600 hover:text-green-900" title="Gunakan">
+                                    @if($item->qty > 0)
+                                        <button type="button" 
+                                            class="text-green-600 hover:text-green-900" 
+                                            onclick="openStockUsageModal('{{ $item->id }}', '{{ $item->jenis }}', '{{ $item->nama }}', '{{ $item->qty }}')"
+                                            title="Gunakan Stock">
                                             <i class="fas fa-sign-out-alt"></i>
-                                        </a>
+                                        </button>
                                     @endif
                                     
                                     <a href="{{ $item->url_detail }}" class="text-blue-600 hover:text-blue-900" title="Detail / History">
@@ -2654,4 +2657,138 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Gunakan Stock (Generic untuk barang lainnya) -->
+<div id="stockUsageModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeStockUsageModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="stockUsageForm" method="POST" action="{{ route('stock-ban.store-usage') }}">
+                @csrf
+                <input type="hidden" name="item_id" id="usage_item_id">
+                <input type="hidden" name="item_jenis" id="usage_item_jenis">
+                
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                        Gunakan <span id="usage_display_jenis"></span>: <span id="usage_display_nama" class="font-bold text-blue-600"></span>
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="usage_qty" class="form-label-premium">Jumlah yang Dipakai <span class="text-red-500">*</span> (Max: <span id="usage_max_qty">0</span>)</label>
+                            <input type="number" name="qty" id="usage_qty" class="form-input-premium" min="1" required>
+                        </div>
+
+                        <div>
+                            <label class="form-label-premium">Penerima <span class="text-red-500">*</span></label>
+                            <input type="hidden" name="penerima_id" id="usage_penerima" required>
+                            <button type="button" id="btn-usage_penerima" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('usage_penerima', this)">
+                                <span class="block truncate" id="text-usage_penerima">-- Pilih Penerima --</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div id="dropdown-content-usage_penerima" class="hidden">
+                                <div class="dropdown-search-container">
+                                    <input type="text" class="w-full border-gray-300 rounded-lg text-sm p-2" placeholder="Cari penerima..." onkeyup="DropdownManager.filter(this)">
+                                </div>
+                                <div class="dropdown-list">
+                                    @foreach($karyawans as $karyawan)
+                                        <div class="dropdown-item" onclick="DropdownManager.select('usage_penerima', '{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')" data-search="{{ strtolower($karyawan->nama_lengkap) }}">
+                                            {{ $karyawan->nama_lengkap }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label-premium">Gudang</label>
+                            <input type="hidden" name="gudang_id" id="usage_gudang">
+                            <button type="button" id="btn-usage_gudang" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('usage_gudang', this)">
+                                <span class="block truncate" id="text-usage_gudang">-- Pilih Gudang --</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div id="dropdown-content-usage_gudang" class="hidden">
+                                <div class="dropdown-search-container">
+                                    <input type="text" class="w-full border-gray-300 rounded-lg text-sm p-2" placeholder="Cari gudang..." onkeyup="DropdownManager.filter(this)">
+                                </div>
+                                <div class="dropdown-list">
+                                    <div class="dropdown-item" onclick="DropdownManager.select('usage_gudang', '', '-- Pilih Gudang --')">-- Pilih Gudang --</div>
+                                    @foreach($masterGudangBans as $gudang)
+                                        <div class="dropdown-item" onclick="DropdownManager.select('usage_gudang', '{{ $gudang->id }}', '{{ $gudang->nama_gudang }}')" data-search="{{ strtolower($gudang->nama_gudang) }}">
+                                            {{ $gudang->nama_gudang }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="form-label-premium">Kapal</label>
+                            <input type="hidden" name="kapal_id" id="usage_kapal">
+                            <button type="button" id="btn-usage_kapal" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('usage_kapal', this)">
+                                <span class="block truncate" id="text-usage_kapal">-- Pilih Kapal --</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </button>
+                            <div id="dropdown-content-usage_kapal" class="hidden">
+                                <div class="dropdown-search-container">
+                                    <input type="text" class="w-full border-gray-300 rounded-lg text-sm p-2" placeholder="Cari kapal..." onkeyup="DropdownManager.filter(this)">
+                                </div>
+                                <div class="dropdown-list">
+                                    <div class="dropdown-item" onclick="DropdownManager.select('usage_kapal', '', '-- Pilih Kapal --')">-- Pilih Kapal --</div>
+                                    @foreach($kapals as $kapal)
+                                        <div class="dropdown-item" onclick="DropdownManager.select('usage_kapal', '{{ $kapal->id }}', '{{ $kapal->nama_kapal }}')" data-search="{{ strtolower($kapal->nama_kapal) }}">
+                                            {{ $kapal->nama_kapal }}
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="usage_keterangan" class="form-label-premium">Keterangan</label>
+                            <textarea name="keterangan" id="usage_keterangan" class="form-input-premium" rows="2" placeholder="Catatan pemakaian..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Simpan Pemakaian
+                    </button>
+                    <button type="button" onclick="closeStockUsageModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openStockUsageModal(id, jenis, nama, qty) {
+        document.getElementById('usage_item_id').value = id;
+        document.getElementById('usage_item_jenis').value = jenis;
+        document.getElementById('usage_display_jenis').textContent = jenis;
+        document.getElementById('usage_display_nama').textContent = nama;
+        document.getElementById('usage_max_qty').textContent = qty;
+        document.getElementById('usage_qty').max = qty;
+        document.getElementById('usage_qty').value = 1;
+        
+        // Reset selections
+        document.getElementById('usage_penerima').value = '';
+        document.getElementById('text-usage_penerima').textContent = '-- Pilih Penerima --';
+        document.getElementById('usage_gudang').value = '';
+        document.getElementById('text-usage_gudang').textContent = '-- Pilih Gudang --';
+        document.getElementById('usage_kapal').value = '';
+        document.getElementById('text-usage_kapal').textContent = '-- Pilih Kapal --';
+        document.getElementById('usage_keterangan').value = '';
+
+        document.getElementById('stockUsageModal').classList.remove('hidden');
+    }
+
+    function closeStockUsageModal() {
+        document.getElementById('stockUsageModal').classList.add('hidden');
+    }
+</script>
 @endpush
