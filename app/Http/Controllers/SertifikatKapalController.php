@@ -15,8 +15,14 @@ class SertifikatKapalController extends Controller
     {
         $query = SertifikatKapal::query();
 
-        if ($request->has('search')) {
-            $query->where('nama_sertifikat', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_sertifikat', 'like', '%' . $search . '%')
+                  ->orWhere('name_certificate', 'like', '%' . $search . '%')
+                  ->orWhere('nickname', 'like', '%' . $search . '%')
+                  ->orWhere('jenis_dokumen', 'like', '%' . $search . '%');
+            });
         }
 
         if ($request->has('status')) {
