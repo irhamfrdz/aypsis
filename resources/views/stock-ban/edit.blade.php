@@ -76,8 +76,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Nomor Seri (Opsional, Unik jika diisi) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Seri / Kode Ban</label>
-                        <input type="text" name="nomor_seri" value="{{ old('nomor_seri', $stockBan->nomor_seri) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_seri') border-red-500 @enderror">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-gray-700">Nomor Seri / Kode Ban</label>
+                            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition">
+                                @php
+                                    $isTanpaSeri = old('no_serial_checkbox') || str_starts_with($stockBan->nomor_seri ?? '', 'Tidak Ada No Seri');
+                                @endphp
+                                <input type="checkbox" name="no_serial_checkbox" id="no_serial_checkbox" value="1" {{ $isTanpaSeri ? 'checked' : '' }} class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span>Tanpa Nomor Seri</span>
+                            </label>
+                        </div>
+                        <input type="text" name="nomor_seri" id="nomor_seri_input" value="{{ old('nomor_seri', str_starts_with($stockBan->nomor_seri ?? '', 'Tidak Ada No Seri') ? 'Tidak Ada No Seri' : $stockBan->nomor_seri) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_seri') border-red-500 @enderror" placeholder="Masukkan nomor seri ban">
                         @error('nomor_seri')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
@@ -888,6 +897,7 @@
             initMerkSelect();
             initLokasiSelect();
             initBanBatchLogic();
+            initNoSerialCheckbox();
         }
 
         function initBanBatchLogic() {
@@ -1047,6 +1057,38 @@
                 namaBarangSelect.addEventListener('change', checkItemType);
                 checkItemType();
             }
+        }
+
+        function initNoSerialCheckbox() {
+            const noSerialCheckbox = document.getElementById('no_serial_checkbox');
+            const nomorSeriInput = document.getElementById('nomor_seri_input');
+
+            if (!noSerialCheckbox || !nomorSeriInput) return;
+
+            function toggleNomorSeri() {
+                if (noSerialCheckbox.checked) {
+                    if (nomorSeriInput.value !== 'Tidak Ada No Seri') {
+                        nomorSeriInput.dataset.oldValue = nomorSeriInput.value;
+                    }
+                    nomorSeriInput.value = 'Tidak Ada No Seri';
+                    nomorSeriInput.disabled = true;
+                    nomorSeriInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+                } else {
+                    let oldVal = nomorSeriInput.dataset.oldValue;
+                    if (oldVal === undefined) {
+                      oldVal = nomorSeriInput.value === 'Tidak Ada No Seri' ? '' : nomorSeriInput.value;
+                    }
+                    nomorSeriInput.value = oldVal;
+                    nomorSeriInput.disabled = false;
+                    nomorSeriInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                    nomorSeriInput.placeholder = 'Masukkan nomor seri ban';
+                }
+            }
+
+            noSerialCheckbox.addEventListener('change', toggleNomorSeri);
+            
+            // Check state on load
+            toggleNomorSeri();
         }
 
         if (document.readyState === 'loading') {

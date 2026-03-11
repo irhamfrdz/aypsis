@@ -1159,11 +1159,14 @@
 
             function toggleNomorSeri() {
                 if (noSerialCheckbox.checked) {
-                    nomorSeriInput.value = '';
+                    if (nomorSeriInput.value !== 'Tidak Ada No Seri') {
+                        nomorSeriInput.dataset.oldValue = nomorSeriInput.value;
+                    }
+                    nomorSeriInput.value = 'Tidak Ada No Seri';
                     nomorSeriInput.disabled = true;
                     nomorSeriInput.classList.add('bg-gray-100', 'cursor-not-allowed');
-                    nomorSeriInput.placeholder = 'Tanpa nomor seri';
                 } else {
+                    nomorSeriInput.value = nomorSeriInput.dataset.oldValue || '';
                     nomorSeriInput.disabled = false;
                     nomorSeriInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
                     nomorSeriInput.placeholder = 'Masukkan nomor seri ban';

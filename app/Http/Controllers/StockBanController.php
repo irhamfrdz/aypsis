@@ -242,6 +242,10 @@ class StockBanController extends Controller
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock berhasil ditambahkan')->with('active_tab', 'tab-barang-lainnya');
         }
 
+        if ($request->filled('no_serial_checkbox')) {
+            $request->merge(['nomor_seri' => 'Tidak Ada No Seri - ' . strtoupper(uniqid())]);
+        }
+
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
             'nomor_seri' => 'nullable|unique:stock_bans,nomor_seri',
@@ -311,6 +315,14 @@ class StockBanController extends Controller
     public function update(Request $request, $id)
     {
         $stockBan = StockBan::findOrFail($id);
+
+        if ($request->filled('no_serial_checkbox')) {
+            if (!str_starts_with($stockBan->nomor_seri ?? '', 'Tidak Ada No Seri')) {
+                $request->merge(['nomor_seri' => 'Tidak Ada No Seri - ' . strtoupper(uniqid())]);
+            } else {
+                $request->merge(['nomor_seri' => $stockBan->nomor_seri]);
+            }
+        }
 
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
