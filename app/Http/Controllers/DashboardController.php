@@ -41,7 +41,9 @@ class DashboardController extends Controller
         }
 
         // Only check dashboard permission if user has meaningful permissions
-        $this->authorize('dashboard');
+        if (! $user->can('dashboard')) {
+            return view('welcome');
+        }
 
         // Data prospek berdasarkan kombinasi tujuan dan ukuran kontainer
         $prospekData = [
