@@ -833,6 +833,61 @@
 
         <!-- Tab: Barang Lainnya (Gabungan semua dalam satu tabel) -->
         <div id="tab-barang-lainnya" class="tab-content p-4">
+            @php
+                $paintStats = $stockLainLains->filter(function($item) {
+                    return $item->namaStockBan && stripos($item->namaStockBan->nama, 'cat') !== false;
+                })->groupBy(function($item) {
+                    return strtoupper($item->namaStockBan->nama);
+                })->map(function($group) {
+                    return [
+                        'qty' => $group->sum('qty'),
+                        'unit' => $group->first()->type ?? 'pail'
+                    ];
+                });
+
+                $majunQty = $stockLainLains->filter(function($item) {
+                    return $item->namaStockBan && stripos($item->namaStockBan->nama, 'majun') !== false;
+                })->sum('qty');
+            @endphp
+
+            @if($paintStats->count() > 0 || $majunQty > 0)
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
+                @foreach($paintStats as $name => $data)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md border-b-4 {{ stripos($name, 'hijau') !== false ? 'border-b-green-500' : (stripos($name, 'abu') !== false ? 'border-b-gray-400' : (stripos($name, 'merah') !== false ? 'border-b-red-500' : (stripos($name, 'biru') !== false ? 'border-b-blue-500' : (stripos($name, 'kuning') !== false ? 'border-b-yellow-400' : (stripos($name, 'hitam') !== false ? 'border-b-black' : 'border-b-purple-500'))))) }}">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg {{ stripos($name, 'hijau') !== false ? 'bg-green-50 text-green-600' : (stripos($name, 'abu') !== false ? 'bg-gray-50 text-gray-600' : (stripos($name, 'merah') !== false ? 'bg-red-50 text-red-600' : (stripos($name, 'biru') !== false ? 'bg-blue-50 text-blue-600' : (stripos($name, 'kuning') !== false ? 'bg-yellow-50 text-yellow-600' : 'bg-purple-50 text-purple-600')))) }}">
+                            <i class="fas fa-fill-drip text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate" title="{{ $name }}">{{ $name }}</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-xl font-black text-gray-800">{{ $data['qty'] }}</span>
+                                <span class="text-[10px] font-medium text-gray-400 uppercase">{{ $data['unit'] }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+
+                @if($majunQty > 0)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md border-b-4 border-b-orange-400">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 text-orange-600">
+                            <i class="fas fa-broom text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">MAJUN</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-xl font-black text-gray-800">{{ $majunQty }}</span>
+                                <span class="text-[10px] font-medium text-gray-400 uppercase">KG</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+            </div>
+            @endif
+
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
