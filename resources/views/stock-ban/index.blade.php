@@ -851,9 +851,16 @@
             @endphp
 
             @if($paintStats->count() > 0 || $majunQty > 0)
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Summary</h3>
+                <button type="button" id="btn-reset-filter-barang" class="hidden text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 transition-all" onclick="filterBarangLainnya(null)">
+                    <i class="fas fa-sync-alt mr-1"></i> Reset Filter
+                </button>
+            </div>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
                 @foreach($paintStats as $name => $data)
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md border-b-4 {{ stripos($name, 'hijau') !== false ? 'border-b-green-500' : (stripos($name, 'abu') !== false ? 'border-b-gray-400' : (stripos($name, 'merah') !== false ? 'border-b-red-500' : (stripos($name, 'biru') !== false ? 'border-b-blue-500' : (stripos($name, 'kuning') !== false ? 'border-b-yellow-400' : (stripos($name, 'hitam') !== false ? 'border-b-black' : 'border-b-purple-500'))))) }}">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 {{ stripos($name, 'hijau') !== false ? 'border-b-green-500 hover:bg-green-50/30' : (stripos($name, 'abu') !== false ? 'border-b-gray-400 hover:bg-gray-50/30' : (stripos($name, 'merah') !== false ? 'border-b-red-500 hover:bg-red-50/30' : (stripos($name, 'biru') !== false ? 'border-b-blue-500 hover:bg-blue-50/30' : (stripos($name, 'kuning') !== false ? 'border-b-yellow-400 hover:bg-yellow-50/30' : (stripos($name, 'hitam') !== false ? 'border-b-black hover:bg-gray-100/30' : 'border-b-purple-500 hover:bg-purple-50/30'))))) }}"
+                     onclick="filterBarangLainnya('{{ $name }}', this)">
                     <div class="flex items-center gap-3">
                         <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg {{ stripos($name, 'hijau') !== false ? 'bg-green-50 text-green-600' : (stripos($name, 'abu') !== false ? 'bg-gray-50 text-gray-600' : (stripos($name, 'merah') !== false ? 'bg-red-50 text-red-600' : (stripos($name, 'biru') !== false ? 'bg-blue-50 text-blue-600' : (stripos($name, 'kuning') !== false ? 'bg-yellow-50 text-yellow-600' : 'bg-purple-50 text-purple-600')))) }}">
                             <i class="fas fa-fill-drip text-lg"></i>
@@ -870,7 +877,8 @@
                 @endforeach
 
                 @if($majunQty > 0)
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md border-b-4 border-b-orange-400">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-orange-400 hover:bg-orange-50/30"
+                     onclick="filterBarangLainnya('MAJUN', this)">
                     <div class="flex items-center gap-3">
                         <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-orange-50 text-orange-600">
                             <i class="fas fa-broom text-lg"></i>
@@ -1013,7 +1021,7 @@
                         @endphp
                         
                         @forelse($allItems as $item)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 row-barang-lainnya" data-nama="{{ strtoupper($item->nama) }}">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold
                                     {{ $item->jenis == 'Ban Dalam' ? 'bg-blue-100 text-blue-800' : '' }}
@@ -2844,6 +2852,50 @@
 
     function closeStockUsageModal() {
         document.getElementById('stockUsageModal').classList.add('hidden');
+    }
+
+    function filterBarangLainnya(name, element) {
+        const rows = document.querySelectorAll('.row-barang-lainnya');
+        const resetBtn = document.getElementById('btn-reset-filter-barang');
+        
+        // Remove active state from all cards
+        document.querySelectorAll('.grid > div.cursor-pointer').forEach(card => {
+            card.classList.remove('ring-4', 'ring-blue-400', 'ring-inset', 'scale-105', 'z-10');
+            card.classList.add('shadow-sm');
+        });
+
+        if (name === null) {
+            // SHOW ALL
+            rows.forEach(row => row.classList.remove('hidden'));
+            resetBtn.classList.add('hidden');
+            return;
+        }
+
+        // Apply visual active state to the clicked card
+        if (element) {
+            element.classList.add('ring-4', 'ring-blue-400', 'ring-inset', 'scale-105', 'z-10');
+            element.classList.remove('shadow-sm');
+        }
+
+        // FILTER ROWS
+        const upperName = name.toUpperCase();
+        let found = 0;
+        rows.forEach(row => {
+            const rowName = row.getAttribute('data-nama');
+            if (rowName.includes(upperName)) {
+                row.classList.remove('hidden');
+                found++;
+            } else {
+                row.classList.add('hidden');
+            }
+        });
+
+        resetBtn.classList.remove('hidden');
+        
+        // If not found (maybe name is different), show alert
+        if (found === 0) {
+            console.warn('No items found for filter:', upperName);
+        }
     }
 </script>
 @endpush
