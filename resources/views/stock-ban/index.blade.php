@@ -2882,7 +2882,7 @@
         let found = 0;
         rows.forEach(row => {
             const rowName = row.getAttribute('data-nama');
-            if (rowName.includes(upperName)) {
+            if (rowName === upperName) {
                 row.classList.remove('hidden');
                 found++;
             } else {
