@@ -126,7 +126,7 @@
                     @endphp
                     <tr class="hover:bg-gray-50">
                         <td class="py-2 px-3 text-sm">{{ $index + 1 }}</td>
-                        <td class="py-2 px-3 text-sm font-semibold">{{ $dokumen->masterKapal->nama_kapal ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm font-semibold">{{ $dokumen->kapal->nama_kapal ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->sertifikatKapal->nama_sertifikat ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->nomor_dokumen ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $tanggal->format('d M Y') }}</td>
@@ -199,7 +199,7 @@
                     @endphp
                     <tr class="hover:bg-gray-50">
                         <td class="py-2 px-3 text-sm">{{ $index + 1 }}</td>
-                        <td class="py-2 px-3 text-sm font-semibold">{{ $dokumen->masterKapal->nama_kapal ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm font-semibold">{{ $dokumen->kapal->nama_kapal ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->sertifikatKapal->nama_sertifikat ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->nomor_dokumen ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $tanggal->format('d M Y') }}</td>

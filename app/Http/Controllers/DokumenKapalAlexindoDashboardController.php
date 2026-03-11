@@ -18,7 +18,7 @@ class DokumenKapalAlexindoDashboardController extends Controller
         $thirtyDaysLater = $today->copy()->addDays(30);
         
         // Asset yang akan jatuh tempo dalam 30 hari ke depan
-        $expiringDokumens = MasterDokumenKapalAlexindo::with(['masterKapal', 'sertifikatKapal'])
+        $expiringDokumens = MasterDokumenKapalAlexindo::with(['kapal', 'sertifikatKapal'])
             ->whereNotNull('tanggal_berakhir')
             ->whereDate('tanggal_berakhir', '>=', $today)
             ->whereDate('tanggal_berakhir', '<=', $thirtyDaysLater)
@@ -26,7 +26,7 @@ class DokumenKapalAlexindoDashboardController extends Controller
             ->get();
         
         // Asset yang sudah lewat jatuh tempo
-        $expiredDokumens = MasterDokumenKapalAlexindo::with(['masterKapal', 'sertifikatKapal'])
+        $expiredDokumens = MasterDokumenKapalAlexindo::with(['kapal', 'sertifikatKapal'])
             ->whereNotNull('tanggal_berakhir')
             ->whereDate('tanggal_berakhir', '<', $today)
             ->orderBy('tanggal_berakhir', 'desc')
