@@ -7,6 +7,9 @@ use App\Models\MasterPricelistFreight;
 use App\Models\MasterPelabuhan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\MasterPricelistFreightImport;
+use App\Exports\MasterPricelistFreightTemplateExport;
 
 class MasterPricelistFreightController extends Controller
 {
@@ -149,5 +152,32 @@ class MasterPricelistFreightController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls'
+        ]);
+
+        try {
+            $import = new MasterPricelistFreightImport();
+            Excel::import($import, $request->file('file'));
+
+            $message = "Import berhasil: {$import->getSuccessCount()} data berhasil diimpor.";
+            if ($import->getErrorCount() > 0) {
+                $message .= " Namun ada {$import->getErrorCount()} baris yang bermasalah.";
+                return redirect()->back()->with('success', $message)->with('import_errors', $import->getErrors());
+            }
+
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new MasterPricelistFreightTemplateExport(), 'template-pricelist-freight.xlsx');
     }
 }

@@ -5152,6 +5152,9 @@ Route::middleware(['auth',
     \App\Http\Middleware\EnsureUserApproved::class,
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->prefix('master')->group(function () {
+    Route::post('pricelist-freight/import', [\App\Http\Controllers\MasterPricelistFreightController::class, 'import'])->name('master-pricelist-freight.import')->middleware('can:master-pricelist-freight-create');
+    Route::get('pricelist-freight/download-template', [\App\Http\Controllers\MasterPricelistFreightController::class, 'downloadTemplate'])->name('master-pricelist-freight.download-template')->middleware('can:master-pricelist-freight-view');
+
     Route::resource('pricelist-freight', \App\Http\Controllers\MasterPricelistFreightController::class)
          ->names('master-pricelist-freight')
          ->middleware([
