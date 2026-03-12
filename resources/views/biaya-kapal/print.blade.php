@@ -546,9 +546,6 @@
                 </div>
             </div>
             
-            <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #999;">
-                Dicetak: {{ now()->format('d/m/Y H:i') }}
-            </div>
         </div>
     </div>
 
