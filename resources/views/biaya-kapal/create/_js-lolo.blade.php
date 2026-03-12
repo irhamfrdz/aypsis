@@ -2,6 +2,19 @@
     // ============= LOLO SECTIONS MANAGEMENT =============
     let loloSectionCounter = 0;
     
+    // Shared Select2 initialization helper
+    const initLoloSelect2 = (el, placeholder) => {
+        if (typeof jQuery.fn.select2 !== 'undefined') {
+            jQuery(el).select2({
+                placeholder: placeholder,
+                allowClear: true,
+                width: '100%'
+            });
+        } else {
+            setTimeout(() => initLoloSelect2(el, placeholder), 100);
+        }
+    };
+    
     function initializeLoloSections() {
         if (!loloSectionsContainer) return;
         loloSectionsContainer.innerHTML = '';
@@ -211,15 +224,27 @@
         const pphInput = section.querySelector('.lolo-pph-input');
         const adjInput = section.querySelector('.lolo-adjustment-input');
         
+        // Initialize Select2 for Kapal and Lokasi
+        initLoloSelect2(kapalSelect, "-- Pilih Kapal --");
+        initLoloSelect2(lokasiSelect, "-- Pilih Lokasi --");
+        
         // Kapal change -> Fetch Voyages
-        kapalSelect.addEventListener('change', function() {
+        jQuery(kapalSelect).on('change', function() {
             const kapalName = this.value;
             voyageSelect.innerHTML = '<option value="">-- Memuat Voyage... --</option>';
             voyageSelect.disabled = true;
             kontainerList.innerHTML = '';
             
+            // Refresh Select2 for voyage if exists
+            if (jQuery(voyageSelect).data('select2')) {
+                jQuery(voyageSelect).trigger('change');
+            }
+            
             if (!kapalName) {
                 voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+                if (jQuery(voyageSelect).data('select2')) {
+                    jQuery(voyageSelect).trigger('change');
+                }
                 return;
             }
             
@@ -232,18 +257,29 @@
                             voyageSelect.innerHTML += `<option value="${v}">${v}</option>`;
                         });
                         voyageSelect.disabled = false;
+                        initLoloSelect2(voyageSelect, "-- Pilih No. Voyage --");
                     } else {
                         voyageSelect.innerHTML = '<option value="">-- Tidak ada voyage ditemukan --</option>';
                         // Auto switch to manual if no voyage found
-                        if (!voyageInput.classList.contains('hidden')) return;
-                        voyageSelect.classList.add('hidden');
-                        voyageInput.classList.remove('hidden');
-                        voyageInput.disabled = false;
+                        if (voyageInput.classList.contains('hidden')) {
+                            voyageSelect.classList.add('hidden');
+                            if (jQuery(voyageSelect).data('select2')) {
+                                jQuery(voyageSelect).select2('destroy');
+                            }
+                            voyageInput.classList.remove('hidden');
+                            voyageInput.disabled = false;
+                        }
+                    }
+                    if (jQuery(voyageSelect).data('select2')) {
+                        jQuery(voyageSelect).trigger('change');
                     }
                 })
                 .catch(err => {
                     console.error('Error fetching voyages:', err);
                     voyageSelect.innerHTML = '<option value="">-- Gagal memuat voyage --</option>';
+                    if (jQuery(voyageSelect).data('select2')) {
+                        jQuery(voyageSelect).trigger('change');
+                    }
                 });
         });
         
@@ -251,11 +287,15 @@
         voyageManualBtn.addEventListener('click', function() {
             if (voyageSelect.classList.contains('hidden')) {
                 voyageSelect.classList.remove('hidden');
+                initLoloSelect2(voyageSelect, "-- Pilih No. Voyage --");
                 voyageInput.classList.add('hidden');
                 voyageInput.disabled = true;
                 if (voyageSelect.options.length > 1) voyageSelect.disabled = false;
             } else {
                 voyageSelect.classList.add('hidden');
+                if (jQuery(voyageSelect).data('select2')) {
+                    jQuery(voyageSelect).select2('destroy');
+                }
                 voyageInput.classList.remove('hidden');
                 voyageInput.disabled = false;
                 voyageSelect.disabled = true;
@@ -309,16 +349,19 @@
                 });
         };
         
-        voyageSelect.addEventListener('change', handleVoyageChange);
+        jQuery(voyageSelect).on('change', handleVoyageChange);
         voyageInput.addEventListener('change', handleVoyageChange);
 
         // Lokasi Change -> Filter Vendor
-        lokasiSelect.addEventListener('change', function() {
+        jQuery(lokasiSelect).on('change', function() {
             const lokasi = this.value;
             vendorSelect.innerHTML = '<option value="">-- Pilih Vendor --</option>';
             
             if (!lokasi) {
                 vendorSelect.disabled = true;
+                if (jQuery(vendorSelect).data('select2')) {
+                    jQuery(vendorSelect).trigger('change');
+                }
                 return;
             }
 
@@ -329,16 +372,21 @@
                     vendorSelect.innerHTML += `<option value="${v}">${v}</option>`;
                 });
                 vendorSelect.disabled = false;
+                initLoloSelect2(vendorSelect, "-- Pilih Vendor --");
             } else {
                 vendorSelect.innerHTML = '<option value="">-- Tidak ada vendor di lokasi ini --</option>';
                 vendorSelect.disabled = true;
+            }
+            
+            if (jQuery(vendorSelect).data('select2')) {
+                jQuery(vendorSelect).trigger('change');
             }
             
             calculateLoloSectionTotal(section);
         });
 
         // Vendor Change
-        vendorSelect.addEventListener('change', function() {
+        jQuery(vendorSelect).on('change', function() {
             calculateLoloSectionTotal(section);
         });
         // PPH Input Change
