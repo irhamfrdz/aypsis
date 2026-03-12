@@ -58,7 +58,7 @@ return new class extends Migration
             ->pluck('id');
 
         foreach ($permissionIds as $id) {
-            DB::table('permission_user')->insertOrIgnore([
+            DB::table('user_permissions')->insertOrIgnore([
                 'user_id' => 1,
                 'permission_id' => $id
             ]);
