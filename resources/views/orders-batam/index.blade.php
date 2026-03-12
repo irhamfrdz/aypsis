@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Pesanan Pengambilan Barang')
-@section('page_title', 'Pesanan Pengambilan Barang')
+@section('title', 'Pesanan Pengambilan Barang Batam')
+@section('page_title', 'Pesanan Pengambilan Barang Batam')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-6">
@@ -11,7 +11,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div class="mb-4 sm:mb-0">
-                    <h1 class="text-3xl font-bold text-gray-900">Pesanan Pengambilan Barang</h1>
+                    <h1 class="text-3xl font-bold text-gray-900">Pesanan Pengambilan Barang Batam</h1>
                     <p class="mt-1 text-sm text-gray-600">Kelola data pesanan pengambilan barang dalam sistem</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
@@ -157,7 +157,7 @@
         <!-- Table Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Daftar Pesanan Pengambilan Barang</h3>
+                <h3 class="text-lg font-medium text-gray-900">Daftar Pesanan Pengambilan Barang Batam</h3>
                 <p class="mt-1 text-sm text-gray-600">Total: {{ $orderBatams->total() }} pesanan</p>
             </div>
 
