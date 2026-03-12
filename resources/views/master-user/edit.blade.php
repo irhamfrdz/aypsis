@@ -1133,6 +1133,23 @@
                                 <td><input type="checkbox" name="permissions[order-management][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['order-management']['export']) && $userMatrixPermissions['order-management']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Orders Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Orders Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[order-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['order-batam']['view']) && $userMatrixPermissions['order-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[order-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['order-batam']['create']) && $userMatrixPermissions['order-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[order-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['order-batam']['update']) && $userMatrixPermissions['order-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[order-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['order-batam']['delete']) && $userMatrixPermissions['order-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[order-batam][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['order-batam']['print']) && $userMatrixPermissions['order-batam']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[order-batam][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['order-batam']['export']) && $userMatrixPermissions['order-batam']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Surat Jalan --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">
