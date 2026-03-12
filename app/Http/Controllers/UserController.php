@@ -1128,9 +1128,13 @@ class UserController extends Controller
                         } 
                         // Special handling for master-vendor-asuransi permissions
                         elseif (strpos($action, 'vendor-asuransi-') === 0) {
-                            // For master-vendor-asuransi-view, extract the action
                             $action = str_replace('vendor-asuransi-', '', $action);
                             $module = 'master-vendor-asuransi';
+                        }
+                        // Special handling for asuransi-tanda-terima permissions
+                        elseif (strpos($action, 'asuransi-tanda-terima-') === 0) {
+                            $action = str_replace('asuransi-tanda-terima-', '', $action);
+                            $module = 'asuransi-tanda-terima';
                         } else {
                             // For master-* patterns, split using last hyphen so submodules can contain hyphens
                             $lastPos = strrpos($action, '-');
@@ -2471,6 +2475,26 @@ class UserController extends Controller
                             'create' => 'master-vendor-asuransi-create',
                             'update' => 'master-vendor-asuransi-update',
                             'delete' => 'master-vendor-asuransi-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle asuransi-tanda-terima permissions explicitly
+                    if ($module === 'asuransi-tanda-terima' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'asuransi-tanda-terima-view',
+                            'create' => 'asuransi-tanda-terima-create',
+                            'update' => 'asuransi-tanda-terima-update',
+                            'delete' => 'asuransi-tanda-terima-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

@@ -19,6 +19,7 @@ use App\Http\Controllers\PekerjaanController;
 use App\Http\Controllers\MasterBankController;
 use App\Http\Controllers\Master\KlasifikasiBiayaController;
 use App\Http\Controllers\TandaTerimaLclController;
+use App\Http\Controllers\AsuransiTandaTerimaController;
 
 use App\Http\Controllers\TujuanController;
 use App\Http\Controllers\TujuanKegiatanUtamaController;
@@ -1412,6 +1413,17 @@ Route::middleware([
              'edit' => 'can:master-vendor-asuransi-update',
              'update' => 'can:master-vendor-asuransi-update',
              'destroy' => 'can:master-vendor-asuransi-delete'
+         ]);
+
+    Route::resource('asuransi-tanda-terima', AsuransiTandaTerimaController::class)
+         ->middleware([
+             'index' => 'can:asuransi-tanda-terima-view',
+             'show' => 'can:asuransi-tanda-terima-view',
+             'create' => 'can:asuransi-tanda-terima-create',
+             'store' => 'can:asuransi-tanda-terima-create',
+             'edit' => 'can:asuransi-tanda-terima-update',
+             'update' => 'can:asuransi-tanda-terima-update',
+             'destroy' => 'can:asuransi-tanda-terima-delete'
          ]);
 
     // 🚐 Master Vendor Supir

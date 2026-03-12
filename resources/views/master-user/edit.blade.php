@@ -2493,6 +2493,7 @@
                                                             <td><input type="checkbox" name="permissions[pranota-ob][export]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob.export') || (isset($userMatrixPermissions['pranota-ob']['export']) && $userMatrixPermissions['pranota-ob']['export']) || ($user && $user->can('pranota-ob-export'))) checked @endif></td>
                                                         </tr>
 
+
                             {{-- OB Antar Gudang --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
