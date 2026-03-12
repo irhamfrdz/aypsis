@@ -1,6 +1,19 @@
 // ============= FREIGHT SECTIONS MANAGEMENT =============
     let freightSectionCounter = 0;
     
+    // Shared Select2 initialization helper
+    const initFreightSelect2 = (el, placeholder) => {
+        if (typeof jQuery.fn.select2 !== 'undefined') {
+            jQuery(el).select2({
+                placeholder: placeholder,
+                allowClear: true,
+                width: '100%'
+            });
+        } else {
+            setTimeout(() => initFreightSelect2(el, placeholder), 100);
+        }
+    };
+    
     function initializeFreightSections() {
         if (!freightSectionsContainer) return;
         freightSectionsContainer.innerHTML = '';
@@ -160,9 +173,10 @@
         
         freightSectionsContainer.appendChild(section);
         
-        // Setup kapal change listener
+        // Setup select2 for kapal
         const kapalSelect = section.querySelector('.freight-kapal-select');
-        kapalSelect.addEventListener('change', function() {
+        initFreightSelect2(kapalSelect, "-- Pilih Kapal --");
+        jQuery(kapalSelect).on('change', function() {
             loadVoyagesForFreightSection(sectionIndex, this.value);
         });
 
@@ -339,7 +353,8 @@
 
         const vendorSelectEl = section.querySelector('.freight-vendor-select');
         if (vendorSelectEl) {
-            vendorSelectEl.addEventListener('change', function() {
+            initFreightSelect2(vendorSelectEl, "-- Pilih Vendor --");
+            jQuery(vendorSelectEl).on('change', function() {
                 recalcFreightSubtotal(section, sectionIndex);
             });
         }
@@ -377,11 +392,17 @@
         if (!kapalNama) {
             voyageSelect.disabled = true;
             voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            if (typeof jQuery.fn.select2 !== 'undefined' && jQuery(voyageSelect).data('select2')) {
+                jQuery(voyageSelect).trigger('change');
+            }
             return;
         }
         
         voyageSelect.disabled = true;
         voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        if (typeof jQuery.fn.select2 !== 'undefined' && jQuery(voyageSelect).data('select2')) {
+            jQuery(voyageSelect).trigger('change');
+        }
         
         fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
             .then(res => res.json())
@@ -391,16 +412,27 @@
                     data.voyages.forEach(v => html += `<option value="${v}">${v}</option>`);
                     voyageSelect.innerHTML = html;
                     voyageSelect.disabled = false;
-                    voyageSelect.onchange = function() {
+                    
+                    // Initialize or refresh Select2 for voyage
+                    initFreightSelect2(voyageSelect, "-- Pilih Voyage --");
+                    jQuery(voyageSelect).trigger('change');
+
+                    jQuery(voyageSelect).on('change', function() {
                         if (section._loadContainers) section._loadContainers(this.value);
-                    };
+                    });
                 } else {
                     voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
+                    if (typeof jQuery.fn.select2 !== 'undefined' && jQuery(voyageSelect).data('select2')) {
+                        jQuery(voyageSelect).trigger('change');
+                    }
                 }
             })
             .catch(err => {
                 console.error('Error fetching voyages:', err);
                 voyageSelect.innerHTML = '<option value="">Gagal memuat voyages</option>';
+                if (typeof jQuery.fn.select2 !== 'undefined' && jQuery(voyageSelect).data('select2')) {
+                    jQuery(voyageSelect).trigger('change');
+                }
             });
 
         voyageInput.oninput = function() {
