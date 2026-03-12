@@ -421,9 +421,6 @@
                     <td>( {{ $biayaKapal->approver->name ?? '__________' }} )</td>
                 </tr>
             </table>
-            <div style="text-align: center; margin-top: 8px; font-size: 8px; color: #999;">
-                Dicetak: {{ now()->format('d/m/Y H:i') }}
-            </div>
         </div>
     </div>
 </body>
