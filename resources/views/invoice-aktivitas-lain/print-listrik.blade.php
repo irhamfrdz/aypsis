@@ -219,22 +219,16 @@
         <div class="info-section">
             <table class="info-table">
                 <tr>
-                    <td style="width: 15%;">Nomor</td>
-                    <td style="width: 35%;">: {{ $invoice->nomor_invoice }}</td>
-                    <td style="width: 15%;">Tanggal</td>
+                    <td style="width: 20%;">Nomor Invoice</td>
+                    <td style="width: 30%;">: {{ $invoice->nomor_invoice }}</td>
+                    <td style="width: 25%;">Tanggal Dibuat Invoice</td>
                     <td>: {{ $invoice->tanggal_invoice->format('d/M/Y') }}</td>
                 </tr>
                 <tr>
-                    <td>Penerima</td>
-                    <td>: {{ $invoice->penerima ?? '-' }}</td>
                     <td>Vendor</td>
                     <td>: {{ $invoice->vendor_listrik ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td>No. Rekening</td>
-                    <td>: {{ $invoice->nomor_rekening_labuh ?? '-' }}</td>
-                    <td>Referensi</td>
-                    <td>: {{ $invoice->referensi ?? '-' }}</td>
+                    <td></td>
+                    <td></td>
                 </tr>
             </table>
         </div>
