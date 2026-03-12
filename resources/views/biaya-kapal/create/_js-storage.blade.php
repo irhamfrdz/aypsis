@@ -139,8 +139,8 @@
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
                             <input type="text" name="storage_sections[${sectionIndex}][pph]"
-                                   class="storage-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0"
-                                   value="0" readonly>
+                                   class="storage-pph-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+                                   value="0">
                         </div>
                     </div>
                     <div>
@@ -351,27 +351,33 @@
             }
             
             subsInput.value = calculatedSubtotal > 0 ? new Intl.NumberFormat('id-ID').format(calculatedSubtotal) : '0';
-            recalcStorageTotal();
+            recalcStorageTotal(true);
         }
 
-        function recalcStorageTotal() {
+        function recalcStorageTotal(updatePph = false) {
             const subtotal = parseFloat(subtotalInput.value.replace(/\./g, '')) || 0;
             const adjustment = parseFloat(adjustmentInput.value.replace(/\./g, '')) || 0;
             
             // Logic: if subtotal >= 5,000,000 then materai = 10,000
             const materai = subtotal >= 5000000 ? 10000 : 0;
-            const pph = Math.round(subtotal * 0.02);
+            
+            const fmt = (val) => new Intl.NumberFormat('id-ID').format(Math.round(val));
+            
+            if (updatePph) {
+                const pph = Math.round(subtotal * 0.02);
+                if (pphInput) pphInput.value = fmt(pph);
+            }
+            
+            const pph = parseFloat(pphInput.value.replace(/\./g, '')) || 0;
             const total = subtotal + materai - pph + adjustment;
 
-            const fmt = (val) => new Intl.NumberFormat('id-ID').format(Math.round(val));
             if (materaiInput) materaiInput.value = fmt(materai);
-            if (pphInput) pphInput.value = fmt(pph);
             if (totalInput) totalInput.value = fmt(total);
 
             calculateTotalFromAllStorageSections();
         }
 
-        [subtotalInput, adjustmentInput].forEach(el => {
+        [subtotalInput, pphInput, adjustmentInput].forEach(el => {
             if (el) {
                 el.addEventListener('input', function() {
                     let isNegative = this.value.startsWith('-');
@@ -379,7 +385,10 @@
                     const num = parseFloat(raw) || 0;
                     let formatted = num > 0 ? new Intl.NumberFormat('id-ID').format(num) : (num === 0 && this.value !== '' ? '0' : '');
                     this.value = (isNegative && num > 0) ? '-' + formatted : formatted;
-                    recalcStorageTotal();
+
+                    // If subtotal is changed manually, update PPh automatically
+                    const autoUpdatePph = (this === subtotalInput);
+                    recalcStorageTotal(autoUpdatePph);
                 });
             }
         });
