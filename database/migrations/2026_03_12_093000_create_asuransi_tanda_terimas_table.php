@@ -12,6 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::dropIfExists('asuransi_tanda_terimas');
         Schema::create('asuransi_tanda_terimas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('vendor_asuransi_id')->constrained('vendor_asuransi')->onDelete('cascade');
@@ -40,7 +41,7 @@ return new class extends Migration
         });
 
         // Add permissions
-        DB::table('permissions')->insert([
+        DB::table('permissions')->insertOrIgnore([
             ['name' => 'asuransi-tanda-terima-view', 'description' => 'View Asuransi Tanda Terima'],
             ['name' => 'asuransi-tanda-terima-create', 'description' => 'Create Asuransi Tanda Terima'],
             ['name' => 'asuransi-tanda-terima-update', 'description' => 'Update Asuransi Tanda Terima'],
