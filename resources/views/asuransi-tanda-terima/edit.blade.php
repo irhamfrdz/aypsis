@@ -33,7 +33,7 @@
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
                             @foreach($vendors as $vendor)
                                 <option value="{{ $vendor->id }}" {{ old('vendor_asuransi_id', $asuransiTandaTerima->vendor_asuransi_id) == $vendor->id ? 'selected' : '' }}>
-                                    {{ $vendor->nama_asuransi }} ({{ $vendor->kode }})
+                                    {{ $vendor->nama_asuransi }}
                                 </option>
                             @endforeach
                         </select>

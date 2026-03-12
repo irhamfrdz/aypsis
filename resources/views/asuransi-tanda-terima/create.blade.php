@@ -27,7 +27,7 @@
                             <option value="">-- Pilih Vendor --</option>
                             @foreach($vendors as $vendor)
                                 <option value="{{ $vendor->id }}" {{ old('vendor_asuransi_id') == $vendor->id ? 'selected' : '' }}>
-                                    {{ $vendor->nama_asuransi }} ({{ $vendor->kode }})
+                                    {{ $vendor->nama_asuransi }}
                                 </option>
                             @endforeach
                         </select>
