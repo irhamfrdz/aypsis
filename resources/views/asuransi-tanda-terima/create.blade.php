@@ -38,11 +38,15 @@
                     <div>
                         <label for="receipt_type" class="block text-sm font-medium text-gray-700 mb-2">Jenis Tanda Terima <span class="text-red-500">*</span></label>
                         <select id="receipt_type" name="receipt_type" required onchange="toggleReceiptList()"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="tt" {{ old('receipt_type') == 'tt' ? 'selected' : '' }}>Tanda Terima (Regular)</option>
-                            <option value="tttsj" {{ old('receipt_type') == 'tttsj' ? 'selected' : '' }}>Tanda Terima Tanpa SJ</option>
-                            <option value="lcl" {{ old('receipt_type') == 'lcl' ? 'selected' : '' }}>Tanda Terima LCL</option>
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                {{ isset($selectedReceipt) ? 'disabled' : '' }}>
+                            <option value="tt" {{ (old('receipt_type', $selectedType) == 'tt') ? 'selected' : '' }}>Tanda Terima (Regular)</option>
+                            <option value="tttsj" {{ (old('receipt_type', $selectedType) == 'tttsj') ? 'selected' : '' }}>Tanda Terima Tanpa SJ</option>
+                            <option value="lcl" {{ (old('receipt_type', $selectedType) == 'lcl') ? 'selected' : '' }}>Tanda Terima LCL</option>
                         </select>
+                        @if(isset($selectedReceipt))
+                            <input type="hidden" name="receipt_type" value="{{ $selectedType }}">
+                        @endif
                         @error('receipt_type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -50,34 +54,49 @@
                     <div>
                         <label for="receipt_id" class="block text-sm font-medium text-gray-700 mb-2">Pilih Data <span class="text-red-500">*</span></label>
                         
-                        <div id="wrapper_tt" class="receipt-select-wrapper">
-                            <select name="receipt_id_tt" id="receipt_id_tt" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                        <div id="wrapper_tt" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'tt' ? '' : 'hidden' }}">
+                            <select name="receipt_id_tt" id="receipt_id_tt" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" {{ isset($selectedReceipt) && $selectedType != 'tt' ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima --</option>
+                                @if(isset($selectedReceipt) && $selectedType == 'tt')
+                                    <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->no_surat_jalan }}] - {{ $selectedReceipt->penerima }}</option>
+                                @endif
                                 @foreach($tandaTerimas as $tt)
-                                    <option value="{{ $tt->id }}">[{{ $tt->no_surat_jalan }}] - {{ $tt->penerima }}</option>
+                                    @if(!(isset($selectedReceipt) && $selectedType == 'tt' && $selectedReceipt->id == $tt->id))
+                                        <option value="{{ $tt->id }}" {{ old('receipt_id_tt') == $tt->id ? 'selected' : '' }}>[{{ $tt->no_surat_jalan }}] - {{ $tt->penerima }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
 
-                        <div id="wrapper_tttsj" class="receipt-select-wrapper hidden">
-                            <select name="receipt_id_tttsj" id="receipt_id_tttsj" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                        <div id="wrapper_tttsj" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'tttsj' ? '' : 'hidden' }}">
+                            <select name="receipt_id_tttsj" id="receipt_id_tttsj" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" {{ isset($selectedReceipt) && $selectedType != 'tttsj' ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima Tanpa SJ --</option>
+                                @if(isset($selectedReceipt) && $selectedType == 'tttsj')
+                                    <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->no_tanda_terima }}] - {{ $selectedReceipt->penerima }}</option>
+                                @endif
                                 @foreach($tandaTerimaTanpaSjs as $tt)
-                                    <option value="{{ $tt->id }}">[{{ $tt->no_tanda_terima }}] - {{ $tt->penerima }}</option>
+                                    @if(!(isset($selectedReceipt) && $selectedType == 'tttsj' && $selectedReceipt->id == $tt->id))
+                                        <option value="{{ $tt->id }}" {{ old('receipt_id_tttsj') == $tt->id ? 'selected' : '' }}>[{{ $tt->no_tanda_terima }}] - {{ $tt->penerima }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
 
-                        <div id="wrapper_lcl" class="receipt-select-wrapper hidden">
-                            <select name="receipt_id_lcl" id="receipt_id_lcl" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                        <div id="wrapper_lcl" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'lcl' ? '' : 'hidden' }}">
+                            <select name="receipt_id_lcl" id="receipt_id_lcl" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" {{ isset($selectedReceipt) && $selectedType != 'lcl' ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima LCL --</option>
+                                @if(isset($selectedReceipt) && $selectedType == 'lcl')
+                                    <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->nomor_tanda_terima }}] - {{ $selectedReceipt->nama_penerima }}</option>
+                                @endif
                                 @foreach($tandaTerimaLcls as $tt)
-                                    <option value="{{ $tt->id }}">[{{ $tt->nomor_tanda_terima }}] - {{ $tt->nama_penerima }}</option>
+                                    @if(!(isset($selectedReceipt) && $selectedType == 'lcl' && $selectedReceipt->id == $tt->id))
+                                        <option value="{{ $tt->id }}" {{ old('receipt_id_lcl') == $tt->id ? 'selected' : '' }}>[{{ $tt->nomor_tanda_terima }}] - {{ $tt->nama_penerima }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
 
-                        <input type="hidden" name="receipt_id" id="final_receipt_id">
+                        <input type="hidden" name="receipt_id" id="final_receipt_id" value="{{ old('receipt_id', $selectedId) }}">
                         @error('receipt_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -178,12 +197,15 @@
     function syncReceiptId() {
         const type = document.getElementById('receipt_type').value;
         const select = document.getElementById('receipt_id_' + type);
-        document.getElementById('final_receipt_id').value = select.value;
+        if (select) {
+            document.getElementById('final_receipt_id').value = select.value;
+        }
     }
 
     // Initialize list toggle
     document.addEventListener('DOMContentLoaded', function() {
         toggleReceiptList();
+        syncReceiptId();
     });
 </script>
 @endpush

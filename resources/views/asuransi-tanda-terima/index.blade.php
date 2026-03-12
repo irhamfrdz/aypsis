@@ -62,76 +62,90 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Sumber</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Vendor</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nomor Polis</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Premi</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipe Dokumen</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nomor & Tanggal</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pengirim / Penerima</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status Asuransi</th>
                         <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse ($asuransiList as $item)
+                    @forelse ($receipts as $item)
                         <tr class="hover:bg-gray-50 transition duration-150">
                             <td class="px-6 py-4">
-                                <span class="block text-sm font-medium text-gray-900">{{ $item->source_type_name }}</span>
-                                <span class="block text-xs text-gray-500">{{ $item->source_number }}</span>
+                                @if($item->type == 'tt')
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Tanda Terima</span>
+                                @elseif($item->type == 'tttsj')
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">TT Tanpa SJ</span>
+                                @elseif($item->type == 'lcl')
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">Tanda Terima LCL</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm text-gray-900">{{ $item->vendorAsuransi->nama_asuransi }}</span>
+                                <span class="block text-sm font-medium text-gray-900">{{ $item->number }}</span>
+                                <span class="block text-xs text-gray-500">{{ \Carbon\Carbon::parse($item->date)->format('d/m/Y') }}</span>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm text-gray-900">{{ $item->nomor_polis }}</span>
-                                <span class="block text-xs text-gray-500">{{ $item->tanggal_polis ? $item->tanggal_polis->format('d/m/Y') : '-' }}</span>
+                                <div class="text-sm text-gray-900">
+                                    <span class="font-medium">Dari:</span> {{ $item->pengirim }}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    <span class="font-medium">Ke:</span> {{ $item->penerima }}
+                                </div>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm text-gray-900">Rp {{ number_format($item->premi, 0, ',', '.') }}</span>
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                    @if($item->status == 'Aktif') bg-green-100 text-green-800 
-                                    @elseif($item->status == 'Selesai') bg-gray-100 text-gray-800 
-                                    @else bg-red-100 text-red-800 @endif">
-                                    {{ $item->status }}
-                                </span>
+                                @if($item->insurance)
+                                    <div class="flex flex-col">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 w-fit">
+                                            Terproteksi
+                                        </span>
+                                        <span class="text-xs text-gray-600 mt-1 font-medium">{{ $item->insurance->nomor_polis }}</span>
+                                        <span class="text-[10px] text-gray-400">{{ $item->insurance->vendorAsuransi->nama_asuransi }}</span>
+                                    </div>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Belum Diasuransikan
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <div class="flex justify-center space-x-2">
-                                    <a href="{{ route('asuransi-tanda-terima.show', $item->id) }}" class="text-blue-600 hover:text-blue-900">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
-                                    </a>
-                                    @can('asuransi-tanda-terima-update')
-                                    <a href="{{ route('asuransi-tanda-terima.edit', $item->id) }}" class="text-indigo-600 hover:text-indigo-900">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </a>
-                                    @endcan
-                                    @can('asuransi-tanda-terima-delete')
-                                    <form action="{{ route('asuransi-tanda-terima.destroy', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">
+                                    @if($item->insurance)
+                                        <a href="{{ route('asuransi-tanda-terima.show', $item->insurance->id) }}" title="Lihat Polis" class="text-blue-600 hover:text-blue-900 bg-blue-50 p-1.5 rounded-lg transition duration-200">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                             </svg>
-                                        </button>
-                                    </form>
-                                    @endcan
+                                        </a>
+                                        @can('asuransi-tanda-terima-update')
+                                        <a href="{{ route('asuransi-tanda-terima.edit', $item->insurance->id) }}" title="Edit Polis" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded-lg transition duration-200">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </a>
+                                        @endcan
+                                    @else
+                                        @can('asuransi-tanda-terima-create')
+                                        <a href="{{ route('asuransi-tanda-terima.create', ['type' => $item->type, 'id' => $item->id]) }}" 
+                                           class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md text-xs font-medium transition duration-200 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                            </svg>
+                                            Input Asuransi
+                                        </a>
+                                        @endcan
+                                    @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                            <td colspan="5" class="px-6 py-10 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    <p class="text-lg">Tidak ada data asuransi ditemukan</p>
+                                    <p class="text-lg">Tidak ada data tanda terima ditemukan</p>
                                 </div>
                             </td>
                         </tr>
@@ -141,7 +155,7 @@
         </div>
 
         <div class="mt-6">
-            {{ $asuransiList->links() }}
+            {{ $receipts->appends(request()->query())->links() }}
         </div>
     </div>
 </div>

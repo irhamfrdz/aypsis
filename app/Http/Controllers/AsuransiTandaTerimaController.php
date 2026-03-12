@@ -10,39 +10,94 @@ use App\Models\TandaTerimaLcl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class AsuransiTandaTerimaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = AsuransiTandaTerima::with(['vendorAsuransi', 'tandaTerima', 'tandaTerimaTanpaSj', 'tandaTerimaLcl']);
+        $search = $request->search;
 
-        if ($request->search) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nomor_polis', 'like', "%{$search}%")
-                  ->orWhereHas('vendorAsuransi', function($v) use ($search) {
-                      $v->where('nama_asuransi', 'like', "%{$search}%");
-                  });
+        // Tanda Terima Regular
+        $tt = DB::table('tanda_terimas')
+            ->select('id', DB::raw("'tt' as type"), 'no_surat_jalan as number', 'tanggal as date', 'pengirim', 'penerima', 'created_at', DB::raw('NULL as deleted_at'))
+            ->when($search, function($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('penerima', 'like', "%{$search}%");
             });
+
+        // Tanda Terima Tanpa SJ
+        $tttsj = DB::table('tanda_terima_tanpa_surat_jalan')
+            ->select('id', DB::raw("'tttsj' as type"), 'no_tanda_terima as number', 'tanggal_tanda_terima as date', 'pengirim', 'penerima', 'created_at', DB::raw('NULL as deleted_at'))
+            ->when($search, function($q) use ($search) {
+                $q->where('no_tanda_terima', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('penerima', 'like', "%{$search}%");
+            });
+
+        // Tanda Terima LCL
+        $lcl = DB::table('tanda_terimas_lcl')
+            ->select('id', DB::raw("'lcl' as type"), 'nomor_tanda_terima as number', 'tanggal_tanda_terima as date', 'nama_pengirim as pengirim', 'nama_penerima as penerima', 'created_at', 'deleted_at')
+            ->whereNull('deleted_at')
+            ->when($search, function($q) use ($search) {
+                $q->where('nomor_tanda_terima', 'like', "%{$search}%")
+                  ->orWhere('nama_pengirim', 'like', "%{$search}%")
+                  ->orWhere('nama_penerima', 'like', "%{$search}%");
+            });
+
+        $unionQuery = $tt->union($tttsj)->union($lcl);
+        
+        $receipts = DB::table(DB::raw("({$unionQuery->toSql()}) as combined_receipts"))
+            ->mergeBindings($unionQuery)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        // Fetch insurance info for these receipts
+        $ids = [
+            'tt' => collect($receipts->items())->where('type', 'tt')->pluck('id')->toArray(),
+            'tttsj' => collect($receipts->items())->where('type', 'tttsj')->pluck('id')->toArray(),
+            'lcl' => collect($receipts->items())->where('type', 'lcl')->pluck('id')->toArray(),
+        ];
+
+        $insurances = AsuransiTandaTerima::whereIn('tanda_terima_id', $ids['tt'])
+            ->orWhereIn('tanda_terima_tanpa_sj_id', $ids['tttsj'])
+            ->orWhereIn('tanda_terima_lcl_id', $ids['lcl'])
+            ->with('vendorAsuransi')
+            ->get()
+            ->groupBy(function($item) {
+                if ($item->tanda_terima_id) return "tt_{$item->tanda_terima_id}";
+                if ($item->tanda_terima_tanpa_sj_id) return "tttsj_{$item->tanda_terima_tanpa_sj_id}";
+                if ($item->tanda_terima_lcl_id) return "lcl_{$item->tanda_terima_lcl_id}";
+            });
+
+        foreach ($receipts as $receipt) {
+            $key = "{$receipt->type}_{$receipt->id}";
+            $receipt->insurance = isset($insurances[$key]) ? $insurances[$key]->first() : null;
         }
 
-        $asuransiList = $query->latest()->paginate(15);
-
-        return view('asuransi-tanda-terima.index', compact('asuransiList'));
+        return view('asuransi-tanda-terima.index', compact('receipts'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $vendors = VendorAsuransi::orderBy('nama_asuransi')->get();
         
-        // Fetch receipts that don't have insurance yet (optional, or just fetch all recent)
-        // For simplicity, fetch recent receipts of each type
-        $tandaTerimas = TandaTerima::latest()->limit(50)->get();
-        $tandaTerimaTanpaSjs = TandaTerimaTanpaSuratJalan::latest()->limit(50)->get();
-        $tandaTerimaLcls = TandaTerimaLcl::latest()->limit(50)->get();
+        $selectedType = $request->type;
+        $selectedId = $request->id;
+        
+        $selectedReceipt = null;
+        if ($selectedType && $selectedId) {
+            if ($selectedType == 'tt') $selectedReceipt = TandaTerima::find($selectedId);
+            elseif ($selectedType == 'tttsj') $selectedReceipt = TandaTerimaTanpaSuratJalan::find($selectedId);
+            elseif ($selectedType == 'lcl') $selectedReceipt = TandaTerimaLcl::find($selectedId);
+        }
 
-        return view('asuransi-tanda-terima.create', compact('vendors', 'tandaTerimas', 'tandaTerimaTanpaSjs', 'tandaTerimaLcls'));
+        $tandaTerimas = TandaTerima::latest()->limit(20)->get();
+        $tandaTerimaTanpaSjs = TandaTerimaTanpaSuratJalan::latest()->limit(20)->get();
+        $tandaTerimaLcls = TandaTerimaLcl::latest()->limit(20)->get();
+
+        return view('asuransi-tanda-terima.create', compact('vendors', 'tandaTerimas', 'tandaTerimaTanpaSjs', 'tandaTerimaLcls', 'selectedType', 'selectedId', 'selectedReceipt'));
     }
 
     public function store(Request $request)
