@@ -110,7 +110,7 @@
                     @else
                     <h1 class="text-lg md:text-2xl font-bold text-gray-800">OB - Data Naik Kapal</h1>
                     @endif
-                    <p class="text-xs md:text-sm text-gray-600">Kapal: <strong>{{ $namaKapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong></p>
+                    <p class="text-xs md:text-sm text-gray-600">Kapal: <strong>{{ $namaKapal ?: 'Semua' }}</strong> | Voyage: <strong>{{ $noVoyage ?: 'Semua' }}</strong></p>
                     <p class="text-[10px] md:text-xs text-gray-500 mt-1">Last updated: {{ now()->format('d/m/Y H:i:s') }}</p>
                 </div>
             </div>
@@ -118,10 +118,10 @@
                 <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Refresh Data</span>
                 </button>
-                <a href="{{ route('ob.print', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan', 'gudang_id']))) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                <a href="{{ route('ob.print', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan', 'gudang_id', 'show_all']))) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-print md:mr-2"></i><span class="hidden md:inline">Print</span>
                 </a>
-                <a href="{{ route('ob.export', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan', 'search', 'gudang_id']))) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                <a href="{{ route('ob.export', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan', 'search', 'gudang_id', 'show_all']))) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-file-excel md:mr-2"></i><span class="hidden md:inline">Export Excel</span>
                 </a>
                 <button onclick="openUpdateSizeModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
@@ -190,8 +190,15 @@
     {{-- Filter Section --}}
     <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 mb-4 md:mb-6">
         <form method="GET" action="{{ route('ob.index') }}">
+            @if(request()->has('nama_kapal'))
                 <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
+            @endif
+            @if(request()->has('no_voyage'))
                 <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+            @endif
+            @if(request()->has('show_all'))
+                <input type="hidden" name="show_all" value="1">
+            @endif
             @if(request()->has('kegiatan'))
                 <input type="hidden" name="kegiatan" value="{{ request('kegiatan') }}">
             @endif
@@ -424,7 +431,7 @@
             @empty
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-gray-500">
                     <i class="fas fa-inbox text-4xl mb-2"></i>
-                    <p>Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</p>
+                    <p>Tidak ada data BL {{ $namaKapal ? 'untuk kapal ' . $namaKapal . ' voyage ' . $noVoyage : '' }}</p>
                 </div>
             @endforelse
         @else
@@ -544,7 +551,7 @@
             @empty
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center text-gray-500">
                     <i class="fas fa-inbox text-4xl mb-2"></i>
-                    <p>Tidak ada data Naik Kapal untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</p>
+                    <p>Tidak ada data Naik Kapal {{ $namaKapal ? 'untuk kapal ' . $namaKapal . ' voyage ' . $noVoyage : '' }}</p>
                 </div>
             @endforelse
         @endif
@@ -773,7 +780,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="15" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL untuk kapal {{ $namaKapal }} voyage {{ $noVoyage }}</td>
+                        <td colspan="15" class="px-4 py-8 text-center text-gray-500">Tidak ada data BL {{ $namaKapal ? 'untuk kapal ' . $namaKapal . ' voyage ' . $noVoyage : '' }}</td>
                     </tr>
                     @endforelse
                 </tbody>

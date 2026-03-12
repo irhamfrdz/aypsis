@@ -51,10 +51,13 @@
 
             </div>
 
-            <div class="mt-4 md:mt-6">
+            <div class="mt-4 md:mt-6 flex flex-wrap gap-2">
                 <button type="button" id="goToOBIndex" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-3 md:py-2 rounded-md text-sm md:text-base font-medium shadow-sm hover:shadow-md transition-all">
                     <i class="fas fa-arrow-right mr-2"></i>Lanjutkan ke OB
                 </button>
+                <a href="{{ route('ob.index', ['show_all' => 1]) }}" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 md:py-2 rounded-md text-sm md:text-base font-medium shadow-sm hover:shadow-md transition-all text-center">
+                    <i class="fas fa-list mr-2"></i>Tampilkan Semua Data
+                </a>
             </div>
         </form>
     </div>
