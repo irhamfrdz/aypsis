@@ -12,6 +12,7 @@
                 <p class="text-gray-600 mt-1">Kelola data vendor asuransi</p>
             </div>
             <div class="flex flex-col sm:flex-row gap-3">
+                @can('master-vendor-asuransi-create')
                 <a href="{{ route('master.vendor-asuransi.create') }}"
                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm rounded-lg font-medium transition duration-200 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,6 +20,9 @@
                     </svg>
                     Tambah Vendor Asuransi
                 </a>
+                @endcan
+
+                @can('master-vendor-asuransi-view')
                 <a href="{{ route('master.vendor-asuransi.export-template') }}"
                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm rounded-lg font-medium transition duration-200 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,6 +30,9 @@
                     </svg>
                     Download Template
                 </a>
+                @endcan
+
+                @can('master-vendor-asuransi-create')
                 <button onclick="document.getElementById('importModal').classList.remove('hidden')"
                         class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 text-sm rounded-lg font-medium transition duration-200 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,6 +40,7 @@
                     </svg>
                     Import CSV
                 </button>
+                @endcan
             </div>
         </div>
 
@@ -136,10 +144,17 @@
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
+                                @can('master-vendor-asuransi-view')
                                 <a href="{{ route('master.vendor-asuransi.show', $vendor) }}"
                                    class="text-blue-600 hover:text-blue-900">Lihat</a>
+                                @endcan
+                                
+                                @can('master-vendor-asuransi-update')
                                 <a href="{{ route('master.vendor-asuransi.edit', $vendor) }}"
                                    class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                @endcan
+
+                                @can('master-vendor-asuransi-delete')
                                 <form method="POST" action="{{ route('master.vendor-asuransi.destroy', $vendor) }}"
                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus vendor asuransi ini?')"
                                       class="inline">
@@ -147,6 +162,7 @@
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

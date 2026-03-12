@@ -1125,6 +1125,12 @@ class UserController extends Controller
                             // For master-vendor-supir-view, extract the action
                             $action = str_replace('vendor-supir-', '', $action);
                             $module = 'master-vendor-supir';
+                        } 
+                        // Special handling for master-vendor-asuransi permissions
+                        elseif (strpos($action, 'vendor-asuransi-') === 0) {
+                            // For master-vendor-asuransi-view, extract the action
+                            $action = str_replace('vendor-asuransi-', '', $action);
+                            $module = 'master-vendor-asuransi';
                         } else {
                             // For master-* patterns, split using last hyphen so submodules can contain hyphens
                             $lastPos = strrpos($action, '-');
@@ -2445,6 +2451,26 @@ class UserController extends Controller
                             'create' => 'master-vendor-bengkel.create',
                             'update' => 'master-vendor-bengkel.update',
                             'delete' => 'master-vendor-bengkel.delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-vendor-asuransi permissions explicitly
+                    if ($module === 'master-vendor-asuransi' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-vendor-asuransi-view',
+                            'create' => 'master-vendor-asuransi-create',
+                            'update' => 'master-vendor-asuransi-update',
+                            'delete' => 'master-vendor-asuransi-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

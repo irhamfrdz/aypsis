@@ -13,10 +13,12 @@
                     <p class="text-blue-100 text-sm">Informasi lengkap data asuransi</p>
                 </div>
                 <div class="flex space-x-2">
+                    @can('master-vendor-asuransi-update')
                     <a href="{{ route('master.vendor-asuransi.edit', $vendorAsuransi) }}"
                        class="bg-white text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
                         Edit Data
                     </a>
+                    @endcan
                     <a href="{{ route('master.vendor-asuransi.index') }}"
                        class="bg-blue-700 text-white hover:bg-blue-800 px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
                         Kembali
