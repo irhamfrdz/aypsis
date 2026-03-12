@@ -428,7 +428,7 @@
             materai = 10000;
         }
         
-        const total = subtotal + ppnValue + materai - pphValue + adjValue;
+        const total = subtotal + ppnValue + materai + adjValue;
         
         subtotalInput.value = subtotal.toLocaleString('id-ID');
         ppnInput.value = ppnValue.toLocaleString('id-ID');
