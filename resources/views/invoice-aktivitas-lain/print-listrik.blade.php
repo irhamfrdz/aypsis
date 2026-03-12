@@ -193,20 +193,20 @@
     <table class="custom-table">
         <thead>
             <tr>
-                <th style="width: 25%;">Referensi</th>
+                <th style="width: 5%;">No</th>
                 <th style="width: 15%;">Tanggal</th>
-                <th style="width: 20%;">Penerima</th>
-                <th style="width: 13%;">DPP</th>
-                <th style="width: 13%;">PPH</th>
-                <th style="width: 14%;">Grandtotal</th>
+                <th style="width: 30%;">Referensi</th>
+                <th style="width: 16%;">DPP</th>
+                <th style="width: 16%;">PPH</th>
+                <th style="width: 18%;">Total</th>
             </tr>
         </thead>
         <tbody>
             @foreach($biayaListrikEntries as $biayaListrik)
                 <tr>
-                    <td>{{ $biayaListrik->referensi ?? '-' }}</td>
+                    <td class="text-center">{{ $loop->iteration }}</td>
                     <td class="text-center">{{ $biayaListrik->tanggal ? $biayaListrik->tanggal->format('d/M/Y') : '-' }}</td>
-                    <td>{{ $biayaListrik->penerima ?? '-' }}</td>
+                    <td>{{ $biayaListrik->referensi ?? '-' }}</td>
                     <td class="text-right">Rp {{ number_format($biayaListrik->dpp, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($biayaListrik->pph, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($biayaListrik->grand_total, 0, ',', '.') }}</td>
