@@ -21,12 +21,9 @@ class MasterPricelistFreightController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->whereHas('asal', function($q2) use ($search) {
-                        $q2->where('nama_pelabuhan', 'like', "%{$search}%");
-                    })
-                  ->orWhereHas('tujuan', function($q2) use ($search) {
-                        $q2->where('nama_pelabuhan', 'like', "%{$search}%");
-                    })
+                $q->where('nama_barang', 'like', "%{$search}%")
+                  ->orWhere('lokasi', 'like', "%{$search}%")
+                  ->orWhere('vendor', 'like', "%{$search}%")
                   ->orWhere('size_kontainer', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%");
             });
@@ -58,19 +55,17 @@ class MasterPricelistFreightController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'pelabuhan_asal_id' => 'required|exists:master_pelabuhans,id',
-            'pelabuhan_tujuan_id' => 'required|exists:master_pelabuhans,id|different:pelabuhan_asal_id',
-            'size_kontainer' => 'required|string',
-            'biaya' => 'required|numeric|min:0',
+            'nama_barang' => 'required|string|max:255',
+            'lokasi' => 'nullable|string|max:255',
+            'vendor' => 'nullable|string|max:255',
+            'tarif' => 'required|numeric|min:0',
+            'status' => 'required|string|in:Aktif,Tidak Aktif',
             'keterangan' => 'nullable|string|max:1000'
         ], [
-            'pelabuhan_asal_id.required' => 'Pelabuhan asal harus diisi',
-            'pelabuhan_tujuan_id.required' => 'Pelabuhan tujuan harus diisi',
-            'pelabuhan_tujuan_id.different' => 'Pelabuhan tujuan harus berbeda dengan pelabuhan asal',
-            'size_kontainer.required' => 'Size kontainer harus diisi',
-            'biaya.required' => 'Biaya harus diisi',
-            'biaya.numeric' => 'Biaya harus berupa angka',
-            'biaya.min' => 'Biaya tidak boleh negatif',
+            'nama_barang.required' => 'Nama barang harus diisi',
+            'tarif.required' => 'Tarif harus diisi',
+            'tarif.numeric' => 'Tarif harus berupa angka',
+            'tarif.min' => 'Tarif tidak boleh negatif',
         ]);
 
         if ($validator->fails()) {
@@ -113,19 +108,17 @@ class MasterPricelistFreightController extends Controller
     public function update(Request $request, MasterPricelistFreight $masterPricelistFreight)
     {
         $validator = Validator::make($request->all(), [
-            'pelabuhan_asal_id' => 'required|exists:master_pelabuhans,id',
-            'pelabuhan_tujuan_id' => 'required|exists:master_pelabuhans,id|different:pelabuhan_asal_id',
-            'size_kontainer' => 'required|string',
-            'biaya' => 'required|numeric|min:0',
+            'nama_barang' => 'required|string|max:255',
+            'lokasi' => 'nullable|string|max:255',
+            'vendor' => 'nullable|string|max:255',
+            'tarif' => 'required|numeric|min:0',
+            'status' => 'required|string|in:Aktif,Tidak Aktif',
             'keterangan' => 'nullable|string|max:1000'
         ], [
-            'pelabuhan_asal_id.required' => 'Pelabuhan asal harus diisi',
-            'pelabuhan_tujuan_id.required' => 'Pelabuhan tujuan harus diisi',
-            'pelabuhan_tujuan_id.different' => 'Pelabuhan tujuan harus berbeda dengan pelabuhan asal',
-            'size_kontainer.required' => 'Size kontainer harus diisi',
-            'biaya.required' => 'Biaya harus diisi',
-            'biaya.numeric' => 'Biaya harus berupa angka',
-            'biaya.min' => 'Biaya tidak boleh negatif',
+            'nama_barang.required' => 'Nama barang harus diisi',
+            'tarif.required' => 'Tarif harus diisi',
+            'tarif.numeric' => 'Tarif harus berupa angka',
+            'tarif.min' => 'Tarif tidak boleh negatif',
         ]);
 
         if ($validator->fails()) {

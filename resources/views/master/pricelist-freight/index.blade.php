@@ -1,123 +1,95 @@
 @extends('layouts.app')
 
-@section('title', 'Master Pricelist Freight')
-@section('page_title', 'Master Pricelist Freight')
+@section('title', 'Pricelist Master Pricelist Freight')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
-            <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <svg class="w-8 h-8 mr-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 002 2v14a2 2 0 002 2z"/>
-                        </svg>
-                        <div>
-                            <h1 class="text-2xl font-bold text-white">Master Pricelist Freight</h1>
-                            <p class="text-purple-100 text-sm">Kelola daftar harga freight antar pelabuhan</p>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2">
-                        @can('master-pricelist-freight-create')
-                        <a href="{{ route('master-pricelist-freight.create') }}" class="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                            </svg>
-                            Tambah Pricelist Freight
-                        </a>
-                        @endcan
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Pricelist Master Pricelist Freight</h1>
+                <p class="text-gray-600 mt-1">Kelola data tarif Freight</p>
+            </div>
+            <div>
+                @can('master-pricelist-freight-create')
+                <a href="{{ route('master-pricelist-freight.create') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
+                    <i class="fas fa-plus mr-2"></i> Tambah Freight
+                </a>
+                @endcan
+            </div>
+        </div>
+    </div>
+
+    @if(session('success'))
+    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-check-circle text-green-400 text-xl"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-6">
+            <form method="GET" action="{{ route('master-pricelist-freight.index') }}" class="mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <div class="md:col-span-12">
+                        <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Cari Nama Barang, Lokasi, atau Vendor..." value="{{ request('search') }}">
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Filter -->
-        <div class="bg-white shadow rounded-lg mb-6">
-            <div class="p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Filter & Pencarian</h3>
-                <form method="GET" action="{{ route('master-pricelist-freight.index') }}" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="md:col-span-3">
-                            <label for="search" class="block text-sm font-medium text-gray-700">Pencarian</label>
-                            <input type="text" id="search" name="search" value="{{ request('search') }}" 
-                                   placeholder="Cari pelabuhan, size, atau keterangan..." 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm">
-                        </div>
-                        <div class="flex items-end space-x-2">
-                            <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                Filter
-                            </button>
-                            <a href="{{ route('master-pricelist-freight.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium">
-                                Reset
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Content -->
-        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 text-white pb-3" style="background-color: #5d3f9b;">
-                <h2 class="text-lg font-semibold">Daftar Pricelist Freight</h2>
-                <p class="text-sm opacity-80 mt-1 text-white">Kelola harga pengiriman container antar pelabuhan</p>
-            </div>
+            </form>
 
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asal</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size Kontainer</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($pricelistFreight as $item)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                #{{ $item->id }}
+                        <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+                                {{ ($pricelistFreight->currentPage() - 1) * $pricelistFreight->perPage() + $loop->iteration }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900">{{ $item->asal->nama_pelabuhan ?? '-' }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900">{{ $item->tujuan->nama_pelabuhan ?? '-' }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                    {{ $item->size_kontainer_label }}
+                            <td class="px-3 py-2 text-xs font-medium text-gray-900">{{ $item->nama_barang ?? '-' }}</td>
+                            <td class="px-3 py-2 text-xs text-gray-900">{{ $item->lokasi ?? '-' }}</td>
+                            <td class="px-3 py-2 text-xs text-gray-900">{{ $item->vendor ?? '-' }}</td>
+                            <td class="px-3 py-2 text-xs text-gray-900 text-right">{{ $item->formatted_tarif }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-center">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->status === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $item->status }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
-                                {{ $item->formatted_biaya }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ $item->keterangan ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex justify-end space-x-2">
+                            <td class="px-3 py-2 whitespace-nowrap text-center text-xs font-medium">
+                                <div class="flex items-center justify-center gap-1">
                                     @can('master-pricelist-freight-view')
-                                    <a href="{{ route('master-pricelist-freight.show', $item) }}"
-                                       class="text-blue-600 hover:text-blue-900">Lihat</a>
+                                    <a href="{{ route('master-pricelist-freight.show', $item->id) }}" class="inline-flex items-center px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition duration-150" title="Lihat">
+                                        <i class="fas fa-eye text-xs"></i>
+                                    </a>
                                     @endcan
                                     @can('master-pricelist-freight-update')
-                                    <a href="{{ route('master-pricelist-freight.edit', $item) }}"
-                                       class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                    <a href="{{ route('master-pricelist-freight.edit', $item->id) }}" class="inline-flex items-center px-2 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded transition duration-150" title="Edit">
+                                        <i class="fas fa-edit text-xs"></i>
+                                    </a>
                                     @endcan
                                     @can('master-pricelist-freight-delete')
-                                    <form action="{{ route('master-pricelist-freight.destroy', $item) }}"
-                                          method="POST" class="inline"
-                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus pricelist ini?')">
+                                    <form action="{{ route('master-pricelist-freight.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
+                                        <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded transition duration-150" title="Hapus">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
                                     </form>
                                     @endcan
                                 </div>
@@ -125,22 +97,8 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                                <div class="flex flex-col items-center py-8">
-                                    <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 002 2v14a2 2 0 002 2z"/>
-                                    </svg>
-                                    <p class="text-lg font-medium">Belum ada data pricelist freight</p>
-                                    @can('master-pricelist-freight-create')
-                                    <a href="{{ route('master-pricelist-freight.create') }}"
-                                       class="mt-4 inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-purple-700 font-bold">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                        </svg>
-                                        Tambah Pricelist Freight Pertama
-                                    </a>
-                                    @endcan
-                                </div>
+                            <td colspan="7" class="px-3 py-8 text-center">
+                                <p class="text-gray-500 text-sm">Tidak ada data pricelist Freight.</p>
                             </td>
                         </tr>
                         @endforelse
@@ -148,13 +106,9 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
-            @if($pricelistFreight->hasPages())
-            <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                @include('components.modern-pagination', ['paginator' => $pricelistFreight])
-                @include('components.rows-per-page')
+            <div class="mt-4">
+                {{ $pricelistFreight->links() }}
             </div>
-            @endif
         </div>
     </div>
 </div>

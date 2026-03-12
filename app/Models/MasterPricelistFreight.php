@@ -13,15 +13,19 @@ class MasterPricelistFreight extends Model
     protected $table = 'master_pricelist_freights';
 
     protected $fillable = [
+        'nama_barang',
+        'lokasi',
+        'vendor',
+        'tarif',
+        'status',
+        'keterangan',
         'pelabuhan_asal_id',
         'pelabuhan_tujuan_id',
-        'size_kontainer',
-        'biaya',
-        'keterangan'
+        'size_kontainer'
     ];
 
     protected $casts = [
-        'biaya' => 'decimal:2',
+        'tarif' => 'decimal:2',
     ];
 
     /**
@@ -40,11 +44,24 @@ class MasterPricelistFreight extends Model
     }
 
     /**
-     * Accessor for formatted biaya
+     * Accessor for formatted tarif
      */
+    public function getFormattedTarifAttribute()
+    {
+        return 'Rp ' . number_format($this->tarif, 0, ',', '.');
+    }
+
+    /**
+     * Compatibility accessor for old code using 'biaya'
+     */
+    public function getBiayaAttribute()
+    {
+        return $this->tarif;
+    }
+
     public function getFormattedBiayaAttribute()
     {
-        return 'Rp ' . number_format($this->biaya, 0, ',', '.');
+        return $this->formatted_tarif;
     }
 
     /**
