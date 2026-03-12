@@ -48,8 +48,8 @@ class ObExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEven
                     $item->sudah_ob ? 'Sudah OB' : 'Belum OB',
                     $item->tanggal_ob ? Carbon::parse($item->tanggal_ob)->format('d/m/Y H:i') : '-',
                     $item->supir ? ($item->supir->nama_panggilan ?? $item->supir->nama_lengkap ?? '-') : '-',
-                    $this->namaKapal,
-                    $this->noVoyage
+                    $this->namaKapal ?: ($item->nama_kapal ?: '-'),
+                    $this->noVoyage ?: ($item->no_voyage ?: '-')
                 ];
             } else {
                 // NaikKapal
@@ -67,8 +67,8 @@ class ObExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEven
                     $item->sudah_ob ? 'Sudah OB' : 'Belum OB',
                     $item->tanggal_ob ? Carbon::parse($item->tanggal_ob)->format('d/m/Y H:i') : '-',
                     $item->supir ? ($item->supir->nama_panggilan ?? $item->supir->nama_lengkap ?? '-') : '-',
-                    $this->namaKapal,
-                    $this->noVoyage
+                    $this->namaKapal ?: ($item->nama_kapal ?: '-'),
+                    $this->noVoyage ?: ($item->no_voyage ?: '-')
                 ];
             }
         });

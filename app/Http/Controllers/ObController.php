@@ -2116,7 +2116,7 @@ class ObController extends Controller
         $kegiatan = $request->get('kegiatan');
         $statusFilter = $request->get('status_ob');
         $tipeFilter = $request->get('tipe_kontainer');
-        if (!$namaKapal || !$noVoyage) {
+        if (!$request->has('show_all') && (!$namaKapal || !$noVoyage)) {
             abort(400, 'Nama kapal dan nomor voyage harus diisi');
         }
 
@@ -2132,11 +2132,14 @@ class ObController extends Controller
                 ->exists();
         }
 
-        if ($kegiatan === 'bongkar' || ($kegiatan !== 'muat' && $hasBl)) {
+        if ($kegiatan === 'bongkar' || ($kegiatan !== 'muat' && $hasBl) || ($request->has('show_all') && $kegiatan !== 'muat')) {
             // Use BL data
-            $query = Bl::with(['prospek', 'supir'])
-                ->where('nama_kapal', $namaKapal)
-                ->where('no_voyage', $noVoyage);
+            $query = Bl::with(['prospek', 'supir']);
+            
+            if ($namaKapal && $noVoyage) {
+                $query->where('nama_kapal', $namaKapal)
+                    ->where('no_voyage', $noVoyage);
+            }
 
             // Apply filters
             if ($statusFilter) {
@@ -2161,9 +2164,12 @@ class ObController extends Controller
             ));
         } else {
             // Use naik_kapal data
-            $query = NaikKapal::with(['prospek', 'supir'])
-                ->where('nama_kapal', $namaKapal)
-                ->where('no_voyage', $noVoyage);
+            $query = NaikKapal::with(['prospek', 'supir']);
+            
+            if ($namaKapal && $noVoyage) {
+                $query->where('nama_kapal', $namaKapal)
+                    ->where('no_voyage', $noVoyage);
+            }
 
             // Apply filters
             if ($statusFilter) {
@@ -2210,7 +2216,7 @@ class ObController extends Controller
         $tipeFilter = $request->get('tipe_kontainer');
         $searchFilter = $request->get('search');
 
-        if (!$namaKapal || !$noVoyage) {
+        if (!$request->has('show_all') && (!$namaKapal || !$noVoyage)) {
             abort(400, 'Nama kapal dan nomor voyage harus diisi');
         }
 
@@ -2229,11 +2235,14 @@ class ObController extends Controller
                 ->exists();
         }
 
-        if ($kegiatan !== 'muat' && $hasBl) {
+        if ($kegiatan !== 'muat' && ($hasBl || $request->has('show_all'))) {
         // Use BL data
-        $query = Bl::with(['prospek', 'supir'])
-                ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+        $query = Bl::with(['prospek', 'supir']);
+        
+        if ($namaKapal && $noVoyage) {
+                $query->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage);
+        }
 
             // Apply filters
             if ($statusFilter) {
@@ -2263,9 +2272,12 @@ class ObController extends Controller
 
         } else {
             // Use naik_kapal data
-            $query = NaikKapal::with(['prospek', 'supir'])
-                ->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            $query = NaikKapal::with(['prospek', 'supir']);
+            
+            if ($namaKapal && $noVoyage) {
+                $query->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
                 ->where('no_voyage', $noVoyage);
+            }
 
             // Apply filters
             if ($statusFilter) {
@@ -2302,7 +2314,9 @@ class ObController extends Controller
                 ->get();
         }
 
-        $fileName = 'OB_Data_' . str_replace(['/', '\\', ' '], '_', $namaKapal) . '_Voy_' . str_replace(['/', '\\', ' '], '_', $noVoyage) . '.xlsx';
+        $shipPart = $namaKapal ? str_replace(['/', '\\', ' '], '_', $namaKapal) : 'Semua_Kapal';
+        $voyPart = $noVoyage ? '_Voy_' . str_replace(['/', '\\', ' '], '_', $noVoyage) : '';
+        $fileName = 'OB_Data_' . $shipPart . $voyPart . '.xlsx';
         return Excel::download(new ObExport($data, $namaKapal, $noVoyage), $fileName);
     }
 

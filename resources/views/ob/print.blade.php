@@ -160,11 +160,11 @@
     <div class="info-section">
         <div class="info-item">
             <span class="info-label">🚢 Kapal:</span>
-            <span>{{ $namaKapal }}</span>
+            <span>{{ $namaKapal ?: 'Semua' }}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Voyage:</span>
-            <span>{{ $noVoyage }}</span>
+            <span>{{ $noVoyage ?: 'Semua' }}</span>
         </div>
         @if($statusFilter)
         <div class="info-item">
