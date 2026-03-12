@@ -32,4 +32,26 @@ class VendorAsuransi extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    /**
+     * Generate the next available Kode with prefix ASN
+     *
+     * @return string
+     */
+    public static function generateNextKode(): string
+    {
+        $prefix = 'ASN';
+        $lastVendor = self::where('kode', 'like', $prefix . '%')
+            ->orderBy('kode', 'desc')
+            ->first();
+
+        if (!$lastVendor || !preg_match('/ASN(\d+)/', $lastVendor->kode, $matches)) {
+            return $prefix . '001';
+        }
+
+        $lastNumber = (int)$matches[1];
+        $nextNumber = $lastNumber + 1;
+
+        return $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+    }
 }

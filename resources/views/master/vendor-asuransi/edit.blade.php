@@ -31,8 +31,8 @@
                     <div>
                         <label for="kode" class="block text-sm font-medium text-gray-700 mb-2">Kode Vendor</label>
                         <input type="text" id="kode" name="kode" value="{{ old('kode', $vendorAsuransi->kode) }}"
-                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Contoh: ASN001">
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               readonly>
                         @error('kode') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 

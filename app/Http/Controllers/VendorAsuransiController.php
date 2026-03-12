@@ -38,7 +38,8 @@ class VendorAsuransiController extends Controller
      */
     public function create(): View
     {
-        return view('master.vendor-asuransi.create');
+        $nextKode = VendorAsuransi::generateNextKode();
+        return view('master.vendor-asuransi.create', compact('nextKode'));
     }
 
     /**
