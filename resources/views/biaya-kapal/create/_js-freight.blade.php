@@ -108,7 +108,7 @@
             </div>
             
             <div class="border-t pt-4 mt-2 space-y-3">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal (Freight) <span class="text-xs text-indigo-500 font-normal">(otomatis)</span></label>
                         <div class="relative">
@@ -116,6 +116,15 @@
                             <input type="text" name="freight_sections[${sectionIndex}][subtotal]"
                                    class="freight-subtotal-input w-full pl-10 pr-3 py-2 border border-indigo-200 rounded-lg bg-indigo-50 text-indigo-800 focus:ring-0 cursor-not-allowed"
                                    value="0" readonly>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Dokumen</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
+                            <input type="text" name="freight_sections[${sectionIndex}][biaya_dokumen]"
+                                   class="freight-dokumen-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                   value="0">
                         </div>
                     </div>
                     <div>
@@ -300,9 +309,17 @@
             const parseFmt = (el) => parseFloat((el ? el.value : '0').replace(/\./g, '').replace(',', '.')) || 0;
 
             const subtotalInput = sec.querySelector('.freight-subtotal-input');
+            const dokumenInput  = sec.querySelector('.freight-dokumen-input');
             const pphInput      = sec.querySelector('.freight-pph-input');
             const materaiInput  = sec.querySelector('.freight-materai-input');
             const totalInput    = sec.querySelector('.freight-total-input');
+
+            const biayaDokumen = parseFmt(dokumenInput);
+            
+            // Auto-calc Materai: if total (subtotal + dokumen) > 5.000.000 then 10.000
+            if (subtotalFreight + biayaDokumen > 5000000) {
+                materaiInput.value = fmt(10000);
+            }
 
             // Auto-calc PPh 2% from subtotal
             const pphValue = Math.round(subtotalFreight * 0.02);
@@ -311,7 +328,7 @@
             subtotalInput.value = fmt(subtotalFreight);
             
             const materaiValue = parseFmt(materaiInput);
-            const totalValue = subtotalFreight + materaiValue - pphValue;
+            const totalValue = subtotalFreight + biayaDokumen + materaiValue - pphValue;
             totalInput.value = fmt(totalValue);
 
             calculateTotalFromAllFreightSections();
@@ -333,6 +350,7 @@
                 recalcFreightSubtotal(section, sectionIndex);
             });
         }
+        attachInputListener(section.querySelector('.freight-dokumen-input'));
         attachInputListener(section.querySelector('.freight-materai-input'));
         attachInputListener(section.querySelector('.freight-pph-input'));
 

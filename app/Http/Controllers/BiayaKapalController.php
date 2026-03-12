@@ -332,6 +332,8 @@ class BiayaKapalController extends Controller
         if (isset($data['freight_sections']) && is_array($data['freight_sections'])) {
             foreach ($data['freight_sections'] as &$section) {
                 if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['biaya_dokumen'])) $section['biaya_dokumen'] = str_replace(',', '.', str_replace('.', '', $section['biaya_dokumen']));
+                if (isset($section['biaya_materai'])) $section['biaya_materai'] = str_replace(',', '.', str_replace('.', '', $section['biaya_materai']));
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
             }
@@ -509,6 +511,7 @@ class BiayaKapalController extends Controller
             'freight_sections.*.kontainer' => 'nullable|array',
             'freight_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
             'freight_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'freight_sections.*.biaya_dokumen' => 'nullable|numeric|min:0',
             'freight_sections.*.biaya_materai' => 'nullable|numeric|min:0',
             'freight_sections.*.pph' => 'nullable|numeric|min:0',
             'freight_sections.*.total_biaya' => 'nullable|numeric|min:0',
@@ -766,7 +769,8 @@ class BiayaKapalController extends Controller
                         'vendor'                => $section['vendor'] ?? null,
                         'kontainer_ids'         => $kontainerIds,
                         'subtotal'              => $cleanNum($section['subtotal'] ?? 0),
-                        'biaya_meterai'         => $cleanNum($section['biaya_materai'] ?? 0),
+                        'biaya_dokumen'         => $cleanNum($section['biaya_dokumen'] ?? 0),
+                        'biaya_materai'         => $cleanNum($section['biaya_materai'] ?? 0),
                         'pph'                   => $cleanNum($section['pph'] ?? 0),
                         'total_biaya'           => $cleanNum($section['total_biaya'] ?? 0),
                     ]);

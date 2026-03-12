@@ -366,6 +366,12 @@
                                 <span>Subtotal Freight:</span>
                                 <span>{{ number_format($detail->subtotal, 0, ',', '.') }}</span>
                             </div>
+                            @if($detail->biaya_dokumen > 0)
+                            <div class="rincian-item">
+                                <span>Biaya Dokumen:</span>
+                                <span>{{ number_format($detail->biaya_dokumen, 0, ',', '.') }}</span>
+                            </div>
+                            @endif
                             @if($detail->biaya_meterai > 0)
                             <div class="rincian-item">
                                 <span>Materai:</span>
