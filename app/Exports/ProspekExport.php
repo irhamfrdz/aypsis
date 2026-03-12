@@ -54,7 +54,8 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
                       ->orWhere('no_seal', 'like', "%{$search}%")
                       ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
                       ->orWhere('nama_kapal', 'like', "%{$search}%")
-                      ->orWhere('no_surat_jalan', 'like', "%{$search}%");
+                      ->orWhere('no_surat_jalan', 'like', "%{$search}%")
+                      ->orWhere('no_voyage', 'like', "%{$search}%");
                 });
             }
         }
@@ -73,7 +74,8 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
                 $p->ukuran,
                 $p->nomor_kontainer,
                 $p->no_seal,
-                $p->tujuan_pengiriman ?? '-'
+                $p->tujuan_pengiriman ?? '-',
+                $p->no_voyage ?? '-'
             ];
         });
 
@@ -93,7 +95,8 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
             'Ukuran',
             'No. Kontainer',
             'No. Seal',
-            'Tujuan'
+            'Tujuan',
+            'Voyage'
         ];
     }
 
@@ -102,7 +105,7 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->getStyle('A1:K1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             }
         ];
     }
