@@ -72,7 +72,8 @@ class ProspekController extends Controller
                       ->orWhere('nomor_kontainer', 'like', '%' . $search . '%')
                       ->orWhere('no_seal', 'like', '%' . $search . '%')
                       ->orWhere('tujuan_pengiriman', 'like', '%' . $search . '%')
-                      ->orWhere('nama_kapal', 'like', '%' . $search . '%');
+                      ->orWhere('nama_kapal', 'like', '%' . $search . '%')
+                      ->orWhere('no_voyage', 'like', '%' . $search . '%');
                 });
             }
 
