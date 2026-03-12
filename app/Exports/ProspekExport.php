@@ -30,7 +30,14 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
             $query = Prospek::with(['suratJalan'])->orderBy('created_at', 'desc');
 
             if (!empty($this->filters['status'])) {
-                $query->where('status', $this->filters['status']);
+                if ($this->filters['status'] == 'sudah_muat_no_voyage') {
+                    $query->where('status', 'sudah_muat')
+                          ->where(function($q) {
+                              $q->whereNull('no_voyage')->orWhere('no_voyage', '');
+                          });
+                } else {
+                    $query->where('status', $this->filters['status']);
+                }
             }
             if (!empty($this->filters['tipe'])) {
                 $query->where('tipe', $this->filters['tipe']);

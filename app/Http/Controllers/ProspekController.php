@@ -38,7 +38,14 @@ class ProspekController extends Controller
 
             // Filter berdasarkan status
             if ($request->filled('status')) {
-                $query->where('status', $request->status);
+                if ($request->status == 'sudah_muat_no_voyage') {
+                    $query->where('status', 'sudah_muat')
+                          ->where(function($q) {
+                              $q->whereNull('no_voyage')->orWhere('no_voyage', '');
+                          });
+                } else {
+                    $query->where('status', $request->status);
+                }
             }
 
             // Filter berdasarkan tipe

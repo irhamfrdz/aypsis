@@ -81,6 +81,7 @@
                         <option value="">Semua Status</option>
                         <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                         <option value="sudah_muat" {{ request('status') == 'sudah_muat' ? 'selected' : '' }}>Sudah Muat</option>
+                        <option value="sudah_muat_no_voyage" {{ request('status') == 'sudah_muat_no_voyage' ? 'selected' : '' }}>Sudah Muat (Tanpa Voyage)</option>
                         <option value="batal" {{ request('status') == 'batal' ? 'selected' : '' }}>Batal</option>
                     </select>
                 </div>
