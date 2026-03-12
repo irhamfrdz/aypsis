@@ -227,8 +227,16 @@
                 <tr>
                     <td>Vendor</td>
                     <td>: {{ $invoice->vendor_listrik ?? '-' }}</td>
-                    <td></td>
-                    <td></td>
+                    <td>Penerima</td>
+                    <td>: 
+                        @php
+                            $penerima = $invoice->penerima;
+                            if (empty($penerima) && isset($biayaListrikEntries) && $biayaListrikEntries->isNotEmpty()) {
+                                $penerima = $biayaListrikEntries->first()->penerima;
+                            }
+                        @endphp
+                        {{ $penerima ?? '-' }}
+                    </td>
                 </tr>
             </table>
         </div>

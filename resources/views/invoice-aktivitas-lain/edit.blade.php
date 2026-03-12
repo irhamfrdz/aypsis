@@ -1425,17 +1425,16 @@ console.log('Akun COAs data:', akunCoasData);
         const biayaListrikWrapper = document.getElementById('biaya_listrik_wrapper');
         const vendorListrikWrapper = document.getElementById('vendor_listrik_wrapper');
         const vendorListrikInput = document.getElementById('vendor_listrik');
+        const referensiWrapper = document.getElementById('referensi_wrapper');
+        const referensiInput = document.getElementById('referensi');
+        const penerimaWrapper = document.getElementById('penerima_wrapper');
+        const penerimaInput = document.getElementById('penerima');
 
         // Toggle PPh fields based on jenis biaya selection
         if (jenisBiayaDropdown) {
             $('#jenis_biaya_dropdown').on('change', function() {
                 const selectedOption = $(this).find('option:selected');
                 const namaJenisBiaya = selectedOption.text().toLowerCase();
-                
-                const referensiWrapper = document.getElementById('referensi_wrapper');
-                const referensiInput = document.getElementById('referensi');
-                const penerimaWrapper = document.getElementById('penerima_wrapper');
-                const penerimaInput = document.getElementById('penerima');
                 
                 // Show PPh and LWBP fields for Biaya Listrik
                 if (namaJenisBiaya.includes('listrik')) {
@@ -1660,8 +1659,6 @@ console.log('Akun COAs data:', akunCoasData);
             if (ppjuInput) ppjuInput.value = '';
             if (dppInput) dppInput.value = '';
             
-            const referensiWrapper = document.getElementById('referensi_wrapper');
-            const referensiInput = document.getElementById('referensi');
             if (referensiWrapper) {
                 referensiWrapper.classList.add('hidden');
                 if (referensiInput) referensiInput.value = '';

@@ -394,6 +394,12 @@ class InvoiceAktivitasLainController extends Controller
         if (isset($validated['biaya_listrik']) && is_array($validated['biaya_listrik'])) {
             $biayaListrikEntries = $validated['biaya_listrik'];
             unset($validated['biaya_listrik']);
+            
+            // Set main penerima from the first entry for display in index/header
+            if (empty($validated['penerima']) && !empty($biayaListrikEntries)) {
+                $firstEntry = reset($biayaListrikEntries);
+                $validated['penerima'] = $firstEntry['penerima'] ?? null;
+            }
         }
 
         $invoice = InvoiceAktivitasLain::create($validated);
@@ -809,6 +815,12 @@ class InvoiceAktivitasLainController extends Controller
         if (isset($validated['biaya_listrik']) && is_array($validated['biaya_listrik'])) {
             $biayaListrikEntries = $validated['biaya_listrik'];
             unset($validated['biaya_listrik']);
+
+            // Set main penerima from the first entry for display in index/header
+            if (empty($validated['penerima']) && !empty($biayaListrikEntries)) {
+                $firstEntry = reset($biayaListrikEntries);
+                $validated['penerima'] = $firstEntry['penerima'] ?? null;
+            }
         }
 
         $invoice->update($validated);
