@@ -10,7 +10,10 @@
                 <h1 class="text-2xl font-bold text-gray-900">Pricelist Biaya THC</h1>
                 <p class="text-gray-600 mt-1">Kelola data tarif Terminal Handling Charge (THC)</p>
             </div>
-            <div>
+            <div class="flex space-x-2">
+                <a href="{{ route('master.pricelist-thc.export', ['search' => request('search')]) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
+                    <i class="fas fa-file-excel mr-2"></i> Export Excel
+                </a>
                 <a href="{{ route('master.pricelist-thc.create') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
                     <i class="fas fa-plus mr-2"></i> Tambah THC
                 </a>

@@ -898,6 +898,9 @@ Route::middleware([
         Route::get('pricelist-thc', [\App\Http\Controllers\PricelistThcController::class, 'index'])
              ->name('pricelist-thc.index')
              ->middleware('can:master-pricelist-thc-view');
+        Route::get('pricelist-thc/export', [\App\Http\Controllers\PricelistThcController::class, 'export'])
+             ->name('pricelist-thc.export')
+             ->middleware('can:master-pricelist-thc-view');
         Route::get('pricelist-thc/create', [\App\Http\Controllers\PricelistThcController::class, 'create'])
              ->name('pricelist-thc.create')
              ->middleware('can:master-pricelist-thc-create');

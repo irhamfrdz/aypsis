@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\PricelistThc;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Exports\PricelistThcExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PricelistThcController extends Controller
 {
@@ -104,5 +106,10 @@ class PricelistThcController extends Controller
 
         return redirect()->route('master.pricelist-thc.index')
             ->with('success', 'Pricelist THC berhasil dihapus.');
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(new PricelistThcExport($request->search), 'pricelist-thc.xlsx');
     }
 }
