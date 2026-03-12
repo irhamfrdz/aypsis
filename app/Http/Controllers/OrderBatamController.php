@@ -42,7 +42,7 @@ class OrderBatamController extends Controller
 
         $orderBatams = $query->latest()->paginate(15);
 
-        return view('orders-batam.index', compact('orders-batam'));
+        return view('orders-batam.index', compact('orderBatams'));
     }
 
     /**
@@ -111,7 +111,7 @@ class OrderBatamController extends Controller
         }
 
         // Debug: Log the request data
-        \Log::info('Order Store Request:', [
+        Log::info('Order Store Request:', [
             'tipe_kontainer' => $request->tipe_kontainer,
             'size_kontainer' => $request->size_kontainer,
             'unit_kontainer' => $request->unit_kontainer,
@@ -182,7 +182,7 @@ class OrderBatamController extends Controller
 
         OrderBatam::create($data);
 
-        return redirect()->route('orders-batam-batam.index')->with('success', 'Order berhasil ditambahkan.');
+        return redirect()->route('orders-batam.index')->with('success', 'Order berhasil ditambahkan.');
     }
 
     /**
@@ -403,7 +403,7 @@ class OrderBatamController extends Controller
         // Auto-sync related Surat Jalan data
         $this->syncSuratJalanData($orderBatam);
 
-        return redirect()->route('orders-batam-batam.index')->with('success', 'Order berhasil diperbarui. Data surat jalan terkait juga telah disinkronkan.');
+        return redirect()->route('orders-batam.index')->with('success', 'Order berhasil diperbarui. Data surat jalan terkait juga telah disinkronkan.');
     }
 
     /**
@@ -462,11 +462,11 @@ class OrderBatamController extends Controller
             $orderBatam->suratJalans()->update($syncData);
             
             // Log the sync activity
-            \Log::info('SuratJalan data synced', [
+            Log::info('SuratJalan data synced', [
                 'order_id' => $orderBatam->id,
                 'surat_jalan_count' => $suratJalans->count(),
                 'synced_fields' => array_keys($syncData),
-                'user_id' => auth()->id()
+                'user_id' => Auth::id()
             ]);
         }
     }
@@ -575,6 +575,6 @@ class OrderBatamController extends Controller
         $orderBatam = OrderBatam::findOrFail($id);
         $orderBatam->delete();
 
-        return redirect()->route('orders-batam-batam.index')->with('success', 'Order berhasil dihapus.');
+        return redirect()->route('orders-batam.index')->with('success', 'Order berhasil dihapus.');
     }
 }

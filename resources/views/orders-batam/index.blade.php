@@ -158,7 +158,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-medium text-gray-900">Daftar Pesanan Pengambilan Barang</h3>
-                <p class="mt-1 text-sm text-gray-600">Total: {{ $orders->total() }} pesanan</p>
+                <p class="mt-1 text-sm text-gray-600">Total: {{ $orderBatams->total() }} pesanan</p>
             </div>
 
                         <div class="overflow-x-auto">
@@ -243,9 +243,9 @@
             </div>
 
             <!-- Pagination -->
-            @if ($orders->hasPages())
+            @if ($orderBatams->hasPages())
                 <div class="px-6 py-4 border-t border-gray-200">
-                    @include('components.modern-pagination', ['paginator' => $orders])
+                    @include('components.modern-pagination', ['paginator' => $orderBatams])
                     @include('components.rows-per-page')
                 </div>
             @endif
