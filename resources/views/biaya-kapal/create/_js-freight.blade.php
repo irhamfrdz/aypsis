@@ -321,14 +321,17 @@
                 materaiInput.value = fmt(10000);
             }
 
-            // Auto-calc PPh 2% from subtotal
-            const pphValue = Math.round(subtotalFreight * 0.02);
-            pphInput.value = fmt(pphValue);
+            // Auto-calc PPh 2% from subtotal (only if user is not currently typing in PPh field)
+            if (document.activeElement !== pphInput) {
+                const pphValue = Math.round(subtotalFreight * 0.02);
+                pphInput.value = fmt(pphValue);
+            }
             
             subtotalInput.value = fmt(subtotalFreight);
             
+            const pphValueActual = parseFmt(pphInput);
             const materaiValue = parseFmt(materaiInput);
-            const totalValue = subtotalFreight + biayaDokumen + materaiValue - pphValue;
+            const totalValue = subtotalFreight + biayaDokumen + materaiValue - pphValueActual;
             totalInput.value = fmt(totalValue);
 
             calculateTotalFromAllFreightSections();
