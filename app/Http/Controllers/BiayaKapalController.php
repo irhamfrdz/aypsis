@@ -326,6 +326,7 @@ class BiayaKapalController extends Controller
         if (isset($data['storage_sections']) && is_array($data['storage_sections'])) {
             foreach ($data['storage_sections'] as &$section) {
                 if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
             }
@@ -494,6 +495,7 @@ class BiayaKapalController extends Controller
             'storage_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
             'storage_sections.*.kontainer.*.hari' => 'nullable|numeric|min:1',
             'storage_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'storage_sections.*.pph' => 'nullable|numeric|min:0',
             'storage_sections.*.adjustment' => 'nullable|numeric',
             'storage_sections.*.notes_adjustment' => 'nullable|string',
             'storage_sections.*.total_biaya' => 'nullable|numeric|min:0',
@@ -777,7 +779,7 @@ class BiayaKapalController extends Controller
                         'subtotal'       => $cleanNum($section['subtotal'] ?? 0),
                         'biaya_materai'  => $cleanNum($section['biaya_materai'] ?? 0),
                         'ppn'            => $cleanNum($section['ppn'] ?? 0),
-                        'pph'            => 0,
+                        'pph'            => $cleanNum($section['pph'] ?? 0),
                         'adjustment'     => $cleanNum($section['adjustment'] ?? 0),
                         'notes_adjustment' => $section['notes_adjustment'] ?? null,
                         'total_biaya'    => $cleanNum($section['total_biaya'] ?? 0),
@@ -1994,6 +1996,7 @@ class BiayaKapalController extends Controller
         if (isset($data['storage_sections']) && is_array($data['storage_sections'])) {
             foreach ($data['storage_sections'] as &$section) {
                 if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
             }
@@ -2121,6 +2124,7 @@ class BiayaKapalController extends Controller
             'storage_sections.*.kontainer' => 'nullable|array',
             'storage_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
             'storage_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'storage_sections.*.pph' => 'nullable|numeric|min:0',
             'storage_sections.*.adjustment' => 'nullable|numeric',
             'storage_sections.*.notes_adjustment' => 'nullable|string',
             'storage_sections.*.total_biaya' => 'nullable|numeric|min:0',
@@ -2511,6 +2515,7 @@ class BiayaKapalController extends Controller
                         $cleanSubtotal = str_replace(',', '.', str_replace('.', '', $section['subtotal'] ?? '0'));
                         $cleanMaterai = str_replace(',', '.', str_replace('.', '', $section['biaya_materai'] ?? '0'));
                         $cleanPpn = str_replace(',', '.', str_replace('.', '', $section['ppn'] ?? '0'));
+                        $cleanPph = str_replace(',', '.', str_replace('.', '', $section['pph'] ?? '0'));
                         $cleanAdj = str_replace(',', '.', str_replace('.', '', $section['adjustment'] ?? '0'));
                         $cleanTotal = str_replace(',', '.', str_replace('.', '', $section['total_biaya'] ?? '0'));
 
@@ -2524,7 +2529,7 @@ class BiayaKapalController extends Controller
                             'subtotal'       => $cleanSubtotal,
                             'biaya_materai'  => $cleanMaterai,
                             'ppn'            => $cleanPpn,
-                            'pph'            => 0,
+                            'pph'            => $cleanPph,
                             'adjustment'     => $cleanAdj,
                             'notes_adjustment' => $section['notes_adjustment'] ?? null,
                             'total_biaya'    => $cleanTotal,
