@@ -51,7 +51,6 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voyage</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                     </tr>
                 </thead>
@@ -60,7 +59,7 @@
                     @foreach($groupedByVoyage as $voyage => $items)
                         {{-- Voyage Header --}}
                         <tr class="bg-blue-50">
-                            <td colspan="7" class="px-6 py-3 text-sm font-bold text-blue-900">
+                            <td colspan="6" class="px-6 py-3 text-sm font-bold text-blue-900">
                                 <i class="fas fa-ship mr-2"></i>VOYAGE: {{ $voyage ?? 'Tidak Ada Voyage' }}
                             </td>
                         </tr>
@@ -81,9 +80,6 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ $item->supir ?? '-' }}
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-900">
-                                    {{ $item->nomor_kontainers ?? '-' }}
-                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
                                     Rp {{ number_format($item->total_biaya, 0, ',', '.') }}
                                 </td>
@@ -92,7 +88,7 @@
                         @endforeach
                         {{-- Subtotal for this voyage --}}
                         <tr class="bg-gray-100">
-                            <td colspan="6" class="px-6 py-3 text-sm font-bold text-gray-900 text-right">
+                            <td colspan="5" class="px-6 py-3 text-sm font-bold text-gray-900 text-right">
                                 Subtotal {{ $voyage ?? 'Tidak Ada Voyage' }}:
                             </td>
                             <td class="px-6 py-3 text-sm font-bold text-gray-900 text-right">
@@ -103,7 +99,7 @@
                 </tbody>
                 <tfoot class="bg-gray-50">
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-right text-sm font-bold text-gray-900">
+                        <td colspan="5" class="px-6 py-4 text-right text-sm font-bold text-gray-900">
                             TOTAL KESELURUHAN:
                         </td>
                         <td class="px-6 py-4 text-right text-sm font-bold text-gray-900">
@@ -111,7 +107,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="7" class="px-6 py-3 text-center text-sm text-gray-600">
+                        <td colspan="6" class="px-6 py-3 text-center text-sm text-gray-600">
                             <i class="fas fa-list mr-2"></i>
                             Total: {{ $groupedByVoyage->flatten()->count() }} supir
                         </td>
