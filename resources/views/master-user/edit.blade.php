@@ -1917,6 +1917,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                             {{-- Asuransi Tanda Terima --}}
+                             <tr class="submodule-row" data-parent="aktiva">
+                                 <td class="submodule">
+                                     <div class="flex items-center">
+                                         <span class="text-sm mr-2">└─</span>
+                                         <span>Asuransi Tanda Terima</span>
+                                     </div>
+                                 </td>
+                                 <td><input type="checkbox" name="permissions[asuransi-tanda-terima][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['asuransi-tanda-terima']['view']) && $userMatrixPermissions['asuransi-tanda-terima']['view']) checked @endif></td>
+                                 <td><input type="checkbox" name="permissions[asuransi-tanda-terima][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['asuransi-tanda-terima']['create']) && $userMatrixPermissions['asuransi-tanda-terima']['create']) checked @endif></td>
+                                 <td><input type="checkbox" name="permissions[asuransi-tanda-terima][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['asuransi-tanda-terima']['update']) && $userMatrixPermissions['asuransi-tanda-terima']['update']) checked @endif></td>
+                                 <td><input type="checkbox" name="permissions[asuransi-tanda-terima][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['asuransi-tanda-terima']['delete']) && $userMatrixPermissions['asuransi-tanda-terima']['delete']) checked @endif></td>
+                                 <td class="empty-cell"></td>
+                                 <td class="empty-cell"></td>
+                                 <td class="empty-cell"></td>
+                             </tr>
+
                             {{-- Vendor Kontainer Sewa --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
