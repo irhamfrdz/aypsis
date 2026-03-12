@@ -11,6 +11,7 @@
         if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
         if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
         if(labuhTambatWrapper) labuhTambatWrapper.classList.add('hidden');
+        if(freightWrapper) freightWrapper.classList.add('hidden');
         
         // Reset required attributes
         if(nominalInput) nominalInput.setAttribute('required', 'required');
@@ -62,9 +63,10 @@
                 calculatePphDokumen();
             }
 
-            // Hide Trucking wrapper for Biaya Dokumen
             if (truckingWrapper) truckingWrapper.classList.add('hidden');
             clearAllTruckingSections();
+            if (freightWrapper) freightWrapper.classList.add('hidden');
+            clearAllFreightSections();
         }
         // Show OPP/OPT wrapper if "Biaya OPP/OPT" is selected
         else if (selectedText.toLowerCase().includes('opp/opt')) {
@@ -461,6 +463,8 @@
             clearAllStuffingSections();
             if (thcWrapper) thcWrapper.classList.add('hidden');
             clearAllTHCSections();
+            if (freightWrapper) freightWrapper.classList.add('hidden');
+            clearAllFreightSections();
         }
         // Show Stuffing fields if "Biaya Stuffing" is selected
         else if (selectedText.toLowerCase().includes('stuffing')) {
@@ -729,6 +733,73 @@
             }
             if (operasionalWrapper) operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
+            if (labuhTambatWrapper) labuhTambatWrapper.classList.add('hidden');
+            clearAllLabuhTambatSections();
+            if (freightWrapper) freightWrapper.classList.add('hidden');
+            clearAllFreightSections();
+        }
+        // Show FREIGHT fields if "Biaya Freight" is selected
+        else if (selectedText.toLowerCase().includes('freight')) {
+            // Show Freight multi kapal wrapper
+            if (freightWrapper) freightWrapper.classList.remove('hidden');
+            initializeFreightSections();
+
+            // Hide standard kapal/voyage/bl fields
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Hide other standard fields
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+
+            // Remove required attributes
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaInput) penerimaInput.removeAttribute('required');
+
+            // Hide other type-specific fields
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+
+            // Reset values
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            dpInput.value = '0';
+            sisaPembayaranInput.value = '0';
+
+            // Hide other wrappers
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+            if (loloWrapper) loloWrapper.classList.add('hidden');
+            clearAllLoloSections();
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            if (operasionalWrapper) operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
             if (truckingWrapper) truckingWrapper.classList.add('hidden');
             clearAllTruckingSections();
             if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
@@ -791,6 +862,8 @@
             }
             if (operasionalWrapper) operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
+            if (freightWrapper) freightWrapper.classList.add('hidden');
+            clearAllFreightSections();
         }
         // Show operasional wrapper if "Operasional" is selected
         else if (selectedText.toLowerCase().includes('operasional')) {

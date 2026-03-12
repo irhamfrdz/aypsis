@@ -166,6 +166,12 @@
     const addThcSectionBtn = document.getElementById('add_thc_section_btn');
     const addThcSectionBottomBtn = document.getElementById('add_thc_section_bottom_btn');
 
+    // Freight specific fields
+    const freightWrapper = document.getElementById('freight_wrapper');
+    const freightSectionsContainer = document.getElementById('freight_sections_container');
+    const addFreightSectionBtn = document.getElementById('add_freight_section_btn');
+    const addFreightSectionBottomBtn = document.getElementById('add_freight_section_bottom_btn');
+
     // LOLO specific fields
     const loloWrapper = document.getElementById('lolo_wrapper');
     const loloSectionsContainer = document.getElementById('lolo_sections_container');
