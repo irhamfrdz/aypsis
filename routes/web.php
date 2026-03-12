@@ -2212,6 +2212,47 @@ Route::middleware(['auth'])->group(function () {
          ->name('orders.generate-number')
          ->middleware('can:order-create');
 
+    // 📋 Orders Batam Management
+    Route::get('orders-batam/download-template', [\App\Http\Controllers\OrderBatamController::class, 'downloadTemplate'])
+         ->name('orders-batam.download.template')
+         ->middleware('can:order-view');
+
+    Route::get('orders-batam', [\App\Http\Controllers\OrderBatamController::class, 'index'])
+         ->name('orders-batam.index')
+         ->middleware('can:order-view');
+    
+    Route::get('orders-batam/create', [\App\Http\Controllers\OrderBatamController::class, 'create'])
+         ->name('orders-batam.create')
+         ->middleware('can:order-create');
+    
+    Route::post('orders-batam', [\App\Http\Controllers\OrderBatamController::class, 'store'])
+         ->name('orders-batam.store')
+         ->middleware('can:order-create');
+    
+    Route::get('orders-batam/{orderBatam}', [\App\Http\Controllers\OrderBatamController::class, 'show'])
+         ->name('orders-batam.show')
+         ->middleware('can:order-view');
+    
+    Route::get('orders-batam/{orderBatam}/edit', [\App\Http\Controllers\OrderBatamController::class, 'edit'])
+         ->name('orders-batam.edit')
+         ->middleware('can:order-update');
+    
+    Route::put('orders-batam/{orderBatam}', [\App\Http\Controllers\OrderBatamController::class, 'update'])
+         ->name('orders-batam.update')
+         ->middleware('can:order-update');
+    
+    Route::patch('orders-batam/{orderBatam}', [\App\Http\Controllers\OrderBatamController::class, 'update'])
+         ->name('orders-batam.update')
+         ->middleware('can:order-update');
+    
+    Route::delete('orders-batam/{orderBatam}', [\App\Http\Controllers\OrderBatamController::class, 'destroy'])
+         ->name('orders-batam.destroy')
+         ->middleware('can:order-delete');
+
+    Route::post('/orders-batam/generate-number', [\App\Http\Controllers\OrderBatamController::class, 'generateOrderBatamNumber'])
+         ->name('orders-batam.generate-number')
+         ->middleware('can:order-create');
+
     // 📊 Outstanding Orders Management with permissions
     Route::prefix('outstanding')->name('outstanding.')->middleware('can:order-view')->group(function () {
         Route::get('/', [OutstandingController::class, 'index'])->name('index');

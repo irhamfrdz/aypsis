@@ -1245,7 +1245,7 @@
 
                 {{-- Surat Jalan Sub-Dropdown --}}
                 @php
-                    $isSuratJalanRoute = Request::routeIs('orders.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('approval-order.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*');
+                    $isSuratJalanRoute = Request::routeIs('orders.*') || Request::routeIs('orders-batam.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('approval-order.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*');
                     $hasSuratJalanPermissions = $user && (($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')) || ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')) || $user->can('approval-order-view') || $user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete') || $user->can('pranota-uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view'));
                 @endphp
 
@@ -1263,6 +1263,11 @@
                             <a href="{{ route('orders.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('orders.index') || Request::routeIs('orders.show') || Request::routeIs('orders.edit') || Request::routeIs('orders.create') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
                                 
                                 <span class="text-xs">Pesanan Pengambilan Barang</span>
+                            </a>
+                            
+                            <a href="{{ route('orders-batam.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('orders-batam.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                                
+                                <span class="text-xs">Orders Batam</span>
                             </a>
                         @endif
 
