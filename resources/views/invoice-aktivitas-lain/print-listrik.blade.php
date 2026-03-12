@@ -221,7 +221,7 @@
                 <tr>
                     <td style="width: 20%;">Nomor Invoice</td>
                     <td style="width: 30%;">: {{ $invoice->nomor_invoice }}</td>
-                    <td style="width: 25%;">Tanggal Dibuat Invoice</td>
+                    <td style="width: 25%;">Tanggal Invoice</td>
                     <td>: {{ $invoice->tanggal_invoice->format('d/M/Y') }}</td>
                 </tr>
                 <tr>
