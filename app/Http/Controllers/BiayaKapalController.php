@@ -372,9 +372,12 @@ class BiayaKapalController extends Controller
         // Perijinan Sections Cleaning
         if (isset($data['perijinan_sections']) && is_array($data['perijinan_sections'])) {
             foreach ($data['perijinan_sections'] as &$section) {
-                if (isset($section['jumlah_biaya'])) $section['jumlah_biaya'] = str_replace(',', '.', str_replace('.', '', $section['jumlah_biaya']));
-                if (isset($section['biaya_insa'])) $section['biaya_insa'] = str_replace(',', '.', str_replace('.', '', $section['biaya_insa']));
-                if (isset($section['biaya_pbni'])) $section['biaya_pbni'] = str_replace(',', '.', str_replace('.', '', $section['biaya_pbni']));
+                $numericPerijinan = ['jumlah_biaya', 'biaya_insa', 'biaya_pbni', 'sub_total', 'pph', 'grand_total'];
+                foreach ($numericPerijinan as $f) {
+                    if (isset($section[$f]) && is_string($section[$f])) {
+                        $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    }
+                }
             }
             unset($section);
         }
@@ -575,8 +578,15 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.no_voyage'         => 'nullable|string|max:255',
             'perijinan_sections.*.nomor_referensi'   => 'nullable|string|max:255',
             'perijinan_sections.*.vendor'            => 'nullable|string|max:255',
+            'perijinan_sections.*.lokasi'            => 'nullable|string|max:255',
             'perijinan_sections.*.biaya_insa'        => 'nullable|numeric|min:0',
             'perijinan_sections.*.biaya_pbni'        => 'nullable|numeric|min:0',
+            'perijinan_sections.*.sub_total'         => 'nullable|numeric|min:0',
+            'perijinan_sections.*.pph'               => 'nullable|numeric|min:0',
+            'perijinan_sections.*.grand_total'       => 'nullable|numeric|min:0',
+            'perijinan_sections.*.penerima'          => 'nullable|string|max:255',
+            'perijinan_sections.*.nomor_rekening'    => 'nullable|string|max:255',
+            'perijinan_sections.*.tanggal_invoice_vendor' => 'nullable|date',
             'perijinan_sections.*.keterangan'        => 'nullable|string',
             'perijinan_sections.*.jumlah_biaya'      => 'nullable|numeric|min:0',
 
@@ -1528,13 +1538,21 @@ class BiayaKapalController extends Controller
                 $perijinanTotal = 0;
 
                 foreach ($validated['perijinan_sections'] as $section) {
-                    if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) {
+                    if (empty($section['nama_kapal']) && empty($section['grand_total']) && empty($section['jumlah_biaya'])) {
                         continue;
                     }
 
                     $jumlah = floatval($section['jumlah_biaya'] ?? 0);
                     $biayaInsa = floatval($section['biaya_insa'] ?? 0);
                     $biayaPbni = floatval($section['biaya_pbni'] ?? 0);
+                    $subTotal = floatval($section['sub_total'] ?? 0);
+                    $pph = floatval($section['pph'] ?? 0);
+                    $grandTotal = floatval($section['grand_total'] ?? ($subTotal - $pph) ?? 0);
+
+                    // If grandTotal is 0 but jumlah is not, use jumlah (for compatibility)
+                    if ($grandTotal == 0 && $jumlah > 0) {
+                        $grandTotal = $jumlah;
+                    }
 
                     BiayaKapalPerijinan::create([
                         'biaya_kapal_id'  => $biayaKapal->id,
@@ -1542,13 +1560,20 @@ class BiayaKapalController extends Controller
                         'no_voyage'       => $section['no_voyage']       ?? null,
                         'nomor_referensi' => $section['nomor_referensi'] ?? null,
                         'vendor'          => $section['vendor']          ?? null,
+                        'lokasi'          => $section['lokasi']          ?? null,
                         'biaya_insa'      => $biayaInsa,
                         'biaya_pbni'      => $biayaPbni,
+                        'sub_total'       => $subTotal,
+                        'pph'             => $pph,
+                        'grand_total'     => $grandTotal,
+                        'penerima'        => $section['penerima']        ?? null,
+                        'nomor_rekening'  => $section['nomor_rekening']  ?? null,
+                        'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                         'keterangan'      => $section['keterangan']      ?? null,
                         'jumlah_biaya'    => $jumlah,
                     ]);
 
-                    $perijinanTotal += $jumlah;
+                    $perijinanTotal += $grandTotal;
                 }
 
                 $biayaKapal->update(['nominal' => $perijinanTotal]);

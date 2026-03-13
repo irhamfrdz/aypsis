@@ -37,22 +37,23 @@
         });
 
         const section = document.createElement('div');
-        section.className = 'perijinan-section mb-5 p-5 border-2 border-indigo-100 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-300';
+        section.className = 'perijinan-section mb-6 p-5 border-2 border-indigo-100 rounded-xl bg-indigo-50/30 shadow-sm hover:shadow-md transition-all duration-300';
         section.setAttribute('data-section-index', idx);
         section.innerHTML = `
-            <div class="flex items-center justify-between mb-4 pb-3 border-b border-indigo-50">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-indigo-100/50">
                 <div class="flex items-center gap-2">
-                    <span class="flex items-center justify-center w-6 h-6 bg-indigo-600 text-white text-xs font-bold rounded-full">${idx}</span>
-                    <h4 class="text-sm font-semibold text-indigo-900 uppercase tracking-wider">Detail Kapal ${idx}</h4>
+                    <span class="flex items-center justify-center w-7 h-7 bg-indigo-600 text-white text-xs font-bold rounded-full shadow-sm">${idx}</span>
+                    <h4 class="text-sm font-bold text-indigo-900 uppercase tracking-wider">Detail Kapal & Perijinan ${idx}</h4>
                 </div>
-                ${idx > 1 ? `<button type="button" onclick="removePerijinanSection(this)" class="text-red-400 hover:text-red-600 transition-colors text-sm flex items-center gap-1 font-medium">
+                ${idx > 1 ? `<button type="button" onclick="removePerijinanSection(this)" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs rounded-lg transition-colors flex items-center gap-1.5 font-bold border border-red-100">
                     <i class="fas fa-trash-alt"></i> <span>Hapus</span>
                 </button>` : ''}
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Row 1: Kapal & Voyage -->
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Nama Kapal <span class="text-red-500">*</span></label>
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Nama Kapal <span class="text-red-500">*</span></label>
                     <div class="relative perijinan-select2-container">
                         <select name="perijinan_sections[${idx}][nama_kapal]" 
                                 class="w-full perijinan-kapal-select"
@@ -63,89 +64,159 @@
                 </div>
                 
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Nomor Voyage <span class="text-red-500">*</span></label>
-                    <div class="relative perijinan-select2-container">
-                        <select name="perijinan_sections[${idx}][no_voyage]" 
-                                id="perijinan_voyage_${idx}" 
-                                class="w-full perijinan-voyage-select"
-                                disabled required>
-                            <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
-                        </select>
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Nomor Voyage <span class="text-red-500">*</span></label>
+                    <div class="flex gap-2">
+                        <div class="flex-grow perijinan-select2-container">
+                            <select name="perijinan_sections[${idx}][no_voyage]" 
+                                    id="perijinan_voyage_${idx}" 
+                                    class="perijinan-voyage-select w-full"
+                                    disabled required>
+                                <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                            </select>
+                        </div>
+                        <input type="text" 
+                               name="perijinan_sections[${idx}][no_voyage]" 
+                               class="perijinan-voyage-manual-input hidden w-full px-4 py-2 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white" 
+                               placeholder="Ketik No. Voyage..." disabled>
+                        <button type="button" class="perijinan-voyage-toggle-btn px-3 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-600 rounded-lg transition shadow-sm" title="Input Manual / Pilih dari List">
+                            <i class="fas fa-keyboard text-xs"></i>
+                        </button>
                     </div>
                 </div>
 
+                <!-- Row 2: Vendor & Lokasi -->
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Nomor Referensi</label>
-                    <input type="text" 
-                           name="perijinan_sections[${idx}][nomor_referensi]" 
-                           class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white" 
-                           placeholder="Masukkan nomor referensi...">
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Vendor</label>
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Vendor</label>
                     <input type="text" 
                            name="perijinan_sections[${idx}][vendor]" 
-                           class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white" 
+                           class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm" 
                            placeholder="Nama Vendor...">
                 </div>
 
-                <div class="md:col-span-2 space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Keterangan Tambahan</label>
-                    <textarea name="perijinan_sections[${idx}][keterangan]" 
-                              rows="2" 
-                              class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white" 
-                              placeholder="Masukkan detail tambahan jika ada..."></textarea>
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Lokasi</label>
+                    <input type="text" 
+                           name="perijinan_sections[${idx}][lokasi]" 
+                           class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm" 
+                           placeholder="Lokasi Perijinan...">
                 </div>
 
+                <!-- Row 3: Biaya INSA & PBNI -->
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Biaya INSA</label>
-                    <div class="relative">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Biaya INSA</label>
+                    <div class="relative group">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                             <span class="text-indigo-400 font-bold text-xs">Rp</span>
                         </div>
                         <input type="text" 
                                name="perijinan_sections[${idx}][biaya_insa]" 
-                               class="w-full pl-12 pr-4 py-2 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-indigo-50/10 perijinan-insa-input" 
+                               class="w-full pl-12 pr-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm perijinan-insa-input" 
                                placeholder="0"
                                oninput="formatPerijinanBiaya(this)">
                     </div>
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Biaya PBNI</label>
-                    <div class="relative">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Biaya PBNI</label>
+                    <div class="relative group">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                             <span class="text-indigo-400 font-bold text-xs">Rp</span>
                         </div>
                         <input type="text" 
                                name="perijinan_sections[${idx}][biaya_pbni]" 
-                               class="w-full pl-12 pr-4 py-2 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-indigo-50/10 perijinan-pbni-input" 
+                               class="w-full pl-12 pr-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm perijinan-pbni-input" 
+                               placeholder="0"
+                               oninput="formatPerijinanBiaya(this)">
+                    </div>
+                </div>
+
+                <!-- Row 4: Biaya Lainnya & Subtotal -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Jumlah Biaya Lainnya</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <span class="text-indigo-400 font-bold text-xs">Rp</span>
+                        </div>
+                        <input type="text" 
+                               name="perijinan_sections[${idx}][jumlah_biaya]" 
+                               id="perijinan_jumlah_${idx}" 
+                               class="w-full pl-12 pr-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm perijinan-base-input" 
                                placeholder="0"
                                oninput="formatPerijinanBiaya(this)">
                     </div>
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Jumlah Biaya Lainnya</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none border-r border-indigo-100 pr-3">
-                            <span class="text-indigo-600 font-bold text-sm">Rp</span>
-                        </div>
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest italic">Sub Total (Beban)</label>
+                    <div class="relative mt-1">
                         <input type="text" 
-                               name="perijinan_sections[${idx}][jumlah_biaya]" 
-                               id="perijinan_jumlah_${idx}" 
-                               class="w-full pl-16 pr-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-semibold text-indigo-900 perijinan-base-input" 
-                               placeholder="0"
-                               oninput="formatPerijinanBiaya(this)">
+                               class="perijinan-subtotal-display w-full px-4 py-2.5 border border-indigo-100 rounded-lg bg-indigo-50/50 text-indigo-900 font-bold cursor-not-allowed" 
+                               value="Rp 0" readonly>
+                        <input type="hidden" name="perijinan_sections[${idx}][sub_total]" class="perijinan-subtotal-value" value="0">
                     </div>
                 </div>
 
-                <div class="flex items-end">
-                    <div class="w-full bg-indigo-50/50 border border-indigo-100 rounded-lg px-4 py-2.5 flex justify-between items-center">
-                        <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Total Biaya Section</span>
-                        <span class="text-lg font-black text-indigo-700" id="perijinan_subtotal_${idx}">Rp 0</span>
+                <!-- Row 5: PPH & Grand Total Section -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest italic">PPH (2%)</label>
+                    <div class="relative mt-1">
+                        <input type="text" 
+                               class="perijinan-pph-display w-full px-4 py-2.5 border border-indigo-100 rounded-lg bg-indigo-50/50 text-red-600 font-bold cursor-not-allowed" 
+                               value="Rp 0" readonly>
+                        <input type="hidden" name="perijinan_sections[${idx}][pph]" class="perijinan-pph-value" value="0">
                     </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest italic">Grand Total</label>
+                    <div class="relative mt-1">
+                        <input type="text" 
+                               class="perijinan-grandtotal-display w-full px-4 py-2.5 border border-emerald-100 rounded-lg bg-emerald-50 text-emerald-700 font-black cursor-not-allowed" 
+                               value="Rp 0" readonly>
+                        <input type="hidden" name="perijinan_sections[${idx}][grand_total]" class="perijinan-grandtotal-value" value="0">
+                    </div>
+                </div>
+
+                <!-- Row 6: Penerima & Nomor Rekening -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Penerima</label>
+                    <input type="text" 
+                           name="perijinan_sections[${idx}][penerima]" 
+                           class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm" 
+                           placeholder="Nama penerima pembayaran...">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Nomor Rekening</label>
+                    <input type="text" 
+                           name="perijinan_sections[${idx}][nomor_rekening]" 
+                           class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm" 
+                           placeholder="Nomor rekening bank...">
+                </div>
+
+                <!-- Row 7: Nomor Referensi & Tanggal Invoice -->
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Nomor Referensi</label>
+                    <input type="text" 
+                           name="perijinan_sections[${idx}][nomor_referensi]" 
+                           class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm" 
+                           placeholder="No. Ref / No. Invoice Vendor...">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Tanggal Invoice Vendor</label>
+                    <input type="date" 
+                           name="perijinan_sections[${idx}][tanggal_invoice_vendor]" 
+                           class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm">
+                </div>
+
+                <!-- Row 8: Keterangan -->
+                <div class="md:col-span-2 space-y-1.5 mt-2">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Keterangan Tambahan</label>
+                    <textarea name="perijinan_sections[${idx}][keterangan]" 
+                              rows="2" 
+                              class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm" 
+                              placeholder="Masukkan detail tambahan jika ada..."></textarea>
                 </div>
             </div>
         `;
@@ -155,6 +226,8 @@
         // Initialize Select2 for this new section
         const kapalSelect = section.querySelector('.perijinan-kapal-select');
         const voyageSelect = section.querySelector('.perijinan-voyage-select');
+        const voyageManualInput = section.querySelector('.perijinan-voyage-manual-input');
+        const voyageToggleBtn = section.querySelector('.perijinan-voyage-toggle-btn');
         
         initPerijinanSelect2(kapalSelect, "-- Pilih Kapal --");
         initPerijinanSelect2(voyageSelect, "-- Pilih Kapal Terlebih Dahulu --");
@@ -162,6 +235,40 @@
         // Use jQuery event for Select2 so onchange continues to work or trigger manually
         jQuery(kapalSelect).on('change', function() {
             loadVoyagesForPerijinanSection(idx, this.value);
+        });
+
+        // Toggle Manual Voyage logic (similar to air)
+        voyageToggleBtn.addEventListener('click', function() {
+            if (voyageManualInput.classList.contains('hidden')) {
+                // Switch to manual input
+                voyageSelect.closest('.perijinan-select2-container').classList.add('hidden');
+                voyageSelect.disabled = true;
+                
+                voyageManualInput.classList.remove('hidden');
+                voyageManualInput.disabled = false;
+                voyageManualInput.focus();
+                
+                this.classList.remove('bg-indigo-100', 'text-indigo-600');
+                this.classList.add('bg-indigo-600', 'text-white');
+                this.innerHTML = '<i class="fas fa-list text-xs"></i>';
+            } else {
+                // Switch to select list
+                voyageManualInput.classList.add('hidden');
+                voyageManualInput.disabled = true;
+                
+                voyageSelect.closest('.perijinan-select2-container').classList.remove('hidden');
+                
+                // Only enable select if kapal is selected
+                if (kapalSelect && kapalSelect.value) {
+                    voyageSelect.disabled = false;
+                } else {
+                    voyageSelect.disabled = true;
+                }
+                
+                this.classList.add('bg-indigo-100', 'text-indigo-600');
+                this.classList.remove('bg-indigo-600', 'text-white');
+                this.innerHTML = '<i class="fas fa-keyboard text-xs"></i>';
+            }
         });
     }
 
@@ -189,31 +296,49 @@
         const section = input.closest('.perijinan-section');
         if (section) {
             const idx = section.getAttribute('data-section-index');
-            const subtotalEl = document.getElementById(`perijinan_subtotal_${idx}`);
             
             // Get all cost values in this section
             const insaVal = parseInt(section.querySelector('.perijinan-insa-input').value.replace(/\./g, '') || 0);
             const pbniVal = parseInt(section.querySelector('.perijinan-pbni-input').value.replace(/\./g, '') || 0);
             const baseVal = parseInt(section.querySelector('.perijinan-base-input').value.replace(/\./g, '') || 0);
             
-            const totalSection = insaVal + pbniVal + baseVal;
-            if (subtotalEl) subtotalEl.textContent = 'Rp ' + totalSection.toLocaleString('id-ID');
+            const subtotal = insaVal + pbniVal + baseVal;
+            const pph = Math.round(subtotal * 0.02);
+            const grandTotal = subtotal - pph;
+
+            // Update displays
+            const subtotalDisplay = section.querySelector('.perijinan-subtotal-display');
+            const pphDisplay = section.querySelector('.perijinan-pph-display');
+            const grandTotalDisplay = section.querySelector('.perijinan-grandtotal-display');
+
+            if (subtotalDisplay) subtotalDisplay.value = 'Rp ' + subtotal.toLocaleString('id-ID');
+            if (pphDisplay) pphDisplay.value = 'Rp ' + pph.toLocaleString('id-ID');
+            if (grandTotalDisplay) grandTotalDisplay.value = 'Rp ' + grandTotal.toLocaleString('id-ID');
+
+            // Update hidden inputs
+            const subtotalValue = section.querySelector('.perijinan-subtotal-value');
+            const pphValue = section.querySelector('.perijinan-pph-value');
+            const grandtotalValue = section.querySelector('.perijinan-grandtotal-value');
+
+            if (subtotalValue) subtotalValue.value = subtotal;
+            if (pphValue) pphValue.value = pph;
+            if (grandtotalValue) grandtotalValue.value = grandTotal;
         }
         
         calculateGrandTotalPerijinan();
     };
 
     function calculateGrandTotalPerijinan() {
-        let grandTotal = 0;
+        let totalSum = 0;
         document.querySelectorAll('.perijinan-section').forEach(section => {
-            const insaVal = parseInt(section.querySelector('.perijinan-insa-input').value.replace(/\./g, '') || 0);
-            const pbniVal = parseInt(section.querySelector('.perijinan-pbni-input').value.replace(/\./g, '') || 0);
-            const baseVal = parseInt(section.querySelector('.perijinan-base-input').value.replace(/\./g, '') || 0);
-            grandTotal += (insaVal + pbniVal + baseVal);
+            const grandtotalValue = section.querySelector('.perijinan-grandtotal-value');
+            if (grandtotalValue) {
+                totalSum += parseInt(grandtotalValue.value || 0);
+            }
         });
         
         if (typeof nominalInput !== 'undefined' && nominalInput) {
-            nominalInput.value = grandTotal.toLocaleString('id-ID');
+            nominalInput.value = totalSum.toLocaleString('id-ID');
             nominalInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
     }
