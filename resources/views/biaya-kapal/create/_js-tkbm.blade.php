@@ -82,8 +82,9 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Total Biaya Per Kapal</label>
-                    <input type="text" class="tkbm-section-total w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 font-semibold text-gray-700" value="Rp 0" readonly>
+                    <input type="text" class="tkbm-section-total w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 font-semibold text-gray-700" value="Rp 0" readonly title="Total setelah adjustment sebelum pph">
                     <input type="hidden" name="tkbm_sections[${sectionIndex}][total_nominal]" class="tkbm-section-total-hidden" value="0">
+                    <input type="hidden" name="tkbm_sections[${sectionIndex}][total_sebelum_adjustment]" class="tkbm-section-subtotal-hidden" value="0">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">PPH (2%)</label>
@@ -397,6 +398,10 @@
             
             if (sectionTotalInput) sectionTotalInput.value = 'Rp ' + Math.round(adjustedTotal).toLocaleString('id-ID');
             if (sectionTotalHidden) sectionTotalHidden.value = Math.round(adjustedTotal);
+            
+            // New: total sebelum adjustment (murni sum of items)
+            const sectionSubtotalHidden = section.querySelector('.tkbm-section-subtotal-hidden');
+            if (sectionSubtotalHidden) sectionSubtotalHidden.value = Math.round(sectionTotal);
             
             if (sectionPphInput) sectionPphInput.value = 'Rp ' + Math.round(pph).toLocaleString('id-ID');
             if (sectionPphHidden) sectionPphHidden.value = Math.round(pph);

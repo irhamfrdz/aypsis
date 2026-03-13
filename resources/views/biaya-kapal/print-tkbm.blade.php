@@ -359,10 +359,27 @@
                         <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
+                    <tr>
+                        <td colspan="3" class="text-right">Total Sebelum Adjustment</td>
+                        <td class="text-right">Rp {{ number_format($overallTotal, 0, ',', '.') }}</td>
+                    </tr>
+                    @if($totalAdjustment != 0)
+                    <tr>
+                        <td colspan="3" class="text-right">Adjustment</td>
+                        <td class="text-right">Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
+                    @if($totalPph > 0)
+                    <tr>
+                        <td colspan="3" class="text-right">PPH (2%)</td>
+                        <td class="text-right">Rp {{ number_format($totalPph, 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
                     <tr class="total-row">
                         <td colspan="3" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($finalTotal, 0, ',', '.') }}</strong></td>
                     </tr>
+
                 </tbody>
             </table>
         </div>
