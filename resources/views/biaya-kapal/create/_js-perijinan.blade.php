@@ -1,9 +1,8 @@
     // ============= BIAYA PERIJINAN LOGIC (MULTI-SECTION) =============
     let perijinanSectionCounter = 0;
-    const perijinanWrapper = document.getElementById('perijinan_wrapper');
-    const perijinanSectionsContainer = document.getElementById('perijinan_sections_container');
-    const addPerijinanSectionBtn = document.getElementById('add_perijinan_section_btn');
-    const addPerijinanSectionBottomBtn = document.getElementById('add_perijinan_section_bottom_btn');
+    // Variables already declared in _js-jenis-biaya.blade.php:
+    // perijinanWrapper, perijinanSectionsContainer, addPerijinanSectionBtn, addPerijinanSectionBottomBtn
+
 
     function initializePerijinanSections() {
         if (perijinanSectionsContainer) perijinanSectionsContainer.innerHTML = '';
