@@ -3038,8 +3038,10 @@ class BiayaKapalController extends Controller
             ];
 
             foreach ($bls as $bl) {
-                // Check if it's CARGO or has nomor_kontainer
-                $isCargo = (strtolower($bl->nomor_kontainer ?? '') === 'cargo' || strtolower($bl->tipe_kontainer ?? '') === 'cargo');
+                // Determine if it's CARGO based on tipe_kontainer OR nomor_kontainer
+                $tipeKontainer = strtoupper($bl->tipe_kontainer ?? '');
+                $nomorKontainer = strtoupper($bl->nomor_kontainer ?? '');
+                $isCargo = ($nomorKontainer === 'CARGO' || $tipeKontainer === 'CARGO');
                 
                 if (!$isCargo) {
                     // Determine size (default to 20 if not specified)
@@ -3050,37 +3052,25 @@ class BiayaKapalController extends Controller
                         }
                     }
 
-                    // Determine if EMPTY based on nama_barang and other conditions (sync with OB logic)
-                    $namaBarang = strtolower(trim($bl->nama_barang ?? ''));
-                    $tipe = strtoupper($bl->tipe_kontainer ?? '');
-                    $noKon = strtoupper($bl->nomor_kontainer ?? '');
-
-                    $isEmpty = ($namaBarang === '' || 
-                               str_contains($namaBarang, 'empty') || 
-                               str_contains($namaBarang, 'kosong') ||
-                               str_contains($namaBarang, 'mty') ||
-                               $namaBarang === 'mt' ||
-                               str_contains($namaBarang, 'mt container'));
-                               
-                    // Fallback: FCL but no container number or starts with CARGO-
-                    if (!$isEmpty && $tipe === 'FCL' && (empty($noKon) || str_starts_with($noKon, 'CARGO-'))) {
-                        $isEmpty = true;
-                    }
+                    // Determine if EMPTY based on logic from ob/index.blade.php
+                    // Logic: str_contains($barangUpper, 'EMPTY') || ($bl->tipe_kontainer == 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($bl->nomor_kontainer, 'CARGO-')))
+                    $barangUpper = strtoupper($bl->nama_barang ?? '');
+                    $isEmpty = str_contains($barangUpper, 'EMPTY') || 
+                               ($tipeKontainer === 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($nomorKontainer, 'CARGO-')));
 
                     if ($isEmpty) {
                         $counts[$size]['empty']++;
-                    } else {
+                    } else if (!empty($bl->nomor_kontainer)) {
                         $counts[$size]['full']++;
                         
                         // Count FCL/LCL specifically for OPP/OPT
-                        $tipe = strtolower($bl->tipe_kontainer ?? '');
-                        if (str_contains($tipe, 'fcl')) {
+                        if (str_contains(strtolower($tipeKontainer), 'fcl')) {
                             $counts[$size]['fcl']++;
-                        } else if (str_contains($tipe, 'lcl')) {
+                        } else if (str_contains(strtolower($tipeKontainer), 'lcl')) {
                             $counts[$size]['lcl']++;
                         }
                     }
-                } else if ($isCargo) {
+                } else {
                     // It's cargo, check nama_barang for specific types for OPP/OPT
                     $namaBarang = strtolower($bl->nama_barang ?? '');
                     if (str_contains($namaBarang, 'mobil')) {
