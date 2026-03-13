@@ -68,16 +68,20 @@
                     </div>
                 </div>
 
-                <div class="md:col-span-2 space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Nama Perijinan <span class="text-red-500">*</span></label>
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Nomor Referensi</label>
                     <input type="text" 
-                           name="perijinan_sections[${idx}][nama_perijinan]" 
+                           name="perijinan_sections[${idx}][nomor_referensi]" 
                            class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white" 
-                           list="dokumen_perijinan_list"
-                           placeholder="Contoh: Sertifikat Kelaiklautan, Port Clearance, dll" required>
-                    <datalist id="dokumen_perijinan_list">
-                        ${dokumenPerijinansData.map(d => `<option value="${d.nama_dokumen}">`).join('')}
-                    </datalist>
+                           placeholder="Masukkan nomor referensi...">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Vendor</label>
+                    <input type="text" 
+                           name="perijinan_sections[${idx}][vendor]" 
+                           class="w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white" 
+                           placeholder="Nama Vendor...">
                 </div>
 
                 <div class="md:col-span-2 space-y-1.5">
@@ -89,7 +93,35 @@
                 </div>
 
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Jumlah Biaya <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Biaya INSA</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <span class="text-indigo-400 font-bold text-xs">Rp</span>
+                        </div>
+                        <input type="text" 
+                               name="perijinan_sections[${idx}][biaya_insa]" 
+                               class="w-full pl-12 pr-4 py-2 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-indigo-50/10 perijinan-insa-input" 
+                               placeholder="0"
+                               oninput="formatPerijinanBiaya(this)">
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Biaya PBNI</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <span class="text-indigo-400 font-bold text-xs">Rp</span>
+                        </div>
+                        <input type="text" 
+                               name="perijinan_sections[${idx}][biaya_pbni]" 
+                               class="w-full pl-12 pr-4 py-2 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-indigo-50/10 perijinan-pbni-input" 
+                               placeholder="0"
+                               oninput="formatPerijinanBiaya(this)">
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Jumlah Biaya Lainnya</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none border-r border-indigo-100 pr-3">
                             <span class="text-indigo-600 font-bold text-sm">Rp</span>
@@ -97,15 +129,15 @@
                         <input type="text" 
                                name="perijinan_sections[${idx}][jumlah_biaya]" 
                                id="perijinan_jumlah_${idx}" 
-                               class="w-full pl-16 pr-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-semibold text-indigo-900" 
+                               class="w-full pl-16 pr-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white font-semibold text-indigo-900 perijinan-base-input" 
                                placeholder="0"
-                               oninput="formatPerijinanBiaya(this)" required>
+                               oninput="formatPerijinanBiaya(this)">
                     </div>
                 </div>
 
                 <div class="flex items-end">
                     <div class="w-full bg-indigo-50/50 border border-indigo-100 rounded-lg px-4 py-2.5 flex justify-between items-center">
-                        <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Subtotal Section</span>
+                        <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Total Biaya Section</span>
                         <span class="text-lg font-black text-indigo-700" id="perijinan_subtotal_${idx}">Rp 0</span>
                     </div>
                 </div>
@@ -137,8 +169,14 @@
         if (section) {
             const idx = section.getAttribute('data-section-index');
             const subtotalEl = document.getElementById(`perijinan_subtotal_${idx}`);
-            const numVal = parseInt(input.value.replace(/\./g, '') || 0);
-            if (subtotalEl) subtotalEl.textContent = 'Rp ' + numVal.toLocaleString('id-ID');
+            
+            // Get all cost values in this section
+            const insaVal = parseInt(section.querySelector('.perijinan-insa-input').value.replace(/\./g, '') || 0);
+            const pbniVal = parseInt(section.querySelector('.perijinan-pbni-input').value.replace(/\./g, '') || 0);
+            const baseVal = parseInt(section.querySelector('.perijinan-base-input').value.replace(/\./g, '') || 0);
+            
+            const totalSection = insaVal + pbniVal + baseVal;
+            if (subtotalEl) subtotalEl.textContent = 'Rp ' + totalSection.toLocaleString('id-ID');
         }
         
         calculateGrandTotalPerijinan();
@@ -146,15 +184,15 @@
 
     function calculateGrandTotalPerijinan() {
         let grandTotal = 0;
-        document.querySelectorAll('[id^="perijinan_jumlah_"]').forEach(input => {
-            const val = parseInt(input.value.replace(/\./g, '') || 0);
-            grandTotal += val;
+        document.querySelectorAll('.perijinan-section').forEach(section => {
+            const insaVal = parseInt(section.querySelector('.perijinan-insa-input').value.replace(/\./g, '') || 0);
+            const pbniVal = parseInt(section.querySelector('.perijinan-pbni-input').value.replace(/\./g, '') || 0);
+            const baseVal = parseInt(section.querySelector('.perijinan-base-input').value.replace(/\./g, '') || 0);
+            grandTotal += (insaVal + pbniVal + baseVal);
         });
         
-        // Update the main nominal input if needed, or just let the form handle it
         if (typeof nominalInput !== 'undefined' && nominalInput) {
             nominalInput.value = grandTotal.toLocaleString('id-ID');
-            // Trigger input event to update other depending fields
             nominalInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
     }

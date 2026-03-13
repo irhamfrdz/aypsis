@@ -13,9 +13,12 @@ class BiayaKapalPerijinan extends Model
 
     protected $fillable = [
         'biaya_kapal_id',
-        'nama_perijinan',
         'nama_kapal',
         'no_voyage',
+        'nomor_referensi',
+        'vendor',
+        'biaya_insa',
+        'biaya_pbni',
         'keterangan',
         'jumlah_biaya'
     ];

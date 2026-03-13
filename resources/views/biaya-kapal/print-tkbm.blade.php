@@ -269,12 +269,13 @@
             <table class="table" style="margin-top: 4px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 6%;">No</th>
+                        <th style="width: 5%;">No</th>
                         <th style="width: 12%;">Tgl Inv</th>
                         <th style="width: 12%;">Voyage</th>
-                        <th style="width: 20%;">No. Ref</th>
-                        <th style="width: 20%;">Biaya</th>
-                        <th style="width: 30%;">Grand Total</th>
+                        <th style="width: 18%;">No. Ref</th>
+                        <th style="width: 15%;">Biaya</th>
+                        <th style="width: 12%;">Adjusment</th>
+                        <th style="width: 26%;">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -293,10 +294,14 @@
                         @foreach($groupedDetails as $groupKey => $details)
                             @php
                                 $rowNumber++;
-                                list($groupKapal, $groupVoyage, $groupRef) = explode('|', $groupKey);
+                                $keyParts = explode('|', $groupKey);
+                                $groupKapal = $keyParts[0] ?? '-';
+                                $groupVoyage = $keyParts[1] ?? '-';
+                                $groupRef = $keyParts[2] ?? '-';
                                 $groupSubtotal = $details->sum('subtotal');
                                 $firstItem = $details->first();
                                 $groupGrandTotal = $firstItem->grand_total ?? 0;
+                                $groupAdjustment = $firstItem->adjustment ?? 0;
                             @endphp
                             <tr>
                                 <td class="text-center">{{ $rowNumber }}</td>
@@ -304,13 +309,14 @@
                                 <td class="text-center">{{ $groupVoyage }}</td>
                                 <td class="text-center">{{ $groupRef }}</td>
                                 <td class="text-right">Rp {{ number_format($groupSubtotal, 0, ',', '.') }}</td>
+                                <td class="text-right">{{ $groupAdjustment != 0 ? ($groupAdjustment > 0 ? '+' : '') . number_format($groupAdjustment, 0, ',', '.') : '-' }}</td>
                                 <td class="text-right">Rp {{ number_format($groupGrandTotal, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     @endif
                     
                     <tr class="total-row">
-                        <td colspan="5" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="6" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($biayaKapal->nominal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
