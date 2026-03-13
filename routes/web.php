@@ -5219,5 +5219,17 @@ Route::middleware(['auth',
              'update'  => 'can:master-pricelist-biaya-storage-update',
              'destroy' => 'can:master-pricelist-biaya-storage-delete',
          ]);
+
+    Route::resource('pricelist-perijinan', \App\Http\Controllers\MasterPricelistPerijinanController::class)
+         ->names('master.pricelist-perijinan')
+         ->middleware([
+             'index'   => 'can:master-pricelist-perijinan-view',
+             'show'    => 'can:master-pricelist-perijinan-view',
+             'create'  => 'can:master-pricelist-perijinan-create',
+             'store'   => 'can:master-pricelist-perijinan-create',
+             'edit'    => 'can:master-pricelist-perijinan-update',
+             'update'  => 'can:master-pricelist-perijinan-update',
+             'destroy' => 'can:master-pricelist-perijinan-delete',
+         ]);
 });
 
