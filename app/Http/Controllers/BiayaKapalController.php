@@ -3041,7 +3041,7 @@ class BiayaKapalController extends Controller
                 // Check if it's CARGO or has nomor_kontainer
                 $isCargo = (strtolower($bl->nomor_kontainer ?? '') === 'cargo' || strtolower($bl->tipe_kontainer ?? '') === 'cargo');
                 
-                if (!$isCargo && !empty($bl->nomor_kontainer)) {
+                if (!$isCargo) {
                     // Determine size (default to 20 if not specified)
                     $size = '20';
                     if (!empty($bl->size_kontainer)) {
@@ -3050,12 +3050,22 @@ class BiayaKapalController extends Controller
                         }
                     }
 
-                    // Determine if EMPTY based on nama_barang
-                    $namaBarang = strtolower($bl->nama_barang ?? '');
-                    $isEmpty = str_contains($namaBarang, 'empty') || 
+                    // Determine if EMPTY based on nama_barang and other conditions (sync with OB logic)
+                    $namaBarang = strtolower(trim($bl->nama_barang ?? ''));
+                    $tipe = strtoupper($bl->tipe_kontainer ?? '');
+                    $noKon = strtoupper($bl->nomor_kontainer ?? '');
+
+                    $isEmpty = ($namaBarang === '' || 
+                               str_contains($namaBarang, 'empty') || 
                                str_contains($namaBarang, 'kosong') ||
                                str_contains($namaBarang, 'mty') ||
-                               str_contains($namaBarang, 'mt container');
+                               $namaBarang === 'mt' ||
+                               str_contains($namaBarang, 'mt container'));
+                               
+                    // Fallback: FCL but no container number or starts with CARGO-
+                    if (!$isEmpty && $tipe === 'FCL' && (empty($noKon) || str_starts_with($noKon, 'CARGO-'))) {
+                        $isEmpty = true;
+                    }
 
                     if ($isEmpty) {
                         $counts[$size]['empty']++;

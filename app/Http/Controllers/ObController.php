@@ -255,25 +255,24 @@ class ObController extends Controller
                     }
                 }
                 
-                // STEP 1: Tentukan status dari nama_barang
-                $status = 'full'; // default
-                
-                if (empty($bl->nama_barang) || trim($bl->nama_barang) === '') {
-                    // Nama barang kosong = empty
-                    $status = 'empty';
-                } else {
-                    $lowerName = strtolower(trim($bl->nama_barang));
-                    // Check if it's an empty container marker
-                    // Support various formats: "empty container", "emptycontainer", "empty", "mt", "mty"
-                    if (str_contains($lowerName, 'empty') || 
-                        $lowerName === 'mt' || // MT = Empty
-                        $lowerName === 'mty') { // MTY = Empty
-                        $status = 'empty';
-                    } else {
-                        // Barang lain = full
-                        $status = 'full';
-                    }
+                // STEP 1: Tentukan status dari nama_barang (Sync with unified logic)
+                $namaBarang = strtolower(trim($bl->nama_barang ?? ''));
+                $tipe = strtoupper($bl->tipe_kontainer ?? '');
+                $noKon = strtoupper($bl->nomor_kontainer ?? '');
+
+                $isEmpty = ($namaBarang === '' || 
+                           str_contains($namaBarang, 'empty') || 
+                           str_contains($namaBarang, 'kosong') || 
+                           str_contains($namaBarang, 'mty') || 
+                           $namaBarang === 'mt' ||
+                           str_contains($namaBarang, 'mt container'));
+                           
+                // Fallback: FCL but no container number or starts with CARGO-
+                if (!$isEmpty && $tipe === 'FCL' && (empty($noKon) || str_starts_with($noKon, 'CARGO-'))) {
+                    $isEmpty = true;
                 }
+                
+                $status = $isEmpty ? 'empty' : 'full';
                 
                 // STEP 2: Set biaya berdasarkan status yang sudah ditentukan
                 $key = $status . '|' . ($sizeStr ?? '');
@@ -403,25 +402,24 @@ class ObController extends Controller
                 }
             }
             
-            // STEP 1: Tentukan status dari jenis_barang
-            $status = 'full'; // default
-            
-            if (empty($nk->jenis_barang) || trim($nk->jenis_barang) === '') {
-                // Jenis barang kosong = empty
-                $status = 'empty';
-            } else {
-                $lowerName = strtolower(trim($nk->jenis_barang));
-                // Check if it's an empty container marker
-                // Support various formats: "empty container", "emptycontainer", "empty", "mt", "mty"
-                if (str_contains($lowerName, 'empty') || 
-                    $lowerName === 'mt' || // MT = Empty
-                    $lowerName === 'mty') { // MTY = Empty
-                    $status = 'empty';
-                } else {
-                    // Barang lain = full
-                    $status = 'full';
-                }
+            // STEP 1: Tentukan status dari jenis_barang (Sync with unified logic)
+            $namaBarang = strtolower(trim($nk->jenis_barang ?? ''));
+            $tipe = strtoupper($nk->tipe_kontainer ?? '');
+            $noKon = strtoupper($nk->nomor_kontainer ?? '');
+
+            $isEmpty = ($namaBarang === '' || 
+                       str_contains($namaBarang, 'empty') || 
+                       str_contains($namaBarang, 'kosong') || 
+                       str_contains($namaBarang, 'mty') || 
+                       $namaBarang === 'mt' ||
+                       str_contains($namaBarang, 'mt container'));
+                       
+            // Fallback: FCL but no container number or starts with CARGO-
+            if (!$isEmpty && $tipe === 'FCL' && (empty($noKon) || str_starts_with($noKon, 'CARGO-'))) {
+                $isEmpty = true;
             }
+            
+            $status = $isEmpty ? 'empty' : 'full';
             
             // STEP 2: Set biaya berdasarkan status yang sudah ditentukan
             $key = $status . '|' . ($sizeStr ?? '');

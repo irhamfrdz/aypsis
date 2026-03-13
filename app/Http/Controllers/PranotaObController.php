@@ -162,10 +162,21 @@ class PranotaObController extends Controller
                         $status = strtolower($item['status']);
                     } else {
                         $name = $item['nama_barang'] ?? '';
-                        $lowerName = strtolower($name);
-                        if (empty($name) || str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
-                            $status = 'empty';
+                        $lowerName = strtolower(trim($name));
+                        $tipe = strtoupper($item['tipe'] ?? $item['tipe_kontainer'] ?? '');
+                        $noKon = strtoupper($item['no_kontainer'] ?? $item['nomor_kontainer'] ?? '');
+                        
+                        $isEmpty = ($lowerName === '' || 
+                                   str_contains($lowerName, 'empty') || 
+                                   str_contains($lowerName, 'kosong') || 
+                                   str_contains($lowerName, 'mty') || 
+                                   $lowerName === 'mt');
+                                   
+                        if (!$isEmpty && $tipe === 'FCL' && (empty($noKon) || str_starts_with($noKon, 'CARGO-'))) {
+                            $isEmpty = true;
                         }
+                        
+                        $status = $isEmpty ? 'empty' : 'full';
                     }
                 }
             } else {
@@ -174,10 +185,21 @@ class PranotaObController extends Controller
                     $status = strtolower($item['status']);
                 } else {
                     $name = $item['nama_barang'] ?? '';
-                    $lowerName = strtolower($name);
-                    if (empty($name) || str_contains($lowerName, 'empty') || str_contains($lowerName, 'kosong')) {
-                        $status = 'empty';
+                    $lowerName = strtolower(trim($name));
+                    $tipe = strtoupper($item['tipe'] ?? $item['tipe_kontainer'] ?? '');
+                    $noKon = strtoupper($item['no_kontainer'] ?? $item['nomor_kontainer'] ?? '');
+                    
+                    $isEmpty = ($lowerName === '' || 
+                               str_contains($lowerName, 'empty') || 
+                               str_contains($lowerName, 'kosong') || 
+                               str_contains($lowerName, 'mty') || 
+                               $lowerName === 'mt');
+                               
+                    if (!$isEmpty && $tipe === 'FCL' && (empty($noKon) || str_starts_with($noKon, 'CARGO-'))) {
+                        $isEmpty = true;
                     }
+                    
+                    $status = $isEmpty ? 'empty' : 'full';
                 }
             }
 

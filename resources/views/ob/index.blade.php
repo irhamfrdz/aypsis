@@ -316,14 +316,25 @@
     <div class="md:hidden space-y-3 mb-4">
         @if(isset($bls))
             @forelse($bls as $key => $bl)
-                @php
                     $isTL = ($bl->sudah_tl === true || $bl->sudah_tl === 1 || $bl->sudah_tl === '1');
                     $isOB = ($bl->sudah_ob === true || $bl->sudah_ob === 1 || $bl->sudah_ob === '1');
-                    $isCARGO = ($bl->tipe_kontainer == 'CARGO');
+                    $isCARGO = ($bl->tipe_kontainer == 'FCL' && (!empty($bl->nomor_kontainer) && str_contains(strtoupper($bl->nomor_kontainer), 'CARGO'))) || ($bl->tipe_kontainer == 'CARGO');
                     $shouldDisable = $isCARGO || !$isOB;
-                    $barangUpper = strtoupper($bl->nama_barang ?? '');
-                    $isEmpty = str_contains($barangUpper, 'EMPTY') || ($bl->tipe_kontainer == 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($bl->nomor_kontainer, 'CARGO-')));
-                @endphp
+                    $barangUpper = strtoupper(trim($bl->nama_barang ?? ''));
+                    $nomorUpper = strtoupper(trim($bl->nomor_kontainer ?? ''));
+                    $tipeUpper = strtoupper(trim($bl->tipe_kontainer ?? ''));
+                    
+                    $isEmpty = ($barangUpper === '' || 
+                               str_contains($barangUpper, 'EMPTY') || 
+                               str_contains($barangUpper, 'KOSONG') || 
+                               str_contains($barangUpper, 'MTY') || 
+                               $barangUpper === 'MT' ||
+                               str_contains($barangUpper, 'MT CONTAINER'));
+                               
+                    // Fallback: FCL but no container number or starts with CARGO-
+                    if (!$isEmpty && $tipeUpper === 'FCL' && ($nomorUpper === '' || str_starts_with($nomorUpper, 'CARGO-'))) {
+                        $isEmpty = true;
+                    }
                 <div class="bg-white rounded-lg shadow-sm border {{ $isCARGO ? 'border-red-200 bg-gray-50' : 'border-gray-200' }} p-3">
                     {{-- Card Header with Checkbox and Status --}}
                     <div class="flex items-start justify-between mb-2">
@@ -436,14 +447,25 @@
             @endforelse
         @else
             @forelse($naikKapals as $key => $naikKapal)
-                @php
                     $isTL = ($naikKapal->is_tl === true || $naikKapal->is_tl === 1 || $naikKapal->is_tl === '1');
                     $isOB = ($naikKapal->sudah_ob === true || $naikKapal->sudah_ob === 1 || $naikKapal->sudah_ob === '1');
-                    $isCARGO = ($naikKapal->tipe_kontainer == 'CARGO');
+                    $isCARGO = ($naikKapal->tipe_kontainer == 'FCL' && (!empty($naikKapal->nomor_kontainer) && str_contains(strtoupper($naikKapal->nomor_kontainer), 'CARGO'))) || ($naikKapal->tipe_kontainer == 'CARGO');
                     $shouldDisable = $isCARGO || !$isOB;
-                    $barangUpper = strtoupper($naikKapal->jenis_barang ?? '');
-                    $isEmpty = str_contains($barangUpper, 'EMPTY');
-                @endphp
+                    $barangUpper = strtoupper(trim($naikKapal->jenis_barang ?? ''));
+                    $nomorUpper = strtoupper(trim($naikKapal->nomor_kontainer ?? ''));
+                    $tipeUpper = strtoupper(trim($naikKapal->tipe_kontainer ?? ''));
+                    
+                    $isEmpty = ($barangUpper === '' || 
+                               str_contains($barangUpper, 'EMPTY') || 
+                               str_contains($barangUpper, 'KOSONG') || 
+                               str_contains($barangUpper, 'MTY') || 
+                               $barangUpper === 'MT' ||
+                               str_contains($barangUpper, 'MT CONTAINER'));
+                               
+                    // Fallback: FCL but no container number or starts with CARGO-
+                    if (!$isEmpty && $tipeUpper === 'FCL' && ($nomorUpper === '' || str_starts_with($nomorUpper, 'CARGO-'))) {
+                        $isEmpty = true;
+                    }
                 <div class="bg-white rounded-lg shadow-sm border {{ $isCARGO ? 'border-red-200 bg-gray-50' : 'border-gray-200' }} p-3">
                     {{-- Card Header with Checkbox and Status --}}
                     <div class="flex items-start justify-between mb-2">
@@ -615,8 +637,21 @@
                         </td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs">
                             @php
-                                $barangUpper = strtoupper($bl->nama_barang ?? '');
-                                $isEmpty = str_contains($barangUpper, 'EMPTY') || ($bl->tipe_kontainer == 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($bl->nomor_kontainer, 'CARGO-')));
+                                $barangUpper = strtoupper(trim($bl->nama_barang ?? ''));
+                                $nomorUpper = strtoupper(trim($bl->nomor_kontainer ?? ''));
+                                $tipeUpper = strtoupper(trim($bl->tipe_kontainer ?? ''));
+                                
+                                $isEmpty = ($barangUpper === '' || 
+                                           str_contains($barangUpper, 'EMPTY') || 
+                                           str_contains($barangUpper, 'KOSONG') || 
+                                           str_contains($barangUpper, 'MTY') || 
+                                           $barangUpper === 'MT' ||
+                                           str_contains($barangUpper, 'MT CONTAINER'));
+                                           
+                                // Fallback: FCL but no container number or starts with CARGO-
+                                if (!$isEmpty && $tipeUpper === 'FCL' && ($nomorUpper === '' || str_starts_with($nomorUpper, 'CARGO-'))) {
+                                    $isEmpty = true;
+                                }
                             @endphp
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $isEmpty ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800' }}">
                                 {{ $isEmpty ? 'E' : 'F' }}
