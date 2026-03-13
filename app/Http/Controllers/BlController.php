@@ -411,43 +411,80 @@ class BlController extends Controller
             $nama_kapal = $request->nama_kapal;
             $no_voyage = $request->no_voyage;
 
-            $bls = Bl::where('nama_kapal', $nama_kapal)
+            Log::info("BulkUpdateSize start", ['nama_kapal' => $nama_kapal, 'no_voyage' => $no_voyage]);
+
+            // Use same flexible logic as index()
+            $kapalPattern = str_replace('.', '', $nama_kapal);
+            
+            $bls = Bl::where(function($q) use ($nama_kapal, $kapalPattern) {
+                    $q->where('nama_kapal', $nama_kapal)
+                      ->orWhere(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
+                })
                 ->where('no_voyage', $no_voyage)
                 ->get();
 
+            Log::info("BulkUpdateSize: Found " . $bls->count() . " BL records");
+
             $updatedCount = 0;
+            $notFoundCount = 0;
+            $alreadyMatchCount = 0;
+
             foreach ($bls as $bl) {
-                if (!$bl->nomor_kontainer) continue;
+                if (!$bl->nomor_kontainer) {
+                    Log::info("BL ID {$bl->id} has no container number");
+                    continue;
+                }
                 
+                $nomorKontainer = trim($bl->nomor_kontainer);
                 $ukuran = null;
                 
                 // Seek in StockKontainer
-                $stock = StockKontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)->first();
+                $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                 if ($stock) {
                     $ukuran = $stock->ukuran;
+                    $source = 'Stock';
                 }
 
                 if (!$ukuran) {
                     // Seek in Kontainer
-                    $kontainer = Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)->first();
+                    $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                     if ($kontainer) {
                         $ukuran = $kontainer->ukuran;
+                        $source = 'Master';
                     }
                 }
 
-                if ($ukuran && $bl->size_kontainer != $ukuran) {
-                    $bl->update(['size_kontainer' => $ukuran]);
-                    $updatedCount++;
+                if ($ukuran) {
+                    // Normalize ukuran: strip "ft" or " feet" and trim
+                    $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
+                    
+                    if ($bl->size_kontainer != $normalizedUkuran) {
+                        Log::info("Updating BL ID {$bl->id} container {$nomorKontainer}: {$bl->size_kontainer} -> {$normalizedUkuran} (from {$source})");
+                        $bl->update(['size_kontainer' => $normalizedUkuran]);
+                        $updatedCount++;
+                    } else {
+                        $alreadyMatchCount++;
+                    }
+                } else {
+                    $notFoundCount++;
+                    // Optional: log which ones were not found to help user
+                    // Log::info("Container {$nomorKontainer} not found in master tables");
                 }
             }
 
+            Log::info("BulkUpdateSize finished", [
+                'updated' => $updatedCount, 
+                'already_match' => $alreadyMatchCount, 
+                'not_found' => $notFoundCount
+            ]);
+
             return response()->json([
                 'success' => true,
-                'message' => "Berhasil memperbarui {$updatedCount} size kontainer.",
+                'message' => "Selesai. {$updatedCount} size diperbarui, {$alreadyMatchCount} sudah sesuai, {$notFoundCount} tidak ditemukan di master.",
                 'updated_count' => $updatedCount
             ]);
         } catch (\Exception $e) {
-            Log::error('Error in bulkUpdateSize: ' . $e->getMessage());
+            Log::error('Error in bulkUpdateSize: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
