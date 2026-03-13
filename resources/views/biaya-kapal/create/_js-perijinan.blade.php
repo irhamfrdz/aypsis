@@ -4,6 +4,18 @@
     // perijinanWrapper, perijinanSectionsContainer, addPerijinanSectionBtn, addPerijinanSectionBottomBtn
 
 
+    // Helper for Select2 initialization
+    const initPerijinanSelect2 = (el, placeholder) => {
+        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+            jQuery(el).select2({
+                placeholder: placeholder,
+                allowClear: true,
+                width: '100%',
+                dropdownAutoWidth: true
+            });
+        }
+    };
+
     function initializePerijinanSections() {
         if (perijinanSectionsContainer) perijinanSectionsContainer.innerHTML = '';
         perijinanSectionCounter = 0;
@@ -41,30 +53,24 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Nama Kapal <span class="text-red-500">*</span></label>
-                    <div class="relative">
+                    <div class="relative perijinan-select2-container">
                         <select name="perijinan_sections[${idx}][nama_kapal]" 
-                                class="w-full pl-3 pr-10 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-indigo-50/30 perijinan-kapal-select"
+                                class="w-full perijinan-kapal-select"
                                 onchange="loadVoyagesForPerijinanSection(${idx}, this.value)" required>
                             ${kapalOptions}
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-indigo-400">
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </div>
                     </div>
                 </div>
                 
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold text-indigo-900 uppercase tracking-tight">Nomor Voyage <span class="text-red-500">*</span></label>
-                    <div class="relative">
+                    <div class="relative perijinan-select2-container">
                         <select name="perijinan_sections[${idx}][no_voyage]" 
                                 id="perijinan_voyage_${idx}" 
-                                class="w-full pl-3 pr-10 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-indigo-50/30"
+                                class="w-full perijinan-voyage-select"
                                 disabled required>
                             <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-indigo-400">
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </div>
                     </div>
                 </div>
 
@@ -145,11 +151,26 @@
         `;
 
         perijinanSectionsContainer.appendChild(section);
+
+        // Initialize Select2 for this new section
+        const kapalSelect = section.querySelector('.perijinan-kapal-select');
+        const voyageSelect = section.querySelector('.perijinan-voyage-select');
+        
+        initPerijinanSelect2(kapalSelect, "-- Pilih Kapal --");
+        initPerijinanSelect2(voyageSelect, "-- Pilih Kapal Terlebih Dahulu --");
+
+        // Use jQuery event for Select2 so onchange continues to work or trigger manually
+        jQuery(kapalSelect).on('change', function() {
+            loadVoyagesForPerijinanSection(idx, this.value);
+        });
     }
 
     window.removePerijinanSection = function(btn) {
         const section = btn.closest('.perijinan-section');
         if (section) {
+            // Destroy select2 before removing to avoid memory leaks
+            jQuery(section).find('.select2-hidden-accessible').select2('destroy');
+            
             section.classList.add('opacity-0', 'scale-95');
             setTimeout(() => {
                 section.remove();
@@ -202,10 +223,12 @@
         if (!voyageSelect) return;
 
         voyageSelect.innerHTML = '<option value="">Loading...</option>';
+        if (jQuery(voyageSelect).data('select2')) jQuery(voyageSelect).trigger('change');
         voyageSelect.disabled = true;
 
         if (!kapalNama) {
             voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            if (jQuery(voyageSelect).data('select2')) jQuery(voyageSelect).trigger('change');
             return;
         }
 
@@ -222,10 +245,18 @@
                     voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
                 }
                 voyageSelect.disabled = false;
+                
+                // Refresh Select2
+                if (jQuery(voyageSelect).data('select2')) {
+                    jQuery(voyageSelect).trigger('change');
+                } else {
+                    initPerijinanSelect2(voyageSelect, "-- Pilih Voyage --");
+                }
             })
             .catch(() => {
                 voyageSelect.innerHTML = '<option value="">Gagal memuat voyage</option>';
                 voyageSelect.disabled = false;
+                if (jQuery(voyageSelect).data('select2')) jQuery(voyageSelect).trigger('change');
             });
     };
 
@@ -235,4 +266,42 @@
     if (addPerijinanSectionBottomBtn) {
         addPerijinanSectionBottomBtn.addEventListener('click', () => addPerijinanSection());
     }
+
+<style>
+    /* Select2 Indigo Theme Compatibility */
+    .perijinan-select2-container .select2-container--default .select2-selection--single {
+        background-color: rgb(238 242 255 / 0.3); /* indigo-50/30 */
+        border: 1px solid rgb(224 231 255); /* indigo-100 */
+        border-radius: 0.5rem; /* rounded-lg */
+        height: 42px;
+        transition: all 0.2s;
+    }
+    .perijinan-select2-container .select2-container--default.select2-container--focus .select2-selection--single,
+    .perijinan-select2-container .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #6366f1; /* indigo-500 */
+        ring: 2px;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+    .perijinan-select2-container .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 40px;
+        padding-left: 12px;
+        color: #312e81; /* indigo-900 */
+        font-size: 0.875rem;
+    }
+    .perijinan-select2-container .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+        right: 8px;
+    }
+    .perijinan-select2-container .select2-container--default .select2-selection--single .select2-selection__arrow b {
+        border-color: #818cf8 transparent transparent transparent; /* indigo-400 */
+    }
+    .select2-dropdown {
+        border: 1px solid rgb(224 231 255);
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: #4f46e5 !important; /* indigo-600 */
+    }
+</style>
 
