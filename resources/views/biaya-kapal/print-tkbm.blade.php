@@ -366,7 +366,7 @@
                     @if($totalAdjustment != 0)
                     <tr>
                         <td colspan="3" class="text-right">Adjustment</td>
-                        <td class="text-right">Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ ($totalAdjustment > 0 ? '+' : '') . number_format($totalAdjustment, 0, ',', '.') }}</td>
                     </tr>
                     @endif
                     @if($totalPph > 0)
