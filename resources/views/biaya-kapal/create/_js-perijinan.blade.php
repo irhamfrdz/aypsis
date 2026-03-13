@@ -4,17 +4,7 @@
     // perijinanWrapper, perijinanSectionsContainer, addPerijinanSectionBtn, addPerijinanSectionBottomBtn
 
 
-    // Helper for Select2 initialization
-    const initPerijinanSelect2 = (el, placeholder) => {
-        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-            jQuery(el).select2({
-                placeholder: placeholder,
-                allowClear: true,
-                width: '100%',
-                dropdownAutoWidth: true
-            });
-        }
-    };
+
 
     function initializePerijinanSections() {
         if (perijinanSectionsContainer) perijinanSectionsContainer.innerHTML = '';
@@ -54,25 +44,31 @@
                 <!-- Row 1: Kapal & Voyage -->
                 <div class="space-y-1.5">
                     <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Nama Kapal <span class="text-red-500">*</span></label>
-                    <div class="relative perijinan-select2-container">
+                    <div class="relative">
                         <select name="perijinan_sections[${idx}][nama_kapal]" 
-                                class="w-full perijinan-kapal-select"
+                                class="w-full perijinan-kapal-select px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm appearance-none"
                                 onchange="loadVoyagesForPerijinanSection(${idx}, this.value)" required>
                             ${kapalOptions}
                         </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-indigo-300">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="space-y-1.5">
                     <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Nomor Voyage <span class="text-red-500">*</span></label>
                     <div class="flex gap-2">
-                        <div class="flex-grow perijinan-select2-container">
+                        <div class="flex-grow relative perijinan-select-container">
                             <select name="perijinan_sections[${idx}][no_voyage]" 
                                     id="perijinan_voyage_${idx}" 
-                                    class="perijinan-voyage-select w-full"
+                                    class="perijinan-voyage-select w-full px-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm appearance-none disabled:bg-gray-50"
                                     disabled required>
                                 <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
                             </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-indigo-300">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
                         </div>
                         <input type="text" 
                                name="perijinan_sections[${idx}][no_voyage]" 
@@ -223,17 +219,13 @@
 
         perijinanSectionsContainer.appendChild(section);
 
-        // Initialize Select2 for this new section
         const kapalSelect = section.querySelector('.perijinan-kapal-select');
         const voyageSelect = section.querySelector('.perijinan-voyage-select');
         const voyageManualInput = section.querySelector('.perijinan-voyage-manual-input');
         const voyageToggleBtn = section.querySelector('.perijinan-voyage-toggle-btn');
-        
-        initPerijinanSelect2(kapalSelect, "-- Pilih Kapal --");
-        initPerijinanSelect2(voyageSelect, "-- Pilih Kapal Terlebih Dahulu --");
 
-        // Use jQuery event for Select2 so onchange continues to work or trigger manually
-        jQuery(kapalSelect).on('change', function() {
+        // Standard event listener
+        kapalSelect.addEventListener('change', function() {
             loadVoyagesForPerijinanSection(idx, this.value);
         });
 
@@ -241,7 +233,7 @@
         voyageToggleBtn.addEventListener('click', function() {
             if (voyageManualInput.classList.contains('hidden')) {
                 // Switch to manual input
-                voyageSelect.closest('.perijinan-select2-container').classList.add('hidden');
+                voyageSelect.closest('.perijinan-select-container').classList.add('hidden');
                 voyageSelect.disabled = true;
                 
                 voyageManualInput.classList.remove('hidden');
@@ -256,13 +248,11 @@
                 voyageManualInput.classList.add('hidden');
                 voyageManualInput.disabled = true;
                 
-                voyageSelect.closest('.perijinan-select2-container').classList.remove('hidden');
+                voyageSelect.closest('.perijinan-select-container').classList.remove('hidden');
                 
-                // Only enable select if kapal is selected
-                if (kapalSelect && kapalSelect.value) {
+                // Only enable select if there are options and not just 'Loading...'
+                if (voyageSelect.innerHTML.indexOf('option') > -1 && voyageSelect.innerHTML.indexOf('Loading') === -1) {
                     voyageSelect.disabled = false;
-                } else {
-                    voyageSelect.disabled = true;
                 }
                 
                 this.classList.add('bg-indigo-100', 'text-indigo-600');
@@ -275,9 +265,7 @@
     window.removePerijinanSection = function(btn) {
         const section = btn.closest('.perijinan-section');
         if (section) {
-            // Destroy select2 before removing to avoid memory leaks
-            jQuery(section).find('.select2-hidden-accessible').select2('destroy');
-            
+            // Cleanup section
             section.classList.add('opacity-0', 'scale-95');
             setTimeout(() => {
                 section.remove();
@@ -348,12 +336,10 @@
         if (!voyageSelect) return;
 
         voyageSelect.innerHTML = '<option value="">Loading...</option>';
-        if (jQuery(voyageSelect).data('select2')) jQuery(voyageSelect).trigger('change');
         voyageSelect.disabled = true;
 
         if (!kapalNama) {
             voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
-            if (jQuery(voyageSelect).data('select2')) jQuery(voyageSelect).trigger('change');
             return;
         }
 
@@ -370,18 +356,10 @@
                     voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
                 }
                 voyageSelect.disabled = false;
-                
-                // Refresh Select2
-                if (jQuery(voyageSelect).data('select2')) {
-                    jQuery(voyageSelect).trigger('change');
-                } else {
-                    initPerijinanSelect2(voyageSelect, "-- Pilih Voyage --");
-                }
             })
             .catch(() => {
                 voyageSelect.innerHTML = '<option value="">Gagal memuat voyage</option>';
                 voyageSelect.disabled = false;
-                if (jQuery(voyageSelect).data('select2')) jQuery(voyageSelect).trigger('change');
             });
     };
 
@@ -391,4 +369,3 @@
     if (addPerijinanSectionBottomBtn) {
         addPerijinanSectionBottomBtn.addEventListener('click', () => addPerijinanSection());
     }
-
