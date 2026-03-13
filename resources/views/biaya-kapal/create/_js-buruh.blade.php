@@ -2,8 +2,6 @@
     let kapalSectionCounter = 0;
     const kapalSectionsContainer = document.getElementById('kapal_sections_container');
     const addKapalSectionBtn = document.getElementById('add_kapal_section_btn');
-    const allKapalsData = @json($kapals);
-    const pricelistBiayaTruckingData = @json($pricelistBiayaTrucking);
     const pricelistThcVendorsData = @json($pricelistThcVendors ?? []);
     const pricelistThcsData = @json($pricelistThcs ?? []);
 

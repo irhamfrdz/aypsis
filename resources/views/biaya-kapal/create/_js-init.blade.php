@@ -1,6 +1,9 @@
     // Store pricelist buruh data
     const pricelistBuruhData = {!! json_encode($pricelistBuruh) !!};
 
+    // Store pricelist Biaya Trucking data
+    const pricelistBiayaTruckingData = {!! json_encode($pricelistBiayaTrucking) !!};
+
     // Store pricelist TKBM data for Biaya TKBM
     const pricelistTkbmData = {!! json_encode($pricelistTkbm ?? []) !!};
 
@@ -13,3 +16,6 @@
 
     // Store Dokumen Perijinan Kapal data
     const dokumenPerijinansData = {!! json_encode($dokumenPerijinans ?? []) !!};
+
+    // Global Kapals data used across many sections
+    const allKapalsData = {!! json_encode($kapals) !!};

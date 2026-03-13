@@ -16,32 +16,32 @@
     };
     
     function initializeLoloSections() {
-        if (!loloSectionsContainer) return;
+        if (typeof loloSectionsContainer === 'undefined' || !loloSectionsContainer) return;
         loloSectionsContainer.innerHTML = '';
         loloSectionCounter = 0;
         addLoloSection();
     }
     
     function clearAllLoloSections() {
-        if (!loloSectionsContainer) return;
+        if (typeof loloSectionsContainer === 'undefined' || !loloSectionsContainer) return;
         loloSectionsContainer.innerHTML = '';
         loloSectionCounter = 0;
     }
     
-    if (addLoloSectionBtn) {
+    if (typeof addLoloSectionBtn !== 'undefined' && addLoloSectionBtn) {
         addLoloSectionBtn.addEventListener('click', function() {
             addLoloSection();
         });
     }
 
-    if (addLoloSectionBottomBtn) {
+    if (typeof addLoloSectionBottomBtn !== 'undefined' && addLoloSectionBottomBtn) {
         addLoloSectionBottomBtn.addEventListener('click', function() {
             addLoloSection();
         });
     }
     
     function addLoloSection() {
-        if (!loloSectionsContainer) return;
+        if (typeof loloSectionsContainer === 'undefined' || !loloSectionsContainer) return;
         loloSectionCounter++;
         const sectionIndex = loloSectionCounter;
         
@@ -50,9 +50,11 @@
         section.setAttribute('data-lolo-section-index', sectionIndex);
         
         let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
-        allKapalsData.forEach(kapal => {
-            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
-        });
+        if (typeof allKapalsData !== 'undefined' && Array.isArray(allKapalsData)) {
+            allKapalsData.forEach(kapal => {
+                kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
+            });
+        }
 
         const lokasiOptions = `
             <option value="">-- Pilih Lokasi --</option>
@@ -365,7 +367,9 @@
                 return;
             }
 
-            const vendors = [...new Set(pricelistLolosData.filter(p => p.lokasi === lokasi).map(p => p.vendor))];
+            const vendors = (typeof pricelistLolosData !== 'undefined' && Array.isArray(pricelistLolosData)) 
+                ? [...new Set(pricelistLolosData.filter(p => p.lokasi === lokasi).map(p => p.vendor))]
+                : [];
             
             if (vendors.length > 0) {
                 vendors.forEach(v => {
@@ -434,11 +438,11 @@
                 }
                 normalizedSize = normalizedSize.toString().replace(/[^0-9]/g, '');
                 
-                const pricelist = pricelistLolosData.find(p => 
+                const pricelist = (typeof pricelistLolosData !== 'undefined' && Array.isArray(pricelistLolosData)) ? pricelistLolosData.find(p => 
                     p.lokasi === lokasi && 
                     p.vendor === vendor && 
                     p.size.toString() === normalizedSize
-                );
+                ) : null;
                 
                 const tarif = pricelist ? parseFloat(pricelist.tarif) : 0;
                 subtotal += tarif;
@@ -492,13 +496,17 @@
             totalNominal += parseFloat(input.value.replace(/\./g, '')) || 0;
         });
         
-        const selectedValue = jenisBiayaSelect.value;
-        const selectedText = selectedJenisBiaya.nama || '';
+        const selectedValue = (typeof jenisBiayaSelect !== 'undefined') ? jenisBiayaSelect.value : '';
+        const selectedText = (typeof selectedJenisBiaya !== 'undefined') ? (selectedJenisBiaya.nama || '') : '';
         
         if (selectedValue === 'KB043' || selectedText.toLowerCase().includes('lolo')) {
-            nominalInput.value = totalNominal.toLocaleString('id-ID');
+            if (typeof nominalInput !== 'undefined') {
+                nominalInput.value = totalNominal.toLocaleString('id-ID');
+            }
             // Recalculate main total if needed
-            calculateTotalBiaya();
+            if (typeof calculateTotalBiaya === 'function') {
+                calculateTotalBiaya();
+            }
         }
     }
 

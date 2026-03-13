@@ -1,4 +1,3 @@
-<script>
     // ============= BIAYA PERIJINAN LOGIC (MULTI-SECTION) =============
     let perijinanSectionCounter = 0;
     const perijinanWrapper = document.getElementById('perijinan_wrapper');
@@ -199,4 +198,4 @@
     if (addPerijinanSectionBottomBtn) {
         addPerijinanSectionBottomBtn.addEventListener('click', () => addPerijinanSection());
     }
-</script>
+
