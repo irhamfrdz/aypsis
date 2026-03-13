@@ -33,7 +33,7 @@
                             <div class="flex items-center">
                                 <a href="{{ route('master.karyawan.template') }}" class="p-1.5 text-gray-400 hover:text-green-600 transition-colors" title="Download Template"><i class="fas fa-file-download border-r pr-2 border-gray-200"></i></a>
                                 <a href="{{ route('master.karyawan.import') }}" class="p-1.5 text-gray-400 hover:text-orange-600 transition-colors" title="Import Data"><i class="fas fa-file-import border-r pr-2 border-gray-200 ml-1"></i></a>
-                                <a href="{{ route('master.karyawan.export-excel') }}" class="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Export Excel"><i class="fas fa-file-export border-r pr-2 border-gray-200 ml-1"></i></a>
+                                <a href="{{ route('master.karyawan.export-excel', request()->query()) }}" class="p-1.5 text-gray-400 hover:text-purple-600 transition-colors" title="Export Excel"><i class="fas fa-file-export border-r pr-2 border-gray-200 ml-1"></i></a>
                                 <div class="flex items-center ml-1 bg-gray-100/50 rounded-md px-1">
                                     <a href="{{ route('master.karyawan.print', request()->query()) }}" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-900 transition-colors border-r border-gray-200" title="Cetak Daftar (List)"><i class="fas fa-list-ul"></i></a>
                                     <a href="{{ route('master.karyawan.print.forms', request()->query()) }}" target="_blank" class="p-1.5 text-gray-400 hover:text-gray-900 transition-colors border-r border-gray-200" title="Cetak Formulir (Bulk Detail)"><i class="fas fa-id-card-alt"></i></a>

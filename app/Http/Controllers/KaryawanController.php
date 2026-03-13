@@ -69,32 +69,12 @@ class KaryawanController extends Controller
         // View khusus onboarding, jika belum ada bisa pakai view checklist-new
         return view('master-karyawan.crew-checklist-new', compact('karyawan', 'checklistItems'));
     }
-    // Catatan: Constructor yang sebelumnya menyebabkan error telah dihapus.
-    // Middleware untuk proteksi rute sekarang ditangani di file routes/web.php
-    // dengan menambahkan ->middleware('can:master-karyawan') pada rute resource.
 
     /**
-     * Menampilkan semua karyawan.
+     * Helper to apply common filters to karyawan query
      */
-    public function index(Request $request)
+    private function applyKaryawanFilters($query, Request $request)
     {
-        // Query builder untuk karyawan
-        $query = Karyawan::query();
-
-        // Precompute counts for header summary
-        $totalCount = Karyawan::count();
-        $aktifCount = Karyawan::whereNull('tanggal_berhenti')->count();
-        $berhentiCount = Karyawan::whereNotNull('tanggal_berhenti')->count();
-        $counts = [
-            'total' => $totalCount,
-            'aktif' => $aktifCount,
-            'berhenti' => $berhentiCount,
-        ];
-
-        // Prepare filter options
-        $divisiOptions = Karyawan::whereNotNull('divisi')->distinct()->orderBy('divisi')->pluck('divisi');
-        $cabangOptions = Karyawan::whereNotNull('cabang')->distinct()->orderBy('cabang')->pluck('cabang');
-
         // Filter Status Logic
         if ($request->filled('show_all')) {
             // Tampilkan semua (tidak ada filter status)
@@ -103,7 +83,6 @@ class KaryawanController extends Controller
             $query->whereNotNull('tanggal_berhenti');
         } elseif ($request->filled('search')) {
             // Jika mencari tanpa tombol status diklik, cari di semua data (Aktif & Berhenti)
-            // Ini untuk mencegah bingung kenapa data tidak muncul karena filter default 'Aktif'
         } else {
             // Default: hanya tampilkan karyawan aktif
             $query->whereNull('tanggal_berhenti');
@@ -127,13 +106,9 @@ class KaryawanController extends Controller
         // Filter: Tanggal Berhenti range
         if ($request->filled('tanggal_berhenti_start')) {
             $query->whereDate('tanggal_berhenti', '>=', $request->tanggal_berhenti_start);
-            // Auto trigger show_berhenti if filtering by stop date
-            $request->merge(['show_berhenti' => '1']);
         }
         if ($request->filled('tanggal_berhenti_end')) {
             $query->whereDate('tanggal_berhenti', '<=', $request->tanggal_berhenti_end);
-            // Auto trigger show_berhenti if filtering by stop date
-            $request->merge(['show_berhenti' => '1']);
         }
 
         // Jika ada parameter search, lakukan pencarian
@@ -173,22 +148,49 @@ class KaryawanController extends Controller
         }
 
         // Handle sorting
-        $sortField = $request->get('sort', 'nama_lengkap'); // Default sort by nama_lengkap
-        $sortDirection = $request->get('direction', 'asc'); // Default ascending
-
-        // Validate sort field untuk keamanan
+        $sortField = $request->get('sort', 'nama_lengkap');
+        $sortDirection = $request->get('direction', 'asc');
         $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
+        
         if (!in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
-
-        // Validate sort direction
         if (!in_array($sortDirection, ['asc', 'desc'])) {
             $sortDirection = 'asc';
         }
 
-        // Apply sorting
         $query->orderBy($sortField, $sortDirection);
+
+        return $query;
+    }
+    // Catatan: Constructor yang sebelumnya menyebabkan error telah dihapus.
+    // Middleware untuk proteksi rute sekarang ditangani di file routes/web.php
+    // dengan menambahkan ->middleware('can:master-karyawan') pada rute resource.
+
+    /**
+     * Menampilkan semua karyawan.
+     */
+    public function index(Request $request)
+    {
+        // Query builder untuk karyawan
+        $query = Karyawan::query();
+
+        // Precompute counts for header summary
+        $totalCount = Karyawan::count();
+        $aktifCount = Karyawan::whereNull('tanggal_berhenti')->count();
+        $berhentiCount = Karyawan::whereNotNull('tanggal_berhenti')->count();
+        $counts = [
+            'total' => $totalCount,
+            'aktif' => $aktifCount,
+            'berhenti' => $berhentiCount,
+        ];
+
+        // Prepare filter options
+        $divisiOptions = Karyawan::whereNotNull('divisi')->distinct()->orderBy('divisi')->pluck('divisi');
+        $cabangOptions = Karyawan::whereNotNull('cabang')->distinct()->orderBy('cabang')->pluck('cabang');
+
+        // Apply common filters and sorting
+        $this->applyKaryawanFilters($query, $request);
 
         // Handle per_page parameter for pagination
         $perPage = (int) $request->get('per_page', 15); // Default 15 per halaman
@@ -302,7 +304,7 @@ class KaryawanController extends Controller
     /**
      * Export all karyawans as CSV download.
      */
-    public function export(\Illuminate\Http\Request $request)
+    public function export(Request $request)
     {
         // Clear all possible caches to ensure fresh data
         if (function_exists('opcache_reset')) {
@@ -340,7 +342,7 @@ class KaryawanController extends Controller
 
         $fileName = $isTemplate ? 'template_import_karyawan.csv' : 'karyawans_export_' . date('Ymd_His') . '.csv';
 
-        $callback = function() use ($columns, $delimiter, $isTemplate) {
+        $callback = function() use ($columns, $delimiter, $isTemplate, $request) {
             $out = fopen('php://output', 'w');
 
             // Write UTF-8 BOM for Excel recognition
@@ -352,85 +354,40 @@ class KaryawanController extends Controller
             if ($isTemplate) {
                 // Add sample data row for template
                 $sampleData = [
-                    '1234567890', // nik - clean format without apostrophe
-                    'John', // nama_panggilan
-                    'John Doe', // nama_lengkap
-                    'B 1234 ABC', // plat
-                    'john.doe@example.com', // email
-                    '1234567890123456', // ktp - clean format
-                    '1234567890123456', // kk - clean format
-                    'Jl. Contoh No. 123', // alamat
-                    '001/002', // rt_rw
-                    'Kelurahan Contoh', // kelurahan
-                    'Kecamatan Contoh', // kecamatan
-                    'Kabupaten Contoh', // kabupaten
-                    'Provinsi Contoh', // provinsi
-                    '12345', // kode_pos
-                    'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', // alamat_lengkap
-                    'Jakarta', // tempat_lahir
-                    '01/Jan/1990', // tanggal_lahir - format dd/mmm/yyyy
-                    '081234567890', // no_hp - clean format
-                    'L', // jenis_kelamin
-                    'Belum Kawin', // status_perkawinan
-                    'Islam', // agama
-                    'IT', // divisi
-                    'Programmer', // pekerjaan
-                    '01/Jan/2024', // tanggal_masuk - format dd/mmm/yyyy
-                    '', // tanggal_berhenti
-                    '', // tanggal_masuk_sebelumnya
-                    '', // tanggal_berhenti_sebelumnya
-                    'Catatan contoh', // catatan
-                    'K1', // status_pajak
-                    'Bank BCA', // nama_bank
-                    'Cabang Jakarta Pusat', // bank_cabang
-                    '1234567890', // akun_bank - clean format
-                    'John Doe', // atas_nama
-                    '0001234567890', // jkn - clean format
-                    '12345678901234567', // no_ketenagakerjaan - clean format
-                    'Jakarta', // cabang
-                    '', // nik_supervisor
-                    '' // supervisor
+                    '1234567890', // nik
+                    'John', 'John Doe', 'B 1234 ABC', 'john.doe@example.com', '1234567890123456', '1234567890123456', 'Jl. Contoh No. 123', '001/002', 'Kelurahan Contoh', 'Kecamatan Contoh', 'Kabupaten Contoh', 'Provinsi Contoh', '12345', 'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', 'Jakarta', '01/Jan/1990', '081234567890', 'L', 'Belum Kawin', 'Islam', 'IT', 'Programmer', '01/Jan/2024', '', '', '', 'Catatan contoh', 'K1', 'Bank BCA', 'Cabang Jakarta Pusat', '1234567890', 'John Doe', '0001234567890', '12345678901234567', 'Jakarta', '', ''
                 ];
                 fwrite($out, implode($delimiter, $sampleData) . "\r\n");
             } else {
                 // Use database transaction to ensure data consistency
-                \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns, $delimiter) {
+                \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns, $delimiter, $request) {
                     // Stream rows for actual export - use fresh() to ensure latest data
-                    Karyawan::chunk(200, function($rows) use ($out, $columns, $delimiter) {
+                    $query = Karyawan::query();
+                    $this->applyKaryawanFilters($query, $request);
+
+                    $query->chunk(200, function($rows) use ($out, $columns, $delimiter) {
                         foreach ($rows as $r) {
-                            // Get completely fresh instance to ensure we have the latest data
                             $r = Karyawan::find($r->id);
-                            
                             $line = [];
                             foreach ($columns as $col) {
                                 $val = $r->{$col} ?? '';
-
-                                // Format dates to dd/mmm/yyyy for CSV export
                                 if ($val instanceof \DateTimeInterface) {
                                     $val = $val->format('d/M/Y');
                                 } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
-                                    // Handle date fields - format if not empty, keep empty if null
                                     if (!empty($val)) {
                                         try {
                                             $ts = strtotime($val);
                                             if ($ts !== false && $ts !== -1) {
                                                 $val = date('d/M/Y', $ts);
                                             }
-                                        } catch (\Throwable $e) {
-                                            // Keep original value if parsing fails
-                                        }
+                                        } catch (\Throwable $e) {}
                                     } else {
-                                        // Keep empty for null dates
                                         $val = '';
                                     }
                                 }
-
-                                // Add zero-width space to numeric fields to prevent scientific notation in Excel
-                                // This is invisible but forces Excel to treat as text
                                 if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
                                     $val = "\u{200B}" . $val;
                                 }
-                                
                                 $line[] = $val;
                             }
                             fwrite($out, implode($delimiter, $line) . "\r\n");
@@ -451,10 +408,7 @@ class KaryawanController extends Controller
         ]);
     }
 
-    /**
-     * Export all karyawans as Excel-compatible CSV download with proper number formatting
-     */
-    public function exportExcel()
+    public function exportExcel(Request $request)
     {
         // Clear all possible caches to ensure fresh data
         if (function_exists('opcache_reset')) {
@@ -473,7 +427,7 @@ class KaryawanController extends Controller
 
         $fileName = 'karyawans_excel_export_' . date('Ymd_His') . '.csv';
 
-        $callback = function() use ($columns) {
+        $callback = function() use ($columns, $request) {
             $out = fopen('php://output', 'w');
 
             // Write UTF-8 BOM for Excel recognition
@@ -483,46 +437,35 @@ class KaryawanController extends Controller
             fwrite($out, implode(";", $columns) . "\r\n");
 
             // Use database transaction to ensure data consistency
-            \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns) {
-                // Stream rows for actual export with proper formatting - get fresh data
-                Karyawan::chunk(200, function($rows) use ($out, $columns) {
+            \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns, $request) {
+                // Stream rows for actual export with proper formatting - apply filters
+                $query = Karyawan::query();
+                $this->applyKaryawanFilters($query, $request);
+
+                $query->chunk(200, function($rows) use ($out, $columns) {
                     foreach ($rows as $r) {
-                        // Get completely fresh instance to ensure we have the latest data
                         $r = Karyawan::find($r->id);
-                        
                         $line = [];
                         foreach ($columns as $col) {
                             $val = $r->{$col} ?? '';
-
-                            // Format dates to dd/mmm/yyyy for Excel export
                             if ($val instanceof \DateTimeInterface) {
                                 $val = $val->format('d/M/Y');
                             } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
-                                // Handle date fields - format if not empty, keep empty if null
                                 if (!empty($val)) {
                                     try {
                                         $ts = strtotime($val);
                                         if ($ts !== false && $ts !== -1) {
                                             $val = date('d/M/Y', $ts);
                                         }
-                                    } catch (\Throwable $e) {
-                                        // Keep original value if parsing fails
-                                    }
+                                    } catch (\Throwable $e) {}
                                 } else {
-                                    // Keep empty for null dates
                                     $val = '';
                                 }
                             }
-
-                            // For numeric fields, add invisible zero-width space to prevent scientific notation
-                            // This forces Excel to treat as text without showing visible characters
                             if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
-                                $val = "\u{200B}" . $val; // Zero-width space
+                                $val = "\u{200B}" . $val;
                             }
-
-                            // Clean any problematic characters that might cause issues in CSV
-                            $val = str_replace(["\r", "\n"], ' ', $val); // Replace line breaks with space
-
+                            $val = str_replace(["\r", "\n"], ' ', $val);
                             $line[] = $val;
                         }
                         fwrite($out, implode(";", $line) . "\r\n");
