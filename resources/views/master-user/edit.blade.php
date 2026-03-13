@@ -1082,6 +1082,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Master Pricelist Perijinan --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-emerald-600 font-bold">Master Pricelist Perijinan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-perijinan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-perijinan']['view']) && $userMatrixPermissions['master-pricelist-perijinan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-perijinan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-perijinan']['create']) && $userMatrixPermissions['master-pricelist-perijinan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-perijinan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-perijinan']['update']) && $userMatrixPermissions['master-pricelist-perijinan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-perijinan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-perijinan']['delete']) && $userMatrixPermissions['master-pricelist-perijinan']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Operational Management --}}
                             <tr class="module-row" data-module="operational">
                                 <td class="module-header">
