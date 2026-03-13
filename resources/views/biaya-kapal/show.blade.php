@@ -848,6 +848,55 @@
     </div>
     @endif
 
+    @if($biayaKapal->perijinanDetails->count() > 0)
+    <div class="mt-8">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Detail Biaya Perijinan</h3>
+        </div>
+        <div class="bg-white border-2 border-indigo-100 rounded-xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-indigo-100">
+                    <thead class="bg-indigo-50/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Kapal / Voyage</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Nama Perijinan</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-indigo-900 uppercase tracking-wider">Keterangan</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-indigo-900 uppercase tracking-wider">Jumlah Biaya</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-indigo-50">
+                        @foreach($biayaKapal->perijinanDetails as $detail)
+                        <tr class="hover:bg-indigo-50/30 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold text-gray-900">{{ $detail->nama_kapal }}</div>
+                                <div class="text-xs text-indigo-600 font-medium">Voyage: {{ $detail->no_voyage }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-semibold text-gray-800">{{ $detail->nama_perijinan }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-600">{{ $detail->keterangan ?: '-' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="text-sm font-bold text-indigo-600">Rp {{ number_format($detail->jumlah_biaya, 0, ',', '.') }}</div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot class="bg-indigo-900">
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-right text-sm font-bold text-indigo-100 uppercase">Total Biaya Perijinan</td>
+                            <td class="px-6 py-4 text-right text-base font-black text-white whitespace-nowrap">
+                                Rp {{ number_format($biayaKapal->perijinanDetails->sum('jumlah_biaya'), 0, ',', '.') }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
+
     @can('biaya-kapal-delete')
     <div class="mt-8 pt-6 border-t border-gray-200">
         <form action="{{ route('biaya-kapal.destroy', $biayaKapal->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');" class="inline">

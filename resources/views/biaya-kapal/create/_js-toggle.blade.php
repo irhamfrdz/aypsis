@@ -11,7 +11,14 @@
         if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
         if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
         if(labuhTambatWrapper) labuhTambatWrapper.classList.add('hidden');
+        if(perijinanWrapper) perijinanWrapper.classList.add('hidden');
         if(freightWrapper) freightWrapper.classList.add('hidden');
+        
+        // Reset nominal input properties
+        if(nominalInput) {
+            nominalInput.removeAttribute('readonly');
+            nominalInput.classList.remove('bg-gray-100');
+        }
         
         // Reset required attributes
         if(nominalInput) nominalInput.setAttribute('required', 'required');
@@ -862,6 +869,69 @@
             }
             if (operasionalWrapper) operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
+            if (freightWrapper) freightWrapper.classList.add('hidden');
+            clearAllFreightSections();
+            if (perijinanWrapper) perijinanWrapper.classList.add('hidden');
+            clearAllPerijinanSections();
+        }
+        // Show Perijinan fields if "Biaya Perijinan" is selected
+        else if (selectedText.toLowerCase().includes('perijinan')) {
+            // Show Perijinan wrapper
+            if (perijinanWrapper) perijinanWrapper.classList.remove('hidden');
+            initializePerijinanSections();
+
+            // Hide standard kapal/voyage/bl fields (perijinan has its own in sections)
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Setup nominal input (Calculated from sections)
+            if(nominalInput) {
+                nominalInput.setAttribute('readonly', 'readonly');
+                nominalInput.classList.add('bg-gray-100');
+            }
+
+            // Show standard fields
+            if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
+
+            // Hide all other type-specific fields
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+
+            // Reset values
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            dpInput.value = '0';
+            sisaPembayaranInput.value = '0';
+
+            // Hide other multi-sections
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
+            if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
+            clearAllPerlengkapanSections();
             if (freightWrapper) freightWrapper.classList.add('hidden');
             clearAllFreightSections();
         }

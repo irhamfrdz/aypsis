@@ -183,6 +183,12 @@
     const perlengkapanSectionsContainer = document.getElementById('perlengkapan_sections_container');
     const addPerlengkapanSectionBtn = document.getElementById('add_perlengkapan_section_btn');
     const addPerlengkapanSectionBottomBtn = document.getElementById('add_perlengkapan_section_bottom_btn');
+
+    // Biaya Perijinan multi-section
+    const perijinanWrapper = document.getElementById('perijinan_wrapper');
+    const perijinanSectionsContainer = document.getElementById('perijinan_sections_container');
+    const addPerijinanSectionBtn = document.getElementById('add_perijinan_section_btn');
+    const addPerijinanSectionBottomBtn = document.getElementById('add_perijinan_section_bottom_btn');
     
     // Standard field wrappers
     const nominalWrapper = document.getElementById('nominal_wrapper');

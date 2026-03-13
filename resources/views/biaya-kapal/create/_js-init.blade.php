@@ -10,3 +10,6 @@
     // Store pricelist Freight data
     const pricelistFreightsData = {!! json_encode($pricelistFreights ?? []) !!};
     const pricelistFreightVendorsData = {!! json_encode($pricelistFreightVendors ?? []) !!};
+
+    // Store Dokumen Perijinan Kapal data
+    const dokumenPerijinansData = {!! json_encode($dokumenPerijinans ?? []) !!};

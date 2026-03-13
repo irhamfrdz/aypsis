@@ -195,4 +195,9 @@ class BiayaKapal extends Model
     {
         return $this->hasMany(BiayaKapalFreight::class, 'biaya_kapal_id');
     }
+
+    public function perijinanDetails()
+    {
+        return $this->hasMany(BiayaKapalPerijinan::class, 'biaya_kapal_id');
+    }
 }

@@ -22,6 +22,8 @@ use App\Models\MasterPricelistLolo;
 use App\Models\BiayaKapalLabuhTambat;
 use App\Models\BiayaKapalStorage;
 use App\Models\MasterPricelistBiayaStorage;
+use App\Models\BiayaKapalFreight;
+use App\Models\BiayaKapalPerijinan;
 use App\Models\MasterPricelistFreight;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaTanpaSuratJalan;
@@ -195,6 +197,9 @@ class BiayaKapalController extends Controller
             ->orderBy('vendor')
             ->pluck('vendor');
 
+        // Get Dokumen Perijinan Kapal for master document names
+        $dokumenPerijinans = \App\Models\DokumenPerijinanKapal::where('status_aktif', 1)->orderBy('nama_dokumen')->get();
+
         return view('biaya-kapal.create', compact(
             'kapals', 
             'klasifikasiBiayas', 
@@ -212,7 +217,8 @@ class BiayaKapalController extends Controller
             'pricelistLoloVendors',
             'pricelistStoragesData',
             'pricelistFreights',
-            'pricelistFreightVendors'
+            'pricelistFreightVendors',
+            'dokumenPerijinans'
         ));
     }
 
@@ -357,6 +363,14 @@ class BiayaKapalController extends Controller
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
+        // Perijinan Sections Cleaning
+        if (isset($data['perijinan_sections']) && is_array($data['perijinan_sections'])) {
+            foreach ($data['perijinan_sections'] as &$section) {
+                if (isset($section['jumlah_biaya'])) $section['jumlah_biaya'] = str_replace(',', '.', str_replace('.', '', $section['jumlah_biaya']));
             }
             unset($section);
         }
@@ -548,7 +562,15 @@ class BiayaKapalController extends Controller
             'perlengkapan_sections.*.nama_kapal'        => 'nullable|string|max:255',
             'perlengkapan_sections.*.no_voyage'         => 'nullable|string|max:255',
             'perlengkapan_sections.*.keterangan'        => 'nullable|string',
-            'perlengkapan_sections.*.jumlah_biaya'      => 'nullable|string',
+            'perlengkapan_sections.*.jumlah_biaya'      => 'nullable|numeric|min:0',
+
+            // Perijinan sections
+            'perijinan_sections'                     => 'nullable|array',
+            'perijinan_sections.*.nama_kapal'        => 'nullable|string|max:255',
+            'perijinan_sections.*.no_voyage'         => 'nullable|string|max:255',
+            'perijinan_sections.*.nama_perijinan'   => 'nullable|string|max:255',
+            'perijinan_sections.*.keterangan'        => 'nullable|string',
+            'perijinan_sections.*.jumlah_biaya'      => 'nullable|numeric|min:0',
 
             // Biaya Labuh Tambat sections structure
             'labuh_tambat' => 'nullable|array',
@@ -1490,6 +1512,32 @@ class BiayaKapalController extends Controller
                 $biayaKapal->update(['nominal' => $perlTotal]);
             }
 
+            // BIAYA PERIJINAN: simpan setiap section ke tabel biaya_kapal_perijinan
+            if (!empty($validated['perijinan_sections'])) {
+                $perijinanTotal = 0;
+
+                foreach ($validated['perijinan_sections'] as $section) {
+                    if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) {
+                        continue;
+                    }
+
+                    $jumlah = floatval($section['jumlah_biaya'] ?? 0);
+
+                    BiayaKapalPerijinan::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'nama_kapal'     => $section['nama_kapal']     ?? null,
+                        'no_voyage'      => $section['no_voyage']      ?? null,
+                        'nama_perijinan' => $section['nama_perijinan'] ?? null,
+                        'keterangan'     => $section['keterangan']     ?? null,
+                        'jumlah_biaya'   => $jumlah,
+                    ]);
+
+                    $perijinanTotal += $jumlah;
+                }
+
+                $biayaKapal->update(['nominal' => $perijinanTotal]);
+            }
+
             DB::commit();
 
             return redirect()
@@ -1523,7 +1571,8 @@ class BiayaKapalController extends Controller
             'thcDetails',
             'loloDetails',
             'storageDetails',
-            'freightDetails'
+            'freightDetails',
+            'perijinanDetails'
         ]);
 
         // Resolve container details for trucking if needed
@@ -2133,6 +2182,14 @@ class BiayaKapalController extends Controller
                 if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
                 if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
+        // Perijinan Sections Cleaning
+        if (isset($data['perijinan_sections']) && is_array($data['perijinan_sections'])) {
+            foreach ($data['perijinan_sections'] as &$section) {
+                if (isset($section['jumlah_biaya'])) $section['jumlah_biaya'] = str_replace(',', '.', str_replace('.', '', $section['jumlah_biaya']));
             }
             unset($section);
         }
@@ -2800,6 +2857,32 @@ class BiayaKapalController extends Controller
                 $totalLabuh = BiayaKapalLabuhTambat::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
                 if ($totalLabuh > 0) {
                     $biayaKapal->update(['nominal' => $totalLabuh]);
+                }
+            }
+
+            // PERIJINAN UPDATE
+            if ($request->has('perijinan_sections')) {
+                BiayaKapalPerijinan::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                $totalPerijinan = 0;
+                if (!empty($request->perijinan_sections)) {
+                    foreach ($request->perijinan_sections as $section) {
+                        if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) continue;
+
+                        $jumlah = floatval($section['jumlah_biaya'] ?? 0);
+
+                        BiayaKapalPerijinan::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'nama_kapal'     => $section['nama_kapal']     ?? null,
+                            'no_voyage'      => $section['no_voyage']      ?? null,
+                            'nama_perijinan' => $section['nama_perijinan'] ?? null,
+                            'keterangan'     => $section['keterangan']     ?? null,
+                            'jumlah_biaya'   => $jumlah,
+                        ]);
+                        $totalPerijinan += $jumlah;
+                    }
+                }
+                if ($totalPerijinan > 0) {
+                    $biayaKapal->update(['nominal' => $totalPerijinan]);
                 }
             }
 
