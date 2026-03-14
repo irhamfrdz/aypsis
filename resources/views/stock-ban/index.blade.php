@@ -1040,7 +1040,7 @@
                                     {{ $item->jenis }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900 max-w-xs break-words">
                                 {{ $item->nama }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -1052,7 +1052,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-bold">
                                 {{ $item->qty }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td class="px-6 py-4 text-sm text-gray-500 max-w-[150px] break-words">
                                 {{ $item->lokasi }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

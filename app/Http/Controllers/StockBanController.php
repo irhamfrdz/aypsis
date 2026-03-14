@@ -105,35 +105,17 @@ class StockBanController extends Controller
 
             $type = $request->filled('type') ? $request->type : 'pcs';
 
-             // Check for existing record to increment
-            $existingStock = StockRingVelg::where('nama_stock_ban_id', $request->nama_stock_ban_id)
-                ->where('ukuran', $request->ukuran)
-                ->where('lokasi', $request->lokasi)
-                ->where('type', $type)
-                ->first();
-
-            if ($existingStock) {
-                // Increment qty
-                $existingStock->increment('qty', $request->qty);
-                $existingStock->update([
-                    'harga_beli' => $request->harga_beli,
-                    'tanggal_masuk' => $request->tanggal_masuk,
-                    'nomor_bukti' => $request->nomor_bukti ?? $existingStock->nomor_bukti,
-                    'keterangan' => $request->keterangan ?? $existingStock->keterangan,
-                ]);
-            } else {
-                StockRingVelg::create([
-                    'nama_stock_ban_id' => $request->nama_stock_ban_id,
-                    'nomor_bukti' => $request->nomor_bukti,
-                    'ukuran' => $request->ukuran,
-                    'type' => $type,
-                    'qty' => $request->qty,
-                    'harga_beli' => $request->harga_beli,
-                    'tanggal_masuk' => $request->tanggal_masuk,
-                    'lokasi' => $request->lokasi,
-                    'keterangan' => $request->keterangan,
-                ]);
-            }
+            StockRingVelg::create([
+                'nama_stock_ban_id' => $request->nama_stock_ban_id,
+                'nomor_bukti' => $request->nomor_bukti,
+                'ukuran' => $request->ukuran,
+                'type' => $type,
+                'qty' => $request->qty,
+                'harga_beli' => $request->harga_beli,
+                'tanggal_masuk' => $request->tanggal_masuk,
+                'lokasi' => $request->lokasi,
+                'keterangan' => $request->keterangan,
+            ]);
 
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ring Velg berhasil ditambahkan');
         }
@@ -156,33 +138,17 @@ class StockBanController extends Controller
 
             $type = $request->filled('type') ? $request->type : 'pcs';
 
-            $existingStock = StockVelg::where('nama_stock_ban_id', $request->nama_stock_ban_id)
-                ->where('ukuran', $request->ukuran)
-                ->where('lokasi', $request->lokasi)
-                ->where('type', $type)
-                ->first();
-
-            if ($existingStock) {
-                $existingStock->increment('qty', $request->qty);
-                $existingStock->update([
-                    'harga_beli' => $request->harga_beli,
-                    'tanggal_masuk' => $request->tanggal_masuk,
-                    'nomor_bukti' => $request->nomor_bukti ?? $existingStock->nomor_bukti,
-                    'keterangan' => $request->keterangan ?? $existingStock->keterangan,
-                ]);
-            } else {
-                StockVelg::create([
-                    'nama_stock_ban_id' => $request->nama_stock_ban_id,
-                    'nomor_bukti' => $request->nomor_bukti,
-                    'ukuran' => $request->ukuran,
-                    'type' => $type,
-                    'qty' => $request->qty,
-                    'harga_beli' => $request->harga_beli,
-                    'tanggal_masuk' => $request->tanggal_masuk,
-                    'lokasi' => $request->lokasi,
-                    'keterangan' => $request->keterangan,
-                ]);
-            }
+            StockVelg::create([
+                'nama_stock_ban_id' => $request->nama_stock_ban_id,
+                'nomor_bukti' => $request->nomor_bukti,
+                'ukuran' => $request->ukuran,
+                'type' => $type,
+                'qty' => $request->qty,
+                'harga_beli' => $request->harga_beli,
+                'tanggal_masuk' => $request->tanggal_masuk,
+                'lokasi' => $request->lokasi,
+                'keterangan' => $request->keterangan,
+            ]);
 
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock Velg berhasil ditambahkan');
         }
@@ -209,36 +175,17 @@ class StockBanController extends Controller
             // User requested "input type" for Ban Perut.
             $type = $request->filled('type') ? $request->type : 'pcs';
 
-            // Check for existing record to increment
-            $existingStock = \App\Models\StockBanDalam::where('nama_stock_ban_id', $request->nama_stock_ban_id)
-                ->where('ukuran', $request->ukuran)
-                ->where('lokasi', $request->lokasi)
-                ->where('type', $type)
-                ->first();
-
-            if ($existingStock) {
-                // Increment qty
-                $existingStock->increment('qty', $request->qty);
-                // Optionally update last price or average it. Here we update to latest price/date
-                $existingStock->update([
-                    'harga_beli' => $request->harga_beli,
-                    'tanggal_masuk' => $request->tanggal_masuk,
-                    'nomor_bukti' => $request->nomor_bukti ?? $existingStock->nomor_bukti,
-                    'keterangan' => $request->keterangan ?? $existingStock->keterangan,
-                ]);
-            } else {
-                \App\Models\StockBanDalam::create([
-                    'nama_stock_ban_id' => $request->nama_stock_ban_id,
-                    'nomor_bukti' => $request->nomor_bukti,
-                    'ukuran' => $request->ukuran,
-                    'type' => $type,
-                    'qty' => $request->qty,
-                    'harga_beli' => $request->harga_beli,
-                    'tanggal_masuk' => $request->tanggal_masuk,
-                    'lokasi' => $request->lokasi,
-                    'keterangan' => $request->keterangan,
-                ]);
-            }
+            \App\Models\StockBanDalam::create([
+                'nama_stock_ban_id' => $request->nama_stock_ban_id,
+                'nomor_bukti' => $request->nomor_bukti,
+                'ukuran' => $request->ukuran,
+                'type' => $type,
+                'qty' => $request->qty,
+                'harga_beli' => $request->harga_beli,
+                'tanggal_masuk' => $request->tanggal_masuk,
+                'lokasi' => $request->lokasi,
+                'keterangan' => $request->keterangan,
+            ]);
 
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock berhasil ditambahkan')->with('active_tab', 'tab-barang-lainnya');
         }
