@@ -254,7 +254,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
                     <input type="date" name="dari_tanggal" value="{{ request('dari_tanggal') }}" class="border border-gray-300 rounded-md text-sm px-3 py-2">
-                </div>
+            </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Sampai Tanggal</label>
                     <input type="date" name="sampai_tanggal" value="{{ request('sampai_tanggal') }}" class="border border-gray-300 rounded-md text-sm px-3 py-2">

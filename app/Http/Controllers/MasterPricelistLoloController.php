@@ -24,6 +24,10 @@ class MasterPricelistLoloController extends Controller
             $query->where('vendor', 'like', '%' . $request->vendor . '%');
         }
 
+        if ($request->filled('nama_biaya')) {
+            $query->where('nama_biaya', 'like', '%' . $request->nama_biaya . '%');
+        }
+
         if ($request->filled('lokasi')) {
             $query->where('lokasi', 'like', '%' . $request->lokasi . '%');
         }
@@ -52,6 +56,7 @@ class MasterPricelistLoloController extends Controller
     {
         $validated = $request->validate([
             'vendor' => 'nullable|string|max:255',
+            'nama_biaya' => 'nullable|string|max:255',
             'lokasi' => 'required|in:Jakarta,Batam,Pinang',
             'size' => 'required|string|max:50',
             'tarif' => 'required|numeric|min:0',
@@ -79,6 +84,7 @@ class MasterPricelistLoloController extends Controller
     {
         $validated = $request->validate([
             'vendor' => 'nullable|string|max:255',
+            'nama_biaya' => 'nullable|string|max:255',
             'lokasi' => 'required|in:Jakarta,Batam,Pinang',
             'size' => 'required|string|max:50',
             'tarif' => 'required|numeric|min:0',

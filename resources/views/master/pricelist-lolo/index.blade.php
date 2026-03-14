@@ -23,6 +23,13 @@
                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
             </div>
 
+            {{-- Nama Biaya Filter --}}
+            <div class="flex-1 min-w-48">
+                <label for="nama_biaya" class="block text-sm font-medium text-gray-700 mb-1">Nama Biaya</label>
+                <input type="text" id="nama_biaya" name="nama_biaya" value="{{ request('nama_biaya') }}" placeholder="Cari nama biaya..." 
+                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+            </div>
+
             {{-- Lokasi Filter --}}
             <div class="flex-1 min-w-48">
                 <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
@@ -72,6 +79,7 @@
             <tr>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Vendor</th>
+                <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Biaya</th>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
                 <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Ukuran</th>
 
@@ -87,6 +95,7 @@
                     {{ ($pricelists->currentPage() - 1) * $pricelists->perPage() + $loop->iteration }}
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->vendor ?? '-' }}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->nama_biaya ?? '-' }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->lokasi ?? '-' }}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">{{ $pricelist->size }}'</td>
 

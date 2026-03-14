@@ -431,7 +431,7 @@
             setTimeout(function() {
                 // Try to override browser print settings
                 try {
-                    var printSettings = {
+                    var printSettings = {                                                                                                                                           
                         silent: true,
                         printBackground: false,
                         deviceName: ''

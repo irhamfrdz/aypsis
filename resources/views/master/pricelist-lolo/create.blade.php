@@ -52,6 +52,11 @@
                 </div>
 
                 <div>
+                    <label for="nama_biaya" class="block text-sm font-medium text-gray-700">Nama Biaya</label>
+                    <input type="text" name="nama_biaya" id="nama_biaya" value="{{ old('nama_biaya') }}" class="{{ $inputClasses }}" placeholder="Contoh: Biaya LOLO 20 Feet">
+                </div>
+
+                <div>
                     <label for="size" class="block text-sm font-medium text-gray-700">Ukuran Kontainer</label>
                     <select name="size" id="size" class="{{ $inputClasses }}" required>
                         <option value="" disabled selected>-- Pilih Ukuran --</option>

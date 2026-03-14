@@ -191,7 +191,7 @@
             </div>
         @endif
     </form>
-</div>
+</div>  
 
 <div class="mb-4 flex justify-between items-center">
     <div class="flex space-x-3">

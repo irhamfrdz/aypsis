@@ -15,6 +15,7 @@ class MasterPricelistLolo extends Model
 
     protected $fillable = [
         'vendor',
+        'nama_biaya',
         'lokasi',
         'size',
         'tarif',
