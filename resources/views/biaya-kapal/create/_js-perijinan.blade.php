@@ -460,12 +460,12 @@
                        placeholder="Nama Manual..."
                        value="${initialItem ? (initialItem.nama_perijinan || '') : ''}">
             </div>
-            <div class="w-32 relative">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+            <div class="w-40 relative">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <span class="text-blue-400 font-bold text-[10px]">Rp</span>
                 </div>
                 <input type="text" name="perijinan_sections[${sectionIndex}][items][${itemIdx}][tarif]" 
-                       class="perijinan-item-tarif w-full pl-7 pr-2 py-1.5 border border-blue-200 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-white font-medium"
+                       class="perijinan-item-tarif w-full pl-10 pr-2 py-1.5 border border-blue-200 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-white font-medium"
                        placeholder="0"
                        value="${tarifVal}"
                        ${(!isManual && initialItem) ? 'readonly' : ''}
