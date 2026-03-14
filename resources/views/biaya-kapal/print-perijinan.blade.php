@@ -241,7 +241,7 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 50%;">Referensi / Keterangan</th>
+                    <th style="width: 50%;">Nomor Referensi</th>
                     <th style="width: 25%;">Nomor Voyage</th>
                     <th style="width: 20%;">Total</th>
                 </tr>
@@ -251,16 +251,8 @@
                 @foreach($biayaKapal->perijinanDetails as $detail)
                     <tr>
                         <td class="text-center">{{ $no++ }}</td>
-                        <td>
-                            <div class="font-bold">{{ $detail->nama_kapal }}</div>
-                            @if($detail->nomor_referensi)
-                                <div style="font-size: 0.9em; color: #333;">Ref: {{ $detail->nomor_referensi }}</div>
-                            @endif
-                            @if($detail->details->count() > 0)
-                                <div style="font-size: 0.85em; color: #555; margin-top: 2px;">
-                                    Items: {{ $detail->details->map(fn($item) => ($item->pricelist->nama ?? $item->nama_perijinan))->join(', ') }}
-                                </div>
-                            @endif
+                        <td class="text-center">
+                            {{ $detail->nomor_referensi ?: '-' }}
                         </td>
                         <td class="text-center">{{ $detail->no_voyage }}</td>
                         <td class="text-right font-bold">
