@@ -18,10 +18,7 @@ class BiayaKapalPerijinan extends Model
         'nomor_referensi',
         'vendor',
         'lokasi',
-        'biaya_insa',
-        'biaya_pbni',
         'sub_total',
-        'pph',
         'grand_total',
         'penerima',
         'nomor_rekening',
@@ -31,10 +28,7 @@ class BiayaKapalPerijinan extends Model
     ];
 
     protected $casts = [
-        'biaya_insa' => 'decimal:2',
-        'biaya_pbni' => 'decimal:2',
         'sub_total' => 'decimal:2',
-        'pph' => 'decimal:2',
         'grand_total' => 'decimal:2',
         'jumlah_biaya' => 'decimal:2',
         'tanggal_invoice_vendor' => 'date',

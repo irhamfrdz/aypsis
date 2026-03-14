@@ -879,26 +879,16 @@
                             <td class="px-6 py-4">
                                 <div class="space-y-1">
                                     <div class="flex justify-between text-xs">
-                                        <span class="text-gray-500 uppercase tracking-tighter">INSA:</span>
-                                        <span class="font-bold text-indigo-600">Rp {{ number_format($detail->biaya_insa, 0, ',', '.') }}</span>
-                                    </div>
-                                    <div class="flex justify-between text-xs">
-                                        <span class="text-gray-500 uppercase tracking-tighter">PBNI:</span>
-                                        <span class="font-bold text-indigo-600">Rp {{ number_format($detail->biaya_pbni, 0, ',', '.') }}</span>
-                                    </div>
-                                    @if($detail->jumlah_biaya > 0)
-                                    <div class="flex justify-between text-xs">
-                                        <span class="text-gray-500 uppercase tracking-tighter">LAINNYA:</span>
+                                        <span class="text-gray-500 uppercase tracking-tighter">BIAYA:</span>
                                         <span class="font-bold text-indigo-600">Rp {{ number_format($detail->jumlah_biaya, 0, ',', '.') }}</span>
                                     </div>
-                                    @endif
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm text-gray-600">{{ $detail->keterangan ?: '-' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="text-sm font-black text-indigo-700">Rp {{ number_format(($detail->biaya_insa + $detail->biaya_pbni + $detail->jumlah_biaya), 0, ',', '.') }}</div>
+                                <div class="text-sm font-black text-indigo-700">Rp {{ number_format($detail->jumlah_biaya, 0, ',', '.') }}</div>
                             </td>
                         </tr>
                         @endforeach
@@ -907,7 +897,7 @@
                         <tr>
                             <td colspan="4" class="px-6 py-4 text-right text-sm font-bold text-indigo-100 uppercase">Grand Total Perijinan</td>
                             <td class="px-6 py-4 text-right text-base font-black text-white whitespace-nowrap">
-                                Rp {{ number_format($biayaKapal->perijinanDetails->sum(function($d) { return $d->biaya_insa + $d->biaya_pbni + $d->jumlah_biaya; }), 0, ',', '.') }}
+                                Rp {{ number_format($biayaKapal->perijinanDetails->sum('jumlah_biaya'), 0, ',', '.') }}
                             </td>
                         </tr>
                     </tfoot>

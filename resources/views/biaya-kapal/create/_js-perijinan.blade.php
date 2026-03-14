@@ -97,38 +97,9 @@
                            placeholder="Lokasi Perijinan...">
                 </div>
 
-                <!-- Row 3: Biaya INSA & PBNI -->
-                <div class="space-y-1.5">
-                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Biaya INSA</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                            <span class="text-indigo-400 font-bold text-xs">Rp</span>
-                        </div>
-                        <input type="text" 
-                               name="perijinan_sections[${idx}][biaya_insa]" 
-                               class="w-full pl-12 pr-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm perijinan-insa-input" 
-                               placeholder="0"
-                               oninput="formatPerijinanBiaya(this)">
-                    </div>
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Biaya PBNI</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                            <span class="text-indigo-400 font-bold text-xs">Rp</span>
-                        </div>
-                        <input type="text" 
-                               name="perijinan_sections[${idx}][biaya_pbni]" 
-                               class="w-full pl-12 pr-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm perijinan-pbni-input" 
-                               placeholder="0"
-                               oninput="formatPerijinanBiaya(this)">
-                    </div>
-                </div>
-
-                <!-- Row 4: Biaya Lainnya & Subtotal -->
-                <div class="space-y-1.5">
-                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Jumlah Biaya Lainnya</label>
+                <!-- Row 3: Jumlah Biaya -->
+                <div class="md:col-span-2 space-y-1.5">
+                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest">Jumlah Biaya</label>
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
                             <span class="text-indigo-400 font-bold text-xs">Rp</span>
@@ -139,37 +110,8 @@
                                class="w-full pl-12 pr-4 py-2.5 border border-indigo-100 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm perijinan-base-input" 
                                placeholder="0"
                                oninput="formatPerijinanBiaya(this)">
-                    </div>
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest italic">Sub Total (Beban)</label>
-                    <div class="relative mt-1">
-                        <input type="text" 
-                               class="perijinan-subtotal-display w-full px-4 py-2.5 border border-indigo-100 rounded-lg bg-indigo-50/50 text-indigo-900 font-bold cursor-not-allowed" 
-                               value="Rp 0" readonly>
-                        <input type="hidden" name="perijinan_sections[${idx}][sub_total]" class="perijinan-subtotal-value" value="0">
-                    </div>
-                </div>
-
-                <!-- Row 5: PPH & Grand Total Section -->
-                <div class="space-y-1.5">
-                    <label class="block text-[10px] font-black text-indigo-900 uppercase tracking-widest italic">PPH (2%)</label>
-                    <div class="relative mt-1">
-                        <input type="text" 
-                               class="perijinan-pph-display w-full px-4 py-2.5 border border-indigo-100 rounded-lg bg-indigo-50/50 text-red-600 font-bold cursor-not-allowed" 
-                               value="Rp 0" readonly>
-                        <input type="hidden" name="perijinan_sections[${idx}][pph]" class="perijinan-pph-value" value="0">
-                    </div>
-                </div>
-
-                <div class="space-y-1.5">
-                    <label class="block text-[10px] font-black text-emerald-900 uppercase tracking-widest italic">Grand Total</label>
-                    <div class="relative mt-1">
-                        <input type="text" 
-                               class="perijinan-grandtotal-display w-full px-4 py-2.5 border border-emerald-100 rounded-lg bg-emerald-50 text-emerald-700 font-black cursor-not-allowed" 
-                               value="Rp 0" readonly>
-                        <input type="hidden" name="perijinan_sections[${idx}][grand_total]" class="perijinan-grandtotal-value" value="0">
+                        <input type="hidden" name="perijinan_sections[${idx}][sub_total]" class="perijinan-subtotal-value sub-total-value" value="0">
+                        <input type="hidden" name="perijinan_sections[${idx}][grand_total]" class="perijinan-grandtotal-value grand-total-value" value="0">
                     </div>
                 </div>
 
@@ -285,23 +227,12 @@
         if (section) {
             const idx = section.getAttribute('data-section-index');
             
-            // Get all cost values in this section
-            const insaVal = parseInt(section.querySelector('.perijinan-insa-input').value.replace(/\./g, '') || 0);
-            const pbniVal = parseInt(section.querySelector('.perijinan-pbni-input').value.replace(/\./g, '') || 0);
+            // Get base cost value in this section
             const baseVal = parseInt(section.querySelector('.perijinan-base-input').value.replace(/\./g, '') || 0);
             
-            const subtotal = insaVal + pbniVal + baseVal;
-            const pph = Math.round(subtotal * 0.02);
-            const grandTotal = subtotal - pph;
-
-            // Update displays
-            const subtotalDisplay = section.querySelector('.perijinan-subtotal-display');
-            const pphDisplay = section.querySelector('.perijinan-pph-display');
-            const grandTotalDisplay = section.querySelector('.perijinan-grandtotal-display');
-
-            if (subtotalDisplay) subtotalDisplay.value = 'Rp ' + subtotal.toLocaleString('id-ID');
-            if (pphDisplay) pphDisplay.value = 'Rp ' + pph.toLocaleString('id-ID');
-            if (grandTotalDisplay) grandTotalDisplay.value = 'Rp ' + grandTotal.toLocaleString('id-ID');
+            const subtotal = baseVal;
+            const pph = 0;
+            const grandTotal = baseVal;
 
             // Update hidden inputs
             const subtotalValue = section.querySelector('.perijinan-subtotal-value');
