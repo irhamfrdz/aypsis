@@ -241,7 +241,8 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 50%;">Nomor Referensi</th>
+                    <th style="width: 15%;">Tanggal Ref.</th>
+                    <th style="width: 35%;">Nomor Referensi</th>
                     <th style="width: 25%;">Nomor Voyage</th>
                     <th style="width: 20%;">Total</th>
                 </tr>
@@ -251,6 +252,9 @@
                 @foreach($biayaKapal->perijinanDetails as $detail)
                     <tr>
                         <td class="text-center">{{ $no++ }}</td>
+                        <td class="text-center">
+                            {{ $detail->tanggal_invoice_vendor ? $detail->tanggal_invoice_vendor->format('d/m/Y') : '-' }}
+                        </td>
                         <td class="text-center">
                             {{ $detail->nomor_referensi ?: '-' }}
                         </td>
@@ -262,7 +266,7 @@
                 @endforeach
                 
                 <tr class="total-row">
-                    <td colspan="3" class="text-right">GRAND TOTAL</td>
+                    <td colspan="4" class="text-right">GRAND TOTAL</td>
                     <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
