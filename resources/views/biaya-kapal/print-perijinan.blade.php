@@ -241,51 +241,36 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 25%;">Kapal</th>
-                    <th style="width: 15%;">Voyage</th>
-                    <th style="width: 25%;">Item Perijinan</th>
-                    <th style="width: 15%;">Lokasi</th>
-                    <th style="width: 15%;">Total</th>
+                    <th style="width: 50%;">Referensi / Keterangan</th>
+                    <th style="width: 25%;">Nomor Voyage</th>
+                    <th style="width: 20%;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @php $no = 1; @endphp
                 @foreach($biayaKapal->perijinanDetails as $detail)
-                    @php 
-                        $itemCount = $detail->details->count();
-                        $firstItem = $detail->details->first();
-                    @endphp
                     <tr>
-                        <td class="text-center" rowspan="{{ max(1, $itemCount) }}">{{ $no++ }}</td>
-                        <td rowspan="{{ max(1, $itemCount) }}">
-                            {{ $detail->nama_kapal }}<br>
-                            <small style="color: #666;">Ref: {{ $detail->nomor_referensi ?: '-' }}</small>
+                        <td class="text-center">{{ $no++ }}</td>
+                        <td>
+                            <div class="font-bold">{{ $detail->nama_kapal }}</div>
+                            @if($detail->nomor_referensi)
+                                <div style="font-size: 0.9em; color: #333;">Ref: {{ $detail->nomor_referensi }}</div>
+                            @endif
+                            @if($detail->details->count() > 0)
+                                <div style="font-size: 0.85em; color: #555; margin-top: 2px;">
+                                    Items: {{ $detail->details->map(fn($item) => ($item->pricelist->nama ?? $item->nama_perijinan))->join(', ') }}
+                                </div>
+                            @endif
                         </td>
-                        <td class="text-center" rowspan="{{ max(1, $itemCount) }}">{{ $detail->no_voyage }}</td>
-                        
-                        @if($itemCount > 0)
-                            <td>{{ $firstItem->pricelist->nama ?? $firstItem->nama_perijinan }}</td>
-                        @else
-                            <td>-</td>
-                        @endif
-                        
-                        <td class="text-center" rowspan="{{ max(1, $itemCount) }}">{{ $detail->lokasi ?: '-' }}</td>
-                        <td class="text-right font-bold" rowspan="{{ max(1, $itemCount) }}">
+                        <td class="text-center">{{ $detail->no_voyage }}</td>
+                        <td class="text-right font-bold">
                             Rp {{ number_format($detail->grand_total, 0, ',', '.') }}
                         </td>
                     </tr>
-                    
-                    @if($itemCount > 1)
-                        @foreach($detail->details->skip(1) as $subItem)
-                        <tr>
-                            <td>{{ $subItem->pricelist->nama ?? $subItem->nama_perijinan }}</td>
-                        </tr>
-                        @endforeach
-                    @endif
                 @endforeach
                 
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">GRAND TOTAL</td>
+                    <td colspan="3" class="text-right">GRAND TOTAL</td>
                     <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
