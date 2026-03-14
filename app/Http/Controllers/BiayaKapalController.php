@@ -1698,7 +1698,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details']);
         
         // Check if it's Biaya Dokumen and use specific print template
         if ($biayaKapal->klasifikasiBiaya && 
@@ -1845,6 +1845,13 @@ class BiayaKapalController extends Controller
              $biayaKapal->jenis_biaya === 'KB044')) {
             $biayaKapal->load(['storageDetails']);
             return view('biaya-kapal.print-storage', compact('biayaKapal'));
+        }
+
+        // Check if it's Biaya Perijinan and use specific print template
+        if ($biayaKapal->klasifikasiBiaya && 
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'perijinan') !== false) {
+            $biayaKapal->load(['perijinanDetails.details']);
+            return view('biaya-kapal.print-perijinan', compact('biayaKapal'));
         }
         
         return view('biaya-kapal.print', compact('biayaKapal'));
@@ -2026,6 +2033,15 @@ class BiayaKapalController extends Controller
     {
         $biayaKapal->load(['klasifikasiBiaya', 'freightDetails']);
         return view('biaya-kapal.print-freight', compact('biayaKapal'));
+    }
+
+    /**
+     * Print biaya Perijinan specifically.
+     */
+    public function printPerijinan(BiayaKapal $biayaKapal)
+    {
+        $biayaKapal->load(['klasifikasiBiaya', 'perijinanDetails.details']);
+        return view('biaya-kapal.print-perijinan', compact('biayaKapal'));
     }
 
 
