@@ -203,7 +203,7 @@
 
     <div class="container">
         <div class="header">
-            <h1>PERMOHONAN TRANSFER (PERIJINAN)</h1>
+            <h1>PERMOHONAN TRANSFER</h1>
         </div>
         
         @php
@@ -291,9 +291,7 @@
             </tbody>
         </table>
 
-        <div class="font-bold" style="margin-top: 5px;">
-            Terbilang: <span style="font-style: italic; font-weight: normal;">{{ ucwords(\App\Helpers\Terbilang::make($totalGrandTotal)) }} Rupiah</span>
-        </div>
+
 
         @if($biayaKapal->keterangan)
         <div class="section-header">Keterangan:</div>
