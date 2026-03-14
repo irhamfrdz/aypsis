@@ -19,3 +19,6 @@
 
     // Global Kapals data used across many sections
     const allKapalsData = {!! json_encode($kapals) !!};
+
+    // Store pricelist perijinans data
+    const pricelistPerijinansData = {!! json_encode($pricelistPerijinans ?? []) !!};

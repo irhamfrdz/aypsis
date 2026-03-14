@@ -34,6 +34,11 @@ class BiayaKapalPerijinan extends Model
         'tanggal_invoice_vendor' => 'date',
     ];
 
+    public function details()
+    {
+        return $this->hasMany(BiayaKapalPerijinanDetail::class, 'biaya_kapal_perijinan_id');
+    }
+
     public function biayaKapal()
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');

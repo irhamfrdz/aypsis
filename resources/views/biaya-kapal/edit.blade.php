@@ -49,6 +49,7 @@
 
 {{-- Biaya Storage --}}
 @include('biaya-kapal.edit._section-storage')
+@include('biaya-kapal.edit._section-perijinan')
 
 {{-- ===== FORM FIELDS EXTRA ===== --}}
 @include('biaya-kapal.edit._form-fields-extra')
@@ -77,6 +78,7 @@
 @include('biaya-kapal.edit._js-thc-sections')
 @include('biaya-kapal.edit._js-lolo-sections')
 @include('biaya-kapal.edit._js-storage-sections')
+@include('biaya-kapal.create._js-perijinan')
 
 {{-- Init must be last after all functions are defined --}}
 @include('biaya-kapal.edit._js-edit-init')

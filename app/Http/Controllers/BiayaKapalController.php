@@ -200,6 +200,9 @@ class BiayaKapalController extends Controller
         // Get Dokumen Perijinan Kapal for master document names
         $dokumenPerijinans = \App\Models\DokumenPerijinanKapal::where('status_aktif', 1)->orderBy('nama_dokumen')->get();
 
+        // Get pricelist perijinans
+        $pricelistPerijinans = \App\Models\PricelistPerijinan::where('status', 'Aktif')->orderBy('lokasi')->get();
+
         return view('biaya-kapal.create', compact(
             'kapals', 
             'klasifikasiBiayas', 
@@ -218,7 +221,8 @@ class BiayaKapalController extends Controller
             'pricelistStoragesData',
             'pricelistFreights',
             'pricelistFreightVendors',
-            'dokumenPerijinans'
+            'dokumenPerijinans',
+            'pricelistPerijinans'
         ));
     }
 
@@ -377,6 +381,12 @@ class BiayaKapalController extends Controller
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                     }
+                }
+                if (isset($section['items']) && is_array($section['items'])) {
+                    foreach ($section['items'] as &$item) {
+                        if (isset($item['tarif'])) $item['tarif'] = str_replace(',', '.', str_replace('.', '', $item['tarif']));
+                    }
+                    unset($item);
                 }
             }
             unset($section);
@@ -586,6 +596,10 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.tanggal_invoice_vendor' => 'nullable|date',
             'perijinan_sections.*.keterangan'        => 'nullable|string',
             'perijinan_sections.*.jumlah_biaya'      => 'nullable|numeric|min:0',
+            'perijinan_sections.*.items'             => 'nullable|array',
+            'perijinan_sections.*.items.*.pricelist_perijinan_id' => 'nullable|string',
+            'perijinan_sections.*.items.*.nama_perijinan' => 'nullable|string',
+            'perijinan_sections.*.items.*.tarif' => 'nullable|numeric|min:0',
 
             // Biaya Labuh Tambat sections structure
             'labuh_tambat' => 'nullable|array',
@@ -1548,7 +1562,7 @@ class BiayaKapalController extends Controller
                         $grandTotal = $jumlah;
                     }
 
-                    BiayaKapalPerijinan::create([
+                    $perijinan = BiayaKapalPerijinan::create([
                         'biaya_kapal_id'  => $biayaKapal->id,
                         'nama_kapal'      => $section['nama_kapal']      ?? null,
                         'no_voyage'       => $section['no_voyage']       ?? null,
@@ -1562,8 +1576,20 @@ class BiayaKapalController extends Controller
                         'nomor_rekening'  => $section['nomor_rekening']  ?? null,
                         'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                         'keterangan'      => $section['keterangan']      ?? null,
-                        'jumlah_biaya'    => $jumlah,
                     ]);
+
+                    if (isset($section['items']) && is_array($section['items'])) {
+                        foreach ($section['items'] as $item) {
+                            if (empty($item['pricelist_perijinan_id']) && empty($item['nama_perijinan'])) continue;
+                            
+                            \App\Models\BiayaKapalPerijinanDetail::create([
+                                'biaya_kapal_perijinan_id' => $perijinan->id,
+                                'pricelist_perijinan_id' => ($item['pricelist_perijinan_id'] && $item['pricelist_perijinan_id'] !== 'MANUAL') ? $item['pricelist_perijinan_id'] : null,
+                                'nama_perijinan' => $item['nama_perijinan'] ?? null,
+                                'tarif' => floatval($item['tarif'] ?? 0),
+                            ]);
+                        }
+                    }
 
                     $perijinanTotal += $grandTotal;
                 }
@@ -2021,7 +2047,8 @@ class BiayaKapalController extends Controller
             'oppOptDetails',
             'thcDetails',
             'loloDetails',
-            'storageDetails'
+            'storageDetails',
+            'perijinanDetails.details'
         ]);
 
         // Get list of ships for dropdown
@@ -2097,7 +2124,14 @@ class BiayaKapalController extends Controller
             ->select('vendor')
             ->distinct()
             ->orderBy('vendor')
+            ->orderBy('vendor')
             ->pluck('vendor');
+
+        // Get Dokumen Perijinan Kapal for master document names
+        $dokumenPerijinans = \App\Models\DokumenPerijinanKapal::where('status_aktif', 1)->orderBy('nama_dokumen')->get();
+
+        // Get pricelist perijinans
+        $pricelistPerijinans = \App\Models\PricelistPerijinan::where('status', 'Aktif')->orderBy('lokasi')->get();
 
         return view('biaya-kapal.edit', compact(
             'biayaKapal', 
@@ -2117,7 +2151,9 @@ class BiayaKapalController extends Controller
             'pricelistLoloVendors',
             'pricelistStoragesData',
             'pricelistFreights',
-            'pricelistFreightVendors'
+            'pricelistFreightVendors',
+            'dokumenPerijinans',
+            'pricelistPerijinans'
         ));
     }
 
@@ -2223,6 +2259,12 @@ class BiayaKapalController extends Controller
         if (isset($data['perijinan_sections']) && is_array($data['perijinan_sections'])) {
             foreach ($data['perijinan_sections'] as &$section) {
                 if (isset($section['jumlah_biaya'])) $section['jumlah_biaya'] = str_replace(',', '.', str_replace('.', '', $section['jumlah_biaya']));
+                if (isset($section['items']) && is_array($section['items'])) {
+                    foreach ($section['items'] as &$item) {
+                        if (isset($item['tarif'])) $item['tarif'] = str_replace(',', '.', str_replace('.', '', $item['tarif']));
+                    }
+                    unset($item);
+                }
             }
             unset($section);
         }
@@ -2905,7 +2947,7 @@ class BiayaKapalController extends Controller
                         $subTotal = floatval($section['sub_total'] ?? $jumlah);
                         $grandTotal = floatval($section['grand_total'] ?? $subTotal);
 
-                        BiayaKapalPerijinan::create([
+                        $perijinan = BiayaKapalPerijinan::create([
                             'biaya_kapal_id'  => $biayaKapal->id,
                             'nama_kapal'      => $section['nama_kapal']      ?? null,
                             'no_voyage'       => $section['no_voyage']       ?? null,
@@ -2919,9 +2961,21 @@ class BiayaKapalController extends Controller
                             'nomor_rekening'  => $section['nomor_rekening']  ?? null,
                             'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                             'keterangan'      => $section['keterangan']      ?? null,
-                            'jumlah_biaya'    => $jumlah,
                         ]);
-                        $totalPerijinan += $jumlah;
+
+                        if (isset($section['items']) && is_array($section['items'])) {
+                            foreach ($section['items'] as $item) {
+                                if (empty($item['pricelist_perijinan_id']) && empty($item['nama_perijinan'])) continue;
+                                
+                                \App\Models\BiayaKapalPerijinanDetail::create([
+                                    'biaya_kapal_perijinan_id' => $perijinan->id,
+                                    'pricelist_perijinan_id' => ($item['pricelist_perijinan_id'] && $item['pricelist_perijinan_id'] !== 'MANUAL') ? $item['pricelist_perijinan_id'] : null,
+                                    'nama_perijinan' => $item['nama_perijinan'] ?? null,
+                                    'tarif' => floatval($item['tarif'] ?? 0),
+                                ]);
+                            }
+                        }
+                        $totalPerijinan += $grandTotal;
                     }
                 }
                 if ($totalPerijinan > 0) {

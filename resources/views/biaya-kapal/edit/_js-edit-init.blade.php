@@ -145,6 +145,33 @@
                 'tanggal_invoice_vendor' => $labuh->tanggal_invoice_vendor ? \Carbon\Carbon::parse($labuh->tanggal_invoice_vendor)->format('Y-m-d') : null,
             ];
         }
+        // Map Perijinan
+        $editPerijinanSections = [];
+        if($biayaKapal->perijinanDetails->count() > 0) {
+            foreach($biayaKapal->perijinanDetails as $p) {
+                $editPerijinanSections[] = [
+                    'nama_kapal' => $p->nama_kapal,
+                    'no_voyage' => $p->no_voyage,
+                    'nomor_referensi' => $p->nomor_referensi,
+                    'vendor' => $p->vendor,
+                    'lokasi' => $p->lokasi,
+                    'jumlah_biaya' => $p->jumlah_biaya,
+                    'sub_total' => $p->sub_total,
+                    'grand_total' => $p->grand_total,
+                    'penerima' => $p->penerima,
+                    'nomor_rekening' => $p->nomor_rekening,
+                    'tanggal_invoice_vendor' => $p->tanggal_invoice_vendor ? \Carbon\Carbon::parse($p->tanggal_invoice_vendor)->format('Y-m-d') : null,
+                    'keterangan' => $p->keterangan,
+                    'items' => $p->details->map(function($d) {
+                        return [
+                            'pricelist_perijinan_id' => $d->pricelist_perijinan_id,
+                            'nama_perijinan' => $d->nama_perijinan,
+                            'tarif' => $d->tarif
+                        ];
+                    })->toArray()
+                ];
+            }
+        }
     @endphp
 
     var existingKapalSections = @json($editKapalSections);
@@ -154,6 +181,7 @@
     var existingStuffingSections = @json($editStuffingSections);
     var existingTruckingSections = @json($editTruckingSections);
     var existingLabuhTambatSections = @json($editLabuhTambatSections);
+    var existingPerijinanSections = @json($editPerijinanSections);
 
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(initializeEditMode, 500);
@@ -414,6 +442,14 @@
                 }
             });
             calculateTotalFromAllLabuhTambatSections();
+        }
+
+        // 9. PERIJINAN SECTIONS
+        if (existingPerijinanSections.length > 0) {
+            clearAllPerijinanSections();
+            existingPerijinanSections.forEach(myData => {
+                addPerijinanSection(myData);
+            });
         }
     }
 
