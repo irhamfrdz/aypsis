@@ -10,30 +10,35 @@ echo "Memulai pembaruan nama supir...\n";
 
 $targetNames = ['nur cece', 'nur', 'cece', 'NUR', 'NUR  CECE'];
 $newName = 'NUR CECE';
+$tables = ['surat_jalans', 'surat_jalan_bongkarans'];
 
-$totalSupir = 0;
-$totalSupir2 = 0;
+foreach ($tables as $table) {
+    echo "\n[{$table}]\n";
+    $totalSupir = 0;
+    $totalSupir2 = 0;
 
-foreach ($targetNames as $name) {
-    $count1 = DB::table('surat_jalans')
-        ->whereRaw('LOWER(supir) = ?', [strtolower($name)])
-        ->whereRaw('BINARY supir != ?', [$newName])
-        ->update(['supir' => $newName]);
-    if ($count1 > 0) {
-        echo "supir '{$name}' -> '{$newName}': {$count1} baris diperbarui.\n";
-        $totalSupir += $count1;
+    foreach ($targetNames as $name) {
+        $count1 = DB::table($table)
+            ->whereRaw('LOWER(supir) = ?', [strtolower($name)])
+            ->whereRaw('BINARY supir != ?', [$newName])
+            ->update(['supir' => $newName]);
+        if ($count1 > 0) {
+            echo "  supir '{$name}' -> '{$newName}': {$count1} baris diperbarui.\n";
+            $totalSupir += $count1;
+        }
+
+        $count2 = DB::table($table)
+            ->whereRaw('LOWER(supir2) = ?', [strtolower($name)])
+            ->whereRaw('BINARY supir2 != ?', [$newName])
+            ->update(['supir2' => $newName]);
+        if ($count2 > 0) {
+            echo "  supir2 '{$name}' -> '{$newName}': {$count2} baris diperbarui.\n";
+            $totalSupir2 += $count2;
+        }
     }
 
-    $count2 = DB::table('surat_jalans')
-        ->whereRaw('LOWER(supir2) = ?', [strtolower($name)])
-        ->whereRaw('BINARY supir2 != ?', [$newName])
-        ->update(['supir2' => $newName]);
-    if ($count2 > 0) {
-        echo "supir2 '{$name}' -> '{$newName}': {$count2} baris diperbarui.\n";
-        $totalSupir2 += $count2;
-    }
+    echo "  Total supir diperbarui : {$totalSupir} baris.\n";
+    echo "  Total supir2 diperbarui: {$totalSupir2} baris.\n";
 }
 
-echo "\nTotal supir diperbarui : {$totalSupir} baris.\n";
-echo "Total supir2 diperbarui: {$totalSupir2} baris.\n";
-echo "Selesai.\n";
+echo "\nSelesai.\n";
