@@ -136,6 +136,7 @@ class AsuransiTandaTerimaController extends Controller
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
         $data['nilai_pertanggungan'] = $request->nilai_barang;
         $data['premi'] = $request->nilai_barang * (($vendor->tarif ?? 0) / 100);
+        $data['grand_total'] = $data['premi'];
 
         // Map receipt type to column
         if ($request->receipt_type == 'tt') {
@@ -188,6 +189,7 @@ class AsuransiTandaTerimaController extends Controller
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
         $data['nilai_pertanggungan'] = $request->nilai_barang;
         $data['premi'] = $request->nilai_barang * (($vendor->tarif ?? 0) / 100);
+        $data['grand_total'] = $data['premi'];
 
         if ($request->hasFile('asuransi_file')) {
             // Delete old file

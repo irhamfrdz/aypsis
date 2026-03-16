@@ -20,6 +20,7 @@ class AsuransiTandaTerima extends Model
         'tanggal_polis',
         'nilai_pertanggungan',
         'premi',
+        'grand_total',
         'asuransi_path',
         'keterangan',
         'status',
@@ -31,6 +32,7 @@ class AsuransiTandaTerima extends Model
         'tanggal_polis' => 'date',
         'nilai_pertanggungan' => 'decimal:2',
         'premi' => 'decimal:2',
+        'grand_total' => 'decimal:2',
     ];
 
     /**

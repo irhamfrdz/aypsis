@@ -26,8 +26,8 @@
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
                             <option value="">-- Pilih Vendor --</option>
                             @foreach($vendors as $vendor)
-                                <option value="{{ $vendor->id }}" {{ old('vendor_asuransi_id') == $vendor->id ? 'selected' : '' }}>
-                                    {{ $vendor->nama_asuransi }}
+                                <option value="{{ $vendor->id }}" data-tarif="{{ $vendor->tarif }}" {{ old('vendor_asuransi_id') == $vendor->id ? 'selected' : '' }}>
+                                    {{ $vendor->nama_asuransi }} (Tarif: {{ $vendor->tarif }}%)
                                 </option>
                             @endforeach
                         </select>
@@ -128,6 +128,17 @@
                         @error('nilai_barang') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
+                    <!-- Grand Total -->
+                    <div>
+                        <label for="grand_total" class="block text-sm font-medium text-gray-700 mb-2">Grand Total (Premi)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">Rp</span>
+                            <input type="text" id="grand_total" name="grand_total" value="0" readonly
+                                   class="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 bg-gray-50 focus:outline-none font-semibold text-gray-800">
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500" id="tarif_info_text">Tarif: 0%</p>
+                    </div>
+
                     <!-- File Upload -->
                     <div>
                         <label for="asuransi_file" class="block text-sm font-medium text-gray-700 mb-2">Unduh Dokumen Asuransi</label>
@@ -179,10 +190,55 @@
         }
     }
 
+    function calculateGrandTotal() {
+        const select = document.getElementById('vendor_asuransi_id');
+        const nilaiInput = document.getElementById('nilai_barang');
+        const grandTotalInput = document.getElementById('grand_total');
+        const tarifInfo = document.getElementById('tarif_info_text');
+
+        if (!select || !nilaiInput || !grandTotalInput) return;
+
+        const selectedOption = select.options[select.selectedIndex];
+        const tarif = selectedOption ? parseFloat(selectedOption.getAttribute('data-tarif')) || 0 : 0;
+        const nilai = parseFloat(nilaiInput.value) || 0;
+
+        const total = nilai * (tarif / 100);
+        
+        // Format to IDR without fraction if integer, or with 2 decimals if float
+        const formatted = new Intl.NumberFormat('id-ID', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        }).format(total);
+        
+        grandTotalInput.value = formatted;
+        
+        if (tarifInfo) {
+            tarifInfo.textContent = 'Tarif: ' + tarif + '%';
+        }
+    }
+
     // Initialize list toggle
     document.addEventListener('DOMContentLoaded', function() {
         toggleReceiptList();
         syncReceiptId();
+        
+        // Add event listeners for grand total
+        const vendorSelect = document.getElementById('vendor_asuransi_id');
+        const nilaiInput = document.getElementById('nilai_barang');
+
+        if (vendorSelect) {
+            vendorSelect.addEventListener('change', calculateGrandTotal);
+            // Handle Select2 change event if jQuery is loaded
+            if (typeof $ !== 'undefined') {
+                $(vendorSelect).on('change', calculateGrandTotal);
+            }
+        }
+        if (nilaiInput) {
+            nilaiInput.addEventListener('input', calculateGrandTotal);
+        }
+
+        // Initial calculation
+        calculateGrandTotal();
     });
 </script>
 @endpush
