@@ -19,6 +19,11 @@
             <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Non-Aktif</option>
         </select>
 
+        <!-- Filter Tanpa Ukuran -->
+        <button id="no-size-filter" class="inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium shadow-sm {{ request('no_size') ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' }}">
+            Tanpa Ukuran
+        </button>
+
         <!-- Search -->
         <div class="relative">
             <input type="text" id="search-input" placeholder="Cari nomor kontainer..." value="{{ request('search') }}"
@@ -34,6 +39,15 @@
     <div class="flex space-x-2">
         <!-- Import/Export Section -->
         <div class="flex space-x-2">
+            <!-- Export Excel Button -->
+            <a href="{{ route('master.stock-kontainer.export', ['status' => request('status'), 'search' => request('search'), 'no_size' => request('no_size')]) }}"
+               class="inline-flex items-center px-3 py-2 border border-green-600 text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Export Excel
+            </a>
+
             <!-- Download Template Button -->
             <a href="{{ route('master.stock-kontainer.template') }}"
                class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -381,14 +395,27 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
     }
 
-    statusFilter.addEventListener('change', updateFilters);
+        statusFilter.addEventListener('change', updateFilters);
 
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            updateFilters();
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                updateFilters();
+            }
+        });
+
+        const noSizeFilter = document.getElementById('no-size-filter');
+        if (noSizeFilter) {
+            noSizeFilter.addEventListener('click', function() {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('no_size') === '1') {
+                    params.delete('no_size');
+                } else {
+                    params.set('no_size', '1');
+                }
+                window.location.href = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            });
         }
     });
-});
 </script>
 
 <!-- Include Audit Log Modal -->

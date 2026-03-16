@@ -19,7 +19,13 @@ class StockKontainerController extends Controller
             $query->where('status', $request->status);
         }
 
-
+        // Filter tanpa ukuran
+        if ($request->has('no_size') && $request->no_size == '1') {
+            $query->where(function($q) {
+                $q->whereNull('ukuran')
+                  ->orWhere('ukuran', '');
+            });
+        }
 
         // Search berdasarkan nomor kontainer
         if ($request->filled('search')) {
@@ -745,5 +751,76 @@ class StockKontainerController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Error membaca file Excel: ' . $e->getMessage() . '. Silakan gunakan format CSV.');
         }
+    }
+    /**
+     * Export stock kontainer to Excel
+     */
+    public function export(Request $request)
+    {
+        $query = StockKontainer::with('gudang');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('no_size') && $request->no_size == '1') {
+            $query->where(function($q) {
+                $q->whereNull('ukuran')
+                  ->orWhere('ukuran', '');
+            });
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_seri_gabungan', 'like', '%' . $search . '%');
+            });
+        }
+
+        $items = $query->latest()->get();
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        $sheet->setCellValue('A1', 'Nomor Kontainer');
+        $sheet->setCellValue('B1', 'Ukuran');
+        $sheet->setCellValue('C1', 'Tipe Kontainer');
+        $sheet->setCellValue('D1', 'Lokasi (Gudang)');
+        $sheet->setCellValue('E1', 'Status');
+        $sheet->setCellValue('F1', 'Tahun Pembuatan');
+        $sheet->setCellValue('G1', 'Keterangan');
+
+        // Style header
+        $sheet->getStyle('A1:G1')->getFont()->setBold(true);
+
+        $rowNumber = 2;
+        foreach ($items as $item) {
+            $sheet->setCellValue('A' . $rowNumber, $item->nomor_seri_gabungan);
+            $sheet->setCellValue('B' . $rowNumber, $item->ukuran ?? '-');
+            $sheet->setCellValue('C' . $rowNumber, $item->tipe_kontainer ?? '-');
+            $sheet->setCellValue('D' . $rowNumber, $item->gudang ? $item->gudang->nama_gudang : '-');
+            $sheet->setCellValue('E' . $rowNumber, $item->status);
+            $sheet->setCellValue('F' . $rowNumber, $item->tahun_pembuatan ?? '-');
+            $sheet->setCellValue('G' . $rowNumber, $item->keterangan ?? '-');
+            $rowNumber++;
+        }
+
+        $sheet->getColumnDimension('A')->setAutoSize(true);
+        $sheet->getColumnDimension('B')->setAutoSize(true);
+        $sheet->getColumnDimension('C')->setAutoSize(true);
+        $sheet->getColumnDimension('D')->setAutoSize(true);
+        $sheet->getColumnDimension('E')->setAutoSize(true);
+        $sheet->getColumnDimension('F')->setAutoSize(true);
+        $sheet->getColumnDimension('G')->setAutoSize(true);
+
+        $filename = 'export_stock_kontainer_' . date('Ymd_His') . '.xlsx';
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer->save('php://output');
+        exit;
     }
 }

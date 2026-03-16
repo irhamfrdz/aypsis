@@ -117,15 +117,15 @@
                         @error('tanggal_polis') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
-                    <!-- Premi -->
+                    <!-- Nilai Barang -->
                     <div>
-                        <label for="premi" class="block text-sm font-medium text-gray-700 mb-2">Premi <span class="text-red-500">*</span></label>
+                        <label for="nilai_barang" class="block text-sm font-medium text-gray-700 mb-2">Nilai Barang <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">Rp</span>
-                            <input type="number" id="premi" name="premi" value="{{ old('premi', 0) }}" required
+                            <input type="number" id="nilai_barang" name="nilai_barang" value="{{ old('nilai_barang', 0) }}" required
                                    class="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
-                        @error('premi') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        @error('nilai_barang') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <!-- File Upload -->

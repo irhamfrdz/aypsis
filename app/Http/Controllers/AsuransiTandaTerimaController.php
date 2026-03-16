@@ -125,14 +125,17 @@ class AsuransiTandaTerimaController extends Controller
             'receipt_id' => 'required',
             'nomor_polis' => 'required|string|max:255',
             'tanggal_polis' => 'required|date',
-            'premi' => 'required|numeric|min:0',
+            'nilai_barang' => 'required|numeric|min:0',
             'asuransi_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $data = $request->only([
-            'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 
-            'premi', 'keterangan'
+            'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 'keterangan'
         ]);
+        
+        $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
+        $data['nilai_pertanggungan'] = $request->nilai_barang;
+        $data['premi'] = $request->nilai_barang * (($vendor->tarif ?? 0) / 100);
 
         // Map receipt type to column
         if ($request->receipt_type == 'tt') {
@@ -174,14 +177,17 @@ class AsuransiTandaTerimaController extends Controller
             'vendor_asuransi_id' => 'required|exists:vendor_asuransi,id',
             'nomor_polis' => 'required|string|max:255',
             'tanggal_polis' => 'required|date',
-            'premi' => 'required|numeric|min:0',
+            'nilai_barang' => 'required|numeric|min:0',
             'asuransi_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $data = $request->only([
-            'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 
-            'premi', 'keterangan'
+            'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 'keterangan'
         ]);
+
+        $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
+        $data['nilai_pertanggungan'] = $request->nilai_barang;
+        $data['premi'] = $request->nilai_barang * (($vendor->tarif ?? 0) / 100);
 
         if ($request->hasFile('asuransi_file')) {
             // Delete old file

@@ -1454,6 +1454,10 @@ Route::middleware([
     Route::get('master/stock-kontainer/template', [App\Http\Controllers\StockKontainerImportController::class, 'downloadTemplate'])
          ->name('master.stock-kontainer.template');
 
+    Route::get('master/stock-kontainer/export', [\App\Http\Controllers\StockKontainerController::class, 'export'])
+         ->name('master.stock-kontainer.export')
+         ->middleware('can:master-stock-kontainer-view');
+
     Route::post('master/stock-kontainer/import', [App\Http\Controllers\StockKontainerImportController::class, 'import'])
          ->name('master.stock-kontainer.import')
          ->middleware('can:master-stock-kontainer-create');
