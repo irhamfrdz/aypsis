@@ -82,7 +82,7 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
                 $p->nomor_kontainer,
                 $p->no_seal,
                 $p->tujuan_pengiriman ?? '-',
-                $p->no_voyage ?? '-'
+                (in_array($p->status, ['aktif', '', null]) ? '-' : ($p->no_voyage ?? '-'))
             ];
         });
 
