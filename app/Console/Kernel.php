@@ -15,6 +15,7 @@ use App\Console\Commands\UpdateKontainerPeriods;
 use App\Console\Commands\CheckTagihanPermissions;
 use App\Console\Commands\CheckTagihanPerbaikanPermissions;
 use App\Console\Commands\ValidateDuplicateKontainers;
+use App\Console\Commands\DeleteManifestByVoyage;
 
 class Kernel extends ConsoleKernel
 {
@@ -39,6 +40,7 @@ class Kernel extends ConsoleKernel
     CheckTagihanPerbaikanPermissions::class,
     ValidateDuplicateKontainers::class,
     \App\Console\Commands\FixPenerimaTirtaInvestama::class,
+    DeleteManifestByVoyage::class,
     ];
 
     /**
