@@ -190,12 +190,23 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">Supir</label>
-                            <p class="text-sm text-gray-900">{{ $suratJalan->supir ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-900">
+                                {{ $suratJalan->supir ?? 'N/A' }}
+                                @if($suratJalan->supir_nik)
+                                    ({{ $suratJalan->supir_nik }})
+                                @endif
+                            </p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">Supir 2</label>
-                            <p class="text-sm text-gray-900">{{ $suratJalan->supir2 ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-900">
+                                {{ $suratJalan->supir2 ?? 'N/A' }}
+                                @if($suratJalan->supir2_nik)
+                                    ({{ $suratJalan->supir2_nik }})
+                                @endif
+                            </p>
                         </div>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-600">Kenek</label>
                             <p class="text-sm text-gray-900">{{ $suratJalan->kenek ?? 'N/A' }}</p>

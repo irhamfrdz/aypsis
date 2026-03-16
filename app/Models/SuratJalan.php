@@ -231,6 +231,19 @@ class SuratJalan extends Model
         }
         return $karyawan ? $karyawan->nik : null;
     }
+
+    // Alternative: Get supir2 NIK with fallback
+    public function getSupir2NikAttribute()
+    {
+        if (!$this->supir2) return null;
+        
+        $karyawan = Karyawan::where('nama_panggilan', $this->supir2)->first();
+        if (!$karyawan) {
+            $karyawan = Karyawan::where('nama_lengkap', $this->supir2)->first();
+        }
+        return $karyawan ? $karyawan->nik : null;
+    }
+
     
     // Alternative: Get kenek NIK with fallback
     public function getKenekNikAttribute()
