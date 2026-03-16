@@ -12,7 +12,19 @@ class HistoryKontainerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = HistoryKontainer::with(['gudang', 'creator'])->orderBy('created_at', 'desc');
+        $query = HistoryKontainer::select('history_kontainers.*')
+            ->selectSub(function($q) {
+                $q->select('gudangs.nama_gudang')
+                  ->from('history_kontainers as hk')
+                  ->join('gudangs', 'hk.gudang_id', '=', 'gudangs.id')
+                  ->whereColumn('hk.nomor_kontainer', 'history_kontainers.nomor_kontainer')
+                  ->whereColumn('hk.id', '<', 'history_kontainers.id')
+                  ->orderBy('hk.id', 'desc')
+                  ->limit(1);
+            }, 'asal_gudang_nama')
+            ->with(['gudang', 'creator'])
+            ->orderBy('created_at', 'desc');
+
 
         if ($request->filled('search')) {
             $query->where('nomor_kontainer', 'like', '%' . $request->search . '%');
