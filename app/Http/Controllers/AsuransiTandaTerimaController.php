@@ -125,7 +125,6 @@ class AsuransiTandaTerimaController extends Controller
             'receipt_id' => 'required',
             'nomor_polis' => 'required|string|max:255',
             'tanggal_polis' => 'required|date',
-            'nilai_pertanggungan' => 'required|numeric|min:0',
             'premi' => 'required|numeric|min:0',
             'asuransi_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'status' => 'required|in:Aktif,Selesai,Batal',
@@ -133,7 +132,7 @@ class AsuransiTandaTerimaController extends Controller
 
         $data = $request->only([
             'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 
-            'nilai_pertanggungan', 'premi', 'keterangan', 'status'
+            'premi', 'keterangan', 'status'
         ]);
 
         // Map receipt type to column
@@ -176,7 +175,6 @@ class AsuransiTandaTerimaController extends Controller
             'vendor_asuransi_id' => 'required|exists:vendor_asuransi,id',
             'nomor_polis' => 'required|string|max:255',
             'tanggal_polis' => 'required|date',
-            'nilai_pertanggungan' => 'required|numeric|min:0',
             'premi' => 'required|numeric|min:0',
             'asuransi_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'status' => 'required|in:Aktif,Selesai,Batal',
@@ -184,7 +182,7 @@ class AsuransiTandaTerimaController extends Controller
 
         $data = $request->only([
             'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 
-            'nilai_pertanggungan', 'premi', 'keterangan', 'status'
+            'premi', 'keterangan', 'status'
         ]);
 
         if ($request->hasFile('asuransi_file')) {

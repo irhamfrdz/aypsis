@@ -63,10 +63,6 @@
                 <div>
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Nilai & Biaya</h3>
                     <div class="space-y-4 font-mono text-gray-900">
-                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                            <span class="text-sm text-blue-700 font-sans font-medium">NILAI PERTANGGUNGAN</span>
-                            <span class="text-lg font-bold">Rp {{ number_format($asuransiTandaTerima->nilai_pertanggungan, 0, ',', '.') }}</span>
-                        </div>
                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                             <span class="text-sm text-gray-700 font-sans font-medium">PREMI</span>
                             <span class="text-lg font-bold">Rp {{ number_format($asuransiTandaTerima->premi, 0, ',', '.') }}</span>

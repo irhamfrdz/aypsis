@@ -56,17 +56,6 @@
                         @error('tanggal_polis') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
-                    <!-- Nilai Pertanggungan -->
-                    <div>
-                        <label for="nilai_pertanggungan" class="block text-sm font-medium text-gray-700 mb-2">Nilai Pertanggungan <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">Rp</span>
-                            <input type="number" id="nilai_pertanggungan" name="nilai_pertanggungan" value="{{ old('nilai_pertanggungan', $asuransiTandaTerima->nilai_pertanggungan) }}" required
-                                   class="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-                        @error('nilai_pertanggungan') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-
                     <!-- Premi -->
                     <div>
                         <label for="premi" class="block text-sm font-medium text-gray-700 mb-2">Premi <span class="text-red-500">*</span></label>
