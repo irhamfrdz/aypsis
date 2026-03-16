@@ -47,15 +47,6 @@
                             <span class="block text-sm text-gray-500 uppercase font-medium">Tanggal Polis</span>
                             <span class="text-gray-900 font-medium">{{ $asuransiTandaTerima->tanggal_polis ? $asuransiTandaTerima->tanggal_polis->format('d F Y') : '-' }}</span>
                         </div>
-                        <div>
-                            <span class="block text-sm text-gray-500 uppercase font-medium">Status</span>
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                @if($asuransiTandaTerima->status == 'Aktif') bg-green-100 text-green-800 
-                                @elseif($asuransiTandaTerima->status == 'Selesai') bg-gray-100 text-gray-800 
-                                @else bg-red-100 text-red-800 @endif">
-                                {{ $asuransiTandaTerima->status }}
-                            </span>
-                        </div>
                     </div>
                 </div>
 
