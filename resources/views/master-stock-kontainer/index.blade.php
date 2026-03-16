@@ -184,6 +184,10 @@
                 <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex items-center justify-end space-x-3 text-[10px]">
                         <a href="{{ route('master.stock-kontainer.show', $stockKontainer) }}" class="text-green-600 hover:text-green-800 hover:underline font-medium" title="Lihat Detail">Detail</a>
+                        @can('master-kontainer-view')
+                        <span class="text-gray-300">|</span>
+                        <a href="{{ route('history-kontainer.index', ['search' => $stockKontainer->nomor_kontainer]) }}" class="text-orange-600 hover:text-orange-800 hover:underline font-medium" title="Lihat Perpindahan Gudang">Perpindahan</a>
+                        @endcan
                         @can('master-stock-kontainer-update')
                         <span class="text-gray-300">|</span>
                         <a href="{{ route('master.stock-kontainer.edit', $stockKontainer) }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium" title="Edit Data">Edit</a>
