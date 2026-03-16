@@ -660,20 +660,17 @@
                                     @php
                                         // Determine the selected value:
                                         // 1. Use existing $bl->ke value if present
-                                        // 2. Fallback to $namaKapal if activity is 'muat' (similar to logic in original code, though context implies 'ke' might be destination)
-                                        //    Original logic: $bl->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '')
-                                        $selectedValue = $bl->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '');
+                                            // 2. Fallback to ON BOARD when activity is muat
+                                            $selectedValue = $bl->ke ?: (request('kegiatan') === 'muat' ? 'ON BOARD' : '');
+                                            $hasSelectedGudang = $gudangs->contains('nama_gudang', $selectedValue);
                                     @endphp
                                     @foreach($gudangs as $gudang)
                                         <option value="{{ $gudang->nama_gudang }}" {{ $selectedValue == $gudang->nama_gudang ? 'selected' : '' }}>
                                             {{ $gudang->nama_gudang }} - {{ $gudang->lokasi }}
                                         </option>
                                     @endforeach
-                                    <!-- Add option for Nama Kapal if it's the default but not in gudangs list, or generally available -->
-                                    @if($namaKapal && $selectedValue == $namaKapal)
-                                         <option value="{{ $namaKapal }}" selected>{{ $namaKapal }}</option>
-                                    @elseif($namaKapal)
-                                         <option value="{{ $namaKapal }}">{{ $namaKapal }}</option>
+                                        @if($selectedValue && !$hasSelectedGudang)
+                                             <option value="{{ $selectedValue }}" selected>{{ $selectedValue }}</option>
                                     @endif
                                 </select>
                                 <button onclick="saveAsalKe('bl', {{ $bl->id }}, this.closest('td'))" 
@@ -888,7 +885,7 @@
                                            class="editable-ke w-full px-1 py-0.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500" 
                                            data-id="{{ $naikKapal->id }}" 
                                            data-type="naik_kapal"
-                                           value="{{ $naikKapal->ke ?: (request('kegiatan') === 'muat' ? $namaKapal : '') }}"
+                                         value="{{ $naikKapal->ke ?: (request('kegiatan') === 'muat' ? 'ON BOARD' : '') }}"
                                            placeholder="Tujuan...">
                                     <button onclick="saveAsalKe('naik_kapal', {{ $naikKapal->id }}, this.closest('td'))" 
                                             class="text-green-600 hover:text-green-900 transition duration-150"
@@ -1114,7 +1111,9 @@
                             class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Pilih Lokasi Tujuan</option>
                         @foreach($gudangs as $gudang)
-                            <option value="{{ $gudang->id }}" {{ $gudang->nama_gudang == 'SS JKT' ? 'selected' : '' }}>
+                            <option value="{{ $gudang->id }}" {{ request('kegiatan') === 'muat'
+                                ? (strtoupper($gudang->nama_gudang) === 'ON BOARD' ? 'selected' : '')
+                                : ($gudang->nama_gudang == 'SS JKT' ? 'selected' : '') }}>
                                 {{ $gudang->nama_gudang }} {{ $gudang->lokasi ? '('.$gudang->lokasi.')' : '' }}
                             </option>
                         @endforeach
