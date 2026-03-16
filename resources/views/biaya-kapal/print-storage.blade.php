@@ -423,6 +423,14 @@
                         <td colspan="5" class="center">Tidak ada detail Storage.</td>
                     </tr>
                 @endif
+
+                <!-- Keterangan row inside table -->
+                <tr>
+                    <td colspan="5" style="border-top: 2px solid #333; text-align: left; padding: 10px; font-size: calc({{ $currentPaper['fontSize'] }} - 1px);">
+                        <strong>Keterangan:</strong><br>
+                        {!! $biayaKapal->keterangan ? nl2br(e($biayaKapal->keterangan)) : '-' !!}
+                    </td>
+                </tr>
             </tbody>
         </table>
 
@@ -456,12 +464,6 @@
                 </div>
             </div>
 
-            @if($biayaKapal->keterangan)
-            <div class="notes">
-                <strong>Catatan:</strong><br>
-                {!! nl2br(e($biayaKapal->keterangan)) !!}
-            </div>
-            @endif
         </div>
     </div>
 
