@@ -37,7 +37,11 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-500 mb-1">Nama Asuransi</p>
-                            <p class="font-bold text-lg text-gray-900">{{ $vendorAsuransi->nama_asuransi }}</p>
+                             <p class="font-bold text-lg text-gray-900">{{ $vendorAsuransi->nama_asuransi }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Tarif (%)</p>
+                            <p class="font-bold text-gray-900">{{ $vendorAsuransi->tarif ? $vendorAsuransi->tarif . '%' : '-' }}</p>
                         </div>
                     </div>
                 </div>

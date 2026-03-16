@@ -19,8 +19,13 @@ class VendorAsuransi extends Model
         'email',
         'keterangan',
         'catatan',
+        'tarif',
         'created_by',
         'updated_by'
+    ];
+
+    protected $casts = [
+        'tarif' => 'float'
     ];
 
     public function creator()

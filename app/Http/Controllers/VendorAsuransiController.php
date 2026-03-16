@@ -53,6 +53,7 @@ class VendorAsuransiController extends Controller
             'alamat' => 'nullable|string|max:1000',
             'telepon' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
+            'tarif' => 'nullable|numeric|min:0|max:100',
             'keterangan' => 'nullable|string|max:1000',
             'catatan' => 'nullable|string'
         ]);
@@ -93,6 +94,7 @@ class VendorAsuransiController extends Controller
             'alamat' => 'nullable|string|max:1000',
             'telepon' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
+            'tarif' => 'nullable|numeric|min:0|max:100',
             'keterangan' => 'nullable|string|max:1000',
             'catatan' => 'nullable|string'
         ]);
