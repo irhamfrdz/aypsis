@@ -300,10 +300,14 @@
                         $user->can('master-pajak-view') ||
                         $user->can('master-bank-view') ||
                         $user->can('master-vendor-bengkel.view') ||
+                        $user->can('master-vendor-asuransi-view') ||
+                        $user->can('master-vendor-supir-view') ||
                         $user->can('vendor-kontainer-sewa-view') ||
+
                         $user->can('master-pricelist-labuh-tambat-view') ||
                         $user->can('master-pricelist-freight-view')
                     );
+
 
                     // Show master section if user is admin OR has any master permissions
                     $showMasterSection = $isAdmin || $hasMasterPermissions;
