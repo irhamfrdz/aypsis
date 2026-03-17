@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>BTM SYSTEM - PRODUCTION FINAL V4</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; font-size: 11px; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 230px; background: #2c3e50; color: white; padding: 15px; display: flex; flex-direction: column; }
+        .main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-top: 4px solid #34495e; margin-bottom: 10px; }
+        .nav-btn { width: 100%; padding: 10px; border: none; background: none; color: #ecf0f1; text-align: left; cursor: pointer; font-weight: bold; border-bottom: 1px solid #34495e; }
+        .nav-btn.active { background: #34495e; color: #3498db; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #eee; padding: 6px; text-align: left; }
+        th { background: #f8f9fa; position: sticky; top: 0; z-index: 5; }
+        .btn { padding: 4px 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; }
+        .btn-blue { background: #2980b9; color: white; }
+        .btn-green { background: #27ae60; color: white; }
+        .btn-orange { background: #f39c12; color: white; }
+        .btn-red { background: #e74c3c; color: white; }
+        .scroll-box { min-height: 200px; border: 1px solid #ddd; border-radius: 4px; overflow: auto; }
+        input, select, textarea { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; }
+        .impor-area { display:none; margin: 10px 0; background: #fffbe6; padding: 10px; border: 1px dashed #faad14; }
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px; border: 1px solid #ddd; }
+        .summary-item { display: flex; flex-direction: column; }
+        .summary-item label { font-weight: bold; color: #7f8c8d; margin-bottom: 5px; }
+        .summary-item span, .summary-item input { font-size: 14px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h3 style="text-align:center; color:#3498db;">BTM SYSTEM</h3>
+    <button class="nav-btn" onclick="showTab(event, 'tab-vtz')">1. VENDOR / TIPE / SIZE</button>
+    <button class="nav-btn" onclick="showTab(event, 'tab-u')">2. MASTER UNIT</button>
+    <button class="nav-btn" onclick="showTab(event, 'tab-r')">3. MASTER TARIF</button>
+    <button class="nav-btn" onclick="showTab(event, 'tab-trans')">4. TRANSAKSI (IN/OUT)</button>
+    <button class="nav-btn active" onclick="showTab(event, 'tab-bill')">5. TAGIHAN (BILLING)</button>
+    <div style="margin-top:auto; padding:10px; background:#1a252f; border-radius:5px;">
+        <button class="btn btn-blue" style="width:100%; margin-bottom:5px;" onclick="document.getElementById('fIn').click()">📂 BUKA DB</button>
+        <button class="btn btn-green" style="width:100%;" onclick="simpanKeLokasi()">💾 SIMPAN DB</button>
+        <input type="file" id="fIn" style="display:none" onchange="loadFile(event)">
+    </div>
+</div>
+
+<div class="main">
+    <div id="tab-bill">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between;"><h4>🔍 FILTER TAGIHAN</h4><button class="btn btn-orange" onclick="refreshBill()">🔄 Reset</button></div>
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px; margin-top:10px;">
+                <select id="bill-v" onchange="renderBill()"><option value="">- PILIH VENDOR -</option></select>
+                <input id="bill-src" onkeyup="renderBill()" placeholder="Cari No Unit (bebas besar/kecil)">
+            </div>
+            <div class="scroll-box" style="margin-top:10px;"><table><thead><tr><th>Unit</th><th>Periode</th><th>Hari</th><th>Estimasi BTM</th><th>Aksi</th></tr></thead><tbody id="body-atas"></tbody></table></div>
+        </div>
+
+        <div class="card" style="border-top: 4px solid #27ae60;">
+            <h4>🛒 KERANJANG REVIEW</h4>
+            <div class="scroll-box"><table><thead><tr><th>Unit</th><th>Periode</th><th>Hari</th><th>BTM</th><th>Vendor</th><th>Selisih</th><th>Ket</th><th>Aksi</th></tr></thead><tbody id="body-bawah"></tbody></table></div>
+            <div class="summary-grid">
+                <div class="summary-item"><label>Total BTM</label><span id="sum-btm">0</span></div>
+                <div class="summary-item"><label>Total Vendor</label><span id="sum-ven">0</span></div>
+                <div class="summary-item"><label>Adj Global</label><input type="text" id="adj-global" value="0" onkeyup="calcFinal()"></div>
+                <div class="summary-item"><label>Selisih</label><span id="sum-selisih">0</span></div>
+                <div class="summary-item" style="grid-column: span 2; background:#2c3e50; color:white; padding:10px; border-radius:4px; text-align:right;">
+                    <label style="color:#bdc3c7">GRAND TOTAL</label><span id="grand-total" style="font-size:20px;">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-u" style="display:none">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between;"><h4>🚢 Master Unit</h4><button class="btn btn-orange" onclick="toggleDiv('imp-u')">Impor</button></div>
+            <div id="imp-u" class="impor-area"><textarea id="area-u" style="width:100%; height:60px;" placeholder="UNIT|VENDOR|TIPE|SIZE"></textarea><button class="btn btn-blue" onclick="prosesImporU()">Proses</button></div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:5px; margin-top:10px;">
+                <input id="u-no" placeholder="No. Unit">
+                <select id="u-v"></select><select id="u-t"></select><select id="u-z"></select>
+                <button class="btn btn-blue" onclick="addU()">SIMPAN</button>
+            </div>
+            <input id="u-src" onkeyup="renderU()" placeholder="Cari..." style="width:100%; margin:10px 0;">
+            <div class="scroll-box"><table><thead><tr><th>No. Unit</th><th>Vendor</th><th>Tipe/Size</th><th>Aksi</th></tr></thead><tbody id="body-u"></tbody></table></div>
+        </div>
+    </div>
+
+    <div id="tab-trans" style="display:none">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between;"><h4>📥 Transaksi IN/OUT</h4><button class="btn btn-orange" onclick="toggleDiv('imp-t')">Impor</button></div>
+            <div id="imp-t" class="impor-area"><textarea id="area-t" style="width:100%; height:60px;" placeholder="UNIT|IN|OUT|STAT(B/H)"></textarea><button class="btn btn-blue" onclick="prosesImporT()">Proses</button></div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:5px; margin-top:10px;">
+                <input id="t-no" placeholder="No. Unit">
+                <input id="t-in" placeholder="dd/mm/yyyy">
+                <input id="t-out" placeholder="dd/mm/yyyy">
+                <select id="t-st"><option value="B">Bulanan</option><option value="H">Harian</option></select>
+                <button class="btn btn-blue" onclick="addT()">SIMPAN</button>
+            </div>
+            <div class="scroll-box"><table><thead><tr><th>Unit</th><th>In</th><th>Out</th><th>Jenis</th><th>Aksi</th></tr></thead><tbody id="body-t"></tbody></table></div>
+        </div>
+    </div>
+
+    <div id="tab-vtz" style="display:none">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
+            <div class="card"><h4>🏢 Vendor</h4><div style="display:flex;gap:5px;"><input id="in-v" style="flex:1"><button class="btn btn-blue" onclick="addM('v','in-v')">Save</button></div><table id="tbl-v"><tbody></tbody></table></div>
+            <div class="card"><h4>📦 Tipe</h4><div style="display:flex;gap:5px;"><input id="in-t" style="flex:1"><button class="btn btn-blue" onclick="addM('t','in-t')">Save</button></div><table id="tbl-t"><tbody></tbody></table></div>
+            <div class="card"><h4>📏 Size</h4><div style="display:flex;gap:5px;"><input id="in-z" style="flex:1"><button class="btn btn-blue" onclick="addM('z','in-z')">Save</button></div><table id="tbl-z"><tbody></tbody></table></div>
+        </div>
+    </div>
+
+    <div id="tab-r" style="display:none">
+        <div class="card">
+            <h4>💰 Master Tarif</h4>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr) auto; gap:5px;">
+                <select id="rt-v"></select><select id="rt-t"></select><select id="rt-z"></select>
+                <input id="rt-bln" type="number" placeholder="Rp Bulan">
+                <input id="rt-hr" type="number" placeholder="Rp Hari">
+                <input id="rt-s" placeholder="dd/mm/yyyy">
+                <button class="btn btn-blue" onclick="addR()">SIMPAN</button>
+            </div>
+            <table id="tbl-rt"><thead><tr><th>Vendor</th><th>Tipe/Size</th><th>Rp Bulan</th><th>Rp Hari</th><th>Mulai</th><th>Aksi</th></tr></thead><tbody id="body-rt"></tbody></table>
+        </div>
+    </div>
+</div>
+
+<script>
+let db = { v:[], t:[], z:[], u:[], r:[], trans:[] };
+let keranjang = [];
+let eV=-1, eT=-1, eZ=-1, eU=-1, eR=-1, eTr=-1;
+
+// --- FORMATTING ---
+function toDb(s) { if(!s) return ""; let p = s.split('/'); if(p.length<3) return s; return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`; }
+function toDisplay(s) { if(!s) return "-"; let d = new Date(s); if(isNaN(d)) return s; const mN = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"]; return `${d.getDate().toString().padStart(2,'0')} ${mN[d.getMonth()]} ${d.getFullYear().toString().substring(2)}`; }
+function toInput(s) { if(!s) return ""; let p = s.split('-'); return `${parseInt(p[2])}/${parseInt(p[1])}/${p[0]}`; }
+function formatTitik(n) { return (n || 0).toLocaleString('id-ID'); }
+
+function showTab(e, id) { document.querySelectorAll('[id^="tab-"]').forEach(x => x.style.display='none'); document.getElementById(id).style.display='block'; document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active')); e.currentTarget.classList.add('active'); }
+function toggleDiv(id) { const el = document.getElementById(id); el.style.display = el.style.display==='none'?'block':'none'; }
+
+function updateDrp() {
+    const opt = (k) => db[k].map(x => `<option value="${x}">${x}</option>`).join('');
+    ['v','t','z'].forEach(k => {
+        if(document.getElementById('u-'+k)) document.getElementById('u-'+k).innerHTML = opt(k);
+        if(document.getElementById('rt-'+k)) document.getElementById('rt-'+k).innerHTML = opt(k);
+        if(k==='v') {
+            const curVal = document.getElementById('bill-v').value;
+            document.getElementById('bill-v').innerHTML = '<option value="">- PILIH VENDOR -</option>' + opt(k);
+            document.getElementById('bill-v').value = curVal;
+        }
+    });
+}
+
+// --- LOGIKA UTAMA BILLING (TIDAK PEDULI BESAR/KECIL) ---
+function renderBill() {
+    // Ambil input dan paksa ke huruf besar di memori saja
+    const ven = document.getElementById('bill-v').value.trim().toUpperCase(); 
+    const src = document.getElementById('bill-src').value.trim().toUpperCase();
+    
+    if(!ven) {
+        document.getElementById('body-atas').innerHTML = '<tr><td colspan="5" style="text-align:center; color:gray;">Pilih Vendor Terlebih Dahulu</td></tr>';
+        return;
+    }
+
+    let html = '';
+    db.trans.forEach(tr => {
+        // Cari unit (samakan ke huruf besar)
+        const u = db.u.find(unit => unit.no.toUpperCase() === tr.no.toUpperCase());
+        
+        // Aturan: Vendor harus cocok
+        if(u && u.v.toUpperCase() === ven) {
+            
+            // Search: Tidak peduli besar kecil
+            if(src === '' || tr.no.toUpperCase().includes(src)) {
+                
+                const r = db.r.find(rt => 
+                    rt.v.toUpperCase() === u.v.toUpperCase() && 
+                    rt.t.toUpperCase() === u.t.toUpperCase() && 
+                    rt.z.toUpperCase() === u.z.toUpperCase()
+                );
+                
+                let tIn = new Date(tr.tgl_in); 
+                let tOut = tr.tgl_out ? new Date(tr.tgl_out) : new Date();
+                let curS = new Date(tIn); let count = 1;
+                
+                while(curS <= tOut) {
+                    let curE = new Date(curS); curE.setMonth(curE.getMonth()+1); curE.setDate(curE.getDate()-1);
+                    let dispE = (curE >= tOut) ? new Date(tOut) : new Date(curE);
+                    let isF = curE < tOut; 
+                    let hAsli = Math.ceil((dispE - curS)/(1000*60*60*24))+1;
+                    let hTampil = (tr.stat==='B'&&isF)?30:hAsli;
+                    let lbl = `P${count}: ${toDisplay(curS)}-${toDisplay(dispE)}`;
+                    
+                    if(!keranjang.find(k => k.no.toUpperCase() === tr.no.toUpperCase() && k.lbl === lbl)) {
+                        let pmb = (curS.getMonth()===1)?new Date(curS.getFullYear(),2,0).getDate():30;
+                        let est = (tr.stat==='B') ? (isF ? (r?r.rb:0) : (r?Math.round((r.rb/pmb)*hAsli):0)) : (r?r.rh*hAsli:0);
+                        html += `<tr><td>${tr.no}</td><td>${lbl}</td><td>${hTampil}</td><td>${formatTitik(est)}</td><td><button class="btn btn-blue" onclick="keKeranjang('${tr.no}','${lbl}',${est},${hTampil})">In</button></td></tr>`;
+                    }
+                    if(!isF) break; curS = new Date(curE); curS.setDate(curS.getDate()+1); count++;
+                }
+            }
+        }
+    });
+    document.getElementById('body-atas').innerHTML = html || '<tr><td colspan="5" style="text-align:center; color:gray;">Unit tidak ditemukan</td></tr>';
+}
+
+// --- FUNGSI DATA LAINNYA ---
+function addM(k, id) {
+    const v = document.getElementById(id).value.toUpperCase().trim(); if(!v) return;
+    if(k==='v' && eV > -1) { db.v[eV] = v; eV = -1; } else if(k==='t' && eT > -1) { db.t[eT] = v; eT = -1; } else if(k==='z' && eZ > -1) { db.z[eZ] = v; eZ = -1; } else { if(!db[k].includes(v)) db[k].push(v); }
+    document.getElementById(id).value = ''; renderVTZ();
+}
+function renderVTZ() {
+    ['v','t','z'].forEach(k => { document.querySelector(`#tbl-${k} tbody`).innerHTML = db[k].map((x,i) => `<tr><td>${x}</td><td><button class="btn btn-blue" onclick="if('${k}'=='v'){eV=${i};document.getElementById('in-v').value='${x}'}else if('${k}'=='t'){eT=${i};document.getElementById('in-t').value='${x}'}else{eZ=${i};document.getElementById('in-z').value='${x}'}">Edit</button></td></tr>`).join(''); });
+    updateDrp();
+}
+function addU() {
+    const obj = { no: document.getElementById('u-no').value.trim(), v: document.getElementById('u-v').value, t: document.getElementById('u-t').value, z: document.getElementById('u-z').value };
+    if(!obj.no) return; if(eU > -1) { db.u[eU] = obj; eU = -1; } else { db.u.push(obj); }
+    document.getElementById('u-no').value = ''; renderU();
+}
+function renderU() {
+    const src = document.getElementById('u-src').value.toUpperCase();
+    document.getElementById('body-u').innerHTML = db.u.filter(x => x.no.toUpperCase().includes(src)).map((x,i) => `<tr><td>${x.no}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td><button class="btn btn-blue" onclick="eU=${i};document.getElementById('u-no').value='${x.no}';">Edit</button></td></tr>`).join('');
+}
+function prosesImporU() { document.getElementById('area-u').value.trim().split('\n').forEach(l => { if(!l)return; const p = l.split('|'); if(p[0]) db.u.push({no:p[0].trim(), v:p[1]?.trim(), t:p[2]?.trim(), z:p[3]?.trim()}); }); renderU(); toggleDiv('imp-u'); updateDrp(); }
+function addT() {
+    const obj = { no: document.getElementById('t-no').value.trim(), tgl_in: toDb(document.getElementById('t-in').value), tgl_out: toDb(document.getElementById('t-out').value), stat: document.getElementById('t-st').value };
+    if(!obj.no) return; if(eTr > -1) { db.trans[eTr] = obj; eTr = -1; } else { db.trans.unshift(obj); }
+    document.getElementById('t-no').value = ''; renderT();
+}
+function renderT() { document.getElementById('body-t').innerHTML = db.trans.map((x,i) => `<tr><td>${x.no}</td><td>${toDisplay(x.tgl_in)}</td><td>${toDisplay(x.tgl_out)}</td><td>${x.stat}</td><td><button class="btn btn-blue" onclick="eTr=${i};document.getElementById('t-no').value='${x.no}';">Edit</button></td></tr>`).join(''); }
+function prosesImporT() { document.getElementById('area-t').value.trim().split('\n').forEach(l => { if(!l)return; const p = l.split('|'); if(p[0]) db.trans.push({no:p[0].trim(), tgl_in:toDb(p[1]?.trim()), tgl_out:p[2]?toDb(p[2].trim()):'', stat:p[3]?p[3].trim().toUpperCase():'B'}); }); renderT(); toggleDiv('imp-t'); }
+function addR() {
+    const obj = { v: document.getElementById('rt-v').value, t: document.getElementById('rt-t').value, z: document.getElementById('rt-z').value, rb: parseInt(document.getElementById('rt-bln').value)||0, rh: parseInt(document.getElementById('rt-hr').value)||0, s: toDb(document.getElementById('rt-s').value) };
+    db.r.push(obj); renderR();
+}
+function renderR() { document.getElementById('body-rt').innerHTML = db.r.map((x,i) => `<tr><td>${x.v}</td><td>${x.t}/${x.z}</td><td>${formatTitik(x.rb)}</td><td>${formatTitik(x.rh)}</td><td>${toDisplay(x.s)}</td></tr>`).join(''); }
+function keKeranjang(no, lbl, est, h) { keranjang.push({ no, lbl, est, h, hrgV: est, ket: '' }); renderBill(); renderKeranjang(); }
+function renderKeranjang() {
+    document.getElementById('body-bawah').innerHTML = keranjang.map((x,i) => {
+        let sel = x.est - x.hrgV;
+        return `<tr><td>${x.no}</td><td>${x.lbl}</td><td>${x.h}</td><td>${formatTitik(x.est)}</td><td><input type="text" value="${formatTitik(x.hrgV)}" onblur="keranjang[${i}].hrgV=parseInt(this.value.replace(/\\./g,''))||0;renderKeranjang()" style="width:70px;"></td><td style="color:${sel<0?'red':'blue'}">${formatTitik(sel)}</td><td><input type="text" value="${x.ket}" onchange="keranjang[${i}].ket=this.value" style="width:80px"></td><td><button class="btn btn-red" onclick="keranjang.splice(${i},1);renderBill();renderKeranjang();">X</button></td></tr>`;
+    }).join('');
+    calcFinal();
+}
+function calcFinal() {
+    let tB = keranjang.reduce((s,x)=>s+x.est,0), tV = keranjang.reduce((s,x)=>s+x.hrgV,0), adj = parseInt(document.getElementById('adj-global').value.replace(/\./g,''))||0;
+    document.getElementById('sum-btm').innerText = formatTitik(tB); document.getElementById('sum-ven').innerText = formatTitik(tV);
+    document.getElementById('sum-selisih').innerText = formatTitik((tB-tV)+adj); document.getElementById('grand-total').innerText = formatTitik(tV+adj);
+}
+function refreshBill() { document.getElementById('bill-v').value=''; document.getElementById('bill-src').value=''; renderBill(); }
+function loadFile(e) { const fr = new FileReader(); fr.onload = (x) => { db = JSON.parse(x.target.result); renderVTZ(); renderU(); renderR(); renderT(); updateDrp(); }; fr.readAsText(e.target.files[0]); }
+async function simpanKeLokasi() { const h = await window.showSaveFilePicker(); const w = await h.createWritable(); await w.write(JSON.stringify(db)); await w.close(); alert("Database Tersimpan!"); }
+</script>
+</body>
+</html>

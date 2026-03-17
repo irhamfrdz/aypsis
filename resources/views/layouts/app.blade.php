@@ -1412,7 +1412,7 @@
 
         {{-- Aktivitas Kontainer Sub-Dropdown --}}
         @php
-            $isAktivitasKontainerRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*');
+            $isAktivitasKontainerRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('daftar-tagihan-kontainer-sewa-2.*') || Request::routeIs('kontainer-sewa-billing.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*');
             $hasAktivitasKontainerPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('pranota-kontainer-sewa-view') || $user->can('pranota.view') || $user->can('perbaikan-kontainer-view') || $user->can('pranota-perbaikan-kontainer-view') || $user->can('pembayaran-pranota-perbaikan-kontainer-view') || $user->can('tagihan-cat-view') || $user->can('pranota-cat-view') || $user->can('pembayaran-pranota-cat-view'));
         @endphp
 
@@ -1427,7 +1427,7 @@
             <div id="aktivitas-aktivitas-kontainer-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasKontainerRoute) style="display: block;" @endif>
                 {{-- Sewa Sub-Dropdown --}}
                 @php
-                    $isSewaRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota-kontainer-sewa.*');
+                    $isSewaRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('daftar-tagihan-kontainer-sewa-2.*') || Request::routeIs('kontainer-sewa-billing.*') || Request::routeIs('pranota-kontainer-sewa.*');
                     $hasSewaPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('pranota-kontainer-sewa-view'));
                 @endphp
 
@@ -1451,6 +1451,12 @@
                         @if($user && $user->can('tagihan-kontainer-sewa-index'))
                             <a href="{{ route('daftar-tagihan-kontainer-sewa-2.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('daftar-tagihan-kontainer-sewa-2.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Tagihan Kontainer Sewa 2</span>
+                            </a>
+                        @endif
+
+                        @if($user && $user->can('tagihan-kontainer-sewa-index'))
+                            <a href="{{ route('kontainer-sewa-billing.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('kontainer-sewa-billing.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Kontainer Sewa Billing (Baru)</span>
                             </a>
                         @endif
 

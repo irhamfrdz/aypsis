@@ -86,6 +86,7 @@ use App\Http\Controllers\MasterGudangAmprahanController;
 use App\Http\Controllers\MasterLwbpLamaController;
 use App\Http\Controllers\SertifikatKapalController;
 use App\Http\Controllers\MasterPricelistFreightController;
+use App\Http\Controllers\BtmKontainerSewaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -175,6 +176,37 @@ Route::middleware([
           Route::get('daftar-tagihan-kontainer-sewa-2/generate-invoice-number', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'generateInvoiceNumber'])->name('daftar-tagihan-kontainer-sewa-2.generate-invoice-number');
           
           Route::resource('daftar-tagihan-kontainer-sewa-2', \App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class);
+
+          Route::get('kontainer-sewa-billing', [BtmKontainerSewaController::class, 'index'])
+               ->name('kontainer-sewa-billing.index')
+               ->middleware('can:tagihan-kontainer-sewa-index');
+          Route::get('kontainer-sewa-billing/snapshot', [BtmKontainerSewaController::class, 'snapshot'])
+               ->name('kontainer-sewa-billing.snapshot')
+               ->middleware('can:tagihan-kontainer-sewa-index');
+          Route::post('kontainer-sewa-billing/vendors', [BtmKontainerSewaController::class, 'storeVendor'])
+               ->name('kontainer-sewa-billing.vendors.store')
+               ->middleware('can:tagihan-kontainer-sewa-create');
+          Route::post('kontainer-sewa-billing/types', [BtmKontainerSewaController::class, 'storeType'])
+               ->name('kontainer-sewa-billing.types.store')
+               ->middleware('can:tagihan-kontainer-sewa-create');
+          Route::post('kontainer-sewa-billing/sizes', [BtmKontainerSewaController::class, 'storeSize'])
+               ->name('kontainer-sewa-billing.sizes.store')
+               ->middleware('can:tagihan-kontainer-sewa-create');
+          Route::post('kontainer-sewa-billing/units', [BtmKontainerSewaController::class, 'storeUnit'])
+               ->name('kontainer-sewa-billing.units.store')
+               ->middleware('can:tagihan-kontainer-sewa-create');
+          Route::post('kontainer-sewa-billing/rates', [BtmKontainerSewaController::class, 'storeRate'])
+               ->name('kontainer-sewa-billing.rates.store')
+               ->middleware('can:tagihan-kontainer-sewa-create');
+          Route::post('kontainer-sewa-billing/transactions', [BtmKontainerSewaController::class, 'storeTransaction'])
+               ->name('kontainer-sewa-billing.transactions.store')
+               ->middleware('can:tagihan-kontainer-sewa-create');
+          Route::post('kontainer-sewa-billing/import-units', [BtmKontainerSewaController::class, 'importUnits'])
+               ->name('kontainer-sewa-billing.import-units')
+               ->middleware('can:tagihan-kontainer-sewa-create');
+          Route::post('kontainer-sewa-billing/import-transactions', [BtmKontainerSewaController::class, 'importTransactions'])
+               ->name('kontainer-sewa-billing.import-transactions')
+               ->middleware('can:tagihan-kontainer-sewa-create');
           
           // The old routes and resource controller were deleted to allow a full rewrite.
           // If you want them restored later, use your backup or reintroduce new routes/controllers.
