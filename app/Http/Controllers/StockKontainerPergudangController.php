@@ -65,7 +65,7 @@ class StockKontainerPergudangController extends Controller
         if ($id !== 'none' && $id != '') {
             $gudang = Gudang::find($id);
             if (!$gudang) {
-                return redirect()->route('kontainer.stock-pergudang')->with('error', 'Gudang tidak ditemukan.');
+                return redirect()->route('master.kontainer.stock-pergudang')->with('error', 'Gudang tidak ditemukan.');
             }
         }
 

@@ -13,7 +13,7 @@
                 <h2 class="text-xl font-bold text-gray-800">Daftar Kontainer di {{ $namaGudang }}</h2>
                 <p class="text-sm text-gray-500 mt-1">Menampilkan data gabungan dari Kontainer Sewa dan Stock Kontainer</p>
             </div>
-            <a href="{{ route('kontainer.stock-pergudang') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+            <a href="{{ route('master.kontainer.stock-pergudang') }}" class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>

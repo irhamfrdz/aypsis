@@ -37,7 +37,7 @@
         <!-- Cards Grid For each Gudang -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
             @forelse($data as $item)
-            <a href="{{ route('kontainer.stock-pergudang.show', ['id' => $item['id'] ?? 'none']) }}" class="group relative bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-orange-400 active:scale-95 sm:active:scale-100 sm:hover:-translate-y-1 touch-manipulation">
+            <a href="{{ route('master.kontainer.stock-pergudang.show', ['id' => $item['id'] ?? 'none']) }}" class="group relative bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-orange-400 active:scale-95 sm:active:scale-100 sm:hover:-translate-y-1 touch-manipulation">
                 <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-orange-50 rounded-bl-full opacity-40"></div>
                 <div class="relative p-5 sm:p-8">
                     <div style="background: linear-gradient(135deg, #EA580C 0%, #9A3412 100%)" class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-lg mb-4 sm:mb-5 group-hover:scale-110 transition-transform duration-300">
