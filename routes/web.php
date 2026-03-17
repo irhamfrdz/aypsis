@@ -466,6 +466,9 @@ Route::middleware([
         Route::get('kontainer/create', [KontainerController::class, 'create'])
              ->name('kontainer.create')
              ->middleware('can:master-kontainer-create');
+        Route::get('kontainer/stock-pergudang', [\App\Http\Controllers\StockKontainerPergudangController::class, 'index'])
+             ->name('kontainer.stock-pergudang')
+             ->middleware('can:master-kontainer-view');
 
         // Master kontainer import/export routes (MUST BE BEFORE {kontainer} routes)
         Route::get('kontainer/download-template', [KontainerImportController::class, 'downloadTemplate'])

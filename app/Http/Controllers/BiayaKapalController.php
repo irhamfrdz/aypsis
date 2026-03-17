@@ -3215,12 +3215,22 @@ class BiayaKapalController extends Controller
                 ]);
             }
 
-            // Get BL data for the selected kapal and voyage
+            // Get BL data (Bongkar) for the selected kapal and voyage
             $bls = DB::table('bls')
-                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer')
+                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl')
                 ->where('nama_kapal', $kapalNama)
                 ->where('no_voyage', $voyage)
                 ->get();
+
+            // Get NaikKapal data (Muat) for the selected kapal and voyage
+            $naikKapals = DB::table('naik_kapal')
+                ->select('jenis_barang as nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'is_tl as sudah_tl')
+                ->where('nama_kapal', $kapalNama)
+                ->where('no_voyage', $voyage)
+                ->get();
+                
+            // Combine both datasets
+            $bls = $bls->merge($naikKapals);
 
             // Count containers by size and type
             $counts = [
@@ -3234,6 +3244,12 @@ class BiayaKapalController extends Controller
             ];
 
             foreach ($bls as $bl) {
+                // Filter by OB status just like making a pranota OB
+                $isOB = ($bl->sudah_ob === true || $bl->sudah_ob === 1 || $bl->sudah_ob === '1');
+                if (!$isOB) {
+                    continue;
+                }
+
                 // Determine if it's CARGO based on tipe_kontainer OR nomor_kontainer
                 $tipeKontainer = strtoupper($bl->tipe_kontainer ?? '');
                 $nomorKontainer = strtoupper($bl->nomor_kontainer ?? '');
