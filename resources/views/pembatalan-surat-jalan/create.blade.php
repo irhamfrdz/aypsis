@@ -502,6 +502,8 @@
 
         if (searchInput && serverSearchInput && serverSearchForm) {
             let searchTimer;
+            const minimumChars = 3;
+            let lastSubmittedQuery = (serverSearchInput.value || '').trim();
 
             if (searchCounter) {
                 searchCounter.textContent = searchInput.value.trim() ? 'Pencarian lintas halaman aktif' : '';
@@ -510,15 +512,56 @@
             searchInput.addEventListener('input', function () {
                 const query = this.value.trim();
 
+                clearTimeout(searchTimer);
+
+                if (query.length > 0 && query.length < minimumChars) {
+                    if (searchCounter) {
+                        searchCounter.textContent = `Ketik minimal ${minimumChars} karakter...`;
+                    }
+                    return;
+                }
+
+                if (query === lastSubmittedQuery) {
+                    return;
+                }
+
                 if (searchCounter) {
                     searchCounter.textContent = query ? 'Mencari ke semua halaman...' : '';
                 }
 
-                clearTimeout(searchTimer);
                 searchTimer = setTimeout(() => {
+                    if (query === lastSubmittedQuery) {
+                        return;
+                    }
+
                     serverSearchInput.value = query;
+                    lastSubmittedQuery = query;
                     serverSearchForm.submit();
-                }, 450);
+                }, 700);
+            });
+
+            searchInput.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter') {
+                    return;
+                }
+
+                e.preventDefault();
+                const query = this.value.trim();
+
+                if (query.length > 0 && query.length < minimumChars) {
+                    if (searchCounter) {
+                        searchCounter.textContent = `Ketik minimal ${minimumChars} karakter...`;
+                    }
+                    return;
+                }
+
+                if (query === lastSubmittedQuery) {
+                    return;
+                }
+
+                serverSearchInput.value = query;
+                lastSubmittedQuery = query;
+                serverSearchForm.submit();
             });
         }
 
