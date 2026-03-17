@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PembatalanSuratJalan;
+use App\Models\Coa;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -34,7 +35,8 @@ class PembatalanSuratJalanController extends Controller
     public function create(Request $request)
     {
         // List cancelable surat jalans
-        $query = \App\Models\SuratJalan::where('status', '!=', 'cancelled');
+        $query = \App\Models\SuratJalan::with(['supirKaryawan', 'uangJalan'])
+            ->where('status', '!=', 'cancelled');
         
         if ($request->filled('search_sj')) {
             $query->where('no_surat_jalan', 'like', "%{$request->search_sj}%");
@@ -42,7 +44,14 @@ class PembatalanSuratJalanController extends Controller
 
         $suratJalans = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('pembatalan-surat-jalan.create', compact('suratJalans'));
+        // Bank options for searchable dropdown (same source as payment forms)
+        $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
+                      ->orWhere('nama_akun', 'LIKE', '%bank%')
+                      ->orWhere('nama_akun', 'LIKE', '%kas%')
+                      ->orderBy('nama_akun')
+                      ->get();
+
+        return view('pembatalan-surat-jalan.create', compact('suratJalans', 'akunCoa'));
     }
 
     /**
@@ -50,37 +59,75 @@ class PembatalanSuratJalanController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'surat_jalan_id' => 'required|exists:surat_jalans,id',
-            'alasan_batal' => 'required'
+            'alasan_batal' => 'required|string',
+            'nomor_pembayaran' => 'nullable|string|max:255',
+            'nomor_accurate' => 'nullable|string|max:255',
+            'tanggal_kas' => 'required|date',
+            'tanggal_pembayaran' => 'required|date',
+            'bank' => 'required|string|max:255',
+            'jenis_transaksi' => 'required|in:Debit,Kredit',
+            'total_pembayaran' => 'required|numeric|min:0',
+            'total_tagihan_penyesuaian' => 'nullable|numeric',
+            'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
+            'alasan_penyesuaian' => 'nullable|string',
+            'keterangan' => 'nullable|string',
         ]);
 
-        $suratJalan = \App\Models\SuratJalan::findOrFail($request->surat_jalan_id);
+        // Fallback generation if client-side generator did not run
+        if (empty($validated['nomor_pembayaran'])) {
+            $now = now();
+            $validated['nomor_pembayaran'] = sprintf(
+                'PBL-%s-%s-%06d',
+                $now->format('m'),
+                $now->format('y'),
+                random_int(1, 999999)
+            );
+        }
+
+        $suratJalan = \App\Models\SuratJalan::findOrFail($validated['surat_jalan_id']);
 
         if ($suratJalan->status === 'cancelled') {
             return redirect()->back()->with('error', 'Surat Jalan sudah dibatalkan.');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function() use ($request, $suratJalan) {
+        \Illuminate\Support\Facades\DB::transaction(function() use ($validated, $suratJalan) {
             // Create Cancel Record
             PembatalanSuratJalan::create([
                 'surat_jalan_id' => $suratJalan->id,
                 'no_surat_jalan' => $suratJalan->no_surat_jalan,
-                'alasan_batal' => $request->alasan_batal,
+                'nomor_pembayaran' => $validated['nomor_pembayaran'],
+                'nomor_accurate' => $validated['nomor_accurate'] ?? null,
+                'tanggal_kas' => $validated['tanggal_kas'],
+                'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
+                'bank' => $validated['bank'],
+                'jenis_transaksi' => $validated['jenis_transaksi'],
+                'total_pembayaran' => $validated['total_pembayaran'],
+                'total_tagihan_penyesuaian' => $validated['total_tagihan_penyesuaian'] ?? 0,
+                'total_tagihan_setelah_penyesuaian' => $validated['total_tagihan_setelah_penyesuaian'],
+                'alasan_penyesuaian' => $validated['alasan_penyesuaian'] ?? null,
+                'keterangan' => $validated['keterangan'] ?? null,
+                'alasan_batal' => $validated['alasan_batal'],
                 'status' => 'approved', // auto-approve to cancel immediately
                 'created_by' => auth()->id(),
             ]);
 
-            // Update Surat Jalan
-            $suratJalan->update(['status' => 'cancelled']);
+            // Hapus data prospek yang terkait (by surat_jalan_id or no_surat_jalan)
+            \App\Models\Prospek::where('surat_jalan_id', $suratJalan->id)
+                ->orWhere('no_surat_jalan', $suratJalan->no_surat_jalan)
+                ->delete();
 
-            // Update Linked Prospeks
-            if ($suratJalan->prospeks()->exists()) {
-                $suratJalan->prospeks()->update(['status' => \App\Models\Prospek::STATUS_BATAL]);
-            }
+            // Hapus data tanda terima yang terkait (by surat_jalan_id or no_surat_jalan)
+            \App\Models\TandaTerima::where('surat_jalan_id', $suratJalan->id)
+                ->orWhere('no_surat_jalan', $suratJalan->no_surat_jalan)
+                ->delete();
+
+            // Hapus surat jalan yang dibatalkan
+            $suratJalan->delete();
         });
 
-        return redirect()->route('pembatalan-surat-jalan.index')->with('success', 'Surat Jalan berhasil dibatalkan.');
+        return redirect()->route('pembatalan-surat-jalan.index')->with('success', 'Surat Jalan berhasil dibatalkan dan data terkait sudah dihapus.');
     }
 
     /**

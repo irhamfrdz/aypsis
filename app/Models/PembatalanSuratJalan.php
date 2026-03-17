@@ -11,10 +11,29 @@ class PembatalanSuratJalan extends Model
     protected $fillable = [
         'surat_jalan_id',
         'no_surat_jalan',
+        'nomor_pembayaran',
+        'nomor_accurate',
+        'tanggal_kas',
+        'tanggal_pembayaran',
+        'bank',
+        'jenis_transaksi',
+        'total_pembayaran',
+        'total_tagihan_penyesuaian',
+        'total_tagihan_setelah_penyesuaian',
+        'alasan_penyesuaian',
+        'keterangan',
         'alasan_batal',
         'status',
         'created_by',
         'updated_by'
+    ];
+
+    protected $casts = [
+        'tanggal_kas' => 'date',
+        'tanggal_pembayaran' => 'date',
+        'total_pembayaran' => 'decimal:2',
+        'total_tagihan_penyesuaian' => 'decimal:2',
+        'total_tagihan_setelah_penyesuaian' => 'decimal:2',
     ];
 
     public function suratJalan()
