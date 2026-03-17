@@ -333,10 +333,13 @@
 
                     <textarea id="quick_import_rows" name="rows" rows="10" required
                         class="mt-3 w-full text-sm border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                        placeholder="ALLU2202097|ZONA|HC|20&#10;AMFU3131327|DPE|DRY CONTAINER|40"></textarea>
-
-                    <div class="mt-3 text-xs text-cyan-700 bg-cyan-50 border border-cyan-200 rounded p-2">
-                        Nomor kontainer harus format gabungan 11 karakter (contoh: ABCD123456X). Size yang diterima: 10/20/40.
+                        placeholder="ALLU2202097|ZONA|HC|20&#10;AMFU3131327|DPE|DRY CONTAINER|40|Gudang Tambun|15 Jan 2026|15 Feb 2026|Catatan unit"></textarea>
+                        
+                    <div class="mt-3 text-xs text-cyan-700 bg-cyan-50 border border-cyan-200 rounded p-3 space-y-1">
+                        <p>💡 <strong>Nomor kontainer:</strong> Harus 11 karakter (contoh: ABCD123456X).</p>
+                        <p>💡 <strong>Format opsional:</strong> Tambahkan pipeline (|) di belakang untuk mengisi Gudang, Tanggal Mulai, Tanggal Selesai, dan Keterangan secara berurutan.</p>
+                        <p>💡 <strong>Gudang:</strong> Cukup ketik Nama Gudang (Sistem akan otomatis mencocokkan).</p>
+                        <p>💡 <strong>Tanggal:</strong> Format bebas (contoh: 15/Jan/2026 atau 15 Jan 2026).</p>
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
