@@ -53,7 +53,7 @@
                 <div>
                     <h3 class="text-sm font-semibold text-gray-800">Filter Surat Jalan</h3>
                 </div>
-                <form action="{{ route('pembatalan-surat-jalan.create') }}" method="GET" class="flex flex-col sm:flex-row gap-2">
+                <form id="sjServerSearchForm" action="{{ route('pembatalan-surat-jalan.create') }}" method="GET" class="flex flex-col sm:flex-row gap-2">
                     <div class="flex gap-2">
                         <div class="min-w-0">
                             <label for="search_sj" class="{{ $labelClasses }}">Nomor Surat Jalan</label>
@@ -214,7 +214,7 @@
                     <div class="flex items-center justify-between mb-2">
                         <h4 class="text-sm font-semibold text-gray-800">Pilih Surat Jalan</h4>
                         <div class="flex items-center gap-2">
-                            <input type="text" id="searchSjClient" placeholder="Cari no surat, pengirim..." class="px-3 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-64">
+                            <input type="text" id="searchSjClient" value="{{ request('search_sj') }}" placeholder="Cari no surat, pengirim, supir..." class="px-3 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-64">
                             <span id="searchCounter" class="text-xs text-gray-600"></span>
                         </div>
                     </div>
@@ -368,10 +368,9 @@
         const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
         const totalSetelahInput = document.getElementById('total_tagihan_setelah_penyesuaian');
         const searchInput = document.getElementById('searchSjClient');
-        const tableBody = document.getElementById('sjTableBody');
+        const serverSearchForm = document.getElementById('sjServerSearchForm');
+        const serverSearchInput = document.getElementById('search_sj');
         const searchCounter = document.getElementById('searchCounter');
-        const noResultsRow = document.getElementById('noResultsRow');
-        const emptyRow = document.getElementById('emptyRow');
 
         rows.forEach(row => {
             row.addEventListener('click', function () {
@@ -501,39 +500,25 @@
         }
         updateTotalSetelahPenyesuaian();
 
-        if (searchInput && tableBody) {
+        if (searchInput && serverSearchInput && serverSearchForm) {
+            let searchTimer;
+
+            if (searchCounter) {
+                searchCounter.textContent = searchInput.value.trim() ? 'Pencarian lintas halaman aktif' : '';
+            }
+
             searchInput.addEventListener('input', function () {
-                const query = this.value.toLowerCase().trim();
-                const listRows = tableBody.querySelectorAll('.sj-row');
-                let visibleCount = 0;
-                const totalCount = listRows.length;
-
-                listRows.forEach(item => {
-                    const noSurat = item.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-                    const pengirim = item.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
-                    const supir = item.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
-                    const uangJalan = item.querySelector('td:nth-child(6)')?.textContent.toLowerCase() || '';
-                    const searchableText = noSurat + ' ' + pengirim + ' ' + supir + ' ' + uangJalan;
-
-                    if (searchableText.includes(query)) {
-                        item.style.display = '';
-                        visibleCount++;
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
+                const query = this.value.trim();
 
                 if (searchCounter) {
-                    searchCounter.textContent = query ? `${visibleCount} dari ${totalCount} surat jalan` : '';
+                    searchCounter.textContent = query ? 'Mencari ke semua halaman...' : '';
                 }
 
-                if (visibleCount === 0 && totalCount > 0) {
-                    if (noResultsRow) noResultsRow.classList.remove('hidden');
-                    if (emptyRow) emptyRow.classList.add('hidden');
-                } else {
-                    if (noResultsRow) noResultsRow.classList.add('hidden');
-                    if (emptyRow && totalCount === 0) emptyRow.classList.remove('hidden');
-                }
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(() => {
+                    serverSearchInput.value = query;
+                    serverSearchForm.submit();
+                }, 450);
             });
         }
 

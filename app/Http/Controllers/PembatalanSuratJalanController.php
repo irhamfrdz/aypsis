@@ -39,7 +39,16 @@ class PembatalanSuratJalanController extends Controller
             ->where('status', '!=', 'cancelled');
         
         if ($request->filled('search_sj')) {
-            $query->where('no_surat_jalan', 'like', "%{$request->search_sj}%");
+            $search = $request->search_sj;
+            $query->where(function ($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhereHas('supirKaryawan', function ($sq) use ($search) {
+                      $sq->where('nama_panggilan', 'like', "%{$search}%")
+                         ->orWhere('nama_lengkap', 'like', "%{$search}%");
+                  });
+            });
         }
 
         $suratJalans = $query->orderBy('created_at', 'desc')->paginate(10);
