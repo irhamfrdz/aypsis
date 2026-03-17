@@ -215,6 +215,12 @@
                                 Barang
                             </th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tonnage
+                            </th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Volume
+                            </th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Info Kontainer
                             </th>
 
@@ -273,6 +279,12 @@
                                         <span class="block">Ke: {{ Str::limit($bl->penerima, 20) }}</span>
                                     </div>
                                 </td>
+                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $bl->tonnage ? number_format($bl->tonnage, 3) : '-' }} {{ $bl->satuan }}
+                                </td>
+                                <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $bl->volume ? number_format($bl->volume, 3) . ' m³' : '-' }}
+                                </td>
                                 <td class="px-3 py-4 whitespace-nowrap">
                                     <div class="flex flex-col gap-1">
                                         <div class="size-kontainer-container" data-bl-id="{{ $bl->id }}">
@@ -296,8 +308,6 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="text-xs text-gray-500">
-                                            Vol: {{ number_format($bl->volume, 3) }} m³
                                         </div>
                                     </div>
                                 </td>
