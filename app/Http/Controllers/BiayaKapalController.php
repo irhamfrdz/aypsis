@@ -3216,9 +3216,11 @@ class BiayaKapalController extends Controller
             }
 
             // Get BL data (Bongkar) for the selected kapal and voyage
+            $cleanKapalNama = str_replace('.', '', $kapalNama);
+            
             $bls = DB::table('bls')
                 ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl')
-                ->where('nama_kapal', $kapalNama)
+                ->where('nama_kapal', 'like', "%{$cleanKapalNama}%")
                 ->where('no_voyage', $voyage)
                 ->get();
 
