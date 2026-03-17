@@ -3222,19 +3222,15 @@ class BiayaKapalController extends Controller
                 ->where('no_voyage', $voyage)
                 ->get();
 
-            // Get NaikKapal data (Muat) for the selected kapal and voyage
-            $naikKapals = DB::table('naik_kapal')
-                ->select('jenis_barang as nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'is_tl as sudah_tl')
-                ->where('nama_kapal', $kapalNama)
-                ->where('no_voyage', $voyage)
-                ->get();
-                
-            // Combine both datasets
-            $bls = $bls->merge($naikKapals);
-
-            // Count containers by actual nama_barang item name
+            // Count containers by size and type
             $counts = [
-                'barang' => [],
+                '20' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
+                '40' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
+                'extra' => [
+                    'Mobil' => 0,
+                    'Trailer' => 0,
+                    'Truck' => 0,
+                ]
             ];
 
             foreach ($bls as $bl) {
@@ -3244,16 +3240,49 @@ class BiayaKapalController extends Controller
                     continue;
                 }
 
-                $namaBarang = strtoupper(trim($bl->nama_barang ?? '-'));
-                if (empty($namaBarang)) {
-                    $namaBarang = '-';
-                }
-
-                if (!isset($counts['barang'][$namaBarang])) {
-                    $counts['barang'][$namaBarang] = 0;
-                }
+                // Determine if it's CARGO based on tipe_kontainer OR nomor_kontainer
+                $tipeKontainer = strtoupper($bl->tipe_kontainer ?? '');
+                $nomorKontainer = strtoupper($bl->nomor_kontainer ?? '');
+                $isCargo = ($nomorKontainer === 'CARGO' || $tipeKontainer === 'CARGO');
                 
-                $counts['barang'][$namaBarang]++;
+                if (!$isCargo) {
+                    // Determine size (default to 20 if not specified)
+                    $size = '20';
+                    if (!empty($bl->size_kontainer)) {
+                        if (str_contains($bl->size_kontainer, '40')) {
+                            $size = '40';
+                        }
+                    }
+
+                    // Determine if EMPTY based on logic from ob/index.blade.php
+                    // Logic: str_contains($barangUpper, 'EMPTY') || ($bl->tipe_kontainer == 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($bl->nomor_kontainer, 'CARGO-')))
+                    $barangUpper = strtoupper($bl->nama_barang ?? '');
+                    $isEmpty = str_contains($barangUpper, 'EMPTY') || 
+                               ($tipeKontainer === 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($nomorKontainer, 'CARGO-')));
+
+                    if ($isEmpty) {
+                        $counts[$size]['empty']++;
+                    } else if (!empty($bl->nomor_kontainer)) {
+                        $counts[$size]['full']++;
+                        
+                        // Count FCL/LCL specifically for OPP/OPT
+                        if (str_contains(strtolower($tipeKontainer), 'fcl')) {
+                            $counts[$size]['fcl']++;
+                        } else if (str_contains(strtolower($tipeKontainer), 'lcl')) {
+                            $counts[$size]['lcl']++;
+                        }
+                    }
+                } else {
+                    // It's cargo, check nama_barang for specific types for OPP/OPT
+                    $namaBarang = strtolower($bl->nama_barang ?? '');
+                    if (str_contains($namaBarang, 'mobil')) {
+                        $counts['extra']['Mobil']++;
+                    } else if (str_contains($namaBarang, 'trailer')) {
+                        $counts['extra']['Trailer']++;
+                    } else if (str_contains($namaBarang, 'truck')) {
+                        $counts['extra']['Truck']++;
+                    }
+                }
             }
 
             return response()->json([

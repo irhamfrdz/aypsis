@@ -168,23 +168,50 @@
                 container.innerHTML = '';
                 let barangAdded = false;
                 
-                // Iterasi setiap barang yang ditemukan dari hitungan (nama_barang)
-                const itemsCount = data.counts.barang || {};
+                // Pricelist IDs mapping
+                const pricelistIds = {
+                    '20_full': null,
+                    '20_empty': null,
+                    '40_full': null,
+                    '40_empty': null
+                };
                 
-                for (const [namaBarang, jumlah] of Object.entries(itemsCount)) {
-                    if (jumlah > 0 && namaBarang !== '-') {
-                        // Cari item yang COCOK di pricelistBuruhData secara case-insensitive
-                        const matchedPricelist = pricelistBuruhData.find(p => 
-                            p.barang.trim().toUpperCase() === namaBarang
-                        );
-
-                        if (matchedPricelist) {
-                            addBarangToSectionWithValue(sectionIndex, matchedPricelist.id, jumlah);
-                            barangAdded = true;
-                        } else {
-                            console.warn('Tidak ditemukan item pricelist buruh yang cocok untuk:', namaBarang);
-                        }
+                // Find pricelist IDs from pricelistBuruhData
+                pricelistBuruhData.forEach(p => {
+                    const barangLower = p.barang.toLowerCase();
+                    if (barangLower.includes('kontainer') && barangLower.includes('20') && barangLower.includes('full')) {
+                        pricelistIds['20_full'] = p.id;
+                    } else if (barangLower.includes('kontainer') && barangLower.includes('20') && barangLower.includes('empty')) {
+                        pricelistIds['20_empty'] = p.id;
+                    } else if (barangLower.includes('kontainer') && barangLower.includes('40') && barangLower.includes('full')) {
+                        pricelistIds['40_full'] = p.id;
+                    } else if (barangLower.includes('kontainer') && barangLower.includes('40') && barangLower.includes('empty')) {
+                        pricelistIds['40_empty'] = p.id;
                     }
+                });
+                
+                // Add 20' FULL if count > 0
+                if (data.counts['20'] && data.counts['20'].full > 0 && pricelistIds['20_full']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['20_full'], data.counts['20'].full);
+                    barangAdded = true;
+                }
+                
+                // Add 20' EMPTY if count > 0
+                if (data.counts['20'] && data.counts['20'].empty > 0 && pricelistIds['20_empty']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['20_empty'], data.counts['20'].empty);
+                    barangAdded = true;
+                }
+                
+                // Add 40' FULL if count > 0
+                if (data.counts['40'] && data.counts['40'].full > 0 && pricelistIds['40_full']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['40_full'], data.counts['40'].full);
+                    barangAdded = true;
+                }
+                
+                // Add 40' EMPTY if count > 0
+                if (data.counts['40'] && data.counts['40'].empty > 0 && pricelistIds['40_empty']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['40_empty'], data.counts['40'].empty);
+                    barangAdded = true;
                 }
                 
                 // If no containers found, add empty barang input
