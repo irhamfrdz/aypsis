@@ -20,15 +20,15 @@
 
         <!-- Total Summaries Top Panel -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-5 rounded-2xl shadow-lg text-white">
+            <div class="bg-gradient-to-br from-orange-400 to-orange-600 p-5 rounded-2xl shadow-lg text-white">
                 <h3 class="text-xs font-semibold uppercase tracking-wider opacity-80">Total Kontainer Sewa</h3>
                 <p class="text-2xl sm:text-3xl font-extrabold mt-2">{{ $data->sum('total_sewa') }}</p>
             </div>
-            <div class="bg-gradient-to-br from-cyan-500 to-teal-500 p-5 rounded-2xl shadow-lg text-white">
+            <div class="bg-gradient-to-br from-blue-400 to-blue-600 p-5 rounded-2xl shadow-lg text-white">
                 <h3 class="text-xs font-semibold uppercase tracking-wider opacity-80">Total Stock Kontainer</h3>
                 <p class="text-2xl sm:text-3xl font-extrabold mt-2">{{ $data->sum('total_stock') }}</p>
             </div>
-            <div class="bg-gradient-to-br from-blue-600 to-indigo-800 p-5 rounded-2xl shadow-lg text-white">
+            <div class="bg-gradient-to-br from-green-400 to-green-600 p-5 rounded-2xl shadow-lg text-white">
                 <h3 class="text-xs font-semibold uppercase tracking-wider opacity-80">Total Gabungan</h3>
                 <p class="text-2xl sm:text-3xl font-extrabold mt-2">{{ $data->sum('total_gabungan') }}</p>
             </div>
@@ -37,15 +37,15 @@
         <!-- Cards Grid For each Gudang -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
             @forelse($data as $item)
-            <div class="group relative bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-indigo-400 active:scale-95 sm:active:scale-100 sm:hover:-translate-y-1 touch-manipulation">
-                <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-bl-full opacity-50"></div>
+            <div class="group relative bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-orange-400 active:scale-95 sm:active:scale-100 sm:hover:-translate-y-1 touch-manipulation">
+                <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-orange-100 to-orange-50 rounded-bl-full opacity-30"></div>
                 <div class="relative p-5 sm:p-8">
-                    <div class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl shadow-lg mb-4 sm:mb-5 group-hover:scale-110 transition-transform duration-300">
+                    <div class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl shadow-lg mb-4 sm:mb-5 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors">{{ $item['nama_gudang'] }}</h3>
+                    <h3 class="text-xl font-bold text-gray-900 mb-1 group-hover:text-orange-600 transition-colors">{{ $item['nama_gudang'] }}</h3>
                     <p class="text-gray-500 text-xs sm:text-sm mb-4">{{ $item['lokasi'] ?? 'Lokasi tidak tersedia' }}</p>
                     
                     <div class="space-y-2 text-sm border-t border-gray-100 pt-4">
@@ -57,7 +57,7 @@
                             <span class="text-gray-600">Stock Kontainer:</span>
                             <span class="font-bold text-gray-800">{{ $item['total_stock'] }}</span>
                         </div>
-                        <div class="flex justify-between items-center text-indigo-600 font-extrabold border-t border-dashed pt-2 mt-1">
+                        <div class="flex justify-between items-center text-orange-600 font-extrabold border-t border-dashed pt-2 mt-1">
                             <span>Total Gabungan:</span>
                             <span class="text-lg">{{ $item['total_gabungan'] }}</span>
                         </div>
