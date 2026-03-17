@@ -327,6 +327,9 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Tanda Terima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                            @if(auth()->user()->username === 'kiky')
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Prospek</th>
+                            @endif
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                         @else
@@ -348,6 +351,9 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            @if(auth()->user()->username === 'kiky')
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Prospek</th>
+                            @endif
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                         @endif
@@ -473,6 +479,19 @@
                                     {{ Str::limit($item->kegiatan ?: '-', 12) }}
                                 </span>
                             </td>
+                            @if(auth()->user()->username === 'kiky')
+                            <td class="px-3 py-2 whitespace-nowrap text-center">
+                                @if(\App\Models\Prospek::where('tanda_terima_id', $item->tanda_terima_id)->exists())
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Ada di Prospek
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Belum Ada
+                                    </span>
+                                @endif
+                            </td>
+                            @endif
                             <td class="px-3 py-2 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <a href="{{ route('tanda-terima.show', $item->tanda_terima_id) }}"
@@ -625,6 +644,19 @@
                                     </span>
                                 @endif
                             </td>
+                            @if(auth()->user()->username === 'kiky')
+                            <td class="px-3 py-2 whitespace-nowrap text-center">
+                                @if(\App\Models\Prospek::where('tanda_terima_id', $tandaTerima->id)->exists())
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Ada di Prospek
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Belum Ada
+                                    </span>
+                                @endif
+                            </td>
+                            @endif
                             <td class="px-3 py-2 whitespace-nowrap text-center text-xs font-medium">
                                 <div class="flex items-center justify-center gap-1">
                                     <a href="{{ route('tanda-terima.show', $tandaTerima->id) }}"

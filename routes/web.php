@@ -2343,6 +2343,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('surat-jalan', [\App\Http\Controllers\SuratJalanController::class, 'index'])
          ->name('surat-jalan.index')
          ->middleware('can:surat-jalan-view');
+
+    Route::get('surat-jalan/pembatalan', [\App\Http\Controllers\SuratJalanController::class, 'pembatalanIndex'])
+         ->name('surat-jalan.pembatalan')
+         ->middleware('can:surat-jalan-update');
     
     Route::get('surat-jalan/create', [\App\Http\Controllers\SuratJalanController::class, 'create'])
          ->name('surat-jalan.create')

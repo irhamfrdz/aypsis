@@ -1237,6 +1237,13 @@ class SuratJalanController extends Controller
             $suratJalan->status = $request->status;
             $suratJalan->save();
 
+            // Cancel linked prospeks if status is cancelled
+            if ($request->status === 'cancelled') {
+                if ($suratJalan->prospeks()->exists()) {
+                    $suratJalan->prospeks()->update(['status' => \App\Models\Prospek::STATUS_BATAL]);
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Status berhasil diubah'
@@ -1284,5 +1291,45 @@ class SuratJalanController extends Controller
             Log::error('Error printing preprinted surat jalan: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Gagal mencetak surat jalan preprinted');
         }
+    }
+
+    /**
+     * Display a listing of surat jalan for cancellation.
+     */
+    public function pembatalanIndex(Request $request)
+    {
+        $query = SuratJalan::query();
+
+        // Only show items that can be cancelled (everything except already cancelled)
+        $query->where('status', '!=', 'cancelled');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('alamat', 'like', "%{$search}%")
+                  ->orWhere('jenis_barang', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by date range
+        if ($request->filled('start_date')) {
+            $query->whereDate('tanggal_surat_jalan', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
+        }
+
+        $suratJalans = $query->with(['order'])
+                            ->orderBy('created_at', 'desc')
+                            ->paginate(15);
+
+        return view('surat-jalan.pembatalan', compact('suratJalans'));
     }
 }

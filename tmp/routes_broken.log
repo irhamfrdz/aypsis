@@ -1,0 +1,11 @@
+2335: 
+2336:     // Surat Jalan Management with permissions - Separate routes to avoid middleware conflicts
+2337:     // Export Surat Jalan (Excel)
+2338: 
+2339:          ->name('surat-jalan.index')
+2340:          ->middleware('can:surat-jalan-view');
+2341:     
+2342:     Route::get('surat-jalan/create', [\App\Http\Controllers\SuratJalanController::class, 'create'])
+2343:          ->name('surat-jalan.create')
+2344:          ->middleware('can:surat-jalan-create');
+2345:     

@@ -1,0 +1,236 @@
+2323: Route::get('/surat-jalan/select-order', [\App\Http\Controllers\SuratJalanController::class, 'selectOrder'])
+2324: ->name('surat-jalan.select-order')
+2325: ->middleware('can:surat-jalan-create');
+2328: Route::get('/surat-jalan/create-without-order', [\App\Http\Controllers\SuratJalanController::class, 'createWithoutOrder'])
+2329: ->name('surat-jalan.create-without-order')
+2330: ->middleware('can:surat-jalan-create');
+2333: Route::post('/surat-jalan/store-without-order', [\App\Http\Controllers\SuratJalanController::class, 'storeWithoutOrder'])
+2334: ->name('surat-jalan.store-without-order')
+2335: ->middleware('can:surat-jalan-create');
+2339: Route::get('surat-jalan/export', [\App\Http\Controllers\SuratJalanController::class, 'exportExcel'])
+2340: ->name('surat-jalan.export')
+2341: ->middleware('can:surat-jalan-export');
+2343: Route::get('surat-jalan', [\App\Http\Controllers\SuratJalanController::class, 'index'])
+2344: ->name('surat-jalan.index')
+2345: ->middleware('can:surat-jalan-view');
+2347: Route::get('surat-jalan/create', [\App\Http\Controllers\SuratJalanController::class, 'create'])
+2348: ->name('surat-jalan.create')
+2349: ->middleware('can:surat-jalan-create');
+2351: Route::post('surat-jalan', [\App\Http\Controllers\SuratJalanController::class, 'store'])
+2352: ->name('surat-jalan.store')
+2353: ->middleware('can:surat-jalan-create');
+2355: Route::get('surat-jalan/{suratJalan}', [\App\Http\Controllers\SuratJalanController::class, 'show'])
+2356: ->name('surat-jalan.show')
+2357: ->middleware('can:surat-jalan-view');
+2359: Route::get('surat-jalan/{suratJalan}/edit', [\App\Http\Controllers\SuratJalanController::class, 'edit'])
+2360: ->name('surat-jalan.edit')
+2361: ->middleware('can:surat-jalan-update');
+2363: Route::put('surat-jalan/{suratJalan}', [\App\Http\Controllers\SuratJalanController::class, 'update'])
+2364: ->name('surat-jalan.update')
+2365: ->middleware('can:surat-jalan-update');
+2367: Route::patch('surat-jalan/{suratJalan}', [\App\Http\Controllers\SuratJalanController::class, 'update'])
+2368: ->name('surat-jalan.update')
+2369: ->middleware('can:surat-jalan-update');
+2371: Route::delete('surat-jalan/{suratJalan}', [\App\Http\Controllers\SuratJalanController::class, 'destroy'])
+2372: ->name('surat-jalan.destroy')
+2373: ->middleware('can:surat-jalan-delete');
+2376: Route::get('/surat-jalan/generate-nomor', [\App\Http\Controllers\SuratJalanController::class, 'generateNomorSuratJalan'])
+2377: ->name('surat-jalan.generate-nomor')
+2378: ->middleware('can:surat-jalan-create');
+2381: Route::get('/surat-jalan/{suratJalan}/print', [\App\Http\Controllers\SuratJalanController::class, 'print'])
+2382: ->name('surat-jalan.print')
+2383: ->middleware('can:surat-jalan-view');
+2386: Route::get('/surat-jalan/{suratJalan}/download', [\App\Http\Controllers\SuratJalanController::class, 'downloadPdf'])
+2387: ->name('surat-jalan.download')
+2388: ->middleware('can:surat-jalan-view');
+2391: Route::get('/surat-jalan/{suratJalan}/print-memo', [\App\Http\Controllers\SuratJalanController::class, 'printMemo'])
+2392: ->name('surat-jalan.print-memo')
+2393: ->middleware('can:surat-jalan-view');
+2396: Route::get('/surat-jalan/{suratJalan}/print-preprinted', [\App\Http\Controllers\SuratJalanController::class, 'printPreprinted'])
+2397: ->name('surat-jalan.print-preprinted')
+2398: ->middleware('can:surat-jalan-view');
+2404: Route::prefix('approval-surat-jalan')->name('approval-surat-jalan.')->group(function () {
+2407: ->middleware('can:approval-surat-jalan-view');
+2411: ->middleware('can:approval-surat-jalan-create');
+2415: ->middleware('can:approval-surat-jalan-create');
+2419: ->middleware('can:approval-surat-jalan-view');
+2423: ->middleware('can:approval-surat-jalan-update');
+2427: ->middleware('can:approval-surat-jalan-update');
+2431: ->middleware('can:approval-surat-jalan-delete');
+2435: ->middleware('can:approval-surat-jalan-approve');
+2439: ->middleware('can:approval-surat-jalan-reject');
+2448: Route::get('uang-jalan/select-surat-jalan', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalan'])
+2449: ->name('uang-jalan.select-surat-jalan')
+2453: Route::get('uang-jalan/select-surat-jalan-penyesuaian', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalan'])
+2454: ->name('uang-jalan.select-surat-jalan-penyesuaian')
+2479: Route::get('adjustment/select-surat-jalan', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalanAdjustment'])
+2480: ->name('adjustment.select-surat-jalan')
+2497: Route::get('uang-jalan-bongkaran/select-surat-jalan-bongkaran', [\App\Http\Controllers\UangJalanBongkaranController::class, 'selectSuratJalanBongkaran'])
+2498: ->name('uang-jalan-bongkaran.select-surat-jalan-bongkaran')
+2657: Route::get('/surat-jalan-bongkaran/select-kapal', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectKapal'])
+2658: ->name('surat-jalan-bongkaran.select-kapal')
+2659: ->middleware('can:surat-jalan-bongkaran-create');
+2662: Route::get('/surat-jalan-bongkaran/api/bl-data', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getBlData'])
+2663: ->name('surat-jalan-bongkaran.bl-data')
+2664: ->middleware('can:surat-jalan-bongkaran-create');
+2670: ->middleware('can:surat-jalan-bongkaran-view');
+2675: ->middleware('can:surat-jalan-bongkaran-view');
+2678: Route::get('api/surat-jalan-bongkaran/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getSuratJalanById'])
+2679: ->name('api.surat-jalan-bongkaran.show')
+2680: ->middleware('can:surat-jalan-bongkaran-view');
+2682: Route::get('surat-jalan-bongkaran/select-ship', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectShip'])
+2683: ->name('surat-jalan-bongkaran.select-ship')
+2684: ->middleware('can:surat-jalan-bongkaran-view');
+2686: Route::get('surat-jalan-bongkaran/get-voyages', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getVoyages'])
+2687: ->name('surat-jalan-bongkaran.get-voyages')
+2688: ->middleware('can:surat-jalan-bongkaran-view');
+2690: Route::get('surat-jalan-bongkaran', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectShip'])
+2691: ->name('surat-jalan-bongkaran.index')
+2692: ->middleware('can:surat-jalan-bongkaran-view');
+2694: Route::get('surat-jalan-bongkaran/list', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'index'])
+2695: ->name('surat-jalan-bongkaran.list')
+2696: ->middleware('can:surat-jalan-bongkaran-view');
+2698: Route::get('surat-jalan-bongkaran/export', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'export'])
+2699: ->name('surat-jalan-bongkaran.export')
+2700: ->middleware('can:surat-jalan-bongkaran-view');
+2702: Route::get('surat-jalan-bongkaran/create', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'create'])
+2703: ->name('surat-jalan-bongkaran.create')
+2704: ->middleware('can:surat-jalan-bongkaran-create');
+2706: Route::post('surat-jalan-bongkaran', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'store'])
+2707: ->name('surat-jalan-bongkaran.store')
+2708: ->middleware('can:surat-jalan-bongkaran-create');
+2710: Route::get('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'show'])
+2711: ->name('surat-jalan-bongkaran.show')
+2712: ->middleware('can:surat-jalan-bongkaran-view');
+2714: Route::get('surat-jalan-bongkaran/{suratJalanBongkaran}/edit', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'edit'])
+2715: ->name('surat-jalan-bongkaran.edit')
+2716: ->middleware('can:surat-jalan-bongkaran-update');
+2718: Route::put('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'update'])
+2719: ->name('surat-jalan-bongkaran.update')
+2720: ->middleware('can:surat-jalan-bongkaran-update');
+2722: Route::patch('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'update'])
+2723: ->name('surat-jalan-bongkaran.update')
+2724: ->middleware('can:surat-jalan-bongkaran-update');
+2726: Route::delete('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'destroy'])
+2727: ->name('surat-jalan-bongkaran.destroy')
+2728: ->middleware('can:surat-jalan-bongkaran-delete');
+2731: Route::get('/surat-jalan-bongkaran/{suratJalanBongkaran}/print', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'print'])
+2732: ->name('surat-jalan-bongkaran.print')
+2733: ->middleware('can:surat-jalan-bongkaran-view');
+2736: Route::get('/surat-jalan-bongkaran/print-from-bl/{bl}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'printFromBl'])
+2737: ->name('surat-jalan-bongkaran.print-from-bl')
+2738: ->middleware('can:surat-jalan-bongkaran-view');
+2741: Route::get('/surat-jalan-bongkaran/print-ba/{bl}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'printBa'])
+2742: ->name('surat-jalan-bongkaran.print-ba')
+2743: ->middleware('can:surat-jalan-bongkaran-view');
+2746: Route::get('/surat-jalan-bongkaran/{suratJalanBongkaran}/download', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'downloadPdf'])
+2747: ->name('surat-jalan-bongkaran.download')
+2748: ->middleware('can:surat-jalan-bongkaran-view');
+2780: Route::post('/surat-jalan/{suratJalan}/update-status', [\App\Http\Controllers\SuratJalanController::class, 'updateStatus'])
+2781: ->name('surat-jalan.update-status')
+2782: ->middleware('can:surat-jalan-update');
+2784: // Lightweight endpoint to update only the supir field without running full surat-jalan validation
+2785: Route::post('/surat-jalan/{suratJalan}/update-supir', [\App\Http\Controllers\SuratJalanController::class, 'updateSupir'])
+2786: ->name('surat-jalan.update-supir')
+2787: ->middleware('can:surat-jalan-update');
+2791: ->name('surat-jalan.get-uang-jalan')
+2792: ->middleware('can:surat-jalan-create');
+2840: Route::get('pranota-uang-rit/{pranotaUangRit}/export-surat-jalan', [\App\Http\Controllers\PranotaUangRitController::class, 'exportSuratJalan'])
+2841: ->name('pranota-uang-rit.export-surat-jalan')
+2903: Route::get('pranota-uang-rit-kenek/{pranotaUangRitKenek}/export-surat-jalan', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'exportSuratJalan'])
+2904: ->name('pranota-uang-rit-kenek.export-surat-jalan')
+3002: Route::get('/debug-surat-jalan', function() {
+3006: $data['total_surat_jalans'] = \App\Models\SuratJalan::count();
+3020: $data['sample_data'] = \App\Models\SuratJalan::select('id', 'no_surat_jalan', 'status', 'rit', 'supir_nama', 'kenek_nama')
+3025: $data['recent_data'] = \App\Models\SuratJalan::select('id', 'no_surat_jalan', 'status', 'rit', 'supir_nama', 'kenek_nama')
+3031: })->name('debug.surat-jalan');
+3038: Route::get('tanda-terima/select-surat-jalan', [\App\Http\Controllers\TandaTerimaController::class, 'selectSuratJalan'])
+3039: ->name('tanda-terima.select-surat-jalan')
+3043: Route::get('tanda-terima/from-surat-jalan/{suratJalan}', [\App\Http\Controllers\TandaTerimaController::class, 'createFromSuratJalan'])
+3044: ->name('tanda-terima.from-surat-jalan')
+3137: Route::get('tanda-terima-tanpa-surat-jalan/pilih-tipe', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'pilihTipe'])
+3138: ->name('tanda-terima-tanpa-surat-jalan.pilih-tipe')
+3139: ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
+3144: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3148: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3152: ->middleware('can:tanda-terima-tanpa-surat-jalan-delete');
+3156: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3160: ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+3164: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3168: ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+3172: ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+3176: ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+3179: ->name('tanda-terima-tanpa-surat-jalan.assign-container')
+3180: ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+3184: ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
+3188: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3192: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3196: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3203: ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+3209: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3214: 'index' => 'can:tanda-terima-tanpa-surat-jalan-view',
+3215: 'create' => 'can:tanda-terima-tanpa-surat-jalan-create',
+3216: 'store' => 'can:tanda-terima-tanpa-surat-jalan-create',
+3217: 'show' => 'can:tanda-terima-tanpa-surat-jalan-view',
+3218: 'edit' => 'can:tanda-terima-tanpa-surat-jalan-update',
+3219: 'update' => 'can:tanda-terima-tanpa-surat-jalan-update',
+3220: 'destroy' => 'can:tanda-terima-tanpa-surat-jalan-delete'
+3224: Route::get('tanda-terima-tanpa-surat-jalan/create-lcl', [\App\Http\Controllers\TandaTerimaLclController::class, 'create'])
+3225: ->name('tanda-terima-tanpa-surat-jalan.create-lcl')
+3226: ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
+3229: Route::get('tanda-terima-tanpa-surat-jalan/export', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'bulkExport'])
+3230: ->name('tanda-terima-tanpa-surat-jalan.export')
+3231: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3234: Route::get('tanda-terima-tanpa-surat-jalan/{tandaTerimaTanpaSuratJalan}/download-image/{imageIndex}',
+3236: ->name('tanda-terima-tanpa-surat-jalan.download-image')
+3237: ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+3240: Route::post('tanda-terima-tanpa-surat-jalan/{tandaTerimaTanpaSuratJalan}/add-to-prospek', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'addToProspek'])
+3241: ->name('tanda-terima-tanpa-surat-jalan.add-to-prospek')
+3242: ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+3246: ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+3248: Route::resource('tanda-terima-tanpa-surat-jalan', \App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class)
+3250: 'index' => 'can:tanda-terima-tanpa-surat-jalan-view',
+3251: 'create' => 'can:tanda-terima-tanpa-surat-jalan-create',
+3252: 'store' => 'can:tanda-terima-tanpa-surat-jalan-create',
+3253: 'show' => 'can:tanda-terima-tanpa-surat-jalan-view',
+3254: 'edit' => 'can:tanda-terima-tanpa-surat-jalan-update',
+3255: 'update' => 'can:tanda-terima-tanpa-surat-jalan-update',
+3256: 'destroy' => 'can:tanda-terima-tanpa-surat-jalan-delete'
+3260: Route::post('tanda-terima-tanpa-surat-jalan/{id}/sync-penerima-pengirim', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'syncPenerimaPengirim'])
+3261: ->name('tanda-terima-tanpa-surat-jalan.sync-penerima-pengirim')
+3262: ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+3264: Route::resource('tanda-terima-tanpa-surat-jalan', \App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class)
+3266: 'index' => 'can:tanda-terima-tanpa-surat-jalan-view',
+3267: 'create' => 'can:tanda-terima-tanpa-surat-jalan-create',
+3268: 'store' => 'can:tanda-terima-tanpa-surat-jalan-create',
+3269: 'show' => 'can:tanda-terima-tanpa-surat-jalan-view',
+3270: 'edit' => 'can:tanda-terima-tanpa-surat-jalan-update',
+3271: 'update' => 'can:tanda-terima-tanpa-surat-jalan-update',
+3272: 'destroy' => 'can:tanda-terima-tanpa-surat-jalan-delete'
+3280: Route::get('gate-in/get-kontainers-surat-jalan', [\App\Http\Controllers\GateInController::class, 'getKontainersSuratJalan'])
+3281: ->name('gate-in.get-kontainers-surat-jalan')
+3344: ->name('checkpoint-kontainer-keluar.surat-jalan')
+3618: // Route::prefix('pranota-surat-jalan')->name('pranota-surat-jalan.')->middleware(['auth'])->group(function () {
+3626: Route::prefix('pembayaran-pranota-surat-jalan')
+3627: ->name('pembayaran-pranota-surat-jalan.')
+3632: ->middleware('can:pembayaran-pranota-surat-jalan-view');
+3635: ->middleware('can:pembayaran-pranota-surat-jalan-create');
+3638: ->middleware('can:pembayaran-pranota-surat-jalan-create');
+3641: ->middleware('can:pembayaran-pranota-surat-jalan-view');
+3644: ->middleware('can:pembayaran-pranota-surat-jalan-edit');
+3647: ->middleware('can:pembayaran-pranota-surat-jalan-edit');
+3650: ->middleware('can:pembayaran-pranota-surat-jalan-delete');
+3655: ->middleware('can:pembayaran-pranota-surat-jalan-create');
+3772: Route::get('/surat-jalan/{suratJalan}/checkpoint', [CheckpointController::class, 'createSuratJalan'])
+3773: ->name('checkpoint.create-surat-jalan');
+3774: Route::post('/surat-jalan/{suratJalan}/checkpoint', [CheckpointController::class, 'storeSuratJalan'])
+3775: ->name('checkpoint.store-surat-jalan');
+3778: Route::get('/surat-jalan-bongkaran/{id}/checkpoint', [CheckpointController::class, 'createSuratJalanBongkaran'])
+3779: ->name('checkpoint.create-surat-jalan-bongkaran');
+3780: Route::post('/surat-jalan-bongkaran/{id}/checkpoint', [CheckpointController::class, 'storeSuratJalanBongkaran'])
+3781: ->name('checkpoint.store-surat-jalan-bongkaran');
+4710: Route::get('/surat-jalan', [App\Http\Controllers\ReportSuratJalanController::class, 'index'])->name('surat_jalan.index');
+4711: Route::get('/surat-jalan/view', [App\Http\Controllers\ReportSuratJalanController::class, 'view'])->name('surat_jalan.view');
+4712: Route::get('/surat-jalan/export', [App\Http\Controllers\ReportSuratJalanController::class, 'export'])->name('surat_jalan.export');
+4815: Route::post('prospek/scan-surat-jalan', [ProspekController::class, 'scanSuratJalan'])->name('prospek.scan-surat-jalan')
+4848: Route::post('prospek/{prospek}/sync-from-surat-jalan', [ProspekController::class, 'syncFromSuratJalan'])->name('prospek.sync-from-surat-jalan')

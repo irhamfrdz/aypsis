@@ -1297,6 +1297,13 @@
                             </a>
                         @endif
 
+                        {{-- Pembatalan Surat Jalan --}}
+                        @if($user && $user->can('surat-jalan-update'))
+                            <a href="{{ route('surat-jalan.pembatalan') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('surat-jalan.pembatalan') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                                <span class="text-xs">Pembatalan Surat Jalan</span>
+                            </a>
+                        @endif
+
                         {{-- Uang Jalan --}}
                         @if($user && ($user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete')))
                             <a href="{{ route('uang-jalan.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('uang-jalan.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
