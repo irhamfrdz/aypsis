@@ -104,6 +104,7 @@
                         <option value="">-- Pilih Vendor --</option>
                         <option value="ZONA" {{ old('vendor') == 'ZONA' ? 'selected' : '' }}>ZONA</option>
                         <option value="DPE" {{ old('vendor') == 'DPE' ? 'selected' : '' }}>DPE</option>
+                        <option value="MERATUS" {{ old('vendor') == 'MERATUS' ? 'selected' : '' }}>MERATUS</option>
                     </select>
                     @error('vendor')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>

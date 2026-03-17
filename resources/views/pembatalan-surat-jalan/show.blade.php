@@ -21,7 +21,7 @@
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">Informasi Surat Jalan</h3>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
                 <div>
                     <span class="block text-gray-500">No. Surat Jalan</span>
@@ -29,7 +29,49 @@
                 </div>
                 <div>
                     <span class="block text-gray-500">Waktu Pembatalan</span>
-                    <span class="font-bold text-gray-900 text-green-700">{{ $pembatalanSuratJalan->created_at->format('d/m/Y H:i') }}</span>
+                    <span class="font-bold text-green-700">{{ $pembatalanSuratJalan->created_at->format('d/m/Y H:i') }}</span>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 mb-6">
+                <h3 class="text-base font-bold text-gray-800 mb-3">Detail Transaksi Pembayaran</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                        <span class="block text-gray-500">Nomor Pembayaran</span>
+                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->nomor_pembayaran ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Nomor Accurate</span>
+                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->nomor_accurate ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Tanggal Kas</span>
+                        <span class="font-semibold text-gray-900">{{ optional($pembatalanSuratJalan->tanggal_kas)->format('d/m/Y') ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Bank</span>
+                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->bank ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Jenis Transaksi</span>
+                        <span class="font-semibold text-gray-900">{{ $pembatalanSuratJalan->jenis_transaksi ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Tanggal Pembayaran</span>
+                        <span class="font-semibold text-gray-900">{{ optional($pembatalanSuratJalan->tanggal_pembayaran)->format('d/m/Y') ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Total Tagihan</span>
+                        <span class="font-semibold text-gray-900">Rp {{ number_format((float) ($pembatalanSuratJalan->total_pembayaran ?? 0), 0, ',', '.') }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Penyesuaian</span>
+                        <span class="font-semibold text-gray-900">Rp {{ number_format((float) ($pembatalanSuratJalan->total_tagihan_penyesuaian ?? 0), 0, ',', '.') }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Total Akhir</span>
+                        <span class="font-semibold text-indigo-700">Rp {{ number_format((float) ($pembatalanSuratJalan->total_tagihan_setelah_penyesuaian ?? 0), 0, ',', '.') }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -37,6 +79,20 @@
                 <span class="block text-gray-500 text-sm">Alasan Batal</span>
                 <p class="font-medium text-gray-800 mt-1 bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm">
                     {{ $pembatalanSuratJalan->alasan_batal }}
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <span class="block text-gray-500 text-sm">Alasan Penyesuaian</span>
+                <p class="font-medium text-gray-800 mt-1 bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm">
+                    {{ $pembatalanSuratJalan->alasan_penyesuaian ?? '-' }}
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <span class="block text-gray-500 text-sm">Keterangan</span>
+                <p class="font-medium text-gray-800 mt-1 bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm">
+                    {{ $pembatalanSuratJalan->keterangan ?? '-' }}
                 </p>
             </div>
 

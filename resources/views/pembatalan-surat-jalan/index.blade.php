@@ -33,10 +33,15 @@
 
         <!-- Table -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. SJ</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Pembayaran</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Akhir</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan Batal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu Batal</th>
@@ -48,6 +53,18 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 font-medium text-gray-900">
                             {{ $pembatalan->no_surat_jalan }}
+                        </td>
+                        <td class="px-6 py-4 text-gray-700 whitespace-nowrap">
+                            {{ $pembatalan->nomor_pembayaran ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-gray-700 whitespace-nowrap">
+                            {{ $pembatalan->bank ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-gray-700 whitespace-nowrap">
+                            {{ $pembatalan->jenis_transaksi ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-right font-semibold text-gray-900 whitespace-nowrap">
+                            Rp {{ number_format((float) ($pembatalan->total_tagihan_setelah_penyesuaian ?? 0), 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 text-gray-600 max-w-xs truncate">
                             {{ $pembatalan->alasan_batal }}
@@ -73,11 +90,12 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">Belum ada riwayat pembatalan</td>
+                        <td colspan="9" class="px-6 py-8 text-center text-sm text-gray-500">Belum ada riwayat pembatalan</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
 
         @if($pembatalans->hasPages())

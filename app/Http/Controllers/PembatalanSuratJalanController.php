@@ -144,7 +144,13 @@ class PembatalanSuratJalanController extends Controller
      */
     public function edit(PembatalanSuratJalan $pembatalanSuratJalan)
     {
-        return view('pembatalan-surat-jalan.edit', compact('pembatalanSuratJalan'));
+        $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
+                      ->orWhere('nama_akun', 'LIKE', '%bank%')
+                      ->orWhere('nama_akun', 'LIKE', '%kas%')
+                      ->orderBy('nama_akun')
+                      ->get();
+
+        return view('pembatalan-surat-jalan.edit', compact('pembatalanSuratJalan', 'akunCoa'));
     }
 
     /**
@@ -152,12 +158,34 @@ class PembatalanSuratJalanController extends Controller
      */
     public function update(Request $request, PembatalanSuratJalan $pembatalanSuratJalan)
     {
-        $request->validate([
-            'alasan_batal' => 'required'
+        $validated = $request->validate([
+            'alasan_batal' => 'required|string',
+            'nomor_accurate' => 'nullable|string|max:255',
+            'tanggal_kas' => 'required|date',
+            'tanggal_pembayaran' => 'required|date',
+            'bank' => 'required|string|max:255',
+            'jenis_transaksi' => 'required|in:Debit,Kredit',
+            'total_tagihan_penyesuaian' => 'nullable|numeric',
+            'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
+            'alasan_penyesuaian' => 'nullable|string',
+            'keterangan' => 'nullable|string',
         ]);
 
+        // Keep total_tagihan_setelah_penyesuaian in sync if not explicitly changed
+        $totalPembayaran = (float) ($pembatalanSuratJalan->total_pembayaran ?? 0);
+        $totalPenyesuaian = (float) ($validated['total_tagihan_penyesuaian'] ?? 0);
+
         $pembatalanSuratJalan->update([
-            'alasan_batal' => $request->alasan_batal,
+            'nomor_accurate' => $validated['nomor_accurate'] ?? null,
+            'tanggal_kas' => $validated['tanggal_kas'],
+            'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
+            'bank' => $validated['bank'],
+            'jenis_transaksi' => $validated['jenis_transaksi'],
+            'total_tagihan_penyesuaian' => $validated['total_tagihan_penyesuaian'] ?? 0,
+            'total_tagihan_setelah_penyesuaian' => $validated['total_tagihan_setelah_penyesuaian'] ?? ($totalPembayaran + $totalPenyesuaian),
+            'alasan_penyesuaian' => $validated['alasan_penyesuaian'] ?? null,
+            'keterangan' => $validated['keterangan'] ?? null,
+            'alasan_batal' => $validated['alasan_batal'],
             'updated_by' => auth()->id()
         ]);
 
