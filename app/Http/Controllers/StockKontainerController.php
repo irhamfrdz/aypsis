@@ -19,6 +19,15 @@ class StockKontainerController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Filter berdasarkan gudang
+        if ($request->filled('gudang_id')) {
+            if ($request->gudang_id == 'none') {
+                $query->whereNull('gudangs_id');
+            } else {
+                $query->where('gudangs_id', $request->gudang_id);
+            }
+        }
+
         // Filter tanpa ukuran
         if ($request->has('no_size') && $request->no_size == '1') {
             $query->where(function($q) {
