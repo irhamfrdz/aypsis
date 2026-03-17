@@ -20,15 +20,15 @@
 
         <!-- Total Summaries Top Panel -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-            <div class="bg-gradient-to-br from-orange-400 to-orange-600 p-5 rounded-2xl shadow-lg text-white">
+            <div style="background: linear-gradient(135deg, #EA580C 0%, #C2410C 100%)" class="p-5 rounded-2xl shadow-lg text-white">
                 <h3 class="text-xs font-semibold uppercase tracking-wider opacity-80">Total Kontainer Sewa</h3>
                 <p class="text-2xl sm:text-3xl font-extrabold mt-2">{{ $data->sum('total_sewa') }}</p>
             </div>
-            <div class="bg-gradient-to-br from-blue-400 to-blue-600 p-5 rounded-2xl shadow-lg text-white">
+            <div style="background: linear-gradient(135deg, #2563EB 0%, #1E3A8A 100%)" class="p-5 rounded-2xl shadow-lg text-white">
                 <h3 class="text-xs font-semibold uppercase tracking-wider opacity-80">Total Stock Kontainer</h3>
                 <p class="text-2xl sm:text-3xl font-extrabold mt-2">{{ $data->sum('total_stock') }}</p>
             </div>
-            <div class="bg-gradient-to-br from-green-400 to-green-600 p-5 rounded-2xl shadow-lg text-white">
+            <div style="background: linear-gradient(135deg, #16A34A 0%, #14532D 100%)" class="p-5 rounded-2xl shadow-lg text-white">
                 <h3 class="text-xs font-semibold uppercase tracking-wider opacity-80">Total Gabungan</h3>
                 <p class="text-2xl sm:text-3xl font-extrabold mt-2">{{ $data->sum('total_gabungan') }}</p>
             </div>
@@ -38,9 +38,9 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
             @forelse($data as $item)
             <div class="group relative bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-orange-400 active:scale-95 sm:active:scale-100 sm:hover:-translate-y-1 touch-manipulation">
-                <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-orange-100 to-orange-50 rounded-bl-full opacity-30"></div>
+                <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-orange-50 rounded-bl-full opacity-40"></div>
                 <div class="relative p-5 sm:p-8">
-                    <div class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl shadow-lg mb-4 sm:mb-5 group-hover:scale-110 transition-transform duration-300">
+                    <div style="background: linear-gradient(135deg, #EA580C 0%, #9A3412 100%)" class="flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl shadow-lg mb-4 sm:mb-5 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                         </svg>
