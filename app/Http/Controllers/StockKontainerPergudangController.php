@@ -58,4 +58,46 @@ class StockKontainerPergudangController extends Controller
 
         return view('master-kontainer.stock-pergudang', compact('data'));
     }
+
+    public function show($id)
+    {
+        $gudang = null;
+        if ($id !== 'none' && $id != '') {
+            $gudang = Gudang::find($id);
+            if (!$gudang) {
+                return redirect()->route('kontainer.stock-pergudang')->with('error', 'Gudang tidak ditemukan.');
+            }
+        }
+
+        $namaGudang = $gudang ? $gudang->nama_gudang : 'Tanpa Gudang / Belum Ditentukan';
+
+        // 1. Ambil dari Kontainer (Sewa)
+        $querySewa = \App\Models\Kontainer::where('status', '!=', 'inactive');
+        if ($id === 'none' || $id == '') {
+            $querySewa->whereNull('gudangs_id');
+        } else {
+            $querySewa->where('gudangs_id', $id);
+        }
+        $sewas = $querySewa->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function($i) {
+            $i->tipe_sumber = 'Sewa';
+            return $i;
+        });
+
+        // 2. Ambil dari StockKontainer (Milik Sendiri)
+        $queryStock = \App\Models\StockKontainer::where('status', '!=', 'inactive');
+        if ($id === 'none' || $id == '') {
+            $queryStock->whereNull('gudangs_id');
+        } else {
+            $queryStock->where('gudangs_id', $id);
+        }
+        $stocks = $queryStock->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function($i) {
+            $i->tipe_sumber = 'Stock';
+            return $i;
+        });
+
+        // Merge lists together
+        $allContainers = $sewas->concat($stocks);
+
+        return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang'));
+    }
 }
