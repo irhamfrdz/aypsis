@@ -3220,7 +3220,7 @@ class BiayaKapalController extends Controller
             
             $bls = DB::table('bls')
                 ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl')
-                ->where('nama_kapal', 'like', "%{$cleanKapalNama}%")
+                ->where(DB::raw("REPLACE(nama_kapal, '.', '')"), 'like', "%{$cleanKapalNama}%")
                 ->where('no_voyage', $voyage)
                 ->get();
 

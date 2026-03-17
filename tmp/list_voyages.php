@@ -6,14 +6,24 @@ $kernel->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 
-echo "--- voyages for %SEKAR% in 'bls' ---\n";
-$items = DB::table('bls')
-    ->where('nama_kapal', 'like', '%SEKAR%')
-    ->select('nama_kapal', 'no_voyage', 'sudah_ob')
-    ->distinct()
+$voyage = 'SA05BJ26';
+
+echo "--- Any row with Voyage '$voyage' in 'bls' ---\n";
+$itemsBls = DB::table('bls')
+    ->where('no_voyage', $voyage)
+    ->select('nama_kapal', 'nomor_kontainer')
     ->get();
 
-foreach($items as $i) {
-    echo "- Kapal: '$i->nama_kapal' | Voyage: '$i->no_voyage' | Sudah OB: " . ($i->sudah_ob ? 'YA' : 'TIDAK') . "\n";
+foreach($itemsBls as $i) {
+    echo "- Kapal: '$i->nama_kapal'\n";
 }
-echo "\nTotal items found: " . $items->count() . "\n";
+
+echo "\n--- Any row with Voyage '$voyage' in 'naik_kapal' ---\n";
+$itemsNk = DB::table('naik_kapal')
+    ->where('no_voyage', $voyage)
+    ->select('nama_kapal', 'nomor_kontainer')
+    ->get();
+
+foreach($itemsNk as $n) {
+    echo "- Kapal: '$n->nama_kapal'\n";
+}

@@ -6,29 +6,29 @@ $kernel->bootstrap();
 
 use Illuminate\Support\Facades\DB;
 
-$kapalNama = 'KM. SEKAR PERMATA';
-$voyage = 'SP04PJ26';
+$kapalNama = 'KM. SUMBER ABADI 178';
+$voyage = 'SA05BJ26';
 
-echo "Querying for Kapal: $kapalNama, Voyage: $voyage\n\n";
+$cleanKapalNama = str_replace('.', '', $kapalNama);
+
+echo "Querying for Original: '$kapalNama' | Clean: '$cleanKapalNama'\n";
 
 $bls = DB::table('bls')
-    ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl')
-    ->where('nama_kapal', 'like', "%{$kapalNama}%")
-    ->where('no_voyage', 'like', "%{$voyage}%")
+    ->where('nama_kapal', 'like', "%{$cleanKapalNama}%")
+    ->where('no_voyage', $voyage)
     ->get();
 
-echo "BLS (Bongkar) items count: " . $bls->count() . "\n";
+echo "BLS row count: " . $bls->count() . "\n";
 foreach($bls as $b) {
-    echo "- " . ($b->nomor_kontainer ?? 'N/A') . " | " . ($b->nama_barang ?? '') . " | sudah_ob: " . json_encode($b->sudah_ob) . " | sudah_tl: " . json_encode($b->sudah_tl) . "\n";
+    echo "- BLS: " . ($b->nomor_kontainer ?? 'N/A') . " | Size: " . ($b->size_kontainer ?? '') . " | Nama: " . ($b->nama_barang ?? '') . "\n";
 }
 
 $naikKapals = DB::table('naik_kapal')
-    ->select('jenis_barang as nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'is_tl as sudah_tl')
-    ->where('nama_kapal', 'like', "%{$kapalNama}%")
-    ->where('no_voyage', 'like', "%{$voyage}%")
+    ->where('nama_kapal', 'like', "%{$cleanKapalNama}%")
+    ->where('no_voyage', $voyage)
     ->get();
 
-echo "\nNaikKapal (Muat) items count: " . $naikKapals->count() . "\n";
+echo "\nNaikKapal row count: " . $naikKapals->count() . "\n";
 foreach($naikKapals as $n) {
-    echo "- " . ($n->nomor_kontainer ?? 'N/A') . " | " . ($n->nama_barang ?? '') . " | sudah_ob: " . json_encode($n->sudah_ob) . " | sudah_tl: " . json_encode($n->sudah_tl) . "\n";
+    echo "- NK: " . ($n->nomor_kontainer ?? 'N/A') . " | Size: " . ($n->size_kontainer ?? '') . " | Jenis: " . ($n->jenis_barang ?? '') . "\n";
 }
