@@ -3234,12 +3234,6 @@ class BiayaKapalController extends Controller
             ];
 
             foreach ($bls as $bl) {
-                // Filter by OB status just like making a pranota OB
-                $isOB = ($bl->sudah_ob === true || $bl->sudah_ob === 1 || $bl->sudah_ob === '1');
-                if (!$isOB) {
-                    continue;
-                }
-
                 // Determine if it's CARGO based on tipe_kontainer OR nomor_kontainer
                 $tipeKontainer = strtoupper($bl->tipe_kontainer ?? '');
                 $nomorKontainer = strtoupper($bl->nomor_kontainer ?? '');
