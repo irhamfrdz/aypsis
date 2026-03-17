@@ -398,6 +398,149 @@ class KontainerImportController extends Controller
     }
 
     /**
+     * Quick import with Master Unit format.
+     * Expected rows: UNIT|VENDOR|TIPE|SIZE
+     */
+    public function importMasterUnit(Request $request)
+    {
+        $request->validate([
+            'rows' => 'required|string',
+        ], [
+            'rows.required' => 'Data import tidak boleh kosong.',
+        ]);
+
+        $lines = preg_split('/\r\n|\r|\n/', trim($request->input('rows')));
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($lines as $index => $line) {
+                $lineNumber = $index + 1;
+                if (trim($line) === '') {
+                    $skipped++;
+                    continue;
+                }
+
+                $parts = array_map('trim', explode('|', $line));
+                if (count($parts) < 4) {
+                    $errors[] = "Baris {$lineNumber}: format harus UNIT|VENDOR|TIPE|SIZE";
+                    continue;
+                }
+
+                [$unitNumber, $vendor, $tipeKontainer, $ukuran] = $parts;
+
+                $unitNumber = strtoupper($unitNumber);
+                $vendor = strtoupper($vendor);
+                $tipeKontainer = $tipeKontainer !== '' ? $tipeKontainer : 'Dry Container';
+                $ukuran = strtoupper(str_replace('FT', '', $ukuran));
+
+                if (strlen($unitNumber) !== 11) {
+                    $errors[] = "Baris {$lineNumber}: nomor kontainer '{$unitNumber}' harus 11 karakter (format ABCD123456X)";
+                    continue;
+                }
+
+                if (!in_array($ukuran, ['10', '20', '40'], true)) {
+                    $errors[] = "Baris {$lineNumber}: ukuran '{$ukuran}' tidak valid (gunakan 10/20/40)";
+                    continue;
+                }
+
+                $awalan = substr($unitNumber, 0, 4);
+                $nomorSeri = substr($unitNumber, 4, 6);
+                $akhiran = substr($unitNumber, 10, 1);
+
+                $payload = [
+                    'awalan_kontainer' => $awalan,
+                    'nomor_seri_kontainer' => $nomorSeri,
+                    'akhiran_kontainer' => $akhiran,
+                    'ukuran' => $ukuran,
+                    'vendor' => $vendor,
+                    'tipe_kontainer' => $tipeKontainer,
+                    'status' => 'Tersedia',
+                ];
+
+                // Optional: Gudang (Warehouse)
+                if (isset($parts[4]) && !empty($parts[4])) {
+                    $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . $parts[4] . '%')->first();
+                    if ($gudang) {
+                        $payload['gudangs_id'] = $gudang->id;
+                    }
+                }
+
+                // Optional: Tanggal Mulai Sewa
+                if (isset($parts[5]) && !empty($parts[5])) {
+                    $parsedDate = $this->parseDate($parts[5]);
+                    if ($parsedDate) {
+                        $payload['tanggal_mulai_sewa'] = $parsedDate->format('Y-m-d');
+                    }
+                }
+
+                // Optional: Tanggal Selesai Sewa
+                if (isset($parts[6]) && !empty($parts[6])) {
+                    $parsedDate = $this->parseDate($parts[6]);
+                    if ($parsedDate) {
+                        $payload['tanggal_selesai_sewa'] = $parsedDate->format('Y-m-d');
+                    }
+                }
+
+                // Optional: Keterangan
+                if (isset($parts[7]) && !empty($parts[7])) {
+                    $payload['keterangan'] = $parts[7];
+                }
+
+                $existing = Kontainer::where('nomor_seri_gabungan', $unitNumber)->first();
+                if ($existing) {
+                    $existing->fill($payload);
+                    // Preserve existing status if already set by business process.
+                    if (!empty($existing->status)) {
+                        unset($payload['status']);
+                        $existing->fill($payload);
+                    }
+                    $existing->save();
+                    $updated++;
+                } else {
+                    Kontainer::create(array_merge($payload, [
+                        'nomor_seri_gabungan' => $unitNumber,
+                    ]));
+                    $created++;
+                }
+            }
+
+            DB::commit();
+
+            $messages = [];
+            if ($created > 0) {
+                $messages[] = "{$created} data baru ditambahkan";
+            }
+            if ($updated > 0) {
+                $messages[] = "{$updated} data diperbarui";
+            }
+            if ($skipped > 0) {
+                $messages[] = "{$skipped} baris kosong dilewati";
+            }
+            if (!empty($errors)) {
+                $preview = implode('; ', array_slice($errors, 0, 3));
+                if (count($errors) > 3) {
+                    $preview .= ' ...';
+                }
+                $messages[] = count($errors) . " baris gagal ({$preview})";
+                return redirect()->route('master.kontainer.index')->with('warning', implode('. ', $messages));
+            }
+
+            if (empty($messages)) {
+                $messages[] = 'Tidak ada data yang diproses.';
+            }
+
+            return redirect()->route('master.kontainer.index')->with('success', implode('. ', $messages));
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->route('master.kontainer.index')->with('error', 'Import Master Unit gagal: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Helper function untuk parse berbagai format tanggal
      */
     private function parseDate($dateString)
@@ -1288,6 +1431,58 @@ class KontainerImportController extends Controller
             return back()->with('error', 'Gagal export data: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Export kontainer dengan status tidak tersedia.
+     */
+    public function exportKontainerTidakTersedia()
+    {
+        try {
+            $fileName = 'kontainer_tidak_tersedia_' . date('Y-m-d_H-i-s') . '.csv';
+
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            ];
+
+            $kontainers = Kontainer::where('status', 'Tidak Tersedia')
+                ->orderBy('nomor_seri_gabungan', 'asc')
+                ->get();
+
+            $callback = function() use ($kontainers) {
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, [
+                    'Nomor Kontainer',
+                    'Ukuran',
+                    'Tipe',
+                    'Vendor',
+                    'Status',
+                    'Tanggal Mulai Sewa',
+                    'Tanggal Selesai Sewa'
+                ], ';');
+
+                foreach ($kontainers as $kontainer) {
+                    fputcsv($file, [
+                        $kontainer->nomor_seri_gabungan,
+                        $kontainer->ukuran,
+                        $kontainer->tipe_kontainer,
+                        $kontainer->vendor ?? '',
+                        $kontainer->status,
+                        $kontainer->tanggal_mulai_sewa ? $kontainer->tanggal_mulai_sewa->format('d-M-y') : '',
+                        $kontainer->tanggal_selesai_sewa ? $kontainer->tanggal_selesai_sewa->format('d-M-y') : ''
+                    ], ';');
+                }
+
+                fclose($file);
+            };
+
+            return Response::stream($callback, 200, $headers);
+        } catch (Exception $e) {
+            return back()->with('error', 'Gagal export data: ' . $e->getMessage());
+        }
+    }
+
     /**
      * Download template CSV untuk update gudang
      */

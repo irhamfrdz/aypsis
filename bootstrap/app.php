@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\EnsureRole::class,
             'permission' => \App\Http\Middleware\EnsurePermission::class,
             'permission-like' => \App\Http\Middleware\EnsurePermissionLike::class,
+            'only.kiky' => \App\Http\Middleware\EnsureKikyUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

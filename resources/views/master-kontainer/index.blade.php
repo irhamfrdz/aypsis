@@ -4,6 +4,9 @@
 @section('page_title','Master Kontainer Sewa')
 
 @section('content')
+@php
+    $isKikyUser = auth()->check() && in_array(strtolower((string) auth()->user()->username), ['kiky'], true);
+@endphp
 
 <h2 class="text-xl font-bold text-gray-800 mb-4">Daftar Kontainer Sewa</h2>
 
@@ -213,6 +216,7 @@
             Template (Gabungan)
         </a>
 
+        @if($isKikyUser)
         <!-- Download Template Tanggal Sewa Button -->
         <a href="{{ route('master.kontainer.download-template-tanggal-sewa') }}"
            class="inline-flex items-center px-4 py-2 border border-purple-600 text-sm font-medium rounded-md shadow-sm text-purple-600 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
@@ -221,6 +225,7 @@
             </svg>
             Template Tanggal Sewa
         </a>
+        @endif
 
         <!-- Export CSV Button -->
         <a href="{{ route('master.kontainer.export', request()->query()) }}"
@@ -231,24 +236,29 @@
             Export CSV
         </a>
 
+        @if($isKikyUser)
         <!-- Export Kontainer Dengan Tanggal Mulai Sewa Tanpa Tanggal Akhir Button -->
-        <a href="{{ route('master.kontainer.export', array_merge(request()->query(), ['search' => '', 'vendor' => '', 'ukuran' => '', 'status' => '', 'tanggal_sewa' => 'tanpa_tanggal_akhir'])) }}"
+        <a href="{{ route('master.kontainer.export-tanpa-tanggal-sewa') }}"
            class="inline-flex items-center px-4 py-2 border border-red-600 text-sm font-medium rounded-md shadow-sm text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
             Export Sewa Aktif Tanpa Tanggal Akhir
         </a>
+        @endif
 
+        @if($isKikyUser)
         <!-- Export Kontainer Tidak Tersedia Button -->
-        <a href="{{ route('master.kontainer.export', array_merge(request()->query(), ['search' => '', 'vendor' => '', 'ukuran' => '', 'status' => 'Tidak Tersedia', 'tanggal_sewa' => ''])) }}"
+        <a href="{{ route('master.kontainer.export-tidak-tersedia') }}"
            class="inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
             </svg>
             Export Kontainer Tidak Tersedia
         </a>
+        @endif
 
+        @if($isKikyUser)
         <!-- Import Button -->
         <button onclick="openImportModal()"
                 class="inline-flex items-center px-4 py-2 border border-green-600 text-sm font-medium rounded-md shadow-sm text-green-600 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
@@ -257,7 +267,9 @@
             </svg>
             Import (Terpisah)
         </button>
+        @endif
 
+        @if($isKikyUser)
         <!-- Import Nomor Gabungan Button -->
         <button onclick="openImportNomorGabunganModal()"
                 class="inline-flex items-center px-4 py-2 border border-teal-600 text-sm font-medium rounded-md shadow-sm text-teal-600 bg-white hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
@@ -266,6 +278,7 @@
             </svg>
             Import (Gabungan)
         </button>
+        @endif
 
         <!-- Import Tanggal Sewa Button -->
         <button onclick="openImportTanggalSewaModal()"
@@ -276,6 +289,16 @@
             Import Tanggal Sewa
         </button>
 
+        <!-- Quick Import Master Unit Button -->
+        <button type="button" onclick="openQuickImportMasterUnitModal()"
+                class="inline-flex items-center px-4 py-2 border border-cyan-600 text-sm font-medium rounded-md shadow-sm text-cyan-600 bg-white hover:bg-cyan-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+            </svg>
+            Quick Import Master Unit
+        </button>
+
+        @if($isKikyUser)
         <!-- Update Gudang Button -->
         <button onclick="openUpdateGudangModal()"
                 class="inline-flex items-center px-4 py-2 border border-yellow-600 text-sm font-medium rounded-md shadow-sm text-yellow-600 bg-white hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
@@ -284,6 +307,7 @@
             </svg>
             Update Gudang
         </button>
+        @endif
     </div>
 
     <div>
@@ -293,6 +317,39 @@
             </svg>
             Tambah Kontainer Baru
         </a>
+    </div>
+</div>
+
+{{-- Quick Import Master Unit Modal --}}
+<div id="quickImportMasterUnitModal" class="fixed inset-0 z-[9990] hidden overflow-y-auto" aria-labelledby="quick-import-master-unit-title" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeQuickImportMasterUnitModal()"></div>
+    <div class="relative flex min-h-screen items-center justify-center p-4">
+        <div class="relative z-[10000] my-8 w-full max-w-2xl overflow-hidden rounded-lg bg-white text-left shadow-xl">
+            <form id="quickImportMasterUnitForm" action="{{ route('master.kontainer.import-master-unit') }}" method="POST">
+                @csrf
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 id="quick-import-master-unit-title" class="text-lg leading-6 font-medium text-gray-900">Quick Import Master Unit</h3>
+                    <p class="mt-2 text-sm text-gray-600">Format per baris: <strong>UNIT|VENDOR|TIPE|SIZE</strong> <span class="text-xs text-gray-400 font-normal ml-1">(opsional append: |GUDANG|TGL_MULAI|TGL_SELESAI|KETERANGAN)</span></p>
+
+                    <textarea id="quick_import_rows" name="rows" rows="10" required
+                        class="mt-3 w-full text-sm border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                        placeholder="ALLU2202097|ZONA|HC|20&#10;AMFU3131327|DPE|DRY CONTAINER|40"></textarea>
+
+                    <div class="mt-3 text-xs text-cyan-700 bg-cyan-50 border border-cyan-200 rounded p-2">
+                        Nomor kontainer harus format gabungan 11 karakter (contoh: ABCD123456X). Size yang diterima: 10/20/40.
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-cyan-600 text-base font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        <span class="quick-import-text">Import Sekarang</span>
+                        <span class="quick-import-loading hidden">Processing...</span>
+                    </button>
+                    <button type="button" onclick="closeQuickImportMasterUnitModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -486,6 +543,7 @@
 {{-- Modern Pagination Design --}}
 @include('components.modern-pagination', ['paginator' => $kontainers, 'routeName' => 'master.kontainer.index'])
 
+@if($isKikyUser)
 {{-- Import Modal --}}
 <div id="importModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -597,7 +655,9 @@
         </div>
     </div>
 </div>
+@endif
 
+@if($isKikyUser)
 {{-- Import Nomor Gabungan Modal --}}
 <div id="importNomorGabunganModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -707,6 +767,7 @@
         </div>
     </div>
 </div>
+@endif
 
 {{-- Import Tanggal Sewa Modal --}}
 <div id="importTanggalSewaModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -809,6 +870,7 @@
 </div>
 
 
+@if($isKikyUser)
 {{-- Update Gudang Modal --}}
 <div id="updateGudangModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -886,6 +948,7 @@
         </div>
     </div>
 </div>
+@endif
 
 @endsection
 
@@ -1004,6 +1067,44 @@ document.addEventListener('DOMContentLoaded', function() {
     window.openImportTanggalSewaModal = openImportTanggalSewaModal;
     window.closeImportTanggalSewaModal = closeImportTanggalSewaModal;
 
+    // Quick Import Master Unit Modal Functions
+    function openQuickImportMasterUnitModal() {
+        const modal = document.getElementById('quickImportMasterUnitModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.classList.add('quick-import-open');
+        }
+    }
+
+    function closeQuickImportMasterUnitModal() {
+        const modal = document.getElementById('quickImportMasterUnitModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+            document.body.classList.remove('quick-import-open');
+
+            const form = document.getElementById('quickImportMasterUnitForm');
+            if (form) {
+                form.reset();
+            }
+
+            const submitBtn = document.querySelector('#quickImportMasterUnitForm button[type="submit"]');
+            if (submitBtn) {
+                const normal = submitBtn.querySelector('.quick-import-text');
+                const loading = submitBtn.querySelector('.quick-import-loading');
+                if (normal) normal.classList.remove('hidden');
+                if (loading) loading.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        }
+    }
+
+    window.openQuickImportMasterUnitModal = openQuickImportMasterUnitModal;
+    window.closeQuickImportMasterUnitModal = closeQuickImportMasterUnitModal;
+
     // Handle form submission
     const importForm = document.getElementById('importForm');
     if (importForm) {
@@ -1055,6 +1156,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Handle form submission for quick import master unit
+    const quickImportMasterUnitForm = document.getElementById('quickImportMasterUnitForm');
+    if (quickImportMasterUnitForm) {
+        quickImportMasterUnitForm.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (!submitBtn) return;
+
+            const normal = submitBtn.querySelector('.quick-import-text');
+            const loading = submitBtn.querySelector('.quick-import-loading');
+            if (normal) normal.classList.add('hidden');
+            if (loading) loading.classList.remove('hidden');
+            submitBtn.disabled = true;
+        });
+    }
+
     // Close modal when clicking outside
     const importModal = document.getElementById('importModal');
     if (importModal) {
@@ -1085,11 +1201,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Close quick import modal when clicking outside
+    const quickImportMasterUnitModal = document.getElementById('quickImportMasterUnitModal');
+    if (quickImportMasterUnitModal) {
+        quickImportMasterUnitModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeQuickImportMasterUnitModal();
+            }
+        });
+    }
+
     // Close modal with Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             const modal = document.getElementById('importModal');
             const tanggalSewaModal = document.getElementById('importTanggalSewaModal');
+            const quickImportModal = document.getElementById('quickImportMasterUnitModal');
             
             if (modal && !modal.classList.contains('hidden')) {
                 closeImportModal();
@@ -1097,6 +1224,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (tanggalSewaModal && !tanggalSewaModal.classList.contains('hidden')) {
                 closeImportTanggalSewaModal();
+            }
+
+            if (quickImportModal && !quickImportModal.classList.contains('hidden')) {
+                closeQuickImportMasterUnitModal();
             }
         }
     });
@@ -1321,6 +1452,12 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Optional: Add a subtle border when scrolling */
 .table-container.scrolled .sticky-table-header {
     border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
+}
+
+/* Prevent table container from appearing above quick import modal */
+body.quick-import-open .table-container {
+    position: relative !important;
+    z-index: -1 !important;
 }
 </style>
 

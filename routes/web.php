@@ -473,24 +473,32 @@ Route::middleware([
         Route::get('kontainer/download-template-nomor-gabungan', [KontainerImportController::class, 'downloadTemplateNomorGabungan'])
              ->name('kontainer.download-template-nomor-gabungan');
         Route::get('kontainer/download-template-gudang', [KontainerImportController::class, 'downloadTemplateGudang'])
-             ->name('kontainer.download-template-gudang');
+             ->name('kontainer.download-template-gudang')
+             ->middleware('only.kiky');
         Route::get('kontainer/download-template-tanggal-sewa', [KontainerImportController::class, 'downloadTemplateTanggalSewa'])
-             ->name('kontainer.download-template-tanggal-sewa');
+             ->name('kontainer.download-template-tanggal-sewa')
+             ->middleware('only.kiky');
         Route::get('kontainer/export', [KontainerImportController::class, 'export'])
              ->name('kontainer.export')
              ->middleware('can:master-kontainer-view');
         Route::get('kontainer/export-tanpa-tanggal-sewa', [KontainerImportController::class, 'exportKontainerTanpaTanggalSewa'])
              ->name('kontainer.export-tanpa-tanggal-sewa')
-             ->middleware('can:master-kontainer-view');
+             ->middleware(['can:master-kontainer-view', 'only.kiky']);
+        Route::get('kontainer/export-tidak-tersedia', [KontainerImportController::class, 'exportKontainerTidakTersedia'])
+             ->name('kontainer.export-tidak-tersedia')
+             ->middleware(['can:master-kontainer-view', 'only.kiky']);
         Route::post('kontainer/import', [KontainerImportController::class, 'import'])
              ->name('kontainer.import')
+             ->middleware(['can:master-kontainer-create', 'only.kiky']);
+        Route::post('kontainer/import-master-unit', [KontainerImportController::class, 'importMasterUnit'])
+             ->name('kontainer.import-master-unit')
              ->middleware('can:master-kontainer-create');
         Route::post('kontainer/import-nomor-gabungan', [KontainerImportController::class, 'importNomorGabungan'])
              ->name('kontainer.import-nomor-gabungan')
-             ->middleware('can:master-kontainer-create');
+             ->middleware(['can:master-kontainer-create', 'only.kiky']);
         Route::post('kontainer/update-gudang', [KontainerImportController::class, 'updateGudang'])
              ->name('kontainer.update-gudang')
-             ->middleware('can:master-kontainer-update');
+             ->middleware(['can:master-kontainer-update', 'only.kiky']);
         Route::post('kontainer/import-tanggal-sewa', [KontainerImportController::class, 'importTanggalSewa'])
              ->name('kontainer.import-tanggal-sewa')
              ->middleware('can:master-kontainer-update');
