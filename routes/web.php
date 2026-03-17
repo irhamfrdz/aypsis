@@ -2344,9 +2344,7 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan.index')
          ->middleware('can:surat-jalan-view');
 
-    Route::get('surat-jalan/pembatalan', [\App\Http\Controllers\SuratJalanController::class, 'pembatalanIndex'])
-         ->name('surat-jalan.pembatalan')
-         ->middleware('can:surat-jalan-update');
+    Route::resource('pembatalan-surat-jalan', \App\Http\Controllers\PembatalanSuratJalanController::class);
     
     Route::get('surat-jalan/create', [\App\Http\Controllers\SuratJalanController::class, 'create'])
          ->name('surat-jalan.create')

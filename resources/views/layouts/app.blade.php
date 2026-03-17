@@ -1299,7 +1299,7 @@
 
                         {{-- Pembatalan Surat Jalan --}}
                         @if($user && $user->can('surat-jalan-update'))
-                            <a href="{{ route('surat-jalan.pembatalan') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('surat-jalan.pembatalan') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                            <a href="{{ route('pembatalan-surat-jalan.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('pembatalan-surat-jalan.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
                                 <span class="text-xs">Pembatalan Surat Jalan</span>
                             </a>
                         @endif
