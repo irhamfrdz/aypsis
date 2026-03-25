@@ -247,8 +247,8 @@
                 <tr>
                     <td>No. Rekening</td>
                     <td>: {{ $rekeningDisplay }}</td>
-                    <td>Jenis Biaya</td>
-                    <td>: {{ $biayaKapal->klasifikasiBiaya->nama ?? '-' }}</td>
+                    <td></td>
+                    <td></td>
                 </tr>
             </table>
         </div>
