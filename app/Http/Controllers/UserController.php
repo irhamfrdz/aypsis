@@ -608,6 +608,7 @@ class UserController extends Controller
                 'order-management' => 'order', // Map order-management to order for permission names
                 'surat-jalan' => 'surat-jalan',
                 'surat-jalan-bongkaran' => 'surat-jalan-bongkaran',
+                'surat-jalan-batam' => 'surat-jalan-batam',
                 'pembatalan-surat-jalan' => 'pembatalan-surat-jalan',
                 'uang-jalan-bongkaran' => 'uang-jalan-bongkaran',
                 'tanda-terima' => 'tanda-terima',

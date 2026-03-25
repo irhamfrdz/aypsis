@@ -1260,8 +1260,8 @@
 
                 {{-- Surat Jalan Sub-Dropdown --}}
                 @php
-                    $isSuratJalanRoute = Request::routeIs('orders.*') || Request::routeIs('orders-batam.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('approval-order.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*');
-                    $hasSuratJalanPermissions = $user && (($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')) || ($user->can('order-batam-view') || $user->can('order-batam-create') || $user->can('order-batam-update') || $user->can('order-batam-delete')) || ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')) || $user->can('approval-order-view') || $user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete') || $user->can('pranota-uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view'));
+                    $isSuratJalanRoute = Request::routeIs('orders.*') || Request::routeIs('orders-batam.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-batam.*') || Request::routeIs('approval-order.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*');
+                    $hasSuratJalanPermissions = $user && (($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')) || ($user->can('order-batam-view') || $user->can('order-batam-create') || $user->can('order-batam-update') || $user->can('order-batam-delete')) || ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')) || ($user->can('surat-jalan-batam-view') || $user->can('surat-jalan-batam-create') || $user->can('surat-jalan-batam-update') || $user->can('surat-jalan-batam-delete')) || $user->can('approval-order-view') || $user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete') || $user->can('pranota-uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view'));
                 @endphp
 
                 @if($hasSuratJalanPermissions)
@@ -1297,9 +1297,15 @@
 
                         {{-- Surat Jalan --}}
                         @if($user && ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')))
-                            <a href="{{ route('surat-jalan.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('surat-jalan.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
-                                
+                            <a href="{{ route('surat-jalan.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('surat-jalan.*') && !Request::routeIs('surat-jalan-batam.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
                                 <span class="text-xs">Surat Jalan</span>
+                            </a>
+                        @endif
+
+                        {{-- Surat Jalan Batam --}}
+                        @if($user && ($user->can('surat-jalan-batam-view') || $user->can('surat-jalan-batam-create') || $user->can('surat-jalan-batam-update') || $user->can('surat-jalan-batam-delete')))
+                            <a href="{{ route('surat-jalan-batam.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-batam.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                                <span class="text-xs">Surat Jalan Batam</span>
                             </a>
                         @endif
 

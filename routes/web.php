@@ -2303,6 +2303,39 @@ Route::middleware(['auth'])->group(function () {
          ->name('orders-batam.destroy')
          ->middleware('can:order-batam-delete');
 
+    // 📋 Surat Jalan Batam Management
+    Route::get('surat-jalan-batam', [\App\Http\Controllers\SuratJalanBatamController::class, 'index'])
+         ->name('surat-jalan-batam.index')
+         ->middleware('can:surat-jalan-view'); // Using standard permission to simplify integration
+    
+    Route::get('surat-jalan-batam/select-order', [\App\Http\Controllers\SuratJalanBatamController::class, 'selectOrder'])
+         ->name('surat-jalan-batam.select-order')
+         ->middleware('can:surat-jalan-view');
+
+    Route::get('surat-jalan-batam/create', [\App\Http\Controllers\SuratJalanBatamController::class, 'create'])
+         ->name('surat-jalan-batam.create')
+         ->middleware('can:surat-jalan-create');
+
+    Route::post('surat-jalan-batam', [\App\Http\Controllers\SuratJalanBatamController::class, 'store'])
+         ->name('surat-jalan-batam.store')
+         ->middleware('can:surat-jalan-create');
+
+    Route::get('surat-jalan-batam/{id}', [\App\Http\Controllers\SuratJalanBatamController::class, 'show'])
+         ->name('surat-jalan-batam.show')
+         ->middleware('can:surat-jalan-view');
+
+    Route::get('surat-jalan-batam/{id}/edit', [\App\Http\Controllers\SuratJalanBatamController::class, 'edit'])
+         ->name('surat-jalan-batam.edit')
+         ->middleware('can:surat-jalan-update');
+
+    Route::put('surat-jalan-batam/{id}', [\App\Http\Controllers\SuratJalanBatamController::class, 'update'])
+         ->name('surat-jalan-batam.update')
+         ->middleware('can:surat-jalan-update');
+
+    Route::delete('surat-jalan-batam/{id}', [\App\Http\Controllers\SuratJalanBatamController::class, 'destroy'])
+         ->name('surat-jalan-batam.destroy')
+         ->middleware('can:surat-jalan-delete');
+
     Route::post('/orders-batam/generate-number', [\App\Http\Controllers\OrderBatamController::class, 'generateOrderBatamNumber'])
          ->name('orders-batam.generate-number')
          ->middleware('can:order-batam-create');
