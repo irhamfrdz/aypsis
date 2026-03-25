@@ -99,8 +99,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
             // Filter berdasarkan tipe jika bukan LCL
             if ($request->filled('tipe') && in_array($tipe, ['fcl', 'cargo'])) {
-                // Asumsi ada kolom tipe atau logika untuk membedakan FCL dan Cargo
-                // Untuk sementara kita skip filter ini karena belum ada kolom tipe
+                $query->where('tipe_kontainer', $tipe);
             }
 
             // Search functionality
@@ -329,6 +328,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         }
 
         $query = TandaTerimaTanpaSuratJalan::query();
+        if (!empty($tipe) && in_array($tipe, ['fcl', 'cargo'])) {
+            $query->where('tipe_kontainer', $tipe);
+        }
         if (!empty($search)) {
             $query->search($search);
         }
