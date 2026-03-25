@@ -2267,6 +2267,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('orders-batam.download.template')
          ->middleware('can:order-batam-view');
 
+    Route::get('orders-batam/approval', [\App\Http\Controllers\OrderBatamController::class, 'approval'])
+         ->name('orders-batam.approval.index')
+         ->middleware('can:order-batam-view');
+
     Route::get('orders-batam', [\App\Http\Controllers\OrderBatamController::class, 'index'])
          ->name('orders-batam.index')
          ->middleware('can:order-batam-view');

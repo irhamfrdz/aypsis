@@ -472,6 +472,61 @@ class OrderBatamController extends Controller
     }
 
     /**
+     * Display a listing of incomplete orders for data completion.
+     */
+    public function approval(Request $request)
+    {
+        $query = OrderBatam::with(['term', 'pengirim', 'jenisBarang']);
+
+        // Handle search functionality
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('nomor_order', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('tujuan_kirim', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('tujuan_ambil', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('no_tiket_do', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhereHas('pengirim', function ($query) use ($searchTerm) {
+                      $query->where('nama_pengirim', 'LIKE', '%' . $searchTerm . '%');
+                  });
+            });
+        }
+
+        // Query only incomplete orders using the same logic as the view
+        $query->where(function($q) {
+            $q->whereNull('nomor_order')
+              ->orWhereNull('tanggal_order')
+              ->orWhere(function($sub) {
+                  $sub->whereNull('no_tiket_do')->orWhere('no_tiket_do', '');
+              })
+              ->orWhereNull('pengirim_id')
+              ->orWhere(function($sub) {
+                  $sub->whereNull('tujuan_ambil')->orWhere('tujuan_ambil', '');
+              })
+              ->orWhere(function($sub) {
+                  $sub->whereNull('tujuan_kirim')->orWhere('tujuan_kirim', '');
+              })
+              ->orWhereNull('term_id')
+              ->orWhereNull('jenis_barang_id')
+              ->orWhere(function($sub) {
+                  $sub->whereNull('tipe_kontainer')->orWhere('tipe_kontainer', '');
+              })
+              ->orWhere(function($sub) {
+                  $sub->where('tipe_kontainer', '!=', 'cargo')
+                      ->where(function($sub2) {
+                          $sub2->whereNull('size_kontainer')
+                               ->orWhere('unit_kontainer', '<=', 0);
+                      });
+              });
+        });
+
+        $orders = $query->latest()->paginate(15);
+        $orderBatams = $orders; // For compatibility with view iterations
+
+        return view('orders-batam.approval.index', compact('orders', 'orderBatams'));
+    }
+
+    /**
      * Download template CSV untuk import orders
      */
     public function downloadTemplate()
