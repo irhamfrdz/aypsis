@@ -557,7 +557,7 @@ class NaikKapalController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Bulk action error: ' . $e->getMessage());
+            Log::error('Bulk action error: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
@@ -576,6 +576,13 @@ class NaikKapalController extends Controller
             $naikKapal->load(['prospek.tandaTerima']);
             $prospek = $naikKapal->prospek;
             $tandaTerima = $prospek ? $prospek->tandaTerima : null;
+            
+            // Fallback for CARGO / Tanda Terima Tanpa Surat Jalan
+            $tttsj = null;
+            if (!$tandaTerima && $prospek && $prospek->no_surat_jalan) {
+                // For TTTSJ, the no_surat_jalan in prospek stores the no_tanda_terima
+                $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $prospek->no_surat_jalan)->first();
+            }
             
             // Prepare BL data with complete information from prospek and tanda terima
             $blData = [
@@ -673,6 +680,60 @@ class NaikKapalController extends Controller
                 }
                 if ($tandaTerima->estimasi_nama_kapal && !$blData['nama_kapal']) {
                     $blData['nama_kapal'] = $tandaTerima->estimasi_nama_kapal;
+                }
+            } elseif ($tttsj) {
+                $blData['penerima'] = $tttsj->penerima;
+                $blData['alamat_pengiriman'] = $tttsj->alamat_penerima ?: $tttsj->tujuan_pengiriman;
+                $blData['contact_person'] = $tttsj->pic ?? null;
+                
+                // Get term from TTTSJ
+                $blData['term'] = $tttsj->term;
+                
+                if (!$blData['nama_barang'] && $tttsj->jenis_barang) {
+                    $blData['nama_barang'] = $tttsj->jenis_barang;
+                }
+                
+                // Handle nama_barang as array if needed
+                if (!$blData['nama_barang'] && $tttsj->nama_barang) {
+                    if (is_array($tttsj->nama_barang)) {
+                        $blData['nama_barang'] = implode(', ', $tttsj->nama_barang);
+                    } else {
+                        $blData['nama_barang'] = $tttsj->nama_barang;
+                    }
+                }
+                
+                // Use TTTSJ measurements with proper fallbacks
+                if (!$blData['tonnage'] && $tttsj->total_tonase) {
+                    $blData['tonnage'] = $tttsj->total_tonase;
+                }
+                if (!$blData['volume'] && $tttsj->total_volume) {
+                    $blData['volume'] = $tttsj->total_volume;
+                }
+                if (!$blData['kuantitas'] && $tttsj->jumlah_barang) {
+                    $blData['kuantitas'] = $tttsj->jumlah_barang;
+                }
+                
+                // Additional fields from TTTSJ
+                if ($tttsj->satuan_barang) {
+                    $blData['satuan'] = $tttsj->satuan_barang;
+                }
+                if ($tttsj->no_kontainer && !$blData['nomor_kontainer']) {
+                    $blData['nomor_kontainer'] = $tttsj->no_kontainer;
+                }
+                if ($tttsj->no_seal && !$blData['no_seal']) {
+                    $blData['no_seal'] = $tttsj->no_seal;
+                }
+                if ($tttsj->size_kontainer && !$blData['size_kontainer']) {
+                    $blData['size_kontainer'] = $tttsj->size_kontainer;
+                }
+                if ($tttsj->tipe_kontainer && !$blData['tipe_kontainer']) {
+                    $blData['tipe_kontainer'] = $tttsj->tipe_kontainer;
+                }
+                if ($tttsj->pengirim && !$blData['pengirim']) {
+                    $blData['pengirim'] = $tttsj->pengirim;
+                }
+                if ($tttsj->estimasi_naik_kapal && !$blData['nama_kapal']) {
+                    $blData['nama_kapal'] = $tttsj->estimasi_naik_kapal;
                 }
             }
 
