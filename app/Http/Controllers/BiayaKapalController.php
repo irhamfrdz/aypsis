@@ -3219,7 +3219,7 @@ class BiayaKapalController extends Controller
             $cleanKapalNama = str_replace('.', '', $kapalNama);
             
             $bls = DB::table('bls')
-                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl')
+                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl', 'max_tv')
                 ->where(DB::raw("REPLACE(nama_kapal, '.', '')"), 'like', "%{$cleanKapalNama}%")
                 ->where('no_voyage', $voyage)
                 ->get();
@@ -3228,6 +3228,7 @@ class BiayaKapalController extends Controller
             $counts = [
                 '20' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
                 '40' => ['full' => 0, 'empty' => 0, 'fcl' => 0, 'lcl' => 0],
+                'cargo_max_tv_sum' => 0,
                 'extra' => [
                     'Mobil' => 0,
                     'Trailer' => 0,
@@ -3239,8 +3240,13 @@ class BiayaKapalController extends Controller
                 // Determine if it's CARGO based on tipe_kontainer OR nomor_kontainer
                 $tipeKontainer = strtoupper($bl->tipe_kontainer ?? '');
                 $nomorKontainer = strtoupper($bl->nomor_kontainer ?? '');
-                $isCargo = ($nomorKontainer === 'CARGO' || $tipeKontainer === 'CARGO');
+                // specific check if nomor_kontainer contains CARGO (case-insensitive) as requested by user
+                $isCargo = (str_contains($nomorKontainer, 'CARGO') || $tipeKontainer === 'CARGO');
                 
+                if ($isCargo) {
+                    $counts['cargo_max_tv_sum'] += (float) ($bl->max_tv ?? 0);
+                }
+
                 if (!$isCargo) {
                     // Determine size (default to 20 if not specified)
                     $size = '20';

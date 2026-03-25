@@ -314,13 +314,14 @@
                 let barangAdded = false;
 
                 // Map pricelistTkbm to container types heuristically
-                const pricelistIds = { '20_full': null, '20_empty': null, '40_full': null, '40_empty': null };
+                const pricelistIds = { '20_full': null, '20_empty': null, '40_full': null, '40_empty': null, 'cargo': null };
                 pricelistTkbmData.forEach(p => {
                     const name = (p.nama_barang || p.cargo || '').toLowerCase();
                     if (name.includes('20') && name.includes('full')) pricelistIds['20_full'] = p.id;
                     if (name.includes('20') && name.includes('empty')) pricelistIds['20_empty'] = p.id;
                     if (name.includes('40') && name.includes('full')) pricelistIds['40_full'] = p.id;
                     if (name.includes('40') && name.includes('empty')) pricelistIds['40_empty'] = p.id;
+                    if (name === 'cargo') pricelistIds['cargo'] = p.id;
                 });
 
                 if (data.counts['20'] && data.counts['20'].full > 0 && pricelistIds['20_full']) {
@@ -337,6 +338,10 @@
                 }
                 if (data.counts['40'] && data.counts['40'].empty > 0 && pricelistIds['40_empty']) {
                     addBarangToTkbmSectionWithValue(sectionIndex, pricelistIds['40_empty'], data.counts['40'].empty);
+                    barangAdded = true;
+                }
+                if (data.counts['cargo_max_tv_sum'] > 0 && pricelistIds['cargo']) {
+                    addBarangToTkbmSectionWithValue(sectionIndex, pricelistIds['cargo'], data.counts['cargo_max_tv_sum']);
                     barangAdded = true;
                 }
 
