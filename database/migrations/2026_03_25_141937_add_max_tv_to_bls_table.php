@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bls', function (Blueprint $table) {
-            $table->decimal('max_tv', 15, 3)->nullable()->after('volume')->comment('Maximum of tonnage and volume');
-        });
+        if (!Schema::hasColumn('bls', 'max_tv')) {
+            Schema::table('bls', function (Blueprint $table) {
+                $table->decimal('max_tv', 15, 3)->nullable()->after('volume')->comment('Maximum of tonnage and volume');
+            });
+        }
 
         // Backfill existing data
         \App\Models\Bl::all()->each(function ($bl) {
@@ -28,8 +30,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('bls', function (Blueprint $table) {
-            $table->dropColumn('max_tv');
-        });
+        if (Schema::hasColumn('bls', 'max_tv')) {
+            Schema::table('bls', function (Blueprint $table) {
+                $table->dropColumn('max_tv');
+            });
+        }
     }
 };
