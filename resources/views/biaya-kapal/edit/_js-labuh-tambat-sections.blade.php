@@ -309,7 +309,8 @@
         } else {
             const sel = last.querySelector('.type-select-labuh-tambat');
             sel.value = typeId;
-            // Do NOT call updateLabuhTambatPriceFromSelect(sel) to preserve the historically saved DB price
+            // Set the saved price from DB instead of re-reading from pricelist
+            last.querySelector('.price-input-labuh-tambat').value = h;
         }
         last.querySelector('.tonase-input-labuh-tambat').value = q;
         const cb = last.querySelector('.lumpsum-checkbox');

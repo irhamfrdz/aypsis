@@ -1,4 +1,4 @@
-﻿    // Function to calculate nominal for Biaya Dokumen (vendor tariff × number of containers)
+    // Function to calculate nominal for Biaya Dokumen (vendor tariff × number of containers)
     function calculateDokumenNominal() {
         const selectedJenisBiaya = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
         
@@ -665,7 +665,6 @@
         }
         // Show Trucking wrapper if "Biaya Trucking" is selected
         else if (selectedText.toLowerCase().includes('trucking')) {
-            const truckingWrapper = document.getElementById('trucking_wrapper');
             if (truckingWrapper) truckingWrapper.classList.remove('hidden');
             if (truckingSectionsContainer && truckingSectionsContainer.children.length === 0) {
                 addTruckingSection();
@@ -707,7 +706,6 @@
         }
         // Show Labuh Tambat wrapper if "Biaya Labuh Tambat" is selected
         else if (selectedText.toLowerCase().includes('labuh tambat')) {
-            const labuhTambatWrapper = document.getElementById('labuh_tambat_wrapper');
             if (labuhTambatWrapper) labuhTambatWrapper.classList.remove('hidden');
             if (labuhTambatSectionsContainer && labuhTambatSectionsContainer.children.length === 0) {
                 addLabuhTambatSection();
@@ -803,6 +801,84 @@
             
             // Calculate initial total
             calculateTotalBiaya();
+        }
+        // Show Perijinan wrapper if "Perijinan" is selected
+        else if (selectedText.toLowerCase().includes('perijinan')) {
+            if (perijinanWrapper) perijinanWrapper.classList.remove('hidden');
+            if (perijinanSectionsContainer && perijinanSectionsContainer.children.length === 0) {
+                addPerijinanSection();
+            }
+            
+            // Hide standard fields
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Hide normal nominal
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalInput) nominalInput.removeAttribute('required');
+            
+            // Hide standard fields
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.add('hidden');
+            if(penerimaInput) penerimaInput.removeAttribute('required');
+            
+            // Hide other type-specific fields
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            
+            // Hide TKBM wrapper
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            
+            // Hide Operasional wrapper
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+            
+            // Hide Stuffing wrapper
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+            
+            // Hide Trucking wrapper
+            if (document.getElementById('trucking_wrapper')) document.getElementById('trucking_wrapper').classList.add('hidden');
+            clearAllTruckingSections();
+            
+            // Hide Labuh Tambat wrapper
+            if (document.getElementById('labuh_tambat_wrapper')) {
+                document.getElementById('labuh_tambat_wrapper').classList.add('hidden');
+                clearAllLabuhTambatSections();
+            }
+            
+            // Hide THC wrapper
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+            
+            // Hide LOLO wrapper
+            if (loloWrapper) loloWrapper.classList.add('hidden');
+            clearAllLoloSections();
+            
+            // Hide Storage wrapper
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
         } else {
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
@@ -816,6 +892,10 @@
             // Hide Operasional wrapper for other types
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
+            
+            // Hide Perijinan wrapper for other types
+            if (perijinanWrapper) perijinanWrapper.classList.add('hidden');
+            clearAllPerijinanSections();
             
             // Hide PPN/PPH fields for other types
             ppnWrapper.classList.add('hidden');

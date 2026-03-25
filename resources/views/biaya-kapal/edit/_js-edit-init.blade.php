@@ -406,10 +406,10 @@
                 
                 if (section) {
                     const kapalSel = section.querySelector('.kapal-select-labuh-tambat');
-                if (kapalSel) {
-                    kapalSel.value = myData.kapal;
-                    kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
-                }
+                    if (kapalSel) {
+                        kapalSel.value = myData.kapal;
+                        // DON'T dispatch change - it triggers async voyage reload that overwrites saved voyage
+                    }
                     
                     const voyageSelect = section.querySelector('.voyage-select-labuh-tambat');
                     voyageSelect.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;

@@ -1,4 +1,4 @@
-﻿
+
     // ============= JENIS BIAYA SEARCHABLE DROPDOWN =============
     var jenisBiayaSearch = document.getElementById('jenis_biaya_search');
     var jenisBiayaContainer = document.getElementById('jenis_biaya_container');
@@ -201,10 +201,19 @@
     const addStorageSectionBottomBtn = document.getElementById('add_storage_section_bottom_btn');
     const pricelistLoloVendorsData = {!! json_encode($pricelistLoloVendors) !!};
 
+
     // THC Section Logic
+    const thcWrapper = document.getElementById('thc_wrapper');
+    const thcSectionsContainer = document.getElementById('thc_sections_container');
     const addThcSectionBtn = document.getElementById('add_thc_section_btn');
     const addThcSectionBottomBtn = document.getElementById('add_thc_section_bottom_btn');
     let thcSectionCounter = 0;
+
+    // Trucking specific fields
+    const truckingWrapper = document.getElementById('trucking_wrapper');
+
+    // Labuh Tambat specific fields
+    const labuhTambatWrapper = document.getElementById('labuh_tambat_wrapper');
 
     // LOLO specific fields
     const loloWrapper = document.getElementById('lolo_wrapper');
@@ -212,5 +221,14 @@
     const addLoloSectionBtn = document.getElementById('add_lolo_section_btn');
     const addLoloSectionBottomBtn = document.getElementById('add_lolo_section_bottom_btn');
     let loloSectionCounter = 0;
+
+    // Perijinan specific fields
+    const perijinanWrapper = document.getElementById('perijinan_wrapper');
+    const perijinanSectionsContainer = document.getElementById('perijinan_sections_container');
+    const addPerijinanSectionBtn = document.getElementById('add_perijinan_section_btn');
+    const addPerijinanSectionBottomBtn = document.getElementById('add_perijinan_section_bottom_btn');
+
+    // Pricelist Perijinan data
+    var pricelistPerijinansData = {!! json_encode($pricelistPerijinans) !!};
 
     // Format nominal input with thousand separator
