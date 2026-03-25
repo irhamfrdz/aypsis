@@ -495,6 +495,13 @@
                     @error('jenis_penyesuaian')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    
+                    <div id="pembatalan_warning" class="{{ old('jenis_penyesuaian') == 'pengembalian penuh' ? '' : 'hidden' }} mt-2 p-3 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg text-sm flex items-start gap-2">
+                        <svg class="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.268 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <span class="font-medium">pengembalian penuh dilakukan di menu pembatalan surat jalan</span>
+                    </div>
                 </div>
 
                 <!-- Tipe Penyesuaian (conditional for Adjustment with 'penambahan') -->
@@ -2328,6 +2335,11 @@ console.log('Akun COAs data:', akunCoasData);
         if (jenisPenyesuaianSelect) {
             $('#jenis_penyesuaian_select').on('change', function() {
                 toggleTipePenyesuaian();
+                if ($(this).val() === 'pengembalian penuh') {
+                    $('#pembatalan_warning').removeClass('hidden');
+                } else {
+                    $('#pembatalan_warning').addClass('hidden');
+                }
             });
         }
         
