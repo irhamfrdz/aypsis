@@ -261,7 +261,7 @@
                     <th style="width: 8%;">No</th>
                     <th style="width: 20%;">Tanggal Ref.</th>
                     <th style="width: 20%;">Referensi</th>
-                    <th style="width: 32%;">Jenis Biaya</th>
+                    <th style="width: 32%;">No Voyage</th>
                     <th style="width: 20%;">Total</th>
                 </tr>
             </thead>
@@ -300,7 +300,7 @@
                         @endforeach
                         @if($references->isEmpty()) {{ $biayaKapal->nomor_referensi ?? '-' }} @endif
                     </td>
-                    <td>Biaya Labuh Tambat {{ $kapalName }} {{ $voyageName ? '('.$voyageName.')' : '' }}</td>
+                    <td>{{ $voyageName ?: '-' }}</td>
                     <td class="text-right">Rp {{ number_format($details->sum('grand_total'), 0, ',', '.') }}</td>
                 </tr>
                 @empty
