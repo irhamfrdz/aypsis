@@ -467,12 +467,6 @@
     });
 
     // Clear and Recalculate everything correctly
-    // Clear and Recalculate everything correctly
-    function clearAllLabuhTambatSections() {
-        if(typeof labuhTambatSectionsContainer !== 'undefined' && labuhTambatSectionsContainer) labuhTambatSectionsContainer.innerHTML = '';
-        labuhTambatSectionCounter = 0;
-    }
-
     function clearAllTkbmSections() { document.getElementById('tkbm_sections_container').innerHTML = ''; }
     function clearAllAirSections() { document.getElementById('air_sections_container').innerHTML = ''; }
     function clearAllKapalSections() { document.getElementById('kapal_sections_container').innerHTML = ''; }

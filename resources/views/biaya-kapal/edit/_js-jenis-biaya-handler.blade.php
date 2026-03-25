@@ -744,6 +744,15 @@
             clearAllStuffingSections();
             if (truckingWrapper) truckingWrapper.classList.add('hidden');
             clearAllTruckingSections();
+            
+            // Hide global penerima/vendor fields (already per-kapal in labuh tambat section)
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(penerimaInput) penerimaInput.removeAttribute('required');
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.add('hidden');
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
         } else if (selectedText.toLowerCase().includes('penumpukan')) {
             if (storageWrapper) storageWrapper.classList.add('hidden');
             clearAllStorageSections();

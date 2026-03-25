@@ -122,29 +122,37 @@
             ];
         }
 
-        // Map Labuh Tambat
+        // Map Labuh Tambat - group by kapal+voyage+vendor
         $editLabuhTambatSections = [];
+        $labuhTambatGrouped = [];
         foreach($biayaKapal->labuhTambatDetails as $labuh) {
-            $editLabuhTambatSections[] = [
-                'kapal' => $labuh->kapal,
-                'voyage' => $labuh->voyage,
-                'nomor_referensi' => $labuh->nomor_referensi,
-                'vendor' => $labuh->vendor,
-                'lokasi' => $labuh->lokasi,
+            $key = ($labuh->kapal ?? '') . '|' . ($labuh->voyage ?? '') . '|' . ($labuh->vendor ?? '');
+            if (!isset($labuhTambatGrouped[$key])) {
+                $labuhTambatGrouped[$key] = [
+                    'kapal' => $labuh->kapal,
+                    'voyage' => $labuh->voyage,
+                    'nomor_referensi' => $labuh->nomor_referensi,
+                    'vendor' => $labuh->vendor,
+                    'lokasi' => $labuh->lokasi,
+                    'sub_total' => $labuh->sub_total,
+                    'ppn' => $labuh->ppn,
+                    'biaya_materai' => $labuh->biaya_materai,
+                    'grand_total' => $labuh->grand_total,
+                    'penerima' => $labuh->penerima,
+                    'nomor_rekening' => $labuh->nomor_rekening,
+                    'tanggal_invoice_vendor' => $labuh->tanggal_invoice_vendor ? \Carbon\Carbon::parse($labuh->tanggal_invoice_vendor)->format('Y-m-d') : null,
+                    'types' => [],
+                ];
+            }
+            $labuhTambatGrouped[$key]['types'][] = [
                 'type_id' => $labuh->type_id,
                 'type_keterangan' => $labuh->type_keterangan,
                 'is_lumpsum' => $labuh->is_lumpsum,
                 'kuantitas' => $labuh->kuantitas,
                 'harga' => $labuh->harga,
-                'sub_total' => $labuh->sub_total,
-                'ppn' => $labuh->ppn,
-                'biaya_materai' => $labuh->biaya_materai,
-                'grand_total' => $labuh->grand_total,
-                'penerima' => $labuh->penerima,
-                'nomor_rekening' => $labuh->nomor_rekening,
-                'tanggal_invoice_vendor' => $labuh->tanggal_invoice_vendor ? \Carbon\Carbon::parse($labuh->tanggal_invoice_vendor)->format('Y-m-d') : null,
             ];
         }
+        $editLabuhTambatSections = array_values($labuhTambatGrouped);
         // Map Perijinan
         $editPerijinanSections = [];
         if($biayaKapal->perijinanDetails->count() > 0) {
@@ -400,34 +408,53 @@
         if (existingLabuhTambatSections.length > 0) {
             clearAllLabuhTambatSections();
             existingLabuhTambatSections.forEach(myData => {
-                addLabuhTambatSection();
-                const sectionIndex = labuhTambatSectionCounter;
-                const section = document.querySelector(`.labuh-tambat-section[data-section-index="${sectionIndex}"]`);
-                
-                if (section) {
+                (async function() {
+                    const section = addLabuhTambatSection();
+                    const sectionIndex = section.getAttribute('data-section-index');
+                    
+                    // Set kapal (don't dispatch change to avoid triggering async voyage reload)
                     const kapalSel = section.querySelector('.kapal-select-labuh-tambat');
-                    if (kapalSel) {
+                    if (kapalSel && myData.kapal) {
                         kapalSel.value = myData.kapal;
-                        // DON'T dispatch change - it triggers async voyage reload that overwrites saved voyage
                     }
                     
+                    // Load voyages async and set saved value
                     const voyageSelect = section.querySelector('.voyage-select-labuh-tambat');
-                    voyageSelect.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
-                    voyageSelect.value = myData.voyage;
-                    voyageSelect.disabled = false;
+                    if (myData.kapal) {
+                        try {
+                            const res = await fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(myData.kapal)}`);
+                            const data = await res.json();
+                            voyageSelect.disabled = false;
+                            let opt = '<option value="">-- Pilih Voyage --</option><option value="DOCK">DOCK</option>';
+                            if (data && data.success && data.voyages) {
+                                data.voyages.forEach(v => opt += `<option value="${v}">${v}</option>`);
+                            }
+                            voyageSelect.innerHTML = opt;
+                            if (myData.voyage) voyageSelect.value = myData.voyage;
+                        } catch(e) {
+                            // Fallback: just show saved voyage
+                            voyageSelect.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
+                            voyageSelect.value = myData.voyage;
+                            voyageSelect.disabled = false;
+                        }
+                    }
                     
-                    if (myData.nomor_referensi) section.querySelector('.no-referensi-input-labuh-tambat').value = myData.nomor_referensi;
-                    
+                    // Set lokasi first, then update vendors
                     if (myData.lokasi) {
                         section.querySelector('.lokasi-select-labuh-tambat').value = myData.lokasi;
                         updateLabuhTambatVendorsForLokasi(sectionIndex, myData.lokasi);
                     }
                     
+                    // Set vendor and load types
                     if (myData.vendor) {
                         section.querySelector('.vendor-select-labuh-tambat').value = myData.vendor;
                         loadTypesForLabuhTambatVendor(sectionIndex, myData.vendor);
                     }
                     
+                    // Set No. Referensi
+                    if (myData.nomor_referensi) section.querySelector('.no-referensi-input-labuh-tambat').value = myData.nomor_referensi;
+                    
+                    // Set Penerima, Rekening, Invoice date
                     if (myData.penerima) section.querySelector('.penerima-input-labuh-tambat').value = myData.penerima;
                     if (myData.nomor_rekening) section.querySelector('.nomor-rekening-input-labuh-tambat').value = myData.nomor_rekening;
                     if (myData.tanggal_invoice_vendor) section.querySelector('.tanggal-invoice-vendor-input-labuh-tambat').value = myData.tanggal_invoice_vendor;
@@ -436,10 +463,15 @@
                         if (materaiField) materaiField.value = parseInt(myData.biaya_materai).toLocaleString('id-ID');
                     }
                     
+                    // Clear default type row and add the saved types
                     const typesList = section.querySelector('.types-list-labuh-tambat');
                     typesList.innerHTML = '';
-                    addTypeToLabuhTambatSectionWithValue(sectionIndex, myData.type_id, myData.type_keterangan, myData.is_lumpsum, myData.kuantitas, myData.harga);
-                }
+                    if (myData.types && myData.types.length > 0) {
+                        myData.types.forEach(typeItem => {
+                            addTypeToLabuhTambatSectionWithValue(sectionIndex, typeItem.type_id, typeItem.type_keterangan, typeItem.is_lumpsum, typeItem.kuantitas, typeItem.harga);
+                        });
+                    }
+                })();
             });
             calculateTotalFromAllLabuhTambatSections();
         }
