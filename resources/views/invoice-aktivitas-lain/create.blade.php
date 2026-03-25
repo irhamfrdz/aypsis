@@ -496,12 +496,7 @@
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                     
-                    <div id="pembatalan_warning" class="{{ old('jenis_penyesuaian') == 'pengembalian penuh' ? '' : 'hidden' }} mt-2 p-3 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded-lg text-sm flex items-start gap-2">
-                        <svg class="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.268 16c-.77 1.333.192 3 1.732 3z"></path>
-                        </svg>
-                        <span class="font-medium">pengembalian penuh dilakukan di menu pembatalan surat jalan</span>
-                    </div>
+
                 </div>
 
                 <!-- Tipe Penyesuaian (conditional for Adjustment with 'penambahan') -->
@@ -1028,6 +1023,30 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 </style>
+
+<!-- Modal Peringatan Pengembalian Penuh -->
+<div id="pembatalan_modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border border-yellow-100 transform transition-all">
+        <div class="flex items-center text-yellow-500 mb-4">
+            <div class="bg-yellow-100 p-2 rounded-full mr-3">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.268 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Peringatan Penting</h3>
+        </div>
+        <p class="text-gray-600 mb-6 text-sm leading-relaxed">
+            Pengembalian penuh dilakukan di menu <strong class="text-gray-800">pembatalan surat jalan</strong>. Data tidak dapat disubmit di halaman ini.
+        </p>
+        <div class="flex justify-end">
+            <button type="button" 
+                    id="close_pembatalan_modal"
+                    class="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 font-medium text-white rounded-lg shadow-md transition-all text-sm duration-150">
+                Mengerti
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- Ensure jQuery + Select2 are available (dynamic loader with fallbacks) -->
 <script>
@@ -2336,12 +2355,24 @@ console.log('Akun COAs data:', akunCoasData);
             $('#jenis_penyesuaian_select').on('change', function() {
                 toggleTipePenyesuaian();
                 if ($(this).val() === 'pengembalian penuh') {
-                    $('#pembatalan_warning').removeClass('hidden');
-                } else {
-                    $('#pembatalan_warning').addClass('hidden');
+                    $('#pembatalan_modal').removeClass('hidden');
                 }
             });
         }
+
+        // Close Modal Listener
+        $('#close_pembatalan_modal').on('click', function() {
+            $('#pembatalan_modal').addClass('hidden');
+        });
+
+        // Prevent Form Submit for Pengembalian Penuh
+        $('form').on('submit', function(e) {
+            if ($('#jenis_penyesuaian_select').val() === 'pengembalian penuh') {
+                e.preventDefault();
+                $('#pembatalan_modal').removeClass('hidden');
+                return false;
+            }
+        });
         
         // Add button for tipe penyesuaian
         const addTipeBtn = document.getElementById('add_tipe_penyesuaian_btn');
