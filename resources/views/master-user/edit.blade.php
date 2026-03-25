@@ -1284,6 +1284,21 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
+                            {{-- Tanda Terima Tanpa Surat Jalan Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Tanda Terima (Tanpa Surat Jalan) Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-tanpa-surat-jalan-batam']['view']) && $userMatrixPermissions['tanda-terima-tanpa-surat-jalan-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-tanpa-surat-jalan-batam']['create']) && $userMatrixPermissions['tanda-terima-tanpa-surat-jalan-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-tanpa-surat-jalan-batam']['update']) && $userMatrixPermissions['tanda-terima-tanpa-surat-jalan-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-tanpa-surat-jalan-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-tanpa-surat-jalan-batam']['delete']) && $userMatrixPermissions['tanda-terima-tanpa-surat-jalan-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
                             {{-- Monitoring Cek Kendaraan --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

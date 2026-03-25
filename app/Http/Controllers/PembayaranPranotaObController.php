@@ -109,7 +109,8 @@ class PembayaranPranotaObController extends Controller
                         // Get supir name
                         $supir = \App\Models\Karyawan::find($supirId);
                         if ($supir) {
-                            $dpSupirData[$supir->nama_lengkap] = floatval($jumlah);
+                            $namaSupir = $supir->nama_panggilan ? $supir->nama_panggilan : $supir->nama_lengkap;
+                            $dpSupirData[strtoupper(trim($namaSupir))] = floatval($jumlah);
                         }
                     }
                 }

@@ -3341,6 +3341,45 @@ Route::middleware(['auth'])->group(function () {
              'destroy' => 'can:tanda-terima-tanpa-surat-jalan-delete'
          ]);
 
+    // Route Custom Tanda Terima Tanpa Surat Jalan Batam
+    Route::get('tanda-terima-tanpa-surat-jalan-batam/export', function () {
+        return back()->with('error', 'Fitur export belum diaktifkan untuk wilayah Batam.');
+    })->name('tanda-terima-tanpa-surat-jalan-batam.export');
+
+    Route::get('tanda-terima-tanpa-surat-jalan-batam/pilih-tipe', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanBatamController::class, 'pilihTipe'])
+         ->name('tanda-terima-tanpa-surat-jalan-batam.pilih-tipe')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-batam-create');
+
+    // Route untuk create LCL khusus (backward compatibility jika ada pemisahan LCL)
+    Route::get('tanda-terima-tanpa-surat-jalan-batam/create-lcl', [\App\Http\Controllers\TandaTerimaLclController::class, 'create'])
+         ->name('tanda-terima-tanpa-surat-jalan-batam.create-lcl');
+
+    Route::post('tanda-terima-tanpa-surat-jalan-batam/{id}/add-to-prospek', function () {
+        return back()->with('error', 'Fitur ini belum diaktifkan untuk wilayah Batam.');
+    })->name('tanda-terima-tanpa-surat-jalan-batam.add-to-prospek');
+
+    Route::post('tanda-terima-tanpa-surat-jalan-batam/assign-container', function () {
+        return back()->with('error', 'Fitur ini belum diaktifkan untuk wilayah Batam.');
+    })->name('tanda-terima-tanpa-surat-jalan-batam.assign-container');
+
+    Route::post('tanda-terima-tanpa-surat-jalan-batam/{id}/sync-penerima-pengirim', function () {
+        return back()->with('error', 'Fitur ini belum diaktifkan untuk wilayah Batam.');
+    })->name('tanda-terima-tanpa-surat-jalan-batam.sync-penerima-pengirim');
+
+    Route::resource('tanda-terima-tanpa-surat-jalan-batam', \App\Http\Controllers\TandaTerimaTanpaSuratJalanBatamController::class)
+         ->parameters([
+             'tanda-terima-tanpa-surat-jalan-batam' => 'tandaTerimaBatam'
+         ])
+         ->middleware([
+             'index' => 'can:tanda-terima-tanpa-surat-jalan-batam-view',
+             'create' => 'can:tanda-terima-tanpa-surat-jalan-batam-create',
+             'store' => 'can:tanda-terima-tanpa-surat-jalan-batam-create',
+             'show' => 'can:tanda-terima-tanpa-surat-jalan-batam-view',
+             'edit' => 'can:tanda-terima-tanpa-surat-jalan-batam-update',
+             'update' => 'can:tanda-terima-tanpa-surat-jalan-batam-update',
+             'destroy' => 'can:tanda-terima-tanpa-surat-jalan-batam-delete'
+         ]);
+
     // Sync penerima dan pengirim (must be after resource or wait, it's specific POST with {id}, so after is fine if it does not conflict but better before so it's not caught by show method. Let's put it before)
     Route::post('tanda-terima-tanpa-surat-jalan/{id}/sync-penerima-pengirim', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'syncPenerimaPengirim'])
          ->name('tanda-terima-tanpa-surat-jalan.sync-penerima-pengirim')
@@ -4766,6 +4805,11 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     // Report Tagihan
     Route::get('/tagihan', [App\Http\Controllers\ReportTagihanController::class, 'index'])->name('tagihan.index');
     Route::get('/tagihan/export', [App\Http\Controllers\ReportTagihanController::class, 'export'])->name('tagihan.export');
+
+    // Report Kas Truck
+    Route::get('/kas-truck', [App\Http\Controllers\Report\KasTruckController::class, 'index'])->name('kas-truck.index');
+    Route::get('/kas-truck/view', [App\Http\Controllers\Report\KasTruckController::class, 'view'])->name('kas-truck.view');
+    Route::post('/kas-truck/topup', [App\Http\Controllers\Report\KasTruckController::class, 'topup'])->name('kas-truck.topup');
 
     // Report Pranota (to be implemented)
     // Route::get('/pranota', [App\Http\Controllers\ReportPranotaController::class, 'index'])->name('pranota.index');

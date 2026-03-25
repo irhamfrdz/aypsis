@@ -113,7 +113,10 @@
                                                 foreach ($dpSupirIds as $supirId) {
                                                     $supir = \App\Models\Karyawan::find($supirId);
                                                     if ($supir) {
-                                                        $dpSupirData[$supir->nama_lengkap] = $dpJumlahPerSupir[$supirId] ?? 0;
+                                                        // Use nama_panggilan (nickname) if available, else nama_lengkap
+                                                        // Then uppercase to match enrichedItems normalization
+                                                        $namaKey = $supir->nama_panggilan ?: $supir->nama_lengkap;
+                                                        $dpSupirData[strtoupper(trim($namaKey))] = $dpJumlahPerSupir[$supirId] ?? 0;
                                                     }
                                                 }
                                             }
@@ -296,6 +299,13 @@
                                     <td class="px-2 py-2 text-xs">
                                         @php
                                             $enrichedItems = $pranota->getEnrichedItems();
+                                            // Ensure uniform uppercase matching
+                                            foreach ($enrichedItems as &$item) {
+                                                if (isset($item['supir'])) {
+                                                    $item['supir'] = strtoupper(trim($item['supir']));
+                                                }
+                                            }
+                                            
                                             $supirList = array_values(array_unique(array_filter(array_column($enrichedItems, 'supir'), function($supir) {
                                                 return $supir && $supir !== '-' && $supir !== null && trim($supir) !== '';
                                             })));

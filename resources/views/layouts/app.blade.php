@@ -1739,8 +1739,8 @@
 
         {{-- Aktivitas Pelabuhan Sub-Dropdown --}}
         @php
-            $isAktivitasPelabuhanRoute = Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('checkpoint-kontainer-keluar.*') || Request::routeIs('checkpoint-kontainer-masuk.*') || Request::routeIs('kontainer-perjalanan.*');
-            $hasAktivitasPelabuhanPermissions = $user && ($user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete') || $user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete') || $user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete') || $user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete') || $user->can('checkpoint-kontainer-masuk-view') || $user->can('checkpoint-kontainer-masuk-create') || $user->can('checkpoint-kontainer-masuk-delete'));
+            $isAktivitasPelabuhanRoute = Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan-batam.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('checkpoint-kontainer-keluar.*') || Request::routeIs('checkpoint-kontainer-masuk.*') || Request::routeIs('kontainer-perjalanan.*');
+            $hasAktivitasPelabuhanPermissions = $user && ($user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete') || $user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete') || $user->can('tanda-terima-tanpa-surat-jalan-batam-view') || $user->can('tanda-terima-tanpa-surat-jalan-batam-create') || $user->can('tanda-terima-tanpa-surat-jalan-batam-update') || $user->can('tanda-terima-tanpa-surat-jalan-batam-delete') || $user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete') || $user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete') || $user->can('checkpoint-kontainer-masuk-view') || $user->can('checkpoint-kontainer-masuk-create') || $user->can('checkpoint-kontainer-masuk-delete'));
         @endphp
 
         @if($hasAktivitasPelabuhanPermissions)
@@ -1761,8 +1761,15 @@
 
                 {{-- Tanda Terima Tanpa Surat Jalan --}}
                 @if($user && ($user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete')))
-                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-tanpa-surat-jalan.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-tanpa-surat-jalan.*') && !Request::routeIs('tanda-terima-tanpa-surat-jalan-batam.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Tanda Terima Tanpa Surat Jalan</span>
+                    </a>
+                @endif
+
+                {{-- Tanda Terima Tanpa Surat Jalan Batam --}}
+                @if($user && ($user->can('tanda-terima-tanpa-surat-jalan-batam-view') || $user->can('tanda-terima-tanpa-surat-jalan-batam-create') || $user->can('tanda-terima-tanpa-surat-jalan-batam-update') || $user->can('tanda-terima-tanpa-surat-jalan-batam-delete')))
+                    <a href="{{ route('tanda-terima-tanpa-surat-jalan-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-tanpa-surat-jalan-batam.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Tanda Terima Tanpa Surat Jalan Batam</span>
                     </a>
                 @endif
 
@@ -1898,7 +1905,7 @@
 
 {{-- Report Dropdown --}}
 @php
-    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.pranota-ob.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.surat_jalan.*');
+    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.pranota-ob.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.surat_jalan.*') || Request::routeIs('report.kas-truck.*');
     // Check if user has view permissions for tagihan, pranota, or pembayaran modules
     $hasReportPermission = $user && (
         $isAdmin ||
@@ -1971,6 +1978,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
             </svg>
             Report Lembur/Nginap
+        </a>
+
+        {{-- Report Kas Truck --}}
+        <a href="{{ route('report.kas-truck.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.kas-truck.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v20m-5-5l5 5 5-5m0-10l-5-5-5 5"/>
+            </svg>
+            Report Kas Trucking
         </a>
 
         {{-- Report Ongkos Truk --}}
