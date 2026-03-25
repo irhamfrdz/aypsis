@@ -12,6 +12,15 @@ class Bl extends Model
 
     protected $table = 'bls';
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($bl) {
+            $bl->max_tv = max((float)$bl->tonnage, (float)$bl->volume);
+        });
+    }
+
     protected $fillable = [
         'prospek_id',
         'nomor_bl',
@@ -33,6 +42,7 @@ class Bl extends Model
         'contact_person',
         'tonnage',
         'volume',
+        'max_tv',
         'satuan',
         'term',
         'kuantitas',

@@ -221,6 +221,12 @@
                                 Volume
                             </th>
                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'max_tv', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" class="hover:text-gray-700 group">
+                                    T/V Compare
+                                    <i class="fas fa-sort ml-1 text-gray-300 group-hover:text-gray-500"></i>
+                                </a>
+                            </th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Info Kontainer
                             </th>
 
@@ -285,6 +291,9 @@
                                 <td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $bl->volume ? number_format($bl->volume, 3) . ' m³' : '-' }}
                                 </td>
+                                <td class="px-3 py-4 whitespace-nowrap text-sm font-bold text-indigo-600">
+                                    {{ $bl->max_tv > 0 ? number_format($bl->max_tv, 3) : '-' }}
+                                </td>
                                 <td class="px-3 py-4 whitespace-nowrap">
                                     <div class="flex flex-col gap-1">
                                         <div class="size-kontainer-container" data-bl-id="{{ $bl->id }}">
@@ -344,7 +353,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-12 text-center">
+                                <td colspan="11" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
                                         <p class="text-gray-500 text-sm">Tidak ada data Bill of Lading ditemukan.</p>

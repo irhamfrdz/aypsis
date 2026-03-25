@@ -106,7 +106,7 @@ class BlController extends Controller
         $sortBy = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
         
-        $allowedSorts = ['created_at', 'nomor_bl', 'nomor_kontainer', 'nama_kapal', 'no_voyage', 'nama_barang'];
+        $allowedSorts = ['created_at', 'nomor_bl', 'nomor_kontainer', 'nama_kapal', 'no_voyage', 'nama_barang', 'tonnage', 'volume', 'max_tv'];
         if (in_array($sortBy, $allowedSorts)) {
             $query->orderBy($sortBy, $sortDirection);
         }
@@ -1764,6 +1764,7 @@ class BlController extends Controller
             'size_kontainer' => 'Size Kontainer',
             'tonnage' => 'Tonnage (Ton)',
             'volume' => 'Volume (m³)',
+            'max_tv' => 'T/V Compare',
             'kuantitas' => 'Kuantitas',
             'satuan' => 'Satuan',
             'term' => 'Term',
@@ -1850,6 +1851,9 @@ class BlController extends Controller
                         break;
                     case 'volume':
                         $value = $bl->volume ? number_format($bl->volume, 3, '.', '') : '';
+                        break;
+                    case 'max_tv':
+                        $value = $bl->max_tv ? number_format($bl->max_tv, 3, '.', '') : '';
                         break;
                     case 'kuantitas':
                         $value = $bl->kuantitas ? number_format($bl->kuantitas, 0) : '';

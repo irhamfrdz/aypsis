@@ -557,7 +557,8 @@
         }
         last.querySelector('.tonase-input-labuh-tambat').value = q;
         const cb = last.querySelector('.lumpsum-checkbox');
-        cb.checked = lumpsum == 1;
-        cb.previousElementSibling.value = lumpsum;
+        const lumpsumVal = (lumpsum == 1 || lumpsum === true || lumpsum === 'true') ? 1 : 0;
+        cb.checked = lumpsumVal == 1;
+        cb.previousElementSibling.value = lumpsumVal;
         calculateLabuhTambatSectionTotal(sectionIndex);
     };

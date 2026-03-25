@@ -942,7 +942,7 @@ class BiayaKapalController extends Controller
                     if (isset($section['types']) && is_array($section['types'])) {
                         foreach ($section['types'] as $typeIndex => $typeId) {
                             $typeKeterangan = '';
-                            $isLumpsum = $section['type_is_lumpsum'][$typeIndex] ?? 0;
+                            $isLumpsum = isset($section['type_is_lumpsum'][$typeIndex]) && $section['type_is_lumpsum'][$typeIndex] == '1';
                             $kuantitasRaw = $section['type_tonase'][$typeIndex] ?? '0';
                             $kuantitas = floatval(str_replace(',', '.', (string)$kuantitasRaw));
 
@@ -2893,7 +2893,7 @@ class BiayaKapalController extends Controller
                         if (isset($section['types']) && is_array($section['types'])) {
                             foreach ($section['types'] as $typeIndex => $typeId) {
                                 $typeKeterangan = '';
-                                $isLumpsum = $section['type_is_lumpsum'][$typeIndex] ?? 0;
+                                $isLumpsum = isset($section['type_is_lumpsum'][$typeIndex]) && $section['type_is_lumpsum'][$typeIndex] == '1';
                                 
                                 $kuantitasRaw = $section['type_tonase'][$typeIndex] ?? '0';
                                 $kuantitas = floatval(str_replace(',', '.', (string)$kuantitasRaw));
