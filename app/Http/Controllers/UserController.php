@@ -3803,6 +3803,24 @@ class UserController extends Controller
                         }
                     }
 
+                    if ($module === 'order-batam' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'order-batam-view',
+                            'create' => 'order-batam-create',
+                            'update' => 'order-batam-update',
+                            'delete' => 'order-batam-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // Handle tanda-terima permissions explicitly
                     if ($module === 'tanda-terima' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
                         $actionMap = [
