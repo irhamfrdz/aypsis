@@ -146,11 +146,12 @@ class PricelistUangJalanBatamController extends Controller
             $import = new PricelistUangJalanBatamImport();
             Excel::import($import, $request->file('file'));
 
-            $successCount = $import->getSuccessCount();
+            $addedCount = $import->getAddedCount();
+            $updatedCount = $import->getUpdatedCount();
             $errorCount = $import->getErrorCount();
             $errors = $import->getErrors();
             
-            $message = "Import selesai! Berhasil: {$successCount} data";
+            $message = "Import selesai! Total Berhasil: " . ($addedCount + $updatedCount) . " (Baru: {$addedCount}, Update: {$updatedCount})";
             
             if ($errorCount > 0) {
                 $message .= ", Gagal: {$errorCount} data";

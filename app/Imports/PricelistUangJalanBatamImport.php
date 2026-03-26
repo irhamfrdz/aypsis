@@ -11,10 +11,12 @@ use Illuminate\Support\Str;
 
 class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmptyRows
 {
-    private $successCount = 0;
+    private $addedCount = 0;
+    private $updatedCount = 0;
     private $errorCount = 0;
     private $errors = [];
     private $rowNumber = 0;
+    private $headers = null;
 
     /**
      * Transform each row into a model
@@ -24,47 +26,47 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
         $this->rowNumber = ($this->rowNumber ?: 0) + 1;
         
         try {
-            // Try different possible key names (case insensitive and with special characters)
-            $expedisi = $this->getRowValue($row, ['expedisi', 'Expedisi', 'EXPEDISI']);
-            $ring = $this->getRowValue($row, ['ring', 'Ring', 'RING']);
-            $rute = $this->getRowValue($row, ['rute', 'Rute', 'RUTE']);
-            $size = $this->getRowValue($row, ['size', 'Size', 'SIZE']);
-            $f_e = $this->getRowValue($row, ['f_e', 'fe', 'F/E', 'f/e', 'FE']);
-            $tarif = $this->getRowValue($row, ['tarif', 'Tarif', 'TARIF']);
-            $tarif_base = $this->getRowValue($row, ['tarif_base', 'Tarif Base', 'TARIF BASE', 'tarifbase']);
-            $status = $this->getRowValue($row, ['status', 'Status', 'STATUS']);
+            // Get all available headers from the row for matching
+            if ($this->headers === null) {
+                $this->headers = array_keys($row);
+            }
+
+            // More robust column matching
+            $expedisi = $this->robustGet($row, ['expedisi', 'expe', 'vendor']);
+            $ring = $this->robustGet($row, ['ring', 'wilayah', 'area']);
+            $rute = $this->robustGet($row, ['rute', 'rute_pengiriman', 'tujuan', 'destination']);
+            $size = $this->robustGet($row, ['size', 'ukuran', 'kontainer']);
+            $f_e = $this->robustGet($row, ['f/e', 'fe', 'f_e', 'full/empty', 'kondisi']);
+            $tarif = $this->robustGet($row, ['tarif', 'harga', 'price', 'total']);
+            $tarif_base = $this->robustGet($row, ['tarif_base', 'base_tarif', 'base_price', 'tarif_asli']);
+            $status = $this->robustGet($row, ['status', 'keterangan', 'ket']);
             
-            // Basic data cleaning
+            // Clean data
             $expedisi = !empty($expedisi) ? trim($expedisi) : '';
             $ring = !empty($ring) ? trim($ring) : '';
             $rute = !empty($rute) ? trim($rute) : null;
             $size = !empty($size) ? trim($size) : '';
             $f_e = !empty($f_e) ? trim($f_e) : '';
             $tarif = $this->cleanTarif($tarif);
-            $tarif_base = !empty($tarif_base) ? $this->cleanTarif($tarif_base) : $tarif; // Default to tarif if base is empty
+            $tarif_base = !empty($tarif_base) ? $this->cleanTarif($tarif_base) : null;
             $status = !empty($status) ? trim($status) : null;
 
-            // Skip if all required fields are empty
+            // Skip if crucial fields are empty
             if (empty($expedisi) && empty($ring) && empty($size)) {
                 return null;
             }
 
-            // Normalize Size - ensure it ends with FT
-            if (is_numeric($size)) {
-                $size = $size . 'FT';
-            }
+            // Normalize values
+            if (is_numeric($size)) $size .= 'FT';
             $size = strtoupper($size);
-            if (!Str::endsWith($size, 'FT')) {
-                $size = $size . 'FT';
-            }
+            if (!Str::endsWith($size, 'FT')) $size .= 'FT';
 
-            // Normalize F/E values
-            $f_e = ucfirst(strtolower($f_e)); // Full or Empty
+            $f_e = ucfirst(strtolower($f_e));
+            if ($f_e === 'F') $f_e = 'Full';
+            if ($f_e === 'E') $f_e = 'Empty';
 
-            // Normalize Status
             if ($status) {
                 $status = strtoupper($status);
-                // Allow some common variations
                 if (str_contains($status, 'AQUA')) $status = 'AQUA';
                 if (str_contains($status, 'CHASIS')) $status = 'CHASIS PB';
             }
@@ -72,29 +74,23 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             // Validations
             if (empty($expedisi) || empty($ring) || empty($size) || empty($f_e)) {
                 $this->errorCount++;
-                $this->errors[] = "Baris {$this->rowNumber}: Data wajib (Expedisi, Ring, Size, F/E) tidak boleh kosong.";
+                $this->errors[] = "Baris {$this->rowNumber}: Data (Expedisi, Ring, Size, F/E) tidak lengkap.";
                 return null;
             }
 
             if (!in_array($f_e, ['Full', 'Empty'])) {
                 $this->errorCount++;
-                $this->errors[] = "Baris {$this->rowNumber} ({$expedisi}): F/E harus Full atau Empty, ditemukan '{$f_e}'.";
+                $this->errors[] = "Baris {$this->rowNumber} ({$expedisi}): F/E '{$f_e}' tdk valid.";
                 return null;
             }
 
             if (!in_array($size, ['20FT', '40FT', '45FT'])) {
                 $this->errorCount++;
-                $this->errors[] = "Baris {$this->rowNumber} ({$expedisi}): Size harus 20FT, 40FT, atau 45FT, ditemukan '{$size}'.";
+                $this->errors[] = "Baris {$this->rowNumber} ({$expedisi}): Size '{$size}' tdk valid (Harus 20FT, 40FT, 45FT).";
                 return null;
             }
 
-            if ($status && !in_array($status, ['AQUA', 'CHASIS PB'])) {
-                $this->errorCount++;
-                $this->errors[] = "Baris {$this->rowNumber} ({$expedisi}): Status '{$status}' tidak valid (Gunakan AQUA atau CHASIS PB).";
-                return null;
-            }
-
-            // Check for duplicates
+            // Check duplicate
             $exists = PricelistUangJalanBatam::where('expedisi', $expedisi)
                 ->where('ring', $ring)
                 ->where('size', $size)
@@ -102,18 +98,22 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 ->first();
 
             if ($exists) {
-                $exists->update([
-                    'rute' => $rute ?? $exists->rute,
+                $updateData = [
                     'tarif' => $tarif,
-                    'tarif_base' => $tarif_base,
-                    'status' => $status,
-                ]);
-                $this->successCount++;
+                    'status' => $status ?? $exists->status,
+                ];
+                
+                // Only update rute if it's provided in Excel
+                if ($rute !== null) $updateData['rute'] = $rute;
+                if ($tarif_base !== null) $updateData['tarif_base'] = $tarif_base;
+
+                $exists->update($updateData);
+                $this->updatedCount++;
                 return null;
             }
 
-            // Create new record
-            $this->successCount++;
+            // New record
+            $this->addedCount++;
             return new PricelistUangJalanBatam([
                 'expedisi' => $expedisi,
                 'ring' => $ring,
@@ -121,7 +121,7 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 'size' => $size,
                 'f_e' => $f_e,
                 'tarif' => $tarif,
-                'tarif_base' => $tarif_base,
+                'tarif_base' => $tarif_base ?? $tarif,
                 'status' => $status,
             ]);
 
@@ -177,7 +177,17 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
      */
     public function getSuccessCount(): int
     {
-        return $this->successCount;
+        return $this->addedCount + $this->updatedCount;
+    }
+
+    public function getAddedCount(): int
+    {
+        return $this->addedCount;
+    }
+
+    public function getUpdatedCount(): int
+    {
+        return $this->updatedCount;
     }
 
     /**
@@ -197,16 +207,43 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
     }
 
     /**
-     * Get row value by trying multiple possible keys
+     * More robust value retrieval by searching for partial header matches
+     */
+    private function robustGet(array $row, array $tags)
+    {
+        $keys = array_keys($row);
+        
+        // 1. Precise match (slugified by WithHeadingRow)
+        foreach ($tags as $tag) {
+            // Slugify tag to match Maatwebsite's likely key
+            $slugTag = Str::slug($tag, '_');
+            if (isset($row[$slugTag]) && $row[$slugTag] !== '') {
+                return $row[$slugTag];
+            }
+        }
+        
+        // 2. Fuzzy search (if header row had spaces or different symbols)
+        foreach ($keys as $key) {
+            $cleanKey = strtolower(preg_replace('/[^a-z0-9]/', '', $key));
+            foreach ($tags as $tag) {
+                $cleanTag = strtolower(preg_replace('/[^a-z0-9]/', '', $tag));
+                if ($cleanKey === $cleanTag || str_contains($cleanKey, $cleanTag)) {
+                    if ($row[$key] !== '') {
+                        return $row[$key];
+                    }
+                }
+            }
+        }
+        
+        return '';
+    }
+
+    /**
+     * Get row value by trying multiple possible keys (DEPRECATED: use robustGet)
      */
     private function getRowValue(array $row, array $possibleKeys)
     {
-        foreach ($possibleKeys as $key) {
-            if (isset($row[$key]) && $row[$key] !== '') {
-                return $row[$key];
-            }
-        }
-        return '';
+        return $this->robustGet($row, $possibleKeys);
     }
 
 }
