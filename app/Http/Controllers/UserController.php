@@ -609,6 +609,7 @@ class UserController extends Controller
                 'surat-jalan' => 'surat-jalan',
                 'surat-jalan-bongkaran' => 'surat-jalan-bongkaran',
                 'surat-jalan-batam' => 'surat-jalan-batam',
+                'uang-jalan-batam' => 'uang-jalan-batam',
                 'pembatalan-surat-jalan' => 'pembatalan-surat-jalan',
                 'uang-jalan-bongkaran' => 'uang-jalan-bongkaran',
                 'tanda-terima' => 'tanda-terima',
@@ -3898,6 +3899,28 @@ class UserController extends Controller
                             'approve' => 'uang-jalan-approve',
                             'print' => 'uang-jalan-print',
                             'export' => 'uang-jalan-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle uang-jalan-batam permissions explicitly
+                    if ($module === 'uang-jalan-batam' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'uang-jalan-batam-view',
+                            'create' => 'uang-jalan-batam-create',
+                            'update' => 'uang-jalan-batam-update',
+                            'delete' => 'uang-jalan-batam-delete',
+                            'approve' => 'uang-jalan-batam-approve',
+                            'print' => 'uang-jalan-batam-print',
+                            'export' => 'uang-jalan-batam-export'
                         ];
 
                         if (isset($actionMap[$action])) {
