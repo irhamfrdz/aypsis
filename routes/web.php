@@ -87,6 +87,8 @@ use App\Http\Controllers\MasterLwbpLamaController;
 use App\Http\Controllers\SertifikatKapalController;
 use App\Http\Controllers\MasterPricelistFreightController;
 use App\Http\Controllers\BtmKontainerSewaController;
+use App\Http\Controllers\ProspekBatamController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -4978,7 +4980,37 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           ]);
 
 
+
+    // 📊 Prospek Batam Management
+    Route::get('prospek-batam', [ProspekBatamController::class, 'index'])->name('prospek-batam.index')
+         ->middleware('can:prospek-batam-view');
+
+    Route::get('prospek-batam/export-excel', [ProspekBatamController::class, 'exportExcel'])->name('prospek-batam.export-excel')
+         ->middleware('can:prospek-batam-view');
+
+    Route::get('prospek-batam/get-voyage-by-kapal', [ProspekBatamController::class, 'getVoyageByKapal'])->name('prospek-batam.get-voyage-by-kapal')
+         ->middleware('can:prospek-batam-view');
+
+    Route::get('prospek-batam/{id}', [ProspekBatamController::class, 'show'])->name('prospek-batam.show')
+                 ->middleware('can:prospek-batam-view');
+
+    Route::get('prospek-batam/{id}/edit', [ProspekBatamController::class, 'edit'])->name('prospek-batam.edit')
+         ->middleware('can:prospek-batam-edit');
+
+    Route::put('prospek-batam/{id}', [ProspekBatamController::class, 'update'])->name('prospek-batam.update')
+         ->middleware('can:prospek-batam-edit');
+
+    Route::patch('prospek-batam/{id}/update-seal', [ProspekBatamController::class, 'updateSeal'])->name('prospek-batam.update-seal')
+         ->middleware('can:prospek-batam-edit');
+
+    Route::patch('prospek-batam/{id}/update-status', [ProspekBatamController::class, 'updateStatus'])->name('prospek-batam.update-status')
+         ->middleware('can:prospek-batam-edit');
+
+    Route::delete('prospek-batam/{id}', [ProspekBatamController::class, 'destroy'])->name('prospek-batam.destroy')
+         ->middleware('can:prospek-batam-delete');
+
     // 📊 Prospek Management - Read Only
+
     Route::get('prospek', [ProspekController::class, 'index'])->name('prospek.index')
          ->middleware('can:prospek-view');
 

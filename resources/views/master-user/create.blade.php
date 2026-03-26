@@ -1117,6 +1117,21 @@
                                 <td>-</td>
                                 <td>-</td>
                             </tr>
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center text-teal-600 font-bold">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Prospek Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[prospek-batam][view]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[prospek-batam][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[prospek-batam][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
 
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">

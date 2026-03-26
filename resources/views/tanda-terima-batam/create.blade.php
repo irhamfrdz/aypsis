@@ -28,11 +28,11 @@
     <nav class="mb-6">
         <ol class="flex items-center space-x-2 text-sm text-gray-600">
             <li>
-                <a href="{{ route('tanda-terima.index') }}" class="hover:text-blue-600 transition">Tanda Terima</a>
+                <a href="{{ route('tanda-terima-batam.index') }}" class="hover:text-blue-600 transition">Tanda Terima Batam</a>
             </li>
             <li><i class="fas fa-chevron-right text-xs"></i></li>
             <li>
-                <a href="{{ route('tanda-terima.select-surat-jalan') }}" class="hover:text-blue-600 transition">Pilih Surat Jalan</a>
+                <a href="{{ route('tanda-terima-batam.select-surat-jalan') }}" class="hover:text-blue-600 transition">Pilih Surat Jalan</a>
             </li>
             <li><i class="fas fa-chevron-right text-xs"></i></li>
             <li class="text-gray-900 font-medium">Buat</li>
@@ -56,7 +56,7 @@
             <p class="text-sm text-gray-600 mt-1">Lengkapi informasi untuk tanda terima baru</p>
         </div>
 
-        <form action="{{ route('tanda-terima.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
+        <form action="{{ route('tanda-terima-batam.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
                     @csrf
 
                     {{-- General error alert for server-side issues or exception messages --}}
@@ -996,7 +996,7 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
-                        <a href="{{ route('tanda-terima.select-surat-jalan') }}"
+                        <a href="{{ route('tanda-terima-batam.select-surat-jalan') }}"
                            class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition duration-200">
                             <i class="fas fa-times mr-2"></i> Batal
                         </a>

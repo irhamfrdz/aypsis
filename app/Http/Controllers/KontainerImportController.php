@@ -34,29 +34,30 @@ class KontainerImportController extends Controller
                     'Nomor Seri (maks 6 digit)', 
                     'Akhiran (1 karakter)', 
                     'Ukuran (10/20/40)', 
-                    'Vendor (ZONA/DPE)',
+                    'Vendor',
                     'Tipe Kontainer (opsional)',
                     'Tanggal Mulai Sewa (dd/mmm/yyyy)',
                     'Tanggal Selesai Sewa (dd/mmm/yyyy)',
                     'Keterangan (opsional)',
-                    'Status (Tersedia/Tidak Tersedia)'
+                    'Status (Tersedia/Tidak Tersedia)',
+                    'Gudang (nama_gudang, opsional)'
                 ],
                 // Example row 1 - Basic format
-                ['ALLU', '220209', '7', '20', 'ZONA', '', '', '', '', ''],
+                ['ALLU', '220209', '7', '20', 'ZONA', '', '', '', '', '', ''],
                 // Example row 2 - With optional fields
-                ['AMFU', '313132', '7', '20', 'ZONA', 'Dry Container', '01/Jan/2024', '31/Des/2024', 'Kontainer sewa tahunan', 'Tersedia'],
+                ['AMFU', '313132', '7', '20', 'ZONA', 'Dry Container', '01/Jan/2024', '31/Des/2024', 'Kontainer sewa tahunan', 'Tersedia', 'Gudang Utama'],
                 // Example row 3 - Minimal format
-                ['AMFU', '315369', '2', '40', 'DPE', '', '', '', '', ''],
+                ['AMFU', '315369', '2', '40', 'DPE', '', '', '', '', '', ''],
                 // Info rows
                 [''],
                 ['=== INFORMASI TEMPLATE ==='],
                 ['Kolom 1-5: WAJIB diisi'],
-                ['Kolom 6-10: OPSIONAL (boleh kosong)'],
+                ['Kolom 6-11: OPSIONAL (boleh kosong)'],
                 ['Ukuran: 10, 20, atau 40'],
-                ['Vendor: ZONA atau DPE'],
                 ['Tanggal: format dd/mmm/yyyy (contoh: 15/Jan/2024)'],
                 ['Status default: "Tersedia" jika kosong'],
-                ['Tipe default: "Dry Container" jika kosong']
+                ['Tipe default: "Dry Container" jika kosong'],
+                ['Gudang: isi dengan nama gudang yang terdaftar di sistem (pencocokan sebagian)']
             ];
 
             $callback = function() use ($csvData) {
@@ -101,18 +102,19 @@ class KontainerImportController extends Controller
                 [
                     'Nomor Seri Gabungan (11 karakter)',
                     'Ukuran (10/20/40)',
-                    'Vendor (ZONA/DPE)',
+                    'Vendor',
                     'Tipe Kontainer (opsional)',
                     'Tanggal Mulai Sewa (dd/mmm/yyyy)',
                     'Tanggal Selesai Sewa (dd/mmm/yyyy)',
                     'Keterangan (opsional)',
-                    'Status (Tersedia/Tidak Tersedia)'
+                    'Status (Tersedia/Tidak Tersedia)',
+                    'Gudang (nama_gudang, opsional)'
                 ],
                 // Contoh data dengan format lengkap
-                ['ALLU2202097', '20', 'ZONA', 'HC', '01/Jan/2024', '31/Des/2024', 'Kontainer sewa tahunan', 'Tersedia'],
-                ['AMFU3131327', '20', 'ZONA', 'Dry Container', '15/Feb/2024', '14/Feb/2025', '', 'Tidak Tersedia'],
-                ['AMFU3153692', '40', 'DPE', '', '', '', '', 'Tersedia'],
-                ['CAXU6957708', '20', 'ZONA', 'HC', '', '', '', ''],
+                ['ALLU2202097', '20', 'ZONA', 'HC', '01/Jan/2024', '31/Des/2024', 'Kontainer sewa tahunan', 'Tersedia', 'Gudang Utama'],
+                ['AMFU3131327', '20', 'ZONA', 'Dry Container', '15/Feb/2024', '14/Feb/2025', '', 'Tidak Tersedia', ''],
+                ['AMFU3153692', '40', 'DPE', '', '', '', '', 'Tersedia', ''],
+                ['CAXU6957708', '20', 'ZONA', 'HC', '', '', '', '', ''],
                 // Info rows
                 [''],
                 ['=== INFORMASI TEMPLATE ==='],
@@ -122,12 +124,12 @@ class KontainerImportController extends Controller
                 ['  - 1 karakter terakhir: Akhiran (contoh: 7, 2, 8)'],
                 [''],
                 ['Kolom 1-3: WAJIB diisi'],
-                ['Kolom 4-8: OPSIONAL (boleh kosong)'],
+                ['Kolom 4-9: OPSIONAL (boleh kosong)'],
                 ['Ukuran: 10, 20, atau 40'],
-                ['Vendor: ZONA atau DPE'],
                 ['Tanggal: format dd/mmm/yyyy atau dd mmm yy (contoh: 15/Jan/2024 atau 15 Jan 24)'],
                 ['Status: "Tersedia" atau "Tidak Tersedia" (default: Tersedia jika kosong)'],
                 ['Tipe: "HC", "Dry Container", dll (default: Dry Container jika kosong)'],
+                ['Gudang: isi dengan nama gudang yang terdaftar di sistem (pencocokan sebagian)'],
                 [''],
                 ['Sistem akan otomatis memecah Nomor Seri Gabungan menjadi:'],
                 ['  ALLU2202097 → Awalan: ALLU, Nomor Seri: 220209, Akhiran: 7'],
@@ -301,6 +303,14 @@ class KontainerImportController extends Controller
                         }
                         $kontainer->status = $status;
                     }
+
+                    // Gudang (opsional, kolom 9)
+                    if (isset($data[8]) && !empty(trim($data[8]))) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . trim($data[8]) . '%')->first();
+                        if ($gudang) {
+                            $kontainer->gudangs_id = $gudang->id;
+                        }
+                    }
                     
                     $kontainer->save();
                     $updated++;
@@ -354,6 +364,14 @@ class KontainerImportController extends Controller
                     $newKontainer->status = isset($data[7]) && !empty(trim($data[7])) 
                         ? trim($data[7]) 
                         : 'Tersedia';
+
+                    // Gudang (opsional, kolom 9)
+                    if (isset($data[8]) && !empty(trim($data[8]))) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . trim($data[8]) . '%')->first();
+                        if ($gudang) {
+                            $newKontainer->gudangs_id = $gudang->id;
+                        }
+                    }
                     
                     $newKontainer->save();
                     $created++;
@@ -617,30 +635,14 @@ class KontainerImportController extends Controller
 
             $header = array_shift($csvData); // Remove header row
 
-            // Validate header format - dengan fleksibilitas untuk format yang berbeda
-            $expectedHeaders = [
-                ['Awalan Kontainer', 'Nomor Seri', 'Akhiran', 'Ukuran', 'Vendor'],
-                ['Awalan Kontainer (4 karakter)', 'Nomor Seri (6 digit)', 'Akhiran (1 karakter)', 'Ukuran', 'Vendor']
-            ];
-
-            $headerValid = false;
-            foreach ($expectedHeaders as $expectedHeader) {
-                if ($header === $expectedHeader) {
-                    $headerValid = true;
-                    break;
-                }
-            }
-
-            if (!$headerValid) {
+            // Validate header format - cukup cek minimal 5 kolom dan kolom pertama berisi "Awalan"
+            if (count($header) < 5 || stripos($header[0], 'Awalan') === false) {
                 $headerReceived = implode(', ', $header);
-                $headerExpected = implode(', ', $expectedHeaders[0]);
-
-                $errorMessage = "Format header CSV tidak sesuai template.\n\n";
-                $errorMessage .= "Header yang diterima: " . $headerReceived . "\n";
-                $errorMessage .= "Header yang diharapkan: " . $headerExpected . "\n\n";
-                $errorMessage .= "Silakan download template terbaru dan pastikan format header sesuai.";
-
-                return back()->with('error', $errorMessage);
+                return back()->with('error', 
+                    'Format header CSV tidak sesuai template.' . "\n" .
+                    'Header yang diterima: ' . $headerReceived . "\n" .
+                    'Silakan download template terbaru dan pastikan format header sesuai.'
+                );
             }
 
             $stats = [
@@ -683,6 +685,7 @@ class KontainerImportController extends Controller
                     $tanggalSelesaiSewa = isset($row[7]) ? trim($row[7]) : '';
                     $keterangan = isset($row[8]) ? trim($row[8]) : '';
                     $status = isset($row[9]) ? trim($row[9]) : 'Tersedia';
+                    $gudangNama = isset($row[10]) ? trim($row[10]) : '';
                     
                     // Debug logging untuk troubleshooting
                     \Log::info("Processing CSV row {$rowNumber}", [
@@ -796,6 +799,17 @@ class KontainerImportController extends Controller
                         continue;
                     }
 
+                    // Resolve gudang
+                    $gudangsId = null;
+                    if (!empty($gudangNama)) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . $gudangNama . '%')->first();
+                        if ($gudang) {
+                            $gudangsId = $gudang->id;
+                        } else {
+                            $stats['warnings'][] = "Baris {$rowNumber}: Gudang '{$gudangNama}' tidak ditemukan, kolom gudang diabaikan.";
+                        }
+                    }
+
                     // Generate nomor seri gabungan
                     $nomorSeriGabungan = $awalanKontainer . $nomorSeri . $akhiranKontainer;
 
@@ -839,6 +853,9 @@ class KontainerImportController extends Controller
                         if (!empty($keterangan)) {
                             $updateData['keterangan'] = $keterangan;
                         }
+                        if ($gudangsId !== null) {
+                            $updateData['gudangs_id'] = $gudangsId;
+                        }
                         
                         $existingKontainer->update($updateData);
                         $stats['updated']++;
@@ -866,6 +883,9 @@ class KontainerImportController extends Controller
                         }
                         if (!empty($keterangan)) {
                             $createData['keterangan'] = $keterangan;
+                        }
+                        if ($gudangsId !== null) {
+                            $createData['gudangs_id'] = $gudangsId;
                         }
                         
                         Kontainer::create($createData);

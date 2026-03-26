@@ -1316,6 +1316,7 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
+                            </tr>
                             {{-- Monitoring Cek Kendaraan --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">
@@ -2432,6 +2433,23 @@
                                 <td><input type="checkbox" name="permissions[prospek][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['prospek']['create']) && $userMatrixPermissions['prospek']['create']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[prospek][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['prospek']['update']) && $userMatrixPermissions['prospek']['update']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[prospek][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['prospek']['delete']) && $userMatrixPermissions['prospek']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Prospek Batam --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center text-teal-600 font-bold">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Prospek Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[prospek-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['prospek-batam']['view']) && $userMatrixPermissions['prospek-batam']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[prospek-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['prospek-batam']['update']) && $userMatrixPermissions['prospek-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[prospek-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['prospek-batam']['delete']) && $userMatrixPermissions['prospek-batam']['delete']) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

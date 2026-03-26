@@ -153,8 +153,29 @@ class TandaTerimaBatamController extends Controller
 
         $masterPenerimaList = \App\Models\Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
         $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
+        
+        // Additional data needed by create.blade.php
+        $masterKegiatans = \App\Models\MasterKegiatan::where('status', 'aktif')
+                                                      ->where('type', 'kegiatan surat jalan')
+                                                      ->orderBy('nama_kegiatan')->get();
+        $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
+        $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
 
-        return view('tanda-terima-batam.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'karyawanSupirs', 'kranisKenek', 'stockKontainers', 'masterPenerimaList', 'gudangs'));
+        return view('tanda-terima-batam.create', compact(
+            'suratJalan', 
+            'masterKapals', 
+            'pengirims', 
+            'terms', 
+            'jenisBarangs', 
+            'karyawanSupirs', 
+            'karyawans',
+            'kranisKenek', 
+            'stockKontainers', 
+            'masterPenerimaList', 
+            'gudangs',
+            'masterKegiatans',
+            'masterTujuanKirims'
+        ));
     }
 
     /**

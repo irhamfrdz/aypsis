@@ -668,6 +668,7 @@ class UserController extends Controller
                 'pranota-supir' => 'pranota-supir',
                 'pranota-uang-rit' => 'pranota-uang-rit',
                 'prospek' => 'prospek',
+                'prospek-batam' => 'prospek-batam',
                 'realisasi-uang-muka' => 'realisasi-uang-muka',
                 'stock-amprahan' => 'stock-amprahan',
                 'stock-ban' => 'stock-ban',
