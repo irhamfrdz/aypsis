@@ -90,9 +90,10 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 return null;
             }
 
-            // Check duplicate
+            // Check duplicate (termasuk rute)
             $exists = PricelistUangJalanBatam::where('expedisi', $expedisi)
                 ->where('ring', $ring)
+                ->where('rute', $rute)
                 ->where('size', $size)
                 ->where('f_e', $f_e)
                 ->first();
