@@ -302,8 +302,8 @@ use Illuminate\Support\Str;
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs font-medium text-gray-900">
-                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->order ? $suratJalan->order->nomor_order : '-' }}">
-                                    {{ $suratJalan->order ? $suratJalan->order->nomor_order : '-' }}
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->orderBatam ? $suratJalan->orderBatam->nomor_order : '-' }}">
+                                    {{ $suratJalan->orderBatam ? $suratJalan->orderBatam->nomor_order : '-' }}
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs font-medium">
