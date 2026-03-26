@@ -604,23 +604,27 @@ class UserController extends Controller
             }
 
             // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
+            // IMPORTANT: More specific (longer) prefixes MUST come before shorter ones.
+            // e.g. 'tanda-terima-batam' before 'tanda-terima', otherwise strpos will
+            // match the short prefix first and mis-parse the permission name.
             $operationalModules = [
                 'order-management' => 'order', // Map order-management to order for permission names
-                'surat-jalan' => 'surat-jalan',
                 'surat-jalan-bongkaran' => 'surat-jalan-bongkaran',
                 'surat-jalan-batam' => 'surat-jalan-batam',
+                'surat-jalan' => 'surat-jalan',
                 'uang-jalan-batam' => 'uang-jalan-batam',
-                'pembatalan-surat-jalan' => 'pembatalan-surat-jalan',
                 'uang-jalan-bongkaran' => 'uang-jalan-bongkaran',
-                'tanda-terima' => 'tanda-terima',
-                'tanda-terima-batam' => 'tanda-terima-batam',
-                'tanda-terima-tanpa-surat-jalan' => 'tanda-terima-tanpa-surat-jalan',
+                'uang-jalan' => 'uang-jalan',
+                'pembatalan-surat-jalan' => 'pembatalan-surat-jalan',
                 'tanda-terima-tanpa-surat-jalan-batam' => 'tanda-terima-tanpa-surat-jalan-batam',
+                'tanda-terima-tanpa-surat-jalan' => 'tanda-terima-tanpa-surat-jalan',
+                'tanda-terima-bongkaran' => 'tanda-terima-bongkaran',
+                'tanda-terima-batam' => 'tanda-terima-batam',
+                'tanda-terima' => 'tanda-terima',
                 'gate-in' => 'gate-in',
                 'pranota-surat-jalan' => 'pranota-surat-jalan',
-                'uang-jalan' => 'uang-jalan',
-                'pranota-uang-jalan' => 'pranota-uang-jalan',
                 'pranota-uang-jalan-bongkaran' => 'pranota-uang-jalan-bongkaran',
+                'pranota-uang-jalan' => 'pranota-uang-jalan',
                 'pranota-lembur' => 'pranota-lembur',
                 'tagihan-supir-vendor' => 'tagihan-supir-vendor',
                 'invoice-tagihan-vendor' => 'invoice-tagihan-vendor',
@@ -641,8 +645,8 @@ class UserController extends Controller
                 'invoice-aktivitas-lain' => 'invoice-aktivitas-lain',
                 'karyawan-tidak-tetap' => 'karyawan-tidak-tetap',
                 'manifest' => 'manifest',
-                'ob' => 'ob',
                 'ob-antar-gudang' => 'ob-antar-gudang',
+                'ob' => 'ob',
                 'ongkos-truck' => 'ongkos-truck',
                 'order-batam' => 'order-batam',
                 'pembayaran-aktivitas-lain' => 'pembayaran-aktivitas-lain',
@@ -653,8 +657,8 @@ class UserController extends Controller
                 'pembayaran-pranota-perbaikan-kontainer' => 'pembayaran-pranota-perbaikan-kontainer',
                 'pembayaran-pranota-supir' => 'pembayaran-pranota-supir',
                 'pembayaran-pranota-surat-jalan' => 'pembayaran-pranota-surat-jalan',
-                'pembayaran-pranota-uang-jalan' => 'pembayaran-pranota-uang-jalan',
                 'pembayaran-pranota-uang-jalan-bongkaran' => 'pembayaran-pranota-uang-jalan-bongkaran',
+                'pembayaran-pranota-uang-jalan' => 'pembayaran-pranota-uang-jalan',
                 'pembayaran-uang-muka' => 'pembayaran-uang-muka',
                 'pergerakan-kapal' => 'pergerakan-kapal',
                 'pergerakan-kontainer' => 'pergerakan-kontainer',
@@ -663,19 +667,18 @@ class UserController extends Controller
                 'pranota-kontainer-sewa' => 'pranota-kontainer-sewa',
                 'pranota-ob' => 'pranota-ob',
                 'pranota-perbaikan-kontainer' => 'pranota-perbaikan-kontainer',
-                'pranota-rit' => 'pranota-rit',
                 'pranota-rit-kenek' => 'pranota-rit-kenek',
+                'pranota-rit' => 'pranota-rit',
                 'pranota-supir' => 'pranota-supir',
                 'pranota-uang-rit' => 'pranota-uang-rit',
-                'prospek' => 'prospek',
                 'prospek-batam' => 'prospek-batam',
+                'prospek' => 'prospek',
                 'realisasi-uang-muka' => 'realisasi-uang-muka',
                 'stock-amprahan' => 'stock-amprahan',
                 'stock-ban' => 'stock-ban',
                 'tagihan-cat' => 'tagihan-cat',
                 'tagihan-kontainer-sewa' => 'tagihan-kontainer-sewa',
                 'tagihan-perbaikan-kontainer' => 'tagihan-perbaikan-kontainer',
-                'tanda-terima-bongkaran' => 'tanda-terima-bongkaran',
                 'vendor-kontainer-sewa' => 'vendor-kontainer-sewa'
             ];
 
