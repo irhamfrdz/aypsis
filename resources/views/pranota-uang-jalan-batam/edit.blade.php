@@ -1,0 +1,331 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container mx-auto px-3 py-2">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+            <div>
+                <h1 class="text-lg font-semibold text-gray-900">Edit Pranota Uang Jalan Batam Batam</h1>
+                <p class="text-xs text-gray-600 mt-0.5">{{ $pranotaUangJalanBatam->nomor_pranota }}</p>
+            </div>
+            <a href="{{ route('pranota-uang-jalan-batam.show', $pranotaUangJalanBatam) }}" 
+               class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded text-sm whitespace-nowrap flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Kembali
+            </a>
+        </div>
+
+        @if(session('error'))
+            <div class="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-sm mb-4">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-sm mb-4">
+                <div class="font-medium">Terdapat kesalahan pada form:</div>
+                <ul class="mt-1 list-disc list-inside text-xs">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <!-- Alert Info -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4">
+            <div class="flex items-start">
+                <svg class="h-4 w-4 text-yellow-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="flex-1">
+                    <h4 class="text-xs font-medium text-yellow-800">Informasi</h4>
+                    <p class="text-xs text-yellow-700 mt-1">
+                        Anda hanya dapat mengubah informasi umum pranota. Untuk mengubah daftar Uang Jalan Batam, silakan hapus pranota ini dan buat ulang.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form action="{{ route('pranota-uang-jalan-batam.update', $pranotaUangJalanBatam) }}" method="POST">
+            @csrf
+            @method('PUT')
+            
+            <!-- Form Information -->
+            <div class="bg-white rounded border border-gray-200 p-4 mb-4">
+                <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Edit Informasi Pranota</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Pranota</label>
+                        <input type="text" 
+                               value="{{ $pranotaUangJalanBatam->nomor_pranota }}" 
+                               readonly
+                               class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 text-gray-700 focus:outline-none">
+                        <p class="mt-0.5 text-xs text-gray-500">Nomor pranota tidak dapat diubah</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Pranota <span class="text-red-600">*</span></label>
+                        <input type="date" 
+                               name="tanggal_pranota" 
+                               value="{{ old('tanggal_pranota', $pranotaUangJalanBatam->tanggal_pranota->format('Y-m-d')) }}" 
+                               required
+                               class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_pranota') border-red-500 @enderror">
+                        @error('tanggal_pranota')
+                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Periode Tagihan <span class="text-red-600">*</span></label>
+                        <input type="text" 
+                               name="periode_tagihan" 
+                               value="{{ old('periode_tagihan', $pranotaUangJalanBatam->periode_tagihan) }}" 
+                               placeholder="YYYY-MM (contoh: 2025-11)"
+                               required
+                               class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('periode_tagihan') border-red-500 @enderror">
+                        @error('periode_tagihan')
+                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-0.5 text-xs text-gray-500">Format: YYYY-MM</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                        <input type="text" 
+                               value="{{ $pranotaUangJalanBatam->status_text }}" 
+                               readonly
+                               class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 text-gray-700 focus:outline-none">
+                        <p class="mt-0.5 text-xs text-gray-500">Status tidak dapat diubah</p>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
+                        <textarea name="catatan" 
+                                  rows="3" 
+                                  placeholder="Catatan tambahan (opsional)"
+                                  class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('catatan') border-red-500 @enderror">{{ old('catatan', $pranotaUangJalanBatam->catatan) }}</textarea>
+                        @error('catatan')
+                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Uang Jalan Batam List (Read-only) -->
+            <div class="bg-white rounded border border-gray-200 p-4 mb-4">
+                <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Daftar Uang Jalan Batam (Tidak dapat diubah)</h3>
+                
+                @if($pranotaUangJalanBatam->uangJalanBatams->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">No. Uang Jalan Batam</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Surat Jalan</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($pranotaUangJalanBatam->uangJalanBatams as $index => $uangJalan)
+                                    <tr class="bg-gray-50">
+                                        <td class="px-3 py-2 text-sm text-gray-900">{{ $index + 1 }}</td>
+                                        <td class="px-3 py-2">
+                                            <div class="text-sm font-medium text-gray-900">{{ $uangJalan->nomor_uang_jalan }}</div>
+                                            <div class="text-xs text-gray-500">{{ $uangJalan->kegiatan_bongkar_muat }}</div>
+                                        </td>
+                                        <td class="px-3 py-2 text-sm text-gray-900">
+                                            {{ $uangJalan->tanggal_pemberian ? $uangJalan->tanggal_pemberian->format('d/m/Y') : '-' }}
+                                        </td>
+                                        <td class="px-3 py-2">
+                                            @if($uangJalan->suratJalan)
+                                                <div class="text-sm text-gray-900">{{ $uangJalan->suratJalan->no_surat_jalan }}</div>
+                                                <div class="text-xs text-gray-500">{{ $uangJalan->suratJalan->kegiatan }}</div>
+                                            @else
+                                                <div class="text-sm text-gray-500">-</div>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2 text-right">
+                                            <div class="text-sm font-semibold text-gray-900">
+                                                Rp {{ number_format($uangJalan->jumlah_total, 0, ',', '.') }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="bg-gray-100">
+                                <tr>
+                                    <td colspan="4" class="px-3 py-3 text-right text-sm font-semibold text-gray-900">
+                                        Total:
+                                    </td>
+                                    <td class="px-3 py-3 text-right text-lg font-bold text-gray-900">
+                                        {{ $pranotaUangJalanBatam->formatted_total }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Summary Info -->
+                    <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                        <div class="flex items-start">
+                            <svg class="h-4 w-4 text-blue-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="flex-1">
+                                <h4 class="text-xs font-medium text-blue-800">Informasi</h4>
+                                <div class="text-xs text-blue-700 mt-1">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                        <div><strong>Total Item:</strong> {{ $pranotaUangJalanBatam->jumlah_uang_jalan }} Uang Jalan Batam</div>
+                                        <div><strong>Total Amount:</strong> {{ $pranotaUangJalanBatam->formatted_total }}</div>
+                                    </div>
+                                    <p class="mt-2">Untuk mengubah daftar Uang Jalan Batam, hapus pranota ini dan buat ulang dengan memilih Uang Jalan Batam yang diinginkan.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Penyesuaian -->
+            <div class="bg-white rounded border border-gray-200 p-4 mb-4">
+                <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Penyesuaian</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="penyesuaian" class="block text-sm font-medium text-gray-700 mb-1">
+                            Jumlah Penyesuaian
+                        </label>
+                        <div class="flex">
+                            <select id="penyesuaianType" onchange="updateTotalWithPenyesuaian()" class="rounded-l-md border-gray-300 border-r-0 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                @php
+                                    $currentPenyesuaian = old('penyesuaian', $pranotaUangJalanBatam->penyesuaian);
+                                    $isAddition = $currentPenyesuaian >= 0;
+                                    $displayAmount = abs($currentPenyesuaian);
+                                @endphp
+                                <option value="subtract" {{ !$isAddition ? 'selected' : '' }}>-</option>
+                                <option value="add" {{ $isAddition ? 'selected' : '' }}>+</option>
+                            </select>
+                            <input type="number" 
+                                   name="penyesuaian_amount" 
+                                   id="penyesuaian_amount" 
+                                   value="{{ old('penyesuaian_amount', $displayAmount) }}"
+                                   step="0.01"
+                                   min="0"
+                                   class="flex-1 rounded-r-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('penyesuaian') border-red-500 @enderror"
+                                   placeholder="0.00"
+                                   onchange="updateTotalWithPenyesuaian()">
+                            <input type="hidden" name="penyesuaian" id="penyesuaian" value="{{ $currentPenyesuaian }}">
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">Pilih (-) untuk mengurangi atau (+) untuk menambah total</p>
+                        @error('penyesuaian')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label for="keterangan_penyesuaian" class="block text-sm font-medium text-gray-700 mb-1">
+                            Keterangan Penyesuaian
+                        </label>
+                        <textarea name="keterangan_penyesuaian" 
+                                  id="keterangan_penyesuaian" 
+                                  rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('keterangan_penyesuaian') border-red-500 @enderror"
+                                  placeholder="Jelaskan alasan penyesuaian...">{{ old('keterangan_penyesuaian', $pranotaUangJalanBatam->keterangan_penyesuaian) }}</textarea>
+                        @error('keterangan_penyesuaian')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Total Summary -->
+                <div class="mt-4 p-3 bg-gray-50 rounded">
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal Uang Jalan Batam:</span>
+                            <span class="font-medium" id="originalTotal">{{ $pranotaUangJalanBatam->formatted_total }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Penyesuaian:</span>
+                            <span class="font-medium" id="penyesuaianDisplay">Rp {{ number_format($pranotaUangJalanBatam->penyesuaian, 0, ',', '.') }}</span>
+                        </div>
+                        <hr class="border-gray-300">
+                        <div class="flex justify-between text-sm font-bold">
+                            <span class="text-gray-900">Total Akhir:</span>
+                            <span class="text-gray-900" id="totalWithPenyesuaian">{{ $pranotaUangJalanBatam->formatted_total_with_penyesuaian }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end gap-2">
+                <a href="{{ route('pranota-uang-jalan-batam.show', $pranotaUangJalanBatam) }}" 
+                   class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded text-sm">
+                    Batal
+                </a>
+                <button type="submit" 
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if(session('success'))
+    <div class="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" id="success-alert">
+        {{ session('success') }}
+    </div>
+@endif
+
+<script>
+// Auto hide alerts after 3 seconds
+setTimeout(function() {
+    const successAlert = document.getElementById('success-alert');
+    if (successAlert) successAlert.remove();
+}, 3000);
+
+// Function to update total with penyesuaian
+function updateTotalWithPenyesuaian() {
+    const originalTotalText = document.getElementById('originalTotal').textContent;
+    const originalAmount = parseFloat(originalTotalText.replace(/[^\d]/g, '')) || 0;
+    
+    const penyesuaianType = document.getElementById('penyesuaianType').value;
+    const penyesuaianAmount = parseFloat(document.getElementById('penyesuaian_amount').value) || 0;
+    
+    // Hitung penyesuaian berdasarkan tipe
+    let penyesuaian = 0;
+    if (penyesuaianType === 'subtract') {
+        penyesuaian = -Math.abs(penyesuaianAmount); // Selalu negatif untuk pengurangan
+    } else if (penyesuaianType === 'add') {
+        penyesuaian = Math.abs(penyesuaianAmount); // Selalu positif untuk penambahan
+    }
+    
+    // Update hidden input dengan nilai final
+    document.getElementById('penyesuaian').value = penyesuaian;
+    
+    const totalWithPenyesuaian = originalAmount + penyesuaian;
+    
+    // Update penyesuaian display
+    const penyesuaianDisplay = document.getElementById('penyesuaianDisplay');
+    if (penyesuaianDisplay) {
+        penyesuaianDisplay.textContent = 'Rp ' + penyesuaian.toLocaleString('id-ID');
+    }
+    
+    // Update total with penyesuaian
+    const totalWithPenyesuaianElement = document.getElementById('totalWithPenyesuaian');
+    if (totalWithPenyesuaianElement) {
+        totalWithPenyesuaianElement.textContent = 'Rp ' + totalWithPenyesuaian.toLocaleString('id-ID');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateTotalWithPenyesuaian();
+});
+</script>
+@endsection
