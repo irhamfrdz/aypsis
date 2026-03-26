@@ -257,18 +257,20 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
-                    <input type="text"
-                           name="tipe_kontainer"
-                           value="{{ old('tipe_kontainer', $selectedOrder ? $selectedOrder->tipe_kontainer ?? '' : '') }}"
-                           placeholder="Tipe kontainer"
-                           readonly
-                           tabindex="-1"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('tipe_kontainer') border-red-500 @enderror">
+                    <select name="tipe_kontainer"
+                            id="tipe_kontainer_select"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tipe_kontainer') border-red-500 @enderror">
+                        <option value="">Pilih Tipe</option>
+                        @php $selectedTipe = old('tipe_kontainer', $selectedOrder ? $selectedOrder->tipe_kontainer ?? '' : ''); @endphp
+                        <option value="FCL" {{ $selectedTipe == 'FCL' ? 'selected' : '' }}>FCL</option>
+                        <option value="LCL" {{ $selectedTipe == 'LCL' ? 'selected' : '' }}>LCL</option>
+                        <option value="CARGO" {{ $selectedTipe == 'CARGO' ? 'selected' : '' }}>CARGO</option>
+                    </select>
                     @error('tipe_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                     @if($selectedOrder)
-                        <p class="text-xs text-gray-500 mt-1">Data tipe kontainer diambil dari order yang dipilih</p>
+                        <p class="text-xs text-blue-600 mt-1">Tipe kontainer dari order: {{ $selectedOrder->tipe_kontainer ?? '-' }}</p>
                     @endif
                 </div>
 
