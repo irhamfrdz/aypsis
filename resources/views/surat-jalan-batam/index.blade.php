@@ -437,14 +437,16 @@ use Illuminate\Support\Str;
                                     </a>
 
                                     {{-- Tombol Print --}}
-                                                <a href="{{ route('surat-jalan-batam.print', $suratJalan->id) }}"
-                                                    class="text-green-600 hover:text-green-900 transition-colors duration-200 whitespace-nowrap"
-                                       title="Print Surat Jalan Batam"
-                                       target="_blank">
+                                    @can('surat-jalan-batam-print')
+                                    <a href="{{ route('surat-jalan-batam.print', $suratJalan->id) }}"
+                                                     class="text-green-600 hover:text-green-900 transition-colors duration-200 whitespace-nowrap"
+                                        title="Print Surat Jalan Batam"
+                                        target="_blank">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                         </svg>
                                     </a>
+                                    @endcan
 
                                     {{-- Tombol Audit (hanya untuk user dengan permission) --}}
                                     @can('audit-log-view')
@@ -591,7 +593,7 @@ use Illuminate\Support\Str;
 // Update status function
 function updateStatus(suratJalanId, status) {
     if (confirm('Yakin ingin mengubah status Surat Jalan Batam ini?')) {
-        fetch(`/surat-jalan/${suratJalanId}/update-status`, {
+        fetch(`/surat-jalan-batam/${suratJalanId}/update-status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -616,7 +618,7 @@ function updateStatus(suratJalanId, status) {
 
 // Print preprinted function
 function printPreprinted(suratJalanId) {
-    window.open(`/surat-jalan/${suratJalanId}/print-preprinted`, '_blank');
+    window.open(`/surat-jalan-batam/${suratJalanId}/print-preprinted`, '_blank');
 }
 
 // Close dropdown when clicking outside

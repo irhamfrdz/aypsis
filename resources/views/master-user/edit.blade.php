@@ -1213,8 +1213,8 @@
                                 <td><input type="checkbox" name="permissions[surat-jalan-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['surat-jalan-batam']['create']) && $userMatrixPermissions['surat-jalan-batam']['create']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[surat-jalan-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['surat-jalan-batam']['update']) && $userMatrixPermissions['surat-jalan-batam']['update']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[surat-jalan-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['surat-jalan-batam']['delete']) && $userMatrixPermissions['surat-jalan-batam']['delete']) checked @endif></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-batam][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['surat-jalan-batam']['approve']) && $userMatrixPermissions['surat-jalan-batam']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-batam][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['surat-jalan-batam']['print']) && $userMatrixPermissions['surat-jalan-batam']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[surat-jalan-batam][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['surat-jalan-batam']['export']) && $userMatrixPermissions['surat-jalan-batam']['export']) checked @endif></td>
                             </tr>
 

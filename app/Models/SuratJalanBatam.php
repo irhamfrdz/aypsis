@@ -97,4 +97,44 @@ class SuratJalanBatam extends Model
     {
         return $this->belongsTo(User::class, 'input_by');
     }
+
+    public function getFormattedTanggalSuratJalanAttribute()
+    {
+        return $this->tanggal_surat_jalan ? $this->tanggal_surat_jalan->format('d/m/Y') : '-';
+    }
+
+    public function getStatusBadgeAttribute()
+    {
+        $badges = [
+            'draft' => 'bg-gray-100 text-gray-800',
+            'active' => 'bg-green-100 text-green-800',
+            'completed' => 'bg-blue-100 text-blue-800',
+            'cancelled' => 'bg-red-100 text-red-800',
+            'belum masuk checkpoint' => 'bg-yellow-100 text-yellow-800',
+            'sudah_checkpoint' => 'bg-purple-100 text-purple-800',
+        ];
+
+        return $badges[$this->status] ?? 'bg-gray-100 text-gray-800';
+    }
+
+    public function getOverallStatusPembayaranAttribute()
+    {
+        if ($this->status_pembayaran === 'sudah_dibayar') {
+            return 'sudah_dibayar';
+        }
+        
+        if ($this->status_pembayaran_uang_jalan === 'dibayar') {
+            return 'sudah_dibayar';
+        } elseif ($this->status_pembayaran_uang_jalan === 'sudah_masuk_uang_jalan') {
+            return 'belum_dibayar';
+        } else {
+            return 'belum_masuk_pranota';
+        }
+    }
+
+    public function getVendorInvoiceStatusAttribute()
+    {
+        // Placeholder implementation until vendor payment module is linked
+        return 'belum_tagihan';
+    }
 }

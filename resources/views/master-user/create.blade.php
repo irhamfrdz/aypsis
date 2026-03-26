@@ -1068,6 +1068,22 @@
                                 <td><input type="checkbox" name="permissions[pranota-lembur][print]" value="1" class="permission-checkbox"></td>
                                 <td><input type="checkbox" name="permissions[pranota-lembur][export]" value="1" class="permission-checkbox"></td>
                             </tr>
+                            {{-- Surat Jalan Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-green-600 font-bold">Surat Jalan Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-batam][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-batam][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-batam][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-batam][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-batam][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-batam][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-batam][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
 
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">

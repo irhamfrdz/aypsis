@@ -105,9 +105,9 @@ class OrderBatam extends Model
 
     protected $table = 'order_batams';
 
-    public function suratJalans()
+    public function suratJalanBatams()
     {
-        return $this->hasMany(SuratJalan::class);
+        return $this->hasMany(SuratJalanBatam::class, 'order_batam_id');
     }
 
     // Outstanding Scopes
