@@ -167,7 +167,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Size Kontainer</label>
-                    <select name="size" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <select name="size" id="size_select" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         <option value="">Pilih Size</option>
                         @foreach($ukuranKontainers as $uk)
                             <option value="{{ $uk }}" {{ old('size', $selectedOrder->size_kontainer ?? '') == $uk ? 'selected' : '' }}>
@@ -179,7 +179,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
-                    <input type="text" name="tipe_kontainer" value="{{ old('tipe_kontainer', $selectedOrder->tipe_kontainer ?? '') }}"
+                    <input type="text" name="tipe_kontainer" id="tipe_kontainer" value="{{ old('tipe_kontainer', $selectedOrder->tipe_kontainer ?? '') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
 
@@ -191,10 +191,19 @@
                         <input type="hidden" name="no_kontainer" id="no_kontainer_value" value="{{ old('no_kontainer') }}">
                         <div id="no_kontainer_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
                             <div class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic no-kontainer-item" data-value="">Pilih No. Kontainer</div>
-                            @foreach($daftarKontainers as $no)
+                            @foreach($daftarKontainers as $kontainer)
                                 <div class="px-4 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 no-kontainer-item" 
-                                     data-value="{{ $no }}">
-                                    <div class="font-medium">{{ $no }}</div>
+                                     data-value="{{ $kontainer['no'] }}"
+                                     data-size="{{ $kontainer['size'] }}"
+                                     data-tipe="{{ $kontainer['tipe'] }}">
+                                    <div class="font-medium">{{ $kontainer['no'] }}</div>
+                                    @if($kontainer['size'] || $kontainer['tipe'])
+                                        <div class="text-xs text-gray-400">
+                                            {{ $kontainer['size'] ? 'Size: ' . $kontainer['size'] : '' }}
+                                            {{ $kontainer['size'] && $kontainer['tipe'] ? ' | ' : '' }}
+                                            {{ $kontainer['tipe'] ? 'Tipe: ' . $kontainer['tipe'] : '' }}
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -326,7 +335,20 @@
         'no_kontainer_search',
         'no_kontainer_list',
         'no_kontainer_value',
-        'no-kontainer-item'
+        'no-kontainer-item',
+        (item) => {
+            const size = item.getAttribute('data-size');
+            const tipe = item.getAttribute('data-tipe');
+            
+            if (size) {
+                const sizeSelect = document.getElementById('size_select');
+                if (sizeSelect) sizeSelect.value = size;
+            }
+            if (tipe) {
+                const tipeInput = document.getElementById('tipe_kontainer');
+                if (tipeInput) tipeInput.value = tipe;
+            }
+        }
     );
 </script>
 @endpush

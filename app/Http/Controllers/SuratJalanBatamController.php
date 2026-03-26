@@ -140,10 +140,27 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        // Get unique container numbers from Stock AND Kontainer (Sewa)
-        $stockNos = StockKontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->toArray();
-        $sewaNos = Kontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->toArray();
-        $daftarKontainers = collect(array_merge($stockNos, $sewaNos))->unique()->sort()->values()->toArray();
+        $stockContainers = StockKontainer::whereNotNull('nomor_seri_gabungan')
+            ->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
+            ->get();
+        $sewaContainers = Kontainer::whereNotNull('nomor_seri_gabungan')
+            ->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
+            ->get();
+
+        $daftarKontainers = $stockContainers->concat($sewaContainers)
+            ->unique('nomor_seri_gabungan')
+            ->map(function($item) {
+                $val = strtoupper(str_replace(['ft', 'FT', ' '], '', $item->ukuran));
+                $size = $val ? $val . 'FT' : '';
+                return [
+                    'no' => $item->nomor_seri_gabungan,
+                    'size' => $size,
+                    'tipe' => $item->tipe_kontainer ?? ''
+                ];
+            })
+            ->sortBy('no')
+            ->values()
+            ->toArray();
 
         return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers'));
     }
@@ -224,9 +241,27 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        $stockNos = StockKontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->toArray();
-        $sewaNos = Kontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->toArray();
-        $daftarKontainers = collect(array_merge($stockNos, $sewaNos))->unique()->sort()->values()->toArray();
+        $stockContainers = StockKontainer::whereNotNull('nomor_seri_gabungan')
+            ->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
+            ->get();
+        $sewaContainers = Kontainer::whereNotNull('nomor_seri_gabungan')
+            ->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
+            ->get();
+
+        $daftarKontainers = $stockContainers->concat($sewaContainers)
+            ->unique('nomor_seri_gabungan')
+            ->map(function($item) {
+                $val = strtoupper(str_replace(['ft', 'FT', ' '], '', $item->ukuran));
+                $size = $val ? $val . 'FT' : '';
+                return [
+                    'no' => $item->nomor_seri_gabungan,
+                    'size' => $size,
+                    'tipe' => $item->tipe_kontainer ?? ''
+                ];
+            })
+            ->sortBy('no')
+            ->values()
+            ->toArray();
 
         return view('surat-jalan-batam.edit', compact('suratJalan', 'supirs', 'keneks', 'ukuranKontainers', 'daftarKontainers'));
     }
