@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 use App\Models\SuratJalanBatam;
 use App\Models\OrderBatam;
 use App\Models\Karyawan;
-use Illuminate\Support\Facades\Auth;
+use App\Models\StockKontainer;
+use App\Models\Kontainer;
+use App\Models\PricelistUangJalanBatam;
 
 class SuratJalanBatamController extends Controller
 {
@@ -106,10 +108,44 @@ class SuratJalanBatamController extends Controller
                                   ->find($request->order_id);
         }
 
-        $karyawans = \App\Models\Karyawan::where('status_aktif', 1)->get();
+        $supirs = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->get();
+        $keneks = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'KENEK')->get();
         // Just a basic list for now, ideally we'd filter for supir/kenek roles
         
-        return view('surat-jalan-batam.create', compact('selectedOrder', 'karyawans'));
+        // Calculate default uang jalan from pricelist
+        $defaultUangJalan = 0;
+        if ($selectedOrder) {
+            $pricelist = PricelistUangJalanBatam::where('rute', $selectedOrder->tujuan_ambil)
+                ->where('size', $selectedOrder->size_kontainer)
+                ->where('f_e', $selectedOrder->f_e)
+                ->first();
+            
+            if ($pricelist) {
+                $defaultUangJalan = $pricelist->tarif;
+            }
+        }
+
+        // Get normalized ukuran kontainer (normalize 20, 20ft, 20FT to 20FT)
+        $ukuranKontainers = StockKontainer::select('ukuran')
+            ->distinct()
+            ->whereNotNull('ukuran')
+            ->get()
+            ->map(function($item) {
+                $val = strtoupper(str_replace(['ft', 'FT', ' '], '', $item->ukuran));
+                return $val ? $val . 'FT' : null;
+            })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        // Get unique container numbers from Stock AND Kontainer (Sewa)
+        $stockNos = StockKontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->toArray();
+        $sewaNos = Kontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->toArray();
+        $daftarKontainers = collect(array_merge($stockNos, $sewaNos))->unique()->sort()->values()->toArray();
+
+        return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers'));
     }
 
     /**
@@ -131,8 +167,14 @@ class SuratJalanBatamController extends Controller
             'supir' => 'nullable|string',
             'supir2' => 'nullable|string',
             'kenek' => 'nullable|string',
+            'uang_jalan' => 'nullable|string',
             'status' => 'required|in:draft,active,completed,cancelled',
+            'size' => 'nullable|string', // Added validation rule for 'size'
         ]);
+
+        if ($request->filled('uang_jalan')) {
+            $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
+        }
 
         $validated['input_by'] = Auth::id();
         $validated['input_date'] = now();
@@ -165,8 +207,28 @@ class SuratJalanBatamController extends Controller
     public function edit(string $id)
     {
         $suratJalan = SuratJalanBatam::findOrFail($id);
-        $karyawans = \App\Models\Karyawan::where('status_aktif', 1)->get();
-        return view('surat-jalan-batam.edit', compact('suratJalan', 'karyawans'));
+        $supirs = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->get();
+        $keneks = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'KENEK')->get();
+        
+        $ukuranKontainers = StockKontainer::select('ukuran')
+            ->distinct()
+            ->whereNotNull('ukuran')
+            ->get()
+            ->map(function($item) {
+                $val = strtoupper(str_replace(['ft', 'FT', ' '], '', $item->ukuran));
+                return $val ? $val . 'FT' : null;
+            })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->toArray();
+
+        $stockNos = StockKontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->toArray();
+        $sewaNos = Kontainer::whereNotNull('nomor_seri_gabungan')->pluck('nomor_seri_gabungan')->toArray();
+        $daftarKontainers = collect(array_merge($stockNos, $sewaNos))->unique()->sort()->values()->toArray();
+
+        return view('surat-jalan-batam.edit', compact('suratJalan', 'supirs', 'keneks', 'ukuranKontainers', 'daftarKontainers'));
     }
 
     /**

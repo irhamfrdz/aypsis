@@ -30,6 +30,7 @@ class OrderBatam extends Model
         'completed_at',
         'processing_history',
         'tipe_kontainer',
+        'f_e',
         'tanggal_pickup',
         'satuan',
         'exclude_ftz03',

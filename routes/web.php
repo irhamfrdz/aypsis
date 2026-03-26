@@ -2552,6 +2552,20 @@ Route::middleware(['auth'])->group(function () {
     // UANG JALAN MANAGEMENT ROUTES
     // =============================
 
+    // Uang Jalan Batam Management
+    Route::get('uang-jalan-batam/select-surat-jalan', [\App\Http\Controllers\UangJalanBatamController::class, 'selectSuratJalan'])
+         ->name('uang-jalan-batam.select-surat-jalan')
+         ->middleware('can:uang-jalan-batam-create');
+    Route::resource('uang-jalan-batam', \App\Http\Controllers\UangJalanBatamController::class)->middleware([
+        'index' => 'can:uang-jalan-batam-view',
+        'create' => 'can:uang-jalan-batam-create',
+        'store' => 'can:uang-jalan-batam-create',
+        'show' => 'can:uang-jalan-batam-view',
+        'edit' => 'can:uang-jalan-batam-update',
+        'update' => 'can:uang-jalan-batam-update',
+        'destroy' => 'can:uang-jalan-batam-delete'
+    ]);
+
     // Uang Jalan Management with permissions
     // Custom route untuk select surat jalan
     Route::get('uang-jalan/select-surat-jalan', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalan'])

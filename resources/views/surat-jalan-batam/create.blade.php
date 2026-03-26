@@ -105,18 +105,28 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Plat Kendaraan</label>
-                    <input type="text" name="no_plat" value="{{ old('no_plat') }}"
+                    <input type="text" name="no_plat" id="no_plat" value="{{ old('no_plat') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500">
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
-                    <select name="supir" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        <option value="">Pilih Supir</option>
-                        @foreach($karyawans as $k)
-                            <option value="{{ $k->nama_panggilan ?: $k->nama_lengkap }}">{{ $k->nama_panggilan ?: $k->nama_lengkap }}</option>
-                        @endforeach
-                    </select>
+                <div class="relative supir-dropdown-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Supir <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <input type="text" id="supir_search" placeholder="Cari supir..." autocomplete="off"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="hidden" name="supir" id="supir_value" value="{{ old('supir') }}">
+                        <div id="supir_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                            <div class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic supir-item" data-value="" data-plat="">Pilih Supir</div>
+                            @foreach($supirs as $s)
+                                <div class="px-4 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 supir-item" 
+                                     data-value="{{ $s->nama_panggilan ?: $s->nama_lengkap }}" 
+                                     data-plat="{{ $s->plat }}">
+                                    <div class="font-medium">{{ $s->nama_panggilan ?: $s->nama_lengkap }}</div>
+                                    <div class="text-xs text-gray-400">{{ $s->plat ?: 'Tanpa Plat' }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -125,10 +135,29 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
 
-                <div>
+                <div class="relative kenek-dropdown-container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
-                    <input type="text" name="kenek" value="{{ old('kenek') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <div class="relative">
+                        <input type="text" id="kenek_search" placeholder="Cari kenek..." autocomplete="off"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="hidden" name="kenek" id="kenek_value" value="{{ old('kenek') }}">
+                        <div id="kenek_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                            <div class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic kenek-item" data-value="">Pilih Kenek</div>
+                            @foreach($keneks as $k)
+                                <div class="px-4 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 kenek-item" 
+                                     data-value="{{ $k->nama_panggilan ?: $k->nama_lengkap }}">
+                                    <div class="font-medium">{{ $k->nama_panggilan ?: $k->nama_lengkap }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
+                    <input type="text" name="uang_jalan" id="uang_jalan" 
+                           value="{{ old('uang_jalan', number_format($defaultUangJalan, 0, ',', '.')) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 money-format">
                 </div>
 
                 <!-- Section: Kontainer -->
@@ -137,15 +166,39 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Size Kontainer</label>
+                    <select name="size" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">Pilih Size</option>
+                        @foreach($ukuranKontainers as $uk)
+                            <option value="{{ $uk }}" {{ old('size', $selectedOrder->size_kontainer ?? '') == $uk ? 'selected' : '' }}>
+                                {{ $uk }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
                     <input type="text" name="tipe_kontainer" value="{{ old('tipe_kontainer', $selectedOrder->tipe_kontainer ?? '') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
 
-                <div>
+                <div class="relative no-kontainer-dropdown-container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Kontainer</label>
-                    <input type="text" name="no_kontainer" value="{{ old('no_kontainer') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <div class="relative">
+                        <input type="text" id="no_kontainer_search" placeholder="Cari nomor kontainer..." autocomplete="off"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="hidden" name="no_kontainer" id="no_kontainer_value" value="{{ old('no_kontainer') }}">
+                        <div id="no_kontainer_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                            <div class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic no-kontainer-item" data-value="">Pilih No. Kontainer</div>
+                            @foreach($daftarKontainers as $no)
+                                <div class="px-4 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 no-kontainer-item" 
+                                     data-value="{{ $no }}">
+                                    <div class="font-medium">{{ $no }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -165,6 +218,9 @@
     </div>
 </div>
 
+@endsection
+
+@push('scripts')
 <script>
     async function generateSjNumber() {
         const dateInput = document.querySelector('input[name="tanggal_surat_jalan"]');
@@ -187,5 +243,90 @@
             console.error('Error generating SJ number:', error);
         }
     }
+    // Money format script
+    document.querySelectorAll('.money-format').forEach(function(input) {
+        input.addEventListener('keyup', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            this.value = new Intl.NumberFormat('id-ID').format(value);
+        });
+    });
+    // Custom Searchable Dropdown Logic
+    function setupSearchableDropdown(containerClass, inputId, listId, valueId, itemClass, onSelect = null) {
+        const searchInput = document.getElementById(inputId);
+        const listContainer = document.getElementById(listId);
+        const hiddenValue = document.getElementById(valueId);
+        const items = document.querySelectorAll('.' + itemClass);
+
+        // Toggle list visibility
+        searchInput.addEventListener('focus', () => {
+            listContainer.classList.remove('hidden');
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.' + containerClass)) {
+                listContainer.classList.add('hidden');
+            }
+        });
+
+        // Filter items
+        searchInput.addEventListener('input', () => {
+            const filter = searchInput.value.toLowerCase();
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(filter) ? 'block' : 'none';
+            });
+            listContainer.classList.remove('hidden');
+        });
+
+        // Select item
+        items.forEach(item => {
+            item.addEventListener('click', () => {
+                const val = item.getAttribute('data-value');
+                searchInput.value = val;
+                hiddenValue.value = val;
+                listContainer.classList.add('hidden');
+                if (onSelect) onSelect(item);
+            });
+        });
+
+        // Handle initial value (for old/edit)
+        if (hiddenValue.value) {
+            searchInput.value = hiddenValue.value;
+        }
+    }
+
+    // Initialize Supir Dropdown
+    setupSearchableDropdown(
+        'supir-dropdown-container',
+        'supir_search',
+        'supir_list',
+        'supir_value',
+        'supir-item',
+        (item) => {
+            const plat = item.getAttribute('data-plat');
+            if (plat) {
+                document.getElementById('no_plat').value = plat;
+            }
+        }
+    );
+
+    // Initialize Kenek Dropdown
+    setupSearchableDropdown(
+        'kenek-dropdown-container',
+        'kenek_search',
+        'kenek_list',
+        'kenek_value',
+        'kenek-item'
+    );
+
+    // Initialize No. Kontainer Dropdown
+    setupSearchableDropdown(
+        'no-kontainer-dropdown-container',
+        'no_kontainer_search',
+        'no_kontainer_list',
+        'no_kontainer_value',
+        'no-kontainer-item'
+    );
 </script>
-@endsection
+@endpush

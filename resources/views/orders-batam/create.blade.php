@@ -137,28 +137,24 @@
                             @enderror
                         </div>
 
-                        <!-- Tujuan Ambil -->
+                        <!-- Tujuan Ambil (Rute dari Pricelist) -->
                         <div>
                             <div class="flex items-center justify-between mb-2">
-                                <label for="tujuan_ambil_id" class="text-sm font-medium text-gray-700">
+                                <label for="tujuan_ambil" class="text-sm font-medium text-gray-700">
                                     Tujuan Ambil <span class="text-red-500">*</span>
                                 </label>
-                                <a href="{{ route('order.tujuan-ambil.create') }}" id="add_tujuan_ambil_link"
-                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                                   title="Tambah">
-                                    Tambah
-                                </a>
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container-ambil">
-                                    <input type="text" id="search_tujuan_ambil" placeholder="Search..." autocomplete="off"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
-                                    <select name="tujuan_ambil_id" id="tujuan_ambil_id" required
-                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('tujuan_ambil_id') border-red-500 @enderror">
-                                        <option value="">Select an option</option>
-                                        @foreach($tujuanKegiatanUtamas as $tujuanKegiatanUtama)
-                                            <option value="{{ $tujuanKegiatanUtama->id }}" {{ old('tujuan_ambil_id') == $tujuanKegiatanUtama->id ? 'selected' : '' }}>
-                                                {{ $tujuanKegiatanUtama->ke }}
+                                    <input type="text" id="search_tujuan_ambil" placeholder="Cari rute..." autocomplete="off"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white"
+                                           value="{{ old('tujuan_ambil') }}">
+                                    <select name="tujuan_ambil" id="tujuan_ambil" required
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('tujuan_ambil') border-red-500 @enderror">
+                                        <option value="">Pilih Rute</option>
+                                        @foreach($rutes as $rute)
+                                            <option value="{{ $rute }}" {{ old('tujuan_ambil') == $rute ? 'selected' : '' }}>
+                                                {{ $rute }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -167,7 +163,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @error('tujuan_ambil_id')
+                            @error('tujuan_ambil')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -371,6 +367,28 @@
                                 <option value="fcl_plus" {{ old('tipe_kontainer') === 'fcl_plus' ? 'selected' : '' }}>FCL Plus</option>
                             </select>
                             @error('tipe_kontainer')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Full/Empty Selection -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Kondisi (Full/Empty) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex items-center space-x-4 h-10">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="radio" name="f_e" value="Full" {{ old('f_e', 'Full') === 'Full' ? 'checked' : '' }} 
+                                           class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                    <span class="text-sm text-gray-700">Full</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="radio" name="f_e" value="Empty" {{ old('f_e') === 'Empty' ? 'checked' : '' }} 
+                                           class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                    <span class="text-sm text-gray-700">Empty</span>
+                                </label>
+                            </div>
+                            @error('f_e')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -585,7 +603,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize Tujuan Ambil dropdown
     createSearchableDropdown({
-        selectId: 'tujuan_ambil_id',
+        selectId: 'tujuan_ambil',
         searchId: 'search_tujuan_ambil',
         dropdownId: 'dropdown_options_ambil',
         containerClass: 'dropdown-container-ambil'

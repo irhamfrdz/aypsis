@@ -13,6 +13,7 @@ use App\Models\MasterTujuanKirim;
 use App\Models\TujuanKegiatanUtama;
 use App\Models\StockKontainer;
 use App\Models\NomorTerakhir;
+use App\Models\PricelistUangJalanBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -66,10 +67,19 @@ class OrderBatamController extends Controller
             ->pluck('ukuran')
             ->toArray();
 
+        // Get rutes from pricelist_uang_jalan_batam
+        $rutes = PricelistUangJalanBatam::select('rute')
+            ->distinct()
+            ->whereNotNull('rute')
+            ->where('rute', '!=', '')
+            ->orderBy('rute')
+            ->pluck('rute')
+            ->toArray();
+
         // Generate next order number
         $nextOrderNumber = $this->generateNextOrderNumber();
 
-        return view('orders-batam.create', compact('terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'nextOrderNumber'));
+        return view('orders-batam.create', compact('terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'nextOrderNumber', 'rutes'));
     }
 
     /**
@@ -82,12 +92,13 @@ class OrderBatamController extends Controller
             'nomor_order' => 'required|string|unique:order_batams,nomor_order',
             'tanggal_order' => 'required|date',
             'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
-            'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
+            'tujuan_ambil' => 'required|string|max:255',
             'penerima' => 'nullable|string|max:255',
             'penerima_id' => 'nullable|exists:penerimas,id',
             'alamat_penerima' => 'nullable|string',
             'kontak_penerima' => 'nullable|string|max:255',
             'tipe_kontainer' => 'required|in:fcl,lcl,cargo,fcl_plus',
+            'f_e' => 'required|in:Full,Empty',
             'tanggal_pickup' => 'nullable|date',
             'satuan' => 'nullable|string|in:kg,ton,m3,unit,pcs,dus,karung,kontainer',
             'no_tiket_do' => 'nullable|string|max:255',
@@ -129,9 +140,9 @@ class OrderBatamController extends Controller
         $tujuanKirim = MasterTujuanKirim::find($request->tujuan_kirim_id);
         $data['tujuan_kirim'] = $tujuanKirim ? $tujuanKirim->nama_tujuan : '';
 
-        // Get tujuan ambil name from database
-        $tujuanAmbil = TujuanKegiatanUtama::find($request->tujuan_ambil_id);
-        $data['tujuan_ambil'] = $tujuanAmbil ? $tujuanAmbil->ke : '';
+        // Get tujuan ambil from request (now comes from pricelist routes)
+        $data['tujuan_ambil'] = $request->tujuan_ambil;
+        $data['tujuan_ambil_id'] = null; // We no longer link to tujuan_kegiatan_utamas ID
 
         // Convert radio button options to boolean fields
         $data['exclude_ftz03'] = $request->ftz03_option === 'exclude';
@@ -142,7 +153,7 @@ class OrderBatamController extends Controller
         $data['include_buruh_bongkar'] = $request->buruh_bongkar_option === 'include';
 
         // Remove the radio button fields from data
-        unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option'], $data['tujuan_kirim_id'], $data['tujuan_ambil_id']);
+        unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option'], $data['tujuan_kirim_id']);
 
         // Handle cargo type - set default values for size_kontainer and unit_kontainer if empty
         if ($request->tipe_kontainer === 'cargo') {
@@ -292,7 +303,16 @@ class OrderBatamController extends Controller
             ->pluck('ukuran')
             ->toArray();
 
-        return view('orders-batam.edit', compact('orderBatam', 'terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers'));
+        // Get rutes from pricelist_uang_jalan_batam
+        $rutes = PricelistUangJalanBatam::select('rute')
+            ->distinct()
+            ->whereNotNull('rute')
+            ->where('rute', '!=', '')
+            ->orderBy('rute')
+            ->pluck('rute')
+            ->toArray();
+
+        return view('orders-batam.edit', compact('orderBatam', 'terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'rutes'));
     }
 
     /**
@@ -306,7 +326,7 @@ class OrderBatamController extends Controller
             'nomor_order' => 'required|string|unique:order_batams,nomor_order,' . $id,
             'tanggal_order' => 'required|date',
             'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
-            'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
+            'tujuan_ambil' => 'required|string|max:255',
             'penerima' => 'nullable|string|max:255',
             'penerima_id' => 'nullable|exists:penerimas,id',
             'alamat_penerima' => 'nullable|string',
@@ -314,6 +334,7 @@ class OrderBatamController extends Controller
             'size_kontainer' => 'required|string|max:255',
             'unit_kontainer' => 'required|integer|min:1',
             'tipe_kontainer' => 'required|in:fcl,lcl,cargo,fcl_plus',
+            'f_e' => 'required|in:Full,Empty',
             'tanggal_pickup' => 'nullable|date',
             'satuan' => 'nullable|string|in:kg,ton,m3,unit,pcs,dus,karung,kontainer',
             'no_tiket_do' => 'nullable|string|max:255',
@@ -333,9 +354,9 @@ class OrderBatamController extends Controller
         $tujuanKirim = MasterTujuanKirim::find($request->tujuan_kirim_id);
         $data['tujuan_kirim'] = $tujuanKirim ? $tujuanKirim->nama_tujuan : '';
 
-        // Get tujuan ambil name from database
-        $tujuanAmbil = TujuanKegiatanUtama::find($request->tujuan_ambil_id);
-        $data['tujuan_ambil'] = $tujuanAmbil ? $tujuanAmbil->ke : '';
+        // Get tujuan ambil from request (now comes from pricelist routes)
+        $data['tujuan_ambil'] = $request->tujuan_ambil;
+        $data['tujuan_ambil_id'] = null; // We no longer link to tujuan_kegiatan_utamas ID
 
         // Convert radio button options to boolean fields
         $data['exclude_ftz03'] = $request->ftz03_option === 'exclude';
@@ -345,9 +366,8 @@ class OrderBatamController extends Controller
         $data['exclude_buruh_bongkar'] = $request->buruh_bongkar_option === 'exclude';
         $data['include_buruh_bongkar'] = $request->buruh_bongkar_option === 'include';
 
-        // Store the ID fields for relationships
+        // Store the ID fields for relationships (already handled for tujuan_ambil)
         $data['tujuan_kirim_id'] = $request->tujuan_kirim_id;
-        $data['tujuan_ambil_id'] = $request->tujuan_ambil_id;
 
         // Remove the radio button fields from data (but keep the ID fields)
         unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option']);

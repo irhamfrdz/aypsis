@@ -137,4 +137,12 @@ class SuratJalanBatam extends Model
         // Placeholder implementation until vendor payment module is linked
         return 'belum_tagihan';
     }
+
+    /**
+     * Relationship with UangJalanBatam
+     */
+    public function uangJalanBatam()
+    {
+        return $this->hasOne(UangJalanBatam::class, 'surat_jalan_batam_id');
+    }
 }
