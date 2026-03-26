@@ -1402,6 +1402,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pranota Uang Jalan Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pranota Uang Jalan Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-jalan-batam']['view']) && $userMatrixPermissions['pranota-uang-jalan-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-jalan-batam']['create']) && $userMatrixPermissions['pranota-uang-jalan-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-jalan-batam']['update']) && $userMatrixPermissions['pranota-uang-jalan-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-jalan-batam']['delete']) && $userMatrixPermissions['pranota-uang-jalan-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan-batam][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-jalan-batam']['print']) && $userMatrixPermissions['pranota-uang-jalan-batam']['print']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pranota Uang Jalan --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

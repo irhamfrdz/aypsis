@@ -1227,6 +1227,12 @@ class UserController extends Controller
                         }
                     }
 
+                    // Special handling for pranota-uang-jalan-batam-* permissions
+                    if ($module === 'pranota' && strpos($action, 'uang-jalan-batam-') === 0) {
+                        $action = str_replace('uang-jalan-batam-', '', $action);
+                        $module = 'pranota-uang-jalan-batam';
+                    }
+
                     // Special handling for pembayaran-pranota-supir-* permissions
                     if ($module === 'pembayaran' && strpos($action, 'pranota-supir-') === 0) {
                         $action = str_replace('pranota-supir-', '', $action);
@@ -1258,9 +1264,15 @@ class UserController extends Controller
                     }
 
                     // Special handling for pembayaran-pranota-uang-jalan-* permissions
-                    if ($module === 'pembayaran' && strpos($action, 'pranota-uang-jalan-') === 0) {
+                    if ($module === 'pembayaran' && strpos($action, 'pranota-uang-jalan-') === 0 && strpos($action, 'pranota-uang-jalan-batam-') !== 0 && strpos($action, 'pranota-uang-jalan-bongkaran-') !== 0) {
                         $action = str_replace('pranota-uang-jalan-', '', $action);
                         $module = 'pembayaran-pranota-uang-jalan';
+                    }
+
+                    // Special handling for pembayaran-pranota-uang-jalan-batam-* permissions
+                    if ($module === 'pembayaran' && strpos($action, 'pranota-uang-jalan-batam-') === 0) {
+                        $action = str_replace('pranota-uang-jalan-batam-', '', $action);
+                        $module = 'pembayaran-pranota-uang-jalan-batam';
                     }
 
                     // Special handling for aktivitas-lainnya-* permissions
@@ -4005,6 +4017,28 @@ class UserController extends Controller
                             'approve' => 'pranota-lembur-approve',
                             'print' => 'pranota-lembur-print',
                             'export' => 'pranota-lembur-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle pranota-uang-jalan-batam permissions explicitly
+                    if ($module === 'pranota-uang-jalan-batam' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'pranota-uang-jalan-batam-view',
+                            'create' => 'pranota-uang-jalan-batam-create',
+                            'update' => 'pranota-uang-jalan-batam-update',
+                            'delete' => 'pranota-uang-jalan-batam-delete',
+                            'approve' => 'pranota-uang-jalan-batam-approve',
+                            'print' => 'pranota-uang-jalan-batam-print',
+                            'export' => 'pranota-uang-jalan-batam-export'
                         ];
 
                         if (isset($actionMap[$action])) {
