@@ -179,8 +179,15 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
-                    <input type="text" name="tipe_kontainer" id="tipe_kontainer" value="{{ old('tipe_kontainer', $selectedOrder->tipe_kontainer ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        <option value="">Pilih Tipe</option>
+                        @php
+                            $selectedTipe = old('tipe_kontainer', $selectedOrder->tipe_kontainer ?? '');
+                        @endphp
+                        <option value="FCL" {{ $selectedTipe == 'FCL' ? 'selected' : '' }}>FCL</option>
+                        <option value="LCL" {{ $selectedTipe == 'LCL' ? 'selected' : '' }}>LCL</option>
+                        <option value="CARGO" {{ $selectedTipe == 'CARGO' ? 'selected' : '' }}>CARGO</option>
+                    </select>
                 </div>
 
                 <div class="relative no-kontainer-dropdown-container">
