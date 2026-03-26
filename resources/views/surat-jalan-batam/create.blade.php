@@ -178,7 +178,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
                     <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                         <option value="">Pilih Tipe</option>
                         @php
@@ -345,15 +345,10 @@
         'no-kontainer-item',
         (item) => {
             const size = item.getAttribute('data-size');
-            const tipe = item.getAttribute('data-tipe');
             
             if (size) {
                 const sizeSelect = document.getElementById('size_select');
                 if (sizeSelect) sizeSelect.value = size;
-            }
-            if (tipe) {
-                const tipeInput = document.getElementById('tipe_kontainer');
-                if (tipeInput) tipeInput.value = tipe;
             }
         }
     );
