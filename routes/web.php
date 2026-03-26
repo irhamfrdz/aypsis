@@ -5369,6 +5369,21 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
             ->middleware('can:approval-tanda-terima-approve');
     });
 
+    // 📦 TANDA TERIMA BATAM
+    Route::get('tanda-terima-batam/select-surat-jalan', [App\Http\Controllers\TandaTerimaBatamController::class, 'selectSuratJalan'])
+         ->name('tanda-terima-batam.select-surat-jalan')
+         ->middleware('can:tanda-terima-batam-view');
+    Route::resource('tanda-terima-batam', App\Http\Controllers\TandaTerimaBatamController::class)
+         ->middleware([
+             'index' => 'can:tanda-terima-batam-view',
+             'create' => 'can:tanda-terima-batam-create',
+             'store' => 'can:tanda-terima-batam-create',
+             'show' => 'can:tanda-terima-batam-view',
+             'edit' => 'can:tanda-terima-batam-update',
+             'update' => 'can:tanda-terima-batam-update',
+             'destroy' => 'can:tanda-terima-batam-delete',
+         ]);
+
 });
 
 // =====================================================================

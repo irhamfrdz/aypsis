@@ -1,0 +1,1671 @@
+
+  GET|HEAD        / .................................. 
+  GET|HEAD        admin/cek-kendaraan admin.cek-kenda???
+  GET|HEAD        admin/cek-kendaraan-daily admin.cek???
+  GET|HEAD        admin/cek-kendaraan/{cekKendaraan} ???
+  GET|HEAD        admin/debug-perms admin.debug.perms???
+  GET|HEAD        admin/features admin.features ??? Adm???
+  GET|HEAD        admin/register/karyawan register.ka???
+  POST            admin/register/karyawan register.ka???
+  GET|HEAD        admin/register/user register.user  ???
+  POST            admin/register/user register.user.s???
+  GET|HEAD        admin/user-approval admin.user-appr???
+  GET|HEAD        admin/user-approval/{user} admin.us???
+  POST            admin/user-approval/{user}/approve ???
+  POST            admin/user-approval/{user}/reject a???
+  GET|HEAD        aktivitas-lainnya aktivitas-lainnya???
+  POST            aktivitas-lainnya aktivitas-lainnya???
+  GET|HEAD        aktivitas-lainnya/create aktivitas-???
+  GET|HEAD        aktivitas-lainnya/{aktivitasLainnya} aktivitas-lainnya.show ??? AktivitasLainnyaController@sh???
+  PUT             aktivitas-lainnya/{aktivitasLainnya} aktivitas-lainnya.update ??? AktivitasLainnyaController@upda???
+  DELETE          aktivitas-lainnya/{aktivitasLainnya} aktivitas-lainnya.destroy ??? AktivitasLainnyaController@destr???
+  POST            aktivitas-lainnya/{aktivitasLainnya}/approve aktivitas-lainnya.approve ??? AktivitasLainnyaControll???
+  GET|HEAD        aktivitas-lainnya/{aktivitasLainnya}/edit aktivitas-lainnya.edit ??? AktivitasLainnyaControll???
+  POST            aktivitas-lainnya/{aktivitasLainnya}/reject aktivitas-lainnya.reject ??? AktivitasLainnyaControll???
+  POST            aktivitas-lainnya/{aktivitasLainnya}/submit aktivitas-lainnya.submit ??? AktivitasLainnyaController@submitFo???
+  GET|HEAD        api/bl/{id} api.bl.show ??? SuratJala???
+  POST            api/get-uang-jalan-by-tujuan surat-???
+  GET|HEAD        api/manifest/{id} api.manifest.show???
+  GET|HEAD        api/manifests/voyages/{namaKapal} M???
+  GET|HEAD        api/next-pranota-number api.next-pr???
+  GET|HEAD        api/pembayaran-pranota-kontainer/detail/{nomorPembayaran} PembayaranPranotaKontainerCont???
+  GET|HEAD        api/pergerakan-kapal/generate-voyage api.pergerakan-kapal.generate-voyage ??? PergerakanKapalController@generateVoyageNumb???
+  GET|HEAD        api/surat-jalan-bongkaran/{id} api.???
+  GET|HEAD        approval approval.dashboard ??? Penye???
+  GET|HEAD        approval-ii approval-ii.dashboard  ???
+  POST            approval-ii/mass-process approval-i???
+  GET|HEAD        approval-ii/riwayat approval-ii.riw???
+  GET|HEAD        approval-ii/{permohonan} approval-i???
+  POST            approval-ii/{permohonan} approval-i???
+  GET|HEAD        approval-order approval-order.index???
+  POST            approval-order approval-order.store???
+  GET|HEAD        approval-order/create approval-orde???
+  POST            approval-order/update-tanda-terima ???
+  GET|HEAD        approval-order/{id} approval-order.???
+  PUT             approval-order/{id} approval-order.???
+  DELETE          approval-order/{id} approval-order.???
+  POST            approval-order/{id}/approve approva???
+  GET|HEAD        approval-order/{id}/edit approval-o???
+  POST            approval-order/{id}/reject approval???
+  GET|HEAD        approval-surat-jalan approval-surat???
+  POST            approval-surat-jalan approval-surat???
+  GET|HEAD        approval-surat-jalan/create approva???
+  GET|HEAD        approval-surat-jalan/{id} approval-???
+  PUT             approval-surat-jalan/{id} approval-???
+  DELETE          approval-surat-jalan/{id} approval-???
+  POST            approval-surat-jalan/{id}/approve a???
+  GET|HEAD        approval-surat-jalan/{id}/edit appr???
+  POST            approval-surat-jalan/{id}/reject ap???
+  GET|HEAD        approval-tanda-terima approval-tand???
+  POST            approval-tanda-terima/{sourceType}/{id}/approve approval-tanda-terima.approve ??? TandaTerimaApprovalContr???
+  DELETE          approval-tanda-terima/{sourceType}/{id}/delete-document/{column}/{index} approval-tanda-terima.delete-document ??? TandaT???
+  POST            approval-tanda-terima/{sourceType}/{id}/reject approval-tanda-terima.reject ??? TandaTerimaApprovalContr???
+  POST            approval-tanda-terima/{sourceType}/{id}/upload approval-tanda-terima.upload ??? TandaTerimaApprovalContr???
+  POST            approval/mass-process approval.mass???
+  GET|HEAD        approval/riwayat approval.riwayat  ???
+  GET|HEAD        approval/{permohonan} approval.crea???
+  POST            approval/{permohonan} approval.stor???
+  GET|HEAD        asuransi-tanda-terima asuransi-tand???
+  POST            asuransi-tanda-terima asuransi-tand???
+  GET|HEAD        asuransi-tanda-terima/create asuran???
+  GET|HEAD        asuransi-tanda-terima/{asuransi_tanda_terima} asuransi-tanda-terima.show ??? AsuransiTandaTerimaCont???
+  PUT|PATCH       asuransi-tanda-terima/{asuransi_tanda_terima} asuransi-tanda-terima.update ??? AsuransiTandaTerimaContro???
+  DELETE          asuransi-tanda-terima/{asuransi_tanda_terima} asuransi-tanda-terima.destroy ??? AsuransiTandaTerimaControl???
+  GET|HEAD        asuransi-tanda-terima/{asuransi_tanda_terima}/edit asuransi-tanda-terima.edit ??? AsuransiTandaTerim???
+  GET|HEAD        audit-logs audit-logs.index ??? Audit???
+  GET|HEAD        audit-logs/export/csv audit-logs.ex???
+  POST            audit-logs/model audit-logs.model  ???
+  GET|HEAD        audit-logs/{id} audit-logs.show ??? A???
+  GET|HEAD        backup-database backup.database ??? B???
+  GET|HEAD        belanja-amprahan belanja-amprahan.i???
+  POST            belanja-amprahan belanja-amprahan.s???
+  GET|HEAD        belanja-amprahan/create belanja-amp???
+  GET|HEAD        belanja-amprahan/{belanja_amprahan} belanja-amprahan.show ??? BelanjaAmprahanController@sho???
+  PUT|PATCH       belanja-amprahan/{belanja_amprahan} belanja-amprahan.update ??? BelanjaAmprahanController@updat???
+  DELETE          belanja-amprahan/{belanja_amprahan} belanja-amprahan.destroy ??? BelanjaAmprahanController@destro???
+  GET|HEAD        belanja-amprahan/{belanja_amprahan}/edit belanja-amprahan.edit ??? BelanjaAmprahanControlle???
+  GET|HEAD        biaya-kapal biaya-kapal.index ??? Bia???
+  POST            biaya-kapal biaya-kapal.store ??? Bia???
+  GET|HEAD        biaya-kapal/create biaya-kapal.crea???
+  POST            biaya-kapal/get-bls-by-voyages biay???
+  POST            biaya-kapal/get-container-counts bi???
+  GET|HEAD        biaya-kapal/get-containers biaya-ka???
+  GET|HEAD        biaya-kapal/get-containers-by-voyage biaya-kapal.get-containers-by-voyage ??? BiayaKapalController@getContainersByVoya???
+  GET|HEAD        biaya-kapal/get-next-invoice-number biaya-kapal.get-next-invoice-number ??? BiayaKapalController@getNextInvoiceNumbe???
+  GET|HEAD        biaya-kapal/get-tanda-terima-details/{id} biaya-kapal.get-tanda-terima-details ??? BiayaKapalController@getTandaTerima???
+  GET|HEAD        biaya-kapal/get-voyages/{namaKapal} biaya-kapal.get-voyages ??? BiayaKapalController@getVoyagesByShi???
+  GET|HEAD        biaya-kapal/search-tanda-terima bia???
+  GET|HEAD        biaya-kapal/{biayaKapal} biaya-kapa???
+  PUT             biaya-kapal/{biayaKapal} biaya-kapa???
+  DELETE          biaya-kapal/{biayaKapal} biaya-kapa???
+  GET|HEAD        biaya-kapal/{biayaKapal}/edit biaya???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print biay???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-air ???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-dokumen biaya-kapal.print-dokumen ??? BiayaKapalController@printDok???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-labuh-tambat biaya-kapal.print-labuh-tambat ??? BiayaKapalController@printLa???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-lolo biaya-kapal.print-lolo ??? BiayaKapalController@printLol???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-operasional biaya-kapal.print-operasional ??? BiayaKapalController@printOpe???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-perlengkapan biaya-kapal.print-perlengkapan ??? BiayaKapalController@printPer???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-storage biaya-kapal.print-storage ??? BiayaKapalController@printSto???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-stuffing biaya-kapal.print-stuffing ??? BiayaKapalController@printStu???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-thc ???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-tkbm biaya-kapal.print-tkbm ??? BiayaKapalController@printTkb???
+  GET|HEAD        biaya-kapal/{biayaKapal}/print-trucking biaya-kapal.print-trucking ??? BiayaKapalController@printTru???
+  GET|HEAD        bl . bl.select ??? BlController@select
+  POST            bl ... bl.store ??? BlController@store
+  GET|HEAD        bl-api/by-kapal-voyage bl.api.by-ka???
+  POST            bl/bulk-split bl.bulk-split ??? BlCon???
+  POST            bl/bulk-update-size bl.bulk-update-???
+  GET|HEAD        bl/download-template bl.download.te???
+  GET|HEAD        bl/export bl.export ??? BlController@???
+  POST            bl/get-pt-pengirim bl.get-pt-pengir???
+  GET|HEAD        bl/get-ships bl.get-ships ??? BlContr???
+  GET|HEAD        bl/get-voyage-by-kapal bl.get-voyag???
+  GET|HEAD        bl/get-voyages bl.get-voyages ??? BlC???
+  POST            bl/import bl.import ??? BlController@???
+  GET|HEAD        bl/index bl.index ??? BlController@in???
+  POST            bl/validate-containers bl.validate-???
+  GET|HEAD        bl/{bl} bl.show ??? BlController@show
+  DELETE          bl/{bl} bl.destroy ??? BlController@d???
+  PATCH           bl/{bl}/nomor-bl bl.update-nomor-bl???
+  PATCH           bl/{bl}/size-kontainer bl.update-si???
+  PATCH           bl/{bl}/status-bongkar bl.update-st???
+  GET|HEAD        checkpoint-kontainer-keluar checkpo???
+  POST            checkpoint-kontainer-keluar/bulk-keluar checkpoint-kontainer-keluar.bulk-keluar ??? CheckpointKontainerKeluarController@bulkK???
+  GET|HEAD        checkpoint-kontainer-keluar/export-excel checkpoint-kontainer-keluar.export-excel ??? CheckpointKontainerKeluarController@expor???
+  GET|HEAD        checkpoint-kontainer-keluar/export-gudang-excel/{gudangId} checkpoint-kontainer-keluar.export-gudang-excel ??? CheckpointKontainerKeluarCont???
+  GET|HEAD        checkpoint-kontainer-keluar/history checkpoint-kontainer-keluar.history ??? CheckpointKontainerKeluarController@histor???
+  POST            checkpoint-kontainer-keluar/kirim-kontainer checkpoint-kontainer-keluar.kirim ??? CheckpointKontainerKeluarController@kirim???
+  GET|HEAD        checkpoint-kontainer-keluar/{cabangSlug} checkpoint-kontainer-keluar.checkpoint ??? CheckpointKontainerKeluarController@chec???
+  GET|HEAD        checkpoint-kontainer-keluar/{cabangSlug}/export-all-gudang-excel checkpoint-kontainer-keluar.export-all-gudang-excel ??? CheckpointKontainerKeluarCont???
+  GET|HEAD        checkpoint-kontainer-keluar/{cabangSlug}/gudang/{gudangId} checkpoint-kontainer-keluar.surat-jalan ??? CheckpointKontainerKeluarC???
+  POST            checkpoint-kontainer-keluar/{suratJalan}/cancel checkpoint-kontainer-keluar.cancel ??? CheckpointKontainerKeluarController???
+  POST            checkpoint-kontainer-keluar/{suratJalan}/keluar checkpoint-kontainer-keluar.keluar ??? CheckpointKontainerKeluarController@???
+  GET|HEAD        checkpoint-kontainer-masuk checkpoi???
+  POST            checkpoint-kontainer-masuk/bulk-masuk checkpoint-kontainer-masuk.bulk-masuk ??? CheckpointKontainerMasukController@bulkMa???
+  GET|HEAD        checkpoint-kontainer-masuk/history ???
+  GET|HEAD        checkpoint-kontainer-masuk/{cabangSlug} checkpoint-kontainer-masuk.checkpoint ??? CheckpointKontainerMasukController@check???
+  GET|HEAD        checkpoint-kontainer-masuk/{cabangSlug}/gudang/{gudangId} checkpoint-kontainer-masuk.kontainer ??? CheckpointKontainerMasukC???
+  POST            checkpoint-kontainer-masuk/{cabangSlug}/gudang/{gudangId}/manual-masuk checkpoint-kontainer-masuk.manual-masuk ??? Checkpoint???
+  POST            checkpoint-kontainer-masuk/{kontainerPerjalananId}/cancel checkpoint-kontainer-masuk.cancel ??? CheckpointKontainerMasu???
+  POST            checkpoint-kontainer-masuk/{kontainerPerjalananId}/masuk checkpoint-kontainer-masuk.masuk ??? CheckpointKontainerMasukC???
+  GET|HEAD        daftar-tagihan-kontainer-sewa dafta???
+  POST            daftar-tagihan-kontainer-sewa dafta???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2 daf???
+  POST            daftar-tagihan-kontainer-sewa-2 daf???
+  POST            daftar-tagihan-kontainer-sewa-2/bulk-delete daftar-tagihan-kontainer-sewa-2.bulk-delete ??? DaftarTagihanKontainerSewaDuaController@b???
+  POST            daftar-tagihan-kontainer-sewa-2/bulk-update-status daftar-tagihan-kontainer-sewa-2.bulk-update-status ??? DaftarTagihanKontainerSewaDuaController@???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/create daftar-tagihan-kontainer-sewa-2.create ??? DaftarTagihanKontainerSewaDuaController@cr???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/create-group daftar-tagihan-kontainer-sewa-2.create-group ??? DaftarTagihanKontainerSewaDuaController@c???
+  POST            daftar-tagihan-kontainer-sewa-2/delete-groups daftar-tagihan-kontainer-sewa-2.delete-groups ??? DaftarTagihanKontainerSewaDuaController@d???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/export daftar-tagihan-kontainer-sewa-2.export ??? DaftarTagihanKontainerSewaDuaController@ex???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/export-template daftar-tagihan-kontainer-sewa-2.export-template ??? DaftarTagihanKontainerSewaDuaController@e???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/generate-invoice-number daftar-tagihan-kontainer-sewa-2.generate-invoice-number ??? DaftarTagihanKontainerSewaDuaController@???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/get-pricelist daftar-tagihan-kontainer-sewa-2.get_pricelist ??? DaftarTagihanKontainerSewaDuaController@getPric???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/groups daftar-tagihan-kontainer-sewa-2.groups ??? DaftarTagihanKontainerSewaDuaController@getGr???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/import daftar-tagihan-kontainer-sewa-2.import ??? DaftarTagihanKontainerSewaDuaController@im???
+  POST            daftar-tagihan-kontainer-sewa-2/import-csv daftar-tagihan-kontainer-sewa-2.import-csv ??? DaftarTagihanKontainerSewaDuaController@i???
+  POST            daftar-tagihan-kontainer-sewa-2/store-group daftar-tagihan-kontainer-sewa-2.store-group ??? DaftarTagihanKontainerSewaDuaController@s???
+  POST            daftar-tagihan-kontainer-sewa-2/ungroup-containers daftar-tagihan-kontainer-sewa-2.ungroup-containers ??? DaftarTagihanKontainerSewaDuaController@u???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/{daftar_tagihan_kontainer_sewa_2} daftar-tagihan-kontainer-sewa-2.show ??? DaftarTagihan???
+  PUT|PATCH       daftar-tagihan-kontainer-sewa-2/{daftar_tagihan_kontainer_sewa_2} daftar-tagihan-kontainer-sewa-2.update ??? DaftarTagihanKo???
+  DELETE          daftar-tagihan-kontainer-sewa-2/{daftar_tagihan_kontainer_sewa_2} daftar-tagihan-kontainer-sewa-2.destroy ??? DaftarTagihanKon???
+  GET|HEAD        daftar-tagihan-kontainer-sewa-2/{daftar_tagihan_kontainer_sewa_2}/edit daftar-tagihan-kontainer-sewa-2.edit ??? DaftarTa???
+  DELETE          daftar-tagihan-kontainer-sewa/bulk-delete daftar-tagihan-kontainer-sewa.bulk-delete ??? DaftarTagihanKontainerSewaController@bul???
+  POST            daftar-tagihan-kontainer-sewa/bulk-update-status daftar-tagihan-kontainer-sewa.bulk-update-status ??? DaftarTagihanKontainerSewaController@bu???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/create daftar-tagihan-kontainer-sewa.create ??? DaftarTagihanKontainerSewaController@crea???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/create-group daftar-tagihan-kontainer-sewa.create-group ??? DaftarTagihanKontainerSewaController@cre???
+  DELETE          daftar-tagihan-kontainer-sewa/delete-groups daftar-tagihan-kontainer-sewa.delete-groups ??? DaftarTagihanKontainerSewaController@del???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/export daftar-tagihan-kontainer-sewa.export ??? DaftarTagihanKontainerSewaController@expo???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/export-template daftar-tagihan-kontainer-sewa.export-template ??? DaftarTagihanKontainerSewaController@exp???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/generate-invoice-number daftar-tagihan-kontainer-sewa.generate-invoice-number ??? DaftarTagihanKontainerSewaController@ge???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/get-details-by-ids daftar-tagihan-kontainer-sewa.get-details-by-ids ??? DaftarTagihanKontainerSewaController@g???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/get-pricelist daftar-tagihan-kontainer-sewa.get_pricelist ??? DaftarTagihanKontainerSewaController@getPricel???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/groups daftar-tagihan-kontainer-sewa.groups ??? DaftarTagihanKontainerSewaController@getGrou???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/import daftar-tagihan-kontainer-sewa.import ??? DaftarTagihanKontainerSewaController@importPa???
+  POST            daftar-tagihan-kontainer-sewa/import daftar-tagihan-kontainer-sewa.import.legacy ??? DaftarTagihanKontainerSewaController@importC???
+  POST            daftar-tagihan-kontainer-sewa/import-csv daftar-tagihan-kontainer-sewa.import-csv ??? DaftarTagihanKontainerSewaController@importCs???
+  POST            daftar-tagihan-kontainer-sewa/import-grouped daftar-tagihan-kontainer-sewa.import.grouped ??? DaftarTagihanKontainerSewaController@importWi???
+  POST            daftar-tagihan-kontainer-sewa/import/process daftar-tagihan-kontainer-sewa.import.process ??? DaftarTagihanKontainerSewaController@pro???
+  POST            daftar-tagihan-kontainer-sewa/masukan-ke-pranota daftar-tagihan-kontainer-sewa.masukan-ke-pranota ??? DaftarTagihanKontainerSewaController@ma???
+  POST            daftar-tagihan-kontainer-sewa/store-group daftar-tagihan-kontainer-sewa.store-group ??? DaftarTagihanKontainerSewaController@sto???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/template/csv daftar-tagihan-kontainer-sewa.template.csv ??? DaftarTagihanKontainerSewaController@downloadTem???
+  PATCH           daftar-tagihan-kontainer-sewa/ungroup-containers daftar-tagihan-kontainer-sewa.ungroup-containers ??? DaftarTagihanKontainerSewaController@ung???
+  PATCH           daftar-tagihan-kontainer-sewa/{id}/adjustment daftar-tagihan-kontainer-sewa.adjustment.update ??? DaftarTagihanKontainerSewaController@updat???
+  PATCH           daftar-tagihan-kontainer-sewa/{id}/adjustment-note daftar-tagihan-kontainer-sewa.adjustment-note.update ??? DaftarTagihanKontainerSewaController@upda???
+  POST            daftar-tagihan-kontainer-sewa/{id}/create-next-periode daftar-tagihan-kontainer-sewa.create-next-periode ??? DaftarTagihanKontainerSewaControll???
+  PATCH           daftar-tagihan-kontainer-sewa/{id}/group-info daftar-tagihan-kontainer-sewa.group-info.update ??? DaftarTagihanKontainerSewaController@upda???
+  PATCH           daftar-tagihan-kontainer-sewa/{id}/vendor-info daftar-tagihan-kontainer-sewa.vendor-info.update ??? DaftarTagihanKontainerSewaController@upda???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/{tagihan} daftar-tagihan-kontainer-sewa.show ??? DaftarTagihanKontainerSewaController???
+  PUT             daftar-tagihan-kontainer-sewa/{tagihan} daftar-tagihan-kontainer-sewa.update ??? DaftarTagihanKontainerSewaController@u???
+  DELETE          daftar-tagihan-kontainer-sewa/{tagihan} daftar-tagihan-kontainer-sewa.destroy ??? DaftarTagihanKontainerSewaController@de???
+  GET|HEAD        daftar-tagihan-kontainer-sewa/{tagihan}/edit daftar-tagihan-kontainer-sewa.edit ??? DaftarTagihanKontainerSewaContr???
+  GET|HEAD        dashboard dashboard ??? DashboardCont???
+  GET|HEAD        dashboard-dokumen-kapal-alexindo da???
+  GET|HEAD        dashboard/asset-insurance dashboard???
+  ANY             debug-import debug-import ??? DaftarT???
+  GET|HEAD        debug-surat-jalan debug.surat-jalan
+  GET|HEAD        gate-in gate-in.index ??? GateInContr???
+  POST            gate-in gate-in.store ??? GateInContr???
+  GET|HEAD        gate-in/calculate-total gate-in.cal???
+  GET|HEAD        gate-in/create gate-in.create ??? Gat???
+  GET|HEAD        gate-in/get-gudang-by-kegiatan gate???
+  GET|HEAD        gate-in/get-kontainer-by-kegiatan g???
+  GET|HEAD        gate-in/get-kontainers gate-in.get-???
+  GET|HEAD        gate-in/get-kontainers-surat-jalan ???
+  GET|HEAD        gate-in/get-muatan-by-kegiatan gate???
+  POST            gate-in/{gateIn}/add-kontainer gate???
+  POST            gate-in/{gateIn}/remove-kontainer g???
+  PATCH           gate-in/{gateIn}/update-status gate???
+  GET|HEAD        gate-in/{gate_in} gate-in.show ??? Ga???
+  PUT|PATCH       gate-in/{gate_in} gate-in.update ??? ???
+  DELETE          gate-in/{gate_in} gate-in.destroy  ???
+  GET|HEAD        gate-in/{gate_in}/edit gate-in.edit???
+  GET|HEAD        history-kontainer history-kontainer???
+  GET|HEAD        invoice-aktivitas-lain invoice-akti???
+  POST            invoice-aktivitas-lain invoice-akti???
+  POST            invoice-aktivitas-lain/bulk-delete ???
+  GET|HEAD        invoice-aktivitas-lain/create invoi???
+  GET|HEAD        invoice-aktivitas-lain/get-next-number invoice-aktivitas-lain.get-next-number ??? InvoiceAktivitasLainController@getNextInvoiceNu???
+  GET|HEAD        invoice-aktivitas-lain/{invoiceAktivitasLain} invoice-aktivitas-lain.show ??? InvoiceAktivitasLainCont???
+  PUT             invoice-aktivitas-lain/{invoiceAktivitasLain} invoice-aktivitas-lain.update ??? InvoiceAktivitasLainContro???
+  DELETE          invoice-aktivitas-lain/{invoiceAktivitasLain} invoice-aktivitas-lain.destroy ??? InvoiceAktivitasLainControl???
+  GET|HEAD        invoice-aktivitas-lain/{invoiceAktivitasLain}/edit invoice-aktivitas-lain.edit ??? InvoiceAktivitasLai???
+  GET|HEAD        invoice-aktivitas-lain/{invoiceAktivitasLain}/print invoice-aktivitas-lain.print ??? InvoiceAktivitasLai???
+  GET|HEAD        invoice-aktivitas-lain/{invoiceAktivitasLain}/print-labuh-tambat invoice-aktivitas-lain.print-labuh-tambat ??? InvoiceAktivitasL???
+  GET|HEAD        invoice-aktivitas-lain/{invoiceAktivitasLain}/print-listrik invoice-aktivitas-lain.print-listrik ??? InvoiceAktivitasLa???
+  GET|HEAD        invoice-kanisir-ban invoice-kanisir???
+  POST            invoice-kanisir-ban invoice-kanisir???
+  GET|HEAD        invoice-kanisir-ban/create invoice-???
+  GET|HEAD        invoice-kanisir-ban/{invoice_kanisir_ban} invoice-kanisir-ban.show ??? InvoiceKanisirBanControll???
+  PUT|PATCH       invoice-kanisir-ban/{invoice_kanisir_ban} invoice-kanisir-ban.update ??? InvoiceKanisirBanController???
+  DELETE          invoice-kanisir-ban/{invoice_kanisir_ban} invoice-kanisir-ban.destroy ??? InvoiceKanisirBanController@???
+  GET|HEAD        invoice-kanisir-ban/{invoice_kanisir_ban}/edit invoice-kanisir-ban.edit ??? InvoiceKanisirBanCon???
+  GET|HEAD        invoice-kanisir-ban/{invoice_kanisir_ban}/print invoice-kanisir-ban.print ??? InvoiceKanisirBanCon???
+  GET|HEAD        invoice-tagihan-sewa invoice-tagiha???
+  POST            invoice-tagihan-sewa invoice-tagiha???
+  DELETE          invoice-tagihan-sewa-bulk-delete in???
+  POST            invoice-tagihan-sewa-details invoic???
+  POST            invoice-tagihan-sewa-store-pranota ???
+  GET|HEAD        invoice-tagihan-sewa/create invoice???
+  GET|HEAD        invoice-tagihan-sewa/{invoice_tagihan_sewa} invoice-tagihan-sewa.show ??? InvoiceKontainerSewaContro???
+  PUT|PATCH       invoice-tagihan-sewa/{invoice_tagihan_sewa} invoice-tagihan-sewa.update ??? InvoiceKontainerSewaControll???
+  DELETE          invoice-tagihan-sewa/{invoice_tagihan_sewa} invoice-tagihan-sewa.destroy ??? InvoiceKontainerSewaControlle???
+  GET|HEAD        invoice-tagihan-sewa/{invoice_tagihan_sewa}/edit invoice-tagihan-sewa.edit ??? InvoiceKontainerSewaC???
+  GET|HEAD        invoice-tagihan-vendor invoice-tagi???
+  POST            invoice-tagihan-vendor invoice-tagi???
+  GET|HEAD        invoice-tagihan-vendor/create invoi???
+  GET|HEAD        invoice-tagihan-vendor/{invoice_tagihan_vendor} invoice-tagihan-vendor.show ??? InvoiceTagihanVendorCo???
+  PUT|PATCH       invoice-tagihan-vendor/{invoice_tagihan_vendor} invoice-tagihan-vendor.update ??? InvoiceTagihanVendorCont???
+  DELETE          invoice-tagihan-vendor/{invoice_tagihan_vendor} invoice-tagihan-vendor.destroy ??? InvoiceTagihanVendorContr???
+  GET|HEAD        invoice-tagihan-vendor/{invoice_tagihan_vendor}/edit invoice-tagihan-vendor.edit ??? InvoiceTagihanVen???
+  POST            karyawan karyawan.store ??? AuthContr???
+  GET|HEAD        karyawan-tidak-tetap karyawan-tidak???
+  POST            karyawan-tidak-tetap karyawan-tidak???
+  GET|HEAD        karyawan-tidak-tetap/create karyawa???
+  POST            karyawan-tidak-tetap/import karyawa???
+  GET|HEAD        karyawan-tidak-tetap/template karya???
+  GET|HEAD        karyawan-tidak-tetap/{karyawan_tidak_tetap} karyawan-tidak-tetap.show ??? KaryawanTidakTetapContro???
+  PUT             karyawan-tidak-tetap/{karyawan_tidak_tetap} karyawan-tidak-tetap.update ??? KaryawanTidakTetapControll???
+  DELETE          karyawan-tidak-tetap/{karyawan_tidak_tetap} karyawan-tidak-tetap.destroy ??? KaryawanTidakTetapControlle???
+  GET|HEAD        karyawan-tidak-tetap/{karyawan_tidak_tetap}/edit karyawan-tidak-tetap.edit ??? KaryawanTidakTetapC???
+  GET|HEAD        karyawan-tidak-tetap/{karyawan_tidak_tetap}/print karyawan-tidak-tetap.print-single ??? KaryawanTidakTetapControl???
+  GET|HEAD        karyawan/create karyawan.create ??? A???
+  GET|HEAD        karyawan/{karyawan}/onboarding-crew-checklist karyawan.onboarding-crew-checklist ??? KaryawanController@onboardingCr???
+  POST            karyawan/{karyawan}/onboarding-crew-checklist karyawan.onboarding-crew-checklist.update ??? KaryawanController@updateCrewChecklis???
+  GET|HEAD        karyawan/{karyawan}/onboarding-edit karyawan.onboarding-edit ??? KaryawanController@onboardingEdi???
+  PUT             karyawan/{karyawan}/onboarding-update karyawan.onboarding-update ??? KaryawanController@onboardingUpd???
+  GET|HEAD        kelola-bbm kelola-bbm.index ??? Kelol???
+  POST            kelola-bbm kelola-bbm.store ??? Kelol???
+  GET|HEAD        kelola-bbm/create kelola-bbm.create???
+  GET|HEAD        kelola-bbm/{kelola_bbm} kelola-bbm.???
+  PUT|PATCH       kelola-bbm/{kelola_bbm} kelola-bbm.???
+  DELETE          kelola-bbm/{kelola_bbm} kelola-bbm.???
+  GET|HEAD        kelola-bbm/{kelola_bbm}/edit kelola???
+  GET|HEAD        kontainer-perjalanan kontainer-perj???
+  GET|HEAD        kontainer-sewa-billing kontainer-se???
+  POST            kontainer-sewa-billing/import-transactions kontainer-sewa-billing.import-transactions ??? BtmKontainerSewaController@importTran???
+  POST            kontainer-sewa-billing/import-units kontainer-sewa-billing.import-units ??? BtmKontainerSewaController@importUnit???
+  POST            kontainer-sewa-billing/rates kontai???
+  POST            kontainer-sewa-billing/sizes kontai???
+  GET|HEAD        kontainer-sewa-billing/snapshot kon???
+  POST            kontainer-sewa-billing/transactions kontainer-sewa-billing.transactions.store ??? BtmKontainerSewaController@storeTransactio???
+  POST            kontainer-sewa-billing/types kontai???
+  POST            kontainer-sewa-billing/units kontai???
+  POST            kontainer-sewa-billing/vendors kont???
+  GET|HEAD        login login ??? AuthController@showLo???
+  POST            login ......... AuthController@login
+  POST            logout logout ??? AuthController@logo???
+  GET|HEAD        master-dokumen-kapal-alexindo maste???
+  POST            master-dokumen-kapal-alexindo maste???
+  GET|HEAD        master-dokumen-kapal-alexindo/create master-dokumen-kapal-alexindo.create ??? MasterDokumenKapalAlexindoController@crea???
+  GET|HEAD        master-dokumen-kapal-alexindo/{master_dokumen_kapal_alexindo} master-dokumen-kapal-alexindo.show ??? MasterDokumenK???
+  PUT|PATCH       master-dokumen-kapal-alexindo/{master_dokumen_kapal_alexindo} master-dokumen-kapal-alexindo.update ??? MasterDokumenKap???
+  DELETE          master-dokumen-kapal-alexindo/{master_dokumen_kapal_alexindo} master-dokumen-kapal-alexindo.destroy ??? MasterDokumenKapa???
+  GET|HEAD        master-dokumen-kapal-alexindo/{master_dokumen_kapal_alexindo}/edit master-dokumen-kapal-alexindo.edit ??? MasterDok???
+  GET|HEAD        master-dokumen-perijinan-kapal mast???
+  POST            master-dokumen-perijinan-kapal mast???
+  GET|HEAD        master-dokumen-perijinan-kapal/create master-dokumen-perijinan-kapal.create ??? DokumenPerijinanKapalController@cre???
+  GET|HEAD        master-dokumen-perijinan-kapal/{master_dokumen_perijinan_kapal} master-dokumen-perijinan-kapal.show ??? Dokumen???
+  PUT             master-dokumen-perijinan-kapal/{master_dokumen_perijinan_kapal} master-dokumen-perijinan-kapal.update ??? DokumenPe???
+  DELETE          master-dokumen-perijinan-kapal/{master_dokumen_perijinan_kapal} master-dokumen-perijinan-kapal.destroy ??? DokumenPer???
+  GET|HEAD        master-dokumen-perijinan-kapal/{master_dokumen_perijinan_kapal}/edit master-dokumen-perijinan-kapal.edit ??? Do???
+  GET|HEAD        master-gudang master-gudang.index  ???
+  POST            master-gudang master-gudang.store  ???
+  GET|HEAD        master-gudang-ban master-gudang-ban???
+  POST            master-gudang-ban master-gudang-ban???
+  GET|HEAD        master-gudang-ban/create master-gud???
+  POST            master-gudang-ban/import master-gud???
+  GET|HEAD        master-gudang-ban/template/download master-gudang-ban.template ??? MasterGudangBanController@templat???
+  GET|HEAD        master-gudang-ban/{id} master-gudan???
+  PUT             master-gudang-ban/{id} master-gudan???
+  DELETE          master-gudang-ban/{id} master-gudan???
+  GET|HEAD        master-gudang-ban/{id}/edit master-???
+  GET|HEAD        master-gudang/create master-gudang.???
+  POST            master-gudang/import master-gudang.???
+  GET|HEAD        master-gudang/template/download mas???
+  GET|HEAD        master-gudang/{master_gudang} maste???
+  PUT             master-gudang/{master_gudang} maste???
+  DELETE          master-gudang/{master_gudang} maste???
+  GET|HEAD        master-gudang/{master_gudang}/edit ???
+  GET|HEAD        master-kapal master-kapal.index ??? M???
+  POST            master-kapal master-kapal.store ??? M???
+  GET|HEAD        master-kapal/create master-kapal.cr???
+  GET|HEAD        master-kapal/download-template mast???
+  GET|HEAD        master-kapal/export master-kapal.ex???
+  GET|HEAD        master-kapal/import master-kapal.im???
+  POST            master-kapal/import master-kapal.im???
+  GET|HEAD        master-kapal/{master_kapal} master-???
+  PUT|PATCH       master-kapal/{master_kapal} master-???
+  DELETE          master-kapal/{master_kapal} master-???
+  GET|HEAD        master-kapal/{master_kapal}/edit ma???
+  GET|HEAD        master-pelabuhan master-pelabuhan.i???
+  POST            master-pelabuhan master-pelabuhan.s???
+  GET|HEAD        master-pelabuhan/create master-pela???
+  GET|HEAD        master-pelabuhan/{masterPelabuhan} ???
+  PUT|PATCH       master-pelabuhan/{masterPelabuhan} ???
+  DELETE          master-pelabuhan/{masterPelabuhan} ???
+  GET|HEAD        master-pelabuhan/{masterPelabuhan}/edit master-pelabuhan.edit ??? MasterPelabuhanController???
+  GET|HEAD        master-pengirim-penerima master-pen???
+  POST            master-pengirim-penerima master-pen???
+  GET|HEAD        master-pengirim-penerima/create mas???
+  GET|HEAD        master-pengirim-penerima/download-template master-pengirim-penerima.download-template ??? MasterPengirimPenerimaController@download???
+  POST            master-pengirim-penerima/import mas???
+  GET|HEAD        master-pengirim-penerima/{master_pengirim_penerima} master-pengirim-penerima.show ??? MasterPengirimPeneri???
+  PUT|PATCH       master-pengirim-penerima/{master_pengirim_penerima} master-pengirim-penerima.update ??? MasterPengirimPenerima???
+  DELETE          master-pengirim-penerima/{master_pengirim_penerima} master-pengirim-penerima.destroy ??? MasterPengirimPenerimaC???
+  GET|HEAD        master-pengirim-penerima/{master_pengirim_penerima}/edit master-pengirim-penerima.edit ??? MasterPengirimP???
+  GET|HEAD        master-pricelist-biaya-trucking mas???
+  POST            master-pricelist-biaya-trucking mas???
+  GET|HEAD        master-pricelist-biaya-trucking/create master.pricelist-biaya-trucking.create ??? MasterPricelistBiayaTruckingController@cr???
+  GET|HEAD        master-pricelist-biaya-trucking/{pricelistBiayaTrucking} master.pricelist-biaya-trucking.show ??? MasterPricelistBiayaT???
+  PUT             master-pricelist-biaya-trucking/{pricelistBiayaTrucking} master.pricelist-biaya-trucking.update ??? MasterPricelistBiayaTru???
+  DELETE          master-pricelist-biaya-trucking/{pricelistBiayaTrucking} master.pricelist-biaya-trucking.destroy ??? MasterPricelistBiayaTruc???
+  GET|HEAD        master-pricelist-biaya-trucking/{pricelistBiayaTrucking}/edit master.pricelist-biaya-trucking.edit ??? MasterPricelistB???
+  GET|HEAD        master-pricelist-lembur master.pric???
+  POST            master-pricelist-lembur master.pric???
+  GET|HEAD        master-pricelist-lembur/create mast???
+  PUT             master-pricelist-lembur/{pricelistLembur} master.pricelist-lembur.update ??? MasterPricelistLemburController???
+  DELETE          master-pricelist-lembur/{pricelistLembur} master.pricelist-lembur.destroy ??? MasterPricelistLemburController@???
+  GET|HEAD        master-pricelist-lembur/{pricelistLembur}/edit master.pricelist-lembur.edit ??? MasterPricelistLemburCon???
+  GET|HEAD        master-sertifikat-kapal master-sert???
+  POST            master-sertifikat-kapal master-sert???
+  GET|HEAD        master-sertifikat-kapal/create mast???
+  GET|HEAD        master-sertifikat-kapal/{master_sertifikat_kapal} master-sertifikat-kapal.show ??? SertifikatKapal???
+  PUT             master-sertifikat-kapal/{master_sertifikat_kapal} master-sertifikat-kapal.update ??? SertifikatKapalCo???
+  DELETE          master-sertifikat-kapal/{master_sertifikat_kapal} master-sertifikat-kapal.destroy ??? SertifikatKapalCon???
+  GET|HEAD        master-sertifikat-kapal/{master_sertifikat_kapal}/edit master-sertifikat-kapal.edit ??? Sertifikat???
+  GET|HEAD        master/alat-berat master.alat-berat???
+  POST            master/alat-berat master.alat-berat???
+  GET|HEAD        master/alat-berat/create master.ala???
+  POST            master/alat-berat/import master.ala???
+  GET|HEAD        master/alat-berat/template master.a???
+  GET|HEAD        master/alat-berat/{alat_berat} mast???
+  PUT|PATCH       master/alat-berat/{alat_berat} mast???
+  DELETE          master/alat-berat/{alat_berat} mast???
+  GET|HEAD        master/alat-berat/{alat_berat}/edit master.alat-berat.edit ??? AlatBeratController@edi???
+  GET|HEAD        master/bank master-bank-index ??? Mas???
+  POST            master/bank master-bank-store ??? Mas???
+  GET|HEAD        master/bank/create master-bank-crea???
+  GET|HEAD        master/bank/download-template maste???
+  POST            master/bank/import master-bank-impo???
+  GET|HEAD        master/bank/{bank} master-bank-show???
+  PUT             master/bank/{bank} master-bank-upda???
+  DELETE          master/bank/{bank} master-bank-dest???
+  GET|HEAD        master/bank/{bank}/edit master-bank???
+  GET|HEAD        master/cabang master.cabang.index  ???
+  POST            master/cabang master.cabang.store  ???
+  GET|HEAD        master/cabang/create master.cabang.???
+  GET|HEAD        master/cabang/{cabang} master.caban???
+  PUT|PATCH       master/cabang/{cabang} master.caban???
+  DELETE          master/cabang/{cabang} master.caban???
+  GET|HEAD        master/cabang/{cabang}/edit master.???
+  GET|HEAD        master/coa master-coa-index ??? Maste???
+  POST            master/coa master-coa-store ??? Maste???
+  GET|HEAD        master/coa/create master-coa-create???
+  GET|HEAD        master/coa/download-template master???
+  GET|HEAD        master/coa/export master-coa-export???
+  POST            master/coa/import master-coa-import???
+  GET|HEAD        master/coa/{coa} master-coa-show ??? ???
+  PUT|PATCH       master/coa/{coa} master-coa-update ???
+  DELETE          master/coa/{coa} master-coa-destroy???
+  GET|HEAD        master/coa/{coa}/edit master-coa-ed???
+  GET|HEAD        master/coa/{coa}/ledger master-coa-???
+  GET|HEAD        master/coa/{coa}/ledger/print maste???
+  GET|HEAD        master/divisi master.divisi.index  ???
+  POST            master/divisi master.divisi.store  ???
+  GET|HEAD        master/divisi/create master.divisi.???
+  GET|HEAD        master/divisi/download-template mas???
+  POST            master/divisi/import master.divisi.???
+  GET|HEAD        master/divisi/{divisi} master.divis???
+  PUT             master/divisi/{divisi} master.divis???
+  PATCH           master/divisi/{divisi} master.divis???
+  DELETE          master/divisi/{divisi} master.divis???
+  GET|HEAD        master/divisi/{divisi}/edit master.???
+  GET|HEAD        master/gudang-amprahan master.gudan???
+  POST            master/gudang-amprahan master.gudan???
+  GET|HEAD        master/gudang-amprahan/create maste???
+  GET|HEAD        master/gudang-amprahan/{gudang_amprahan} master.gudang-amprahan.show ??? MasterGudangAmprahanControlle???
+  PUT|PATCH       master/gudang-amprahan/{gudang_amprahan} master.gudang-amprahan.update ??? MasterGudangAmprahanController@???
+  DELETE          master/gudang-amprahan/{gudang_amprahan} master.gudang-amprahan.destroy ??? MasterGudangAmprahanController@d???
+  GET|HEAD        master/gudang-amprahan/{gudang_amprahan}/edit master.gudang-amprahan.edit ??? MasterGudangAmprahanCont???
+  GET|HEAD        master/jenis-barang jenis-barang.in???
+  POST            master/jenis-barang jenis-barang.st???
+  GET|HEAD        master/jenis-barang-download-template jenis-barang.download-template ??? JenisBarangController@downloadTempl???
+  GET|HEAD        master/jenis-barang-import jenis-ba???
+  POST            master/jenis-barang-import jenis-ba???
+  GET|HEAD        master/jenis-barang/create jenis-ba???
+  GET|HEAD        master/jenis-barang/{jenis_barang} ???
+  PUT|PATCH       master/jenis-barang/{jenis_barang} ???
+  DELETE          master/jenis-barang/{jenis_barang} ???
+  GET|HEAD        master/jenis-barang/{jenis_barang}/edit jenis-barang.edit ??? JenisBarangController???
+  POST            master/karyawan master.karyawan.sto???
+  GET|HEAD        master/karyawan master.karyawan.ind???
+  GET|HEAD        master/karyawan-abk master.karyawan???
+  GET|HEAD        master/karyawan/create master.karya???
+  GET|HEAD        master/karyawan/excel-template mast???
+  GET|HEAD        master/karyawan/export master.karya???
+  GET|HEAD        master/karyawan/export-empty master???
+  GET|HEAD        master/karyawan/export-excel master???
+  GET|HEAD        master/karyawan/export-excel-indonesia master.karyawan.export-excel-indonesia ??? KaryawanController@exportExcelIndon???
+  GET|HEAD        master/karyawan/get-next-nik master???
+  GET|HEAD        master/karyawan/import master.karya???
+  POST            master/karyawan/import master.karya???
+  GET|HEAD        master/karyawan/print master.karyaw???
+  GET|HEAD        master/karyawan/print-empty master.???
+  GET|HEAD        master/karyawan/print-forms master.???
+  GET|HEAD        master/karyawan/simple-excel-template master.karyawan.simple-excel-template ??? KaryawanController@downloadSimpleExcelTempl???
+  GET|HEAD        master/karyawan/template master.kar???
+  GET|HEAD        master/karyawan/{karyawan} master.k???
+  PUT             master/karyawan/{karyawan} master.k???
+  DELETE          master/karyawan/{karyawan} master.k???
+  GET|HEAD        master/karyawan/{karyawan}/crew-checklist master.karyawan.crew-checklist ??? KaryawanController@crewCh???
+  POST            master/karyawan/{karyawan}/crew-checklist master.karyawan.crew-checklist.update ??? KaryawanController@updateCrewCh???
+  GET|HEAD        master/karyawan/{karyawan}/crew-checklist-new master.karyawan.crew-checklist-new ??? KaryawanController@crewC???
+  GET|HEAD        master/karyawan/{karyawan}/crew-checklist/print master.karyawan.crew-checklist.print ??? KaryawanController@print???
+  GET|HEAD        master/karyawan/{karyawan}/download-pdf master.karyawan.download-pdf ??? KaryawanController@downlo???
+  GET|HEAD        master/karyawan/{karyawan}/edit mas???
+  GET|HEAD        master/karyawan/{karyawan}/export-single master.karyawan.export-single ??? KaryawanController@export???
+  GET|HEAD        master/karyawan/{karyawan}/print ma???
+  PATCH           master/karyawan/{karyawan}/update-catatan-pekerjaan master.karyawan.update-catatan-pekerjaan ??? KaryawanController@updat???
+  GET|HEAD        master/kegiatan master.kegiatan.ind???
+  POST            master/kegiatan master.kegiatan.sto???
+  GET|HEAD        master/kegiatan/create master.kegia???
+  GET|HEAD        master/kegiatan/export/csv master.k???
+  POST            master/kegiatan/import/csv master.k???
+  GET|HEAD        master/kegiatan/template/csv master???
+  GET|HEAD        master/kegiatan/{kegiatan} master.k???
+  PUT             master/kegiatan/{kegiatan} master.k???
+  DELETE          master/kegiatan/{kegiatan} master.k???
+  GET|HEAD        master/kegiatan/{kegiatan}/edit mas???
+  GET|HEAD        master/klasifikasi-biaya klasifikas???
+  POST            master/klasifikasi-biaya klasifikas???
+  GET|HEAD        master/klasifikasi-biaya-download-template klasifikasi-biaya.download-template ??? Master\KlasifikasiBiayaController@download???
+  GET|HEAD        master/klasifikasi-biaya-get-next-kode klasifikasi-biaya.get-next-kode ??? Master\KlasifikasiBiayaController@getNext???
+  GET|HEAD        master/klasifikasi-biaya-import kla???
+  POST            master/klasifikasi-biaya-import kla???
+  GET|HEAD        master/klasifikasi-biaya/create kla???
+  GET|HEAD        master/klasifikasi-biaya/{klasifikasi_biaya} klasifikasi-biaya.show ??? Master\KlasifikasiBiayaContr???
+  PUT|PATCH       master/klasifikasi-biaya/{klasifikasi_biaya} klasifikasi-biaya.update ??? Master\KlasifikasiBiayaControl???
+  DELETE          master/klasifikasi-biaya/{klasifikasi_biaya} klasifikasi-biaya.destroy ??? Master\KlasifikasiBiayaControll???
+  GET|HEAD        master/klasifikasi-biaya/{klasifikasi_biaya}/edit klasifikasi-biaya.edit ??? Master\KlasifikasiBiaya???
+  GET|HEAD        master/kode-nomor master.kode-nomor???
+  POST            master/kode-nomor master.kode-nomor???
+  GET|HEAD        master/kode-nomor/create master.kod???
+  GET|HEAD        master/kode-nomor/{kode_nomor} mast???
+  PUT|PATCH       master/kode-nomor/{kode_nomor} mast???
+  DELETE          master/kode-nomor/{kode_nomor} mast???
+  GET|HEAD        master/kode-nomor/{kode_nomor}/edit master.kode-nomor.edit ??? KodeNomorController@edi???
+  GET|HEAD        master/kontainer master.kontainer.i???
+  POST            master/kontainer master.kontainer.s???
+  GET|HEAD        master/kontainer/create master.kont???
+  GET|HEAD        master/kontainer/download-template ???
+  GET|HEAD        master/kontainer/download-template-gudang master.kontainer.download-template-gudang ??? KontainerImportController@downloadTemplat???
+  GET|HEAD        master/kontainer/download-template-nomor-gabungan master.kontainer.download-template-nomor-gabungan ??? KontainerImportController@downloadTempla???
+  GET|HEAD        master/kontainer/download-template-tanggal-sewa master.kontainer.download-template-tanggal-sewa ??? KontainerImportController@downloadTempla???
+  GET|HEAD        master/kontainer/export master.kont???
+  GET|HEAD        master/kontainer/export-tanpa-tanggal-sewa master.kontainer.export-tanpa-tanggal-sewa ??? KontainerImportController@exportKontainerTanpaTan???
+  GET|HEAD        master/kontainer/export-tidak-tersedia master.kontainer.export-tidak-tersedia ??? KontainerImportController@exportKontainerTidakTers???
+  POST            master/kontainer/import master.kont???
+  POST            master/kontainer/import-master-unit master.kontainer.import-master-unit ??? KontainerImportController@importMasterUni???
+  POST            master/kontainer/import-nomor-gabungan master.kontainer.import-nomor-gabungan ??? KontainerImportController@importNomorGabu???
+  POST            master/kontainer/import-tanggal-sewa master.kontainer.import-tanggal-sewa ??? KontainerImportController@importTanggalSe???
+  GET|HEAD        master/kontainer/stock-pergudang ma???
+  GET|HEAD        master/kontainer/stock-pergudang/{id} master.kontainer.stock-pergudang.show ??? StockKontainerPergudangController@s???
+  POST            master/kontainer/update-gudang mast???
+  GET|HEAD        master/kontainer/{kontainer} master???
+  PUT             master/kontainer/{kontainer} master???
+  DELETE          master/kontainer/{kontainer} master???
+  GET|HEAD        master/kontainer/{kontainer}/edit m???
+  GET|HEAD        master/lwbp-lama master.lwbp-lama.i???
+  POST            master/lwbp-lama master.lwbp-lama.s???
+  GET|HEAD        master/lwbp-lama/create master.lwbp???
+  GET|HEAD        master/lwbp-lama/{lwbp_lama} master???
+  PUT|PATCH       master/lwbp-lama/{lwbp_lama} master???
+  DELETE          master/lwbp-lama/{lwbp_lama} master???
+  GET|HEAD        master/lwbp-lama/{lwbp_lama}/edit m???
+  GET|HEAD        master/master-pelayanan-pelabuhan m???
+  POST            master/master-pelayanan-pelabuhan m???
+  GET|HEAD        master/master-pelayanan-pelabuhan/create master.master-pelayanan-pelabuhan.create ??? MasterPelayananPelabuhanController@???
+  PUT             master/master-pelayanan-pelabuhan/{masterPelayananPelabuhan} master.master-pelayanan-pelabuhan.update ??? MasterPelayanan???
+  DELETE          master/master-pelayanan-pelabuhan/{masterPelayananPelabuhan} master.master-pelayanan-pelabuhan.destroy ??? MasterPelayananP???
+  GET|HEAD        master/master-pelayanan-pelabuhan/{masterPelayananPelabuhan}/edit master.master-pelayanan-pelabuhan.edit ??? MasterPe???
+  POST            master/master-pricelist-labuh-tambat master.master-pricelist-labuh-tambat.store ??? MasterPricelistLabuhTambatController@sto???
+  GET|HEAD        master/master-pricelist-labuh-tambat master.master-pricelist-labuh-tambat.index ??? MasterPricelistLabuhTambatController@ind???
+  GET|HEAD        master/master-pricelist-labuh-tambat/create master.master-pricelist-labuh-tambat.create ??? MasterPricelistLabuhTambatControll???
+  GET|HEAD        master/master-pricelist-labuh-tambat/{master_pricelist_labuh_tambat} master.master-pricelist-labuh-tambat.show ??? MasterP???
+  PUT|PATCH       master/master-pricelist-labuh-tambat/{master_pricelist_labuh_tambat} master.master-pricelist-labuh-tambat.update ??? MasterPri???
+  DELETE          master/master-pricelist-labuh-tambat/{master_pricelist_labuh_tambat} master.master-pricelist-labuh-tambat.destroy ??? MasterPric???
+  GET|HEAD        master/master-pricelist-labuh-tambat/{master_pricelist_labuh_tambat}/edit master.master-pricelist-labuh-tambat.edit ??? Ma???
+  GET|HEAD        master/merk-ban master.merk-ban.ind???
+  POST            master/merk-ban master.merk-ban.sto???
+  GET|HEAD        master/merk-ban/create master.merk-???
+  GET|HEAD        master/merk-ban/{merk_ban} master.m???
+  PUT|PATCH       master/merk-ban/{merk_ban} master.m???
+  DELETE          master/merk-ban/{merk_ban} master.m???
+  GET|HEAD        master/merk-ban/{merk_ban}/edit mas???
+  POST            master/mobil master.mobil.store ??? M???
+  GET|HEAD        master/mobil master.mobil.index ??? M???
+  GET|HEAD        master/mobil/create master.mobil.cr???
+  GET|HEAD        master/mobil/export master.mobil.ex???
+  GET|HEAD        master/mobil/get-next-kode master.m???
+  POST            master/mobil/import master.mobil.im???
+  POST            master/mobil/import-asuransi master???
+  GET|HEAD        master/mobil/template master.mobil.???
+  GET|HEAD        master/mobil/template-asuransi mast???
+  GET|HEAD        master/mobil/{mobil} master.mobil.s???
+  PUT|PATCH       master/mobil/{mobil} master.mobil.u???
+  DELETE          master/mobil/{mobil} master.mobil.d???
+  GET|HEAD        master/mobil/{mobil}/edit master.mo???
+  GET|HEAD        master/nama-barang-amprahan master.???
+  POST            master/nama-barang-amprahan master.???
+  GET|HEAD        master/nama-barang-amprahan/create ???
+  GET|HEAD        master/nama-barang-amprahan/export ???
+  POST            master/nama-barang-amprahan/import ???
+  GET|HEAD        master/nama-barang-amprahan/template master.nama-barang-amprahan.template ??? MasterNamaBarangAmprahanController@downloadTempla???
+  GET|HEAD        master/nama-barang-amprahan/{nama_barang_amprahan} master.nama-barang-amprahan.show ??? MasterNamaBarangAmpraha???
+  PUT|PATCH       master/nama-barang-amprahan/{nama_barang_amprahan} master.nama-barang-amprahan.update ??? MasterNamaBarangAmprahanC???
+  DELETE          master/nama-barang-amprahan/{nama_barang_amprahan} master.nama-barang-amprahan.destroy ??? MasterNamaBarangAmprahanCo???
+  GET|HEAD        master/nama-barang-amprahan/{nama_barang_amprahan}/edit master.nama-barang-amprahan.edit ??? MasterNamaBarangAm???
+  GET|HEAD        master/nama-stock-ban master.nama-s???
+  POST            master/nama-stock-ban master.nama-s???
+  GET|HEAD        master/nama-stock-ban/create master???
+  GET|HEAD        master/nama-stock-ban/{nama_stock_ban} master.nama-stock-ban.show ??? NamaStockBanController@???
+  PUT|PATCH       master/nama-stock-ban/{nama_stock_ban} master.nama-stock-ban.update ??? NamaStockBanController@up???
+  DELETE          master/nama-stock-ban/{nama_stock_ban} master.nama-stock-ban.destroy ??? NamaStockBanController@des???
+  GET|HEAD        master/nama-stock-ban/{nama_stock_ban}/edit master.nama-stock-ban.edit ??? NamaStockBanContro???
+  GET|HEAD        master/nomor-terakhir master.nomor-???
+  POST            master/nomor-terakhir master.nomor-???
+  GET|HEAD        master/nomor-terakhir/create master???
+  GET|HEAD        master/nomor-terakhir/{nomor_terakhir} master.nomor-terakhir.show ??? NomorTerakhirController@???
+  PUT|PATCH       master/nomor-terakhir/{nomor_terakhir} master.nomor-terakhir.update ??? NomorTerakhirController@up???
+  DELETE          master/nomor-terakhir/{nomor_terakhir} master.nomor-terakhir.destroy ??? NomorTerakhirController@des???
+  GET|HEAD        master/nomor-terakhir/{nomor_terakhir}/edit master.nomor-terakhir.edit ??? NomorTerakhirContro???
+  GET|HEAD        master/ongkos-truck master.ongkos-t???
+  GET|HEAD        master/ongkos-truck/export-excel ma???
+  GET|HEAD        master/ongkos-truck/show-data maste???
+  GET|HEAD        master/ongkos-truck/{id} master.ong???
+  PUT             master/ongkos-truck/{id} master.ong???
+  DELETE          master/ongkos-truck/{id} master.ong???
+  GET|HEAD        master/ongkos-truck/{id}/edit maste???
+  GET|HEAD        master/pajak master.pajak.index ??? P???
+  POST            master/pajak master.pajak.store ??? P???
+  GET|HEAD        master/pajak/create master.pajak.cr???
+  GET|HEAD        master/pajak/download-template mast???
+  POST            master/pajak/import master.pajak.im???
+  GET|HEAD        master/pajak/{pajak} master.pajak.s???
+  PUT             master/pajak/{pajak} master.pajak.u???
+  PATCH           master/pajak/{pajak} master.pajak.u???
+  DELETE          master/pajak/{pajak} master.pajak.d???
+  GET|HEAD        master/pajak/{pajak}/edit master.pa???
+  GET|HEAD        master/pekerjaan master.pekerjaan.i???
+  POST            master/pekerjaan master.pekerjaan.s???
+  GET|HEAD        master/pekerjaan/create master.peke???
+  GET|HEAD        master/pekerjaan/export-template ma???
+  POST            master/pekerjaan/import master.peke???
+  GET|HEAD        master/pekerjaan/{pekerjaan} master???
+  PUT             master/pekerjaan/{pekerjaan} master???
+  PATCH           master/pekerjaan/{pekerjaan} master???
+  DELETE          master/pekerjaan/{pekerjaan} master???
+  GET|HEAD        master/pekerjaan/{pekerjaan}/edit m???
+  GET|HEAD        master/penerima penerima.index ??? Pe???
+  POST            master/penerima penerima.store ??? Pe???
+  GET|HEAD        master/penerima-download-template p???
+  POST            master/penerima-import penerima.imp???
+  GET|HEAD        master/penerima/create penerima.cre???
+  GET|HEAD        master/penerima/{penerima} penerima???
+  PUT|PATCH       master/penerima/{penerima} penerima???
+  DELETE          master/penerima/{penerima} penerima???
+  GET|HEAD        master/penerima/{penerima}/edit pen???
+  GET|HEAD        master/pengirim pengirim.index ??? Pe???
+  POST            master/pengirim pengirim.store ??? Pe???
+  GET|HEAD        master/pengirim-download-template p???
+  GET|HEAD        master/pengirim-export-excel pengir???
+  POST            master/pengirim-import pengirim.imp???
+  GET|HEAD        master/pengirim-import pengirim.imp???
+  GET|HEAD        master/pengirim/create pengirim.cre???
+  GET|HEAD        master/pengirim/{pengirim} pengirim???
+  PUT|PATCH       master/pengirim/{pengirim} pengirim???
+  DELETE          master/pengirim/{pengirim} pengirim???
+  GET|HEAD        master/pengirim/{pengirim}/edit pen???
+  GET|HEAD        master/permission master.permission???
+  POST            master/permission master.permission???
+  POST            master/permission/bulk-delete maste???
+  GET|HEAD        master/permission/create master.per???
+  POST            master/permission/sync master.permi???
+  GET|HEAD        master/permission/{permission} mast???
+  PUT             master/permission/{permission} mast???
+  DELETE          master/permission/{permission} mast???
+  POST            master/permission/{permission}/assign-users master.permission.assign-users ??? PermissionController@as???
+  GET|HEAD        master/permission/{permission}/edit master.permission.edit ??? PermissionController@edi???
+  GET|HEAD        master/permission/{permission}/users master.permission.users ??? PermissionController@getUse???
+  GET|HEAD        master/pricelist-air-tawar master.p???
+  POST            master/pricelist-air-tawar master.p???
+  GET|HEAD        master/pricelist-air-tawar/create m???
+  GET|HEAD        master/pricelist-air-tawar/export-template master.pricelist-air-tawar.export-template ??? MasterPricelistAirTawarController@export???
+  POST            master/pricelist-air-tawar/import m???
+  GET|HEAD        master/pricelist-air-tawar/{pricelistAirTawar} master.pricelist-air-tawar.show ??? MasterPricelistAirTawarCon???
+  PUT             master/pricelist-air-tawar/{pricelistAirTawar} master.pricelist-air-tawar.update ??? MasterPricelistAirTawarContr???
+  PATCH           master/pricelist-air-tawar/{pricelistAirTawar} master.pricelist-air-tawar.update ??? MasterPricelistAirTawarContr???
+  DELETE          master/pricelist-air-tawar/{pricelistAirTawar} master.pricelist-air-tawar.destroy ??? MasterPricelistAirTawarContro???
+  GET|HEAD        master/pricelist-air-tawar/{pricelistAirTawar}/edit master.pricelist-air-tawar.edit ??? MasterPricelistAirTaw???
+  GET|HEAD        master/pricelist-biaya-dokumen mast???
+  POST            master/pricelist-biaya-dokumen mast???
+  GET|HEAD        master/pricelist-biaya-dokumen/create master.pricelist-biaya-dokumen.create ??? PricelistBiayaDokumenController@cre???
+  GET|HEAD        master/pricelist-biaya-dokumen/{pricelistBiayaDokumen} master.pricelist-biaya-dokumen.show ??? PricelistBiayaDo???
+  PUT             master/pricelist-biaya-dokumen/{pricelistBiayaDokumen} master.pricelist-biaya-dokumen.update ??? PricelistBiayaDoku???
+  PATCH           master/pricelist-biaya-dokumen/{pricelistBiayaDokumen} master.pricelist-biaya-dokumen.update ??? PricelistBiayaDoku???
+  DELETE          master/pricelist-biaya-dokumen/{pricelistBiayaDokumen} master.pricelist-biaya-dokumen.destroy ??? PricelistBiayaDokum???
+  GET|HEAD        master/pricelist-biaya-dokumen/{pricelistBiayaDokumen}/edit master.pricelist-biaya-dokumen.edit ??? PricelistBi???
+  GET|HEAD        master/pricelist-biaya-storage mast???
+  POST            master/pricelist-biaya-storage mast???
+  GET|HEAD        master/pricelist-biaya-storage/create master-pricelist-biaya-storage.create ??? MasterPricelistBiayaStorageController@cre???
+  GET|HEAD        master/pricelist-biaya-storage/{pricelist_biaya_storage} master-pricelist-biaya-storage.show ??? MasterPricelistBiaya???
+  PUT|PATCH       master/pricelist-biaya-storage/{pricelist_biaya_storage} master-pricelist-biaya-storage.update ??? MasterPricelistBiayaSt???
+  DELETE          master/pricelist-biaya-storage/{pricelist_biaya_storage} master-pricelist-biaya-storage.destroy ??? MasterPricelistBiayaSto???
+  GET|HEAD        master/pricelist-biaya-storage/{pricelist_biaya_storage}/edit master-pricelist-biaya-storage.edit ??? MasterPricelist???
+  GET|HEAD        master/pricelist-buruh master.price???
+  POST            master/pricelist-buruh master.price???
+  GET|HEAD        master/pricelist-buruh/create maste???
+  GET|HEAD        master/pricelist-buruh/export maste???
+  POST            master/pricelist-buruh/import maste???
+  GET|HEAD        master/pricelist-buruh/template mas???
+  GET|HEAD        master/pricelist-buruh/{pricelistBuruh} master.pricelist-buruh.show ??? Master\PricelistBuruhController???
+  PUT             master/pricelist-buruh/{pricelistBuruh} master.pricelist-buruh.update ??? Master\PricelistBuruhController@u???
+  PATCH           master/pricelist-buruh/{pricelistBuruh} master.pricelist-buruh.update ??? Master\PricelistBuruhController@u???
+  DELETE          master/pricelist-buruh/{pricelistBuruh} master.pricelist-buruh.destroy ??? Master\PricelistBuruhController@de???
+  GET|HEAD        master/pricelist-buruh/{pricelistBuruh}/edit master.pricelist-buruh.edit ??? Master\PricelistBuruhContr???
+  GET|HEAD        master/pricelist-cat master.priceli???
+  POST            master/pricelist-cat master.priceli???
+  GET|HEAD        master/pricelist-cat/create master.???
+  POST            master/pricelist-cat/import master.???
+  GET|HEAD        master/pricelist-cat/template maste???
+  GET|HEAD        master/pricelist-cat/{pricelistCat} master.pricelist-cat.show ??? PricelistCatController@sho???
+  PUT             master/pricelist-cat/{pricelistCat} master.pricelist-cat.update ??? PricelistCatController@updat???
+  PATCH           master/pricelist-cat/{pricelistCat} master.pricelist-cat.update ??? PricelistCatController@updat???
+  DELETE          master/pricelist-cat/{pricelistCat} master.pricelist-cat.destroy ??? PricelistCatController@destro???
+  GET|HEAD        master/pricelist-cat/{pricelistCat}/edit master.pricelist-cat.edit ??? PricelistCatControlle???
+  GET|HEAD        master/pricelist-freight master-pri???
+  POST            master/pricelist-freight master-pri???
+  GET|HEAD        master/pricelist-freight/create mas???
+  GET|HEAD        master/pricelist-freight/download-template master-pricelist-freight.download-template ??? MasterPricelistFreightController@download???
+  POST            master/pricelist-freight/import mas???
+  GET|HEAD        master/pricelist-freight/{pricelist_freight} master-pricelist-freight.show ??? MasterPricelistFreightContr???
+  PUT|PATCH       master/pricelist-freight/{pricelist_freight} master-pricelist-freight.update ??? MasterPricelistFreightControl???
+  DELETE          master/pricelist-freight/{pricelist_freight} master-pricelist-freight.destroy ??? MasterPricelistFreightControll???
+  GET|HEAD        master/pricelist-freight/{pricelist_freight}/edit master-pricelist-freight.edit ??? MasterPricelistFreight???
+  GET|HEAD        master/pricelist-gate-in master.pri???
+  POST            master/pricelist-gate-in master.pri???
+  GET|HEAD        master/pricelist-gate-in/create mas???
+  GET|HEAD        master/pricelist-gate-in/download-template master.pricelist-gate-in.download-template ??? PricelistGateInController@download???
+  GET|HEAD        master/pricelist-gate-in/import mas???
+  POST            master/pricelist-gate-in/import/process master.pricelist-gate-in.import.process ??? PricelistGateInController@importPr???
+  GET|HEAD        master/pricelist-gate-in/{pricelistGateIn} master.pricelist-gate-in.show ??? PricelistGateInControl???
+  PUT             master/pricelist-gate-in/{pricelistGateIn} master.pricelist-gate-in.update ??? PricelistGateInControlle???
+  PATCH           master/pricelist-gate-in/{pricelistGateIn} master.pricelist-gate-in.update ??? PricelistGateInControlle???
+  DELETE          master/pricelist-gate-in/{pricelistGateIn} master.pricelist-gate-in.destroy ??? PricelistGateInController???
+  GET|HEAD        master/pricelist-gate-in/{pricelistGateIn}/edit master.pricelist-gate-in.edit ??? PricelistGateInCo???
+  GET|HEAD        master/pricelist-kanisir-ban master???
+  POST            master/pricelist-kanisir-ban master???
+  GET|HEAD        master/pricelist-kanisir-ban/create master.pricelist-kanisir-ban.create ??? MasterPricelistKanisirBanController@creat???
+  PUT             master/pricelist-kanisir-ban/{id} m???
+  DELETE          master/pricelist-kanisir-ban/{id} m???
+  GET|HEAD        master/pricelist-kanisir-ban/{id}/edit master.pricelist-kanisir-ban.edit ??? MasterPricelistKanisirBanController@???
+  GET|HEAD        master/pricelist-lolo master.pricel???
+  POST            master/pricelist-lolo master.pricel???
+  GET|HEAD        master/pricelist-lolo/create master???
+  PUT             master/pricelist-lolo/{pricelistLolo} master.pricelist-lolo.update ??? MasterPricelistLoloController@upd???
+  DELETE          master/pricelist-lolo/{pricelistLolo} master.pricelist-lolo.destroy ??? MasterPricelistLoloController@dest???
+  GET|HEAD        master/pricelist-lolo/{pricelistLolo}/edit master.pricelist-lolo.edit ??? MasterPricelistLoloControl???
+  GET|HEAD        master/pricelist-ob master.pricelis???
+  POST            master/pricelist-ob master.pricelis???
+  GET|HEAD        master/pricelist-ob/create master.p???
+  GET|HEAD        master/pricelist-ob/export-template master.pricelist-ob.export-template ??? MasterPricelistObController@exportTemplat???
+  POST            master/pricelist-ob/import master.p???
+  GET|HEAD        master/pricelist-ob/{pricelistOb} m???
+  PUT             master/pricelist-ob/{pricelistOb} m???
+  PATCH           master/pricelist-ob/{pricelistOb} m???
+  DELETE          master/pricelist-ob/{pricelistOb} m???
+  GET|HEAD        master/pricelist-ob/{pricelistOb}/edit master.pricelist-ob.edit ??? MasterPricelistObController@???
+  GET|HEAD        master/pricelist-opp-opt master.pri???
+  POST            master/pricelist-opp-opt master.pri???
+  GET|HEAD        master/pricelist-opp-opt/create mas???
+  PUT             master/pricelist-opp-opt/{id} maste???
+  DELETE          master/pricelist-opp-opt/{id} maste???
+  GET|HEAD        master/pricelist-opp-opt/{id}/edit ???
+  GET|HEAD        master/pricelist-perijinan master.p???
+  POST            master/pricelist-perijinan master.p???
+  GET|HEAD        master/pricelist-perijinan/create m???
+  GET|HEAD        master/pricelist-perijinan/{pricelist_perijinan} master.pricelist-perijinan.show ??? MasterPricelistPerijinanC???
+  PUT|PATCH       master/pricelist-perijinan/{pricelist_perijinan} master.pricelist-perijinan.update ??? MasterPricelistPerijinanCon???
+  DELETE          master/pricelist-perijinan/{pricelist_perijinan} master.pricelist-perijinan.destroy ??? MasterPricelistPerijinanCont???
+  GET|HEAD        master/pricelist-perijinan/{pricelist_perijinan}/edit master.pricelist-perijinan.edit ??? MasterPricelistPerij???
+  GET|HEAD        master/pricelist-rit master.priceli???
+  POST            master/pricelist-rit master.priceli???
+  GET|HEAD        master/pricelist-rit/create master.???
+  POST            master/pricelist-rit/import master.???
+  GET|HEAD        master/pricelist-rit/template maste???
+  GET|HEAD        master/pricelist-rit/{pricelistRit} master.pricelist-rit.show ??? PricelistRitController@sho???
+  PUT             master/pricelist-rit/{pricelistRit} master.pricelist-rit.update ??? PricelistRitController@updat???
+  PATCH           master/pricelist-rit/{pricelistRit} master.pricelist-rit.update ??? PricelistRitController@updat???
+  DELETE          master/pricelist-rit/{pricelistRit} master.pricelist-rit.destroy ??? PricelistRitController@destro???
+  GET|HEAD        master/pricelist-rit/{pricelistRit}/edit master.pricelist-rit.edit ??? PricelistRitControlle???
+  GET|HEAD        master/pricelist-sewa-kontainer mas???
+  POST            master/pricelist-sewa-kontainer mas???
+  GET|HEAD        master/pricelist-sewa-kontainer/create master.master.pricelist-sewa-kontainer.create ??? MasterPricelistSewaKontainerController@cr???
+  GET|HEAD        master/pricelist-sewa-kontainer/export-template master.master.pricelist-sewa-kontainer.export-template ??? MasterPricelistSewaKontainerController@e???
+  POST            master/pricelist-sewa-kontainer/import master.master.pricelist-sewa-kontainer.import ??? MasterPricelistSewaKontainerController@im???
+  GET|HEAD        master/pricelist-sewa-kontainer/{pricelist_sewa_kontainer} master.master.pricelist-sewa-kontainer.show ??? MasterPricelistSewa???
+  PUT             master/pricelist-sewa-kontainer/{pricelist_sewa_kontainer} master.master.pricelist-sewa-kontainer.update ??? MasterPricelistSewaKo???
+  DELETE          master/pricelist-sewa-kontainer/{pricelist_sewa_kontainer} master.master.pricelist-sewa-kontainer.destroy ??? MasterPricelistSewaKon???
+  GET|HEAD        master/pricelist-sewa-kontainer/{pricelist_sewa_kontainer}/edit master.master.pricelist-sewa-kontainer.edit ??? MasterPricelis???
+  GET|HEAD        master/pricelist-thc master.priceli???
+  POST            master/pricelist-thc master.priceli???
+  GET|HEAD        master/pricelist-thc/create master.???
+  GET|HEAD        master/pricelist-thc/export master.???
+  PUT             master/pricelist-thc/{id} master.pr???
+  DELETE          master/pricelist-thc/{id} master.pr???
+  GET|HEAD        master/pricelist-thc/{id}/edit mast???
+  GET|HEAD        master/pricelist-tkbm master.pricel???
+  POST            master/pricelist-tkbm master.pricel???
+  GET|HEAD        master/pricelist-tkbm/create master???
+  PUT             master/pricelist-tkbm/{id} master.p???
+  DELETE          master/pricelist-tkbm/{id} master.p???
+  GET|HEAD        master/pricelist-tkbm/{id}/edit mas???
+  POST            master/pricelist-vendor-supir maste???
+  GET|HEAD        master/pricelist-vendor-supir maste???
+  GET|HEAD        master/pricelist-vendor-supir/create master.pricelist-vendor-supir.create ??? MasterPricelistVendorSupirController@crea???
+  GET|HEAD        master/pricelist-vendor-supir/{pricelist_vendor_supir} master.pricelist-vendor-supir.show ??? MasterPricelistVendor???
+  PUT|PATCH       master/pricelist-vendor-supir/{pricelist_vendor_supir} master.pricelist-vendor-supir.update ??? MasterPricelistVendorSu???
+  DELETE          master/pricelist-vendor-supir/{pricelist_vendor_supir} master.pricelist-vendor-supir.destroy ??? MasterPricelistVendorSup???
+  GET|HEAD        master/pricelist-vendor-supir/{pricelist_vendor_supir}/edit master.pricelist-vendor-supir.edit ??? MasterPricelistV???
+  GET|HEAD        master/stock-kontainer master.stock???
+  POST            master/stock-kontainer master.stock???
+  GET|HEAD        master/stock-kontainer/create maste???
+  GET|HEAD        master/stock-kontainer/export maste???
+  POST            master/stock-kontainer/import maste???
+  GET|HEAD        master/stock-kontainer/template mas???
+  GET|HEAD        master/stock-kontainer/template-gudang master.stock-kontainer.template-gudang ??? StockKontainerController@downloadTemplateGu???
+  POST            master/stock-kontainer/update-gudang master.stock-kontainer.update-gudang ??? StockKontainerController@updateGuda???
+  GET|HEAD        master/stock-kontainer/{stock_kontainer} master.stock-kontainer.show ??? StockKontainerControlle???
+  PUT             master/stock-kontainer/{stock_kontainer} master.stock-kontainer.update ??? StockKontainerController@???
+  DELETE          master/stock-kontainer/{stock_kontainer} master.stock-kontainer.destroy ??? StockKontainerController@d???
+  GET|HEAD        master/stock-kontainer/{stock_kontainer}/edit master.stock-kontainer.edit ??? StockKontainerCont???
+  GET|HEAD        master/term term.index ??? TermContro???
+  POST            master/term term.store ??? TermContro???
+  GET|HEAD        master/term-download-template term.???
+  GET|HEAD        master/term-import term.import ??? Te???
+  POST            master/term-import term.import.proc???
+  GET|HEAD        master/term/create term.create ??? Te???
+  GET|HEAD        master/term/{term} term.show ??? Term???
+  PUT|PATCH       master/term/{term} term.update ??? Te???
+  DELETE          master/term/{term} term.destroy ??? T???
+  GET|HEAD        master/term/{term}/edit term.edit  ???
+  GET|HEAD        master/tipe-akun master.tipe-akun.i???
+  POST            master/tipe-akun master.tipe-akun.s???
+  GET|HEAD        master/tipe-akun/create master.tipe???
+  GET|HEAD        master/tipe-akun/{tipe_akun} master???
+  PUT|PATCH       master/tipe-akun/{tipe_akun} master???
+  DELETE          master/tipe-akun/{tipe_akun} master???
+  GET|HEAD        master/tipe-akun/{tipe_akun}/edit m???
+  GET|HEAD        master/tipe-barang master.tipe-bara???
+  POST            master/tipe-barang master.tipe-bara???
+  GET|HEAD        master/tipe-barang/create master.ti???
+  GET|HEAD        master/tipe-barang/{tipe_barang} ma???
+  PUT|PATCH       master/tipe-barang/{tipe_barang} ma???
+  DELETE          master/tipe-barang/{tipe_barang} ma???
+  GET|HEAD        master/tipe-barang/{tipe_barang}/edit master.tipe-barang.edit ??? TipeBarangController@e???
+  GET|HEAD        master/tipe-stock-ban master.tipe-s???
+  POST            master/tipe-stock-ban master.tipe-s???
+  GET|HEAD        master/tipe-stock-ban/create master???
+  GET|HEAD        master/tipe-stock-ban/{tipe_stock_ban} master.tipe-stock-ban.show ??? TipeStockBanController@???
+  PUT|PATCH       master/tipe-stock-ban/{tipe_stock_ban} master.tipe-stock-ban.update ??? TipeStockBanController@up???
+  DELETE          master/tipe-stock-ban/{tipe_stock_ban} master.tipe-stock-ban.destroy ??? TipeStockBanController@des???
+  GET|HEAD        master/tipe-stock-ban/{tipe_stock_ban}/edit master.tipe-stock-ban.edit ??? TipeStockBanContro???
+  GET|HEAD        master/tujuan master.tujuan.index  ???
+  POST            master/tujuan master.tujuan.store  ???
+  GET|HEAD        master/tujuan-kegiatan-utama master???
+  POST            master/tujuan-kegiatan-utama master???
+  GET|HEAD        master/tujuan-kegiatan-utama/create master.tujuan-kegiatan-utama.create ??? TujuanKegiatanUtamaController@creat???
+  GET|HEAD        master/tujuan-kegiatan-utama/download-template master.tujuan-kegiatan-utama.download-template ??? TujuanKegiatanUtamaController@down???
+  GET|HEAD        master/tujuan-kegiatan-utama/export master.tujuan-kegiatan-utama.export ??? TujuanKegiatanUtamaController@expor???
+  GET|HEAD        master/tujuan-kegiatan-utama/export-excel master.tujuan-kegiatan-utama.export-excel ??? TujuanKegiatanUtamaController@expo???
+  POST            master/tujuan-kegiatan-utama/import master.tujuan-kegiatan-utama.import ??? TujuanKegiatanUtamaController@impor???
+  GET|HEAD        master/tujuan-kegiatan-utama/import-form master.tujuan-kegiatan-utama.import-form ??? TujuanKegiatanUtamaController@showImpo???
+  GET|HEAD        master/tujuan-kegiatan-utama/print ???
+  POST            master/tujuan-kegiatan-utama/sync-ongkos master.tujuan-kegiatan-utama.sync-ongkos ??? TujuanKegiatanUtamaController@sync???
+  GET|HEAD        master/tujuan-kegiatan-utama/{tujuan_kegiatan_utama} master.tujuan-kegiatan-utama.show ??? TujuanKegiatanUt???
+  PUT             master/tujuan-kegiatan-utama/{tujuan_kegiatan_utama} master.tujuan-kegiatan-utama.update ??? TujuanKegiatanUtam???
+  DELETE          master/tujuan-kegiatan-utama/{tujuan_kegiatan_utama} master.tujuan-kegiatan-utama.destroy ??? TujuanKegiatanUtama???
+  GET|HEAD        master/tujuan-kegiatan-utama/{tujuan_kegiatan_utama}/edit master.tujuan-kegiatan-utama.edit ??? TujuanKegia???
+  GET|HEAD        master/tujuan-kirim tujuan-kirim.in???
+  POST            master/tujuan-kirim tujuan-kirim.st???
+  GET|HEAD        master/tujuan-kirim-download-template tujuan-kirim.download-template ??? MasterTujuanKirimController@downloadTempl???
+  GET|HEAD        master/tujuan-kirim-import tujuan-k???
+  POST            master/tujuan-kirim-import tujuan-k???
+  GET|HEAD        master/tujuan-kirim/create tujuan-k???
+  GET|HEAD        master/tujuan-kirim/export tujuan-k???
+  GET|HEAD        master/tujuan-kirim/{tujuanKirim} t???
+  PUT|PATCH       master/tujuan-kirim/{tujuanKirim} t???
+  DELETE          master/tujuan-kirim/{tujuanKirim} t???
+  GET|HEAD        master/tujuan-kirim/{tujuanKirim}/edit tujuan-kirim.edit ??? MasterTujuanKirimController@???
+  GET|HEAD        master/tujuan/create master.tujuan.???
+  POST            master/tujuan/import master.tujuan.???
+  GET|HEAD        master/tujuan/template master.tujua???
+  GET|HEAD        master/tujuan/{tujuan} master.tujua???
+  PUT|PATCH       master/tujuan/{tujuan} master.tujua???
+  DELETE          master/tujuan/{tujuan} master.tujua???
+  GET|HEAD        master/tujuan/{tujuan}/edit master.???
+  GET|HEAD        master/user master.user.index ??? Use???
+  POST            master/user master.user.store ??? Use???
+  POST            master/user/bulk-assign-permissions master.user.bulk-assign-permissions ??? UserController@bulkAssignPermission???
+  GET|HEAD        master/user/bulk-manage master.user???
+  GET|HEAD        master/user/create master.user.crea???
+  GET|HEAD        master/user/{user} master.user.show???
+  PUT             master/user/{user} master.user.upda???
+  PATCH           master/user/{user} master.user.upda???
+  DELETE          master/user/{user} master.user.dest???
+  POST            master/user/{user}/assign-template ???
+  GET|HEAD        master/user/{user}/edit master.user???
+  GET|HEAD        master/user/{user}/permissions mast???
+  GET|HEAD        master/user/{user}/permissions-for-copy master.user.permissions-for-copy ??? UserController@getUserPermissionsFo???
+  GET|HEAD        master/vendor-asuransi master.vendo???
+  POST            master/vendor-asuransi master.vendo???
+  GET|HEAD        master/vendor-asuransi/create maste???
+  GET|HEAD        master/vendor-asuransi/export-template master.vendor-asuransi.export-template ??? VendorAsuransiController@exportTemp???
+  POST            master/vendor-asuransi/import maste???
+  GET|HEAD        master/vendor-asuransi/{vendor_asuransi} master.vendor-asuransi.show ??? VendorAsuransiControlle???
+  PUT|PATCH       master/vendor-asuransi/{vendor_asuransi} master.vendor-asuransi.update ??? VendorAsuransiController@???
+  DELETE          master/vendor-asuransi/{vendor_asuransi} master.vendor-asuransi.destroy ??? VendorAsuransiController@d???
+  GET|HEAD        master/vendor-asuransi/{vendor_asuransi}/edit master.vendor-asuransi.edit ??? VendorAsuransiCont???
+  GET|HEAD        master/vendor-bengkel master.vendor???
+  POST            master/vendor-bengkel master.vendor???
+  GET|HEAD        master/vendor-bengkel/create master???
+  GET|HEAD        master/vendor-bengkel/export-template master.vendor-bengkel.export-template ??? VendorBengkelController@exportTempl???
+  POST            master/vendor-bengkel/import master???
+  GET|HEAD        master/vendor-bengkel/{vendor_bengkel} master.vendor-bengkel.show ??? VendorBengkelController@???
+  PUT|PATCH       master/vendor-bengkel/{vendor_bengkel} master.vendor-bengkel.update ??? VendorBengkelController@up???
+  DELETE          master/vendor-bengkel/{vendor_bengkel} master.vendor-bengkel.destroy ??? VendorBengkelController@des???
+  GET|HEAD        master/vendor-bengkel/{vendor_bengkel}/edit master.vendor-bengkel.edit ??? VendorBengkelContro???
+  GET|HEAD        master/vendor-invoice vendor-invoic???
+  POST            master/vendor-invoice vendor-invoic???
+  GET|HEAD        master/vendor-invoice/create vendor???
+  GET|HEAD        master/vendor-invoice/{vendorInvoice} vendor-invoice.show ??? VendorInvoiceController@s???
+  PUT|PATCH       master/vendor-invoice/{vendorInvoice} vendor-invoice.update ??? VendorInvoiceController@upd???
+  DELETE          master/vendor-invoice/{vendorInvoice} vendor-invoice.destroy ??? VendorInvoiceController@dest???
+  GET|HEAD        master/vendor-invoice/{vendorInvoice}/edit vendor-invoice.edit ??? VendorInvoiceControl???
+  GET|HEAD        master/vendor-kontainer-sewa vendor???
+  POST            master/vendor-kontainer-sewa vendor???
+  GET|HEAD        master/vendor-kontainer-sewa/create vendor-kontainer-sewa.create ??? VendorKontainerSewaController@creat???
+  GET|HEAD        master/vendor-kontainer-sewa/{vendorKontainerSewa} vendor-kontainer-sewa.show ??? VendorKontainerSew???
+  PUT|PATCH       master/vendor-kontainer-sewa/{vendorKontainerSewa} vendor-kontainer-sewa.update ??? VendorKontainerSewaC???
+  DELETE          master/vendor-kontainer-sewa/{vendorKontainerSewa} vendor-kontainer-sewa.destroy ??? VendorKontainerSewaCo???
+  GET|HEAD        master/vendor-kontainer-sewa/{vendorKontainerSewa}/edit vendor-kontainer-sewa.edit ??? VendorKontain???
+  GET|HEAD        master/vendor-supir master.vendor-s???
+  POST            master/vendor-supir master.vendor-s???
+  GET|HEAD        master/vendor-supir/create master.v???
+  GET|HEAD        master/vendor-supir/{vendor_supir} ???
+  PUT|PATCH       master/vendor-supir/{vendor_supir} ???
+  DELETE          master/vendor-supir/{vendor_supir} ???
+  GET|HEAD        master/vendor-supir/{vendor_supir}/edit master.vendor-supir.edit ??? VendorSupirController???
+  GET|HEAD        naik-kapal naik-kapal.index ??? NaikK???
+  POST            naik-kapal naik-kapal.store ??? NaikK???
+  POST            naik-kapal/bulk-action naik-kapal.b???
+  GET|HEAD        naik-kapal/create naik-kapal.create???
+  GET|HEAD        naik-kapal/download-template naik-k???
+  GET|HEAD        naik-kapal/export naik-kapal.export???
+  GET|HEAD        naik-kapal/get-voyages naik-kapal.g???
+  GET|HEAD        naik-kapal/print naik-kapal.print  ???
+  GET|HEAD        naik-kapal/select naik-kapal.select???
+  PATCH           naik-kapal/{naikKapal}/update-size ???
+  GET|HEAD        naik-kapal/{naik_kapal} naik-kapal.???
+  PUT|PATCH       naik-kapal/{naik_kapal} naik-kapal.???
+  DELETE          naik-kapal/{naik_kapal} naik-kapal.???
+  GET|HEAD        naik-kapal/{naik_kapal}/edit naik-k???
+  GET|HEAD        notifications notifications.index  ???
+  POST            notifications/mark-all-read notific???
+  GET|HEAD        notifications/unread-count notifica???
+  POST            notifications/{id}/read notificatio???
+  GET|HEAD        ob ... ob.index ??? ObController@index
+  GET|HEAD        ob-antar-gudang ob-antar-gudang.ind???
+  GET|HEAD        ob-antar-gudang/select ob-antar-gud???
+  POST            ob-antar-gudang/tagihan ob-antar-gu???
+  POST            ob/clear-tl ob.clear-tl ??? ObControl???
+  POST            ob/clear-tl-bl ob.clear-tl-bl ??? ObC???
+  POST            ob/confirm-update-size ob.confirm-u???
+  GET|HEAD        ob/dashboard ob.dashboard ??? ObContr???
+  GET|HEAD        ob/export ob.export ??? ObController@???
+  GET|HEAD        ob/fix-cargo-manifests ob.fix-cargo???
+  GET|HEAD        ob/generate-nomor-pranota ob.genera???
+  GET|HEAD        ob/get-kapal-bongkar ob.get-kapal-b???
+  GET|HEAD        ob/get-kapal-muat ob.get-kapal-muat???
+  GET|HEAD        ob/get-voyage-bongkar ob.get-voyage???
+  GET|HEAD        ob/get-voyage-by-kapal ob.get-voyag???
+  GET|HEAD        ob/get-voyage-muat ob.get-voyage-mu???
+  GET|HEAD        ob/get-voyages ob.get-voyages ??? ObC???
+  POST            ob/kirim-manifest ob.kirim-manifest???
+  POST            ob/mark-as-ob ob.mark-as-ob ??? ObCon???
+  POST            ob/mark-as-ob-bl ob.mark-as-ob-bl  ???
+  POST            ob/masuk-pranota ob.masuk-pranota  ???
+  POST            ob/preview-update-size ob.preview-u???
+  GET|HEAD        ob/print ob.print ??? ObController@pr???
+  POST            ob/process-tl ob.process-tl ??? ObCon???
+  POST            ob/process-tl-bongkar ob.process-tl???
+  POST            ob/save-asal-ke ob.save-asal-ke ??? O???
+  POST            ob/save-asal-ke-bulk ob.save-asal-k???
+  POST            ob/select ob.select ??? ObController@???
+  POST            ob/unmark-ob ob.unmark-ob ??? ObContr???
+  POST            ob/unmark-ob-bl ob.unmark-ob-bl ??? O???
+  GET|HEAD        order/jenis-barang/create order.jen???
+  POST            order/jenis-barang/store order.jeni???
+  GET|HEAD        order/penerima/create order.penerim???
+  POST            order/penerima/store order.penerima???
+  GET|HEAD        order/pengirim/create order.pengiri???
+  POST            order/pengirim/store order.pengirim???
+  GET|HEAD        order/term/create order.term.create???
+  POST            order/term/store order.term.store  ???
+  GET|HEAD        order/tujuan-ambil/create order.tuj???
+  POST            order/tujuan-ambil/store order.tuju???
+  GET|HEAD        order/tujuan-kirim/create order.tuj???
+  POST            order/tujuan-kirim/store order.tuju???
+  GET|HEAD        order/tujuan-kirim/suggest order.tu???
+  GET|HEAD        orders orders.index ??? OrderControll???
+  POST            orders orders.store ??? OrderControll???
+  GET|HEAD        orders-batam orders-batam.index ??? O???
+  POST            orders-batam orders-batam.store ??? O???
+  GET|HEAD        orders-batam/approval orders-batam.???
+  GET|HEAD        orders-batam/create orders-batam.cr???
+  GET|HEAD        orders-batam/download-template orde???
+  POST            orders-batam/generate-number orders???
+  GET|HEAD        orders-batam/{orderBatam} orders-ba???
+  PUT             orders-batam/{orderBatam} orders-ba???
+  PATCH           orders-batam/{orderBatam} orders-ba???
+  DELETE          orders-batam/{orderBatam} orders-ba???
+  GET|HEAD        orders-batam/{orderBatam}/edit orde???
+  GET|HEAD        orders/approval orders.approval.ind???
+  GET|HEAD        orders/create orders.create ??? Order???
+  GET|HEAD        orders/download-template orders.dow???
+  POST            orders/generate-number orders.gener???
+  GET|HEAD        orders/{order} orders.show ??? OrderC???
+  PUT             orders/{order} orders.update ??? Orde???
+  PATCH           orders/{order} orders.update ??? Orde???
+  DELETE          orders/{order} orders.destroy ??? Ord???
+  GET|HEAD        orders/{order}/edit orders.edit ??? O???
+  GET|HEAD        outstanding outstanding.index ??? Out???
+  GET|HEAD        outstanding/export outstanding.expo???
+  GET|HEAD        outstanding/stats outstanding.stats???
+  GET|HEAD        outstanding/status/{status} outstan???
+  GET|HEAD        outstanding/{order}/details outstan???
+  POST            outstanding/{order}/process outstan???
+  GET|HEAD        pembatalan-surat-jalan pembatalan-s???
+  POST            pembatalan-surat-jalan pembatalan-s???
+  GET|HEAD        pembatalan-surat-jalan/create pemba???
+  GET|HEAD        pembatalan-surat-jalan/{pembatalan_surat_jalan} pembatalan-surat-jalan.show ??? PembatalanSuratJalanCo???
+  PUT|PATCH       pembatalan-surat-jalan/{pembatalan_surat_jalan} pembatalan-surat-jalan.update ??? PembatalanSuratJalanCont???
+  DELETE          pembatalan-surat-jalan/{pembatalan_surat_jalan} pembatalan-surat-jalan.destroy ??? PembatalanSuratJalanContr???
+  GET|HEAD        pembatalan-surat-jalan/{pembatalan_surat_jalan}/edit pembatalan-surat-jalan.edit ??? PembatalanSuratJa???
+  GET|HEAD        pembayaran-aktivitas-lain pembayara???
+  POST            pembayaran-aktivitas-lain pembayara???
+  GET|HEAD        pembayaran-aktivitas-lain/create pe???
+  GET|HEAD        pembayaran-aktivitas-lain/print pem???
+  POST            pembayaran-aktivitas-lain/store-invoice pembayaran-aktivitas-lain.store-invoice ??? PembayaranAktivitasLainController@storeIn???
+  GET|HEAD        pembayaran-aktivitas-lain/{pembayaranAktivitasLain} pembayaran-aktivitas-lain.show ??? PembayaranAktivitasLa???
+  PUT             pembayaran-aktivitas-lain/{pembayaranAktivitasLain} pembayaran-aktivitas-lain.update ??? PembayaranAktivitasLain???
+  DELETE          pembayaran-aktivitas-lain/{pembayaranAktivitasLain} pembayaran-aktivitas-lain.destroy ??? PembayaranAktivitasLainC???
+  POST            pembayaran-aktivitas-lain/{pembayaranAktivitasLain}/approve pembayaran-aktivitas-lain.approve ??? PembayaranAktivi???
+  GET|HEAD        pembayaran-aktivitas-lain/{pembayaranAktivitasLain}/edit pembayaran-aktivitas-lain.edit ??? PembayaranAktivi???
+  POST            pembayaran-aktivitas-lain/{pembayaranAktivitasLain}/mark-as-paid pembayaran-aktivitas-lain.mark-as-paid ??? PembayaranAkti???
+  GET|HEAD        pembayaran-aktivitas-lain/{pembayaranAktivitasLain}/print pembayaran-aktivitas-lain.print ??? PembayaranAktivi???
+  GET|HEAD        pembayaran-aktivitas-lainnya pembay???
+  POST            pembayaran-aktivitas-lainnya pembay???
+  GET|HEAD        pembayaran-aktivitas-lainnya/create pembayaran-aktivitas-lainnya.create ??? PembayaranAktivitasLainnyaController@creat???
+  GET|HEAD        pembayaran-aktivitas-lainnya/{pembayaranAktivitasLainnya} pembayaran-aktivitas-lainnya.show ??? PembayaranAktivita???
+  PUT             pembayaran-aktivitas-lainnya/{pembayaranAktivitasLainnya} pembayaran-aktivitas-lainnya.update ??? PembayaranAktivitasL???
+  DELETE          pembayaran-aktivitas-lainnya/{pembayaranAktivitasLainnya} pembayaran-aktivitas-lainnya.destroy ??? PembayaranAktivitasLa???
+  POST            pembayaran-aktivitas-lainnya/{pembayaranAktivitasLainnya}/approve pembayaran-aktivitas-lainnya.approve ??? PembayaranAkt???
+  GET|HEAD        pembayaran-aktivitas-lainnya/{pembayaranAktivitasLainnya}/edit pembayaran-aktivitas-lainnya.edit ??? PembayaranAkt???
+  POST            pembayaran-aktivitas-lainnya/{pembayaranAktivitasLainnya}/mark-as-paid pembayaran-aktivitas-lainnya.mark-as-paid ??? PembayaranA???
+  GET|HEAD        pembayaran-ob pembayaran-ob.index  ???
+  POST            pembayaran-ob pembayaran-ob.store  ???
+  GET|HEAD        pembayaran-ob/create pembayaran-ob.???
+  GET|HEAD        pembayaran-ob/export pembayaran-ob.???
+  GET|HEAD        pembayaran-ob/generate-nomor pembay???
+  GET|HEAD        pembayaran-ob/get-voyage-list pemba???
+  GET|HEAD        pembayaran-ob/{id} pembayaran-ob.sh???
+  PUT             pembayaran-ob/{id} pembayaran-ob.up???
+  DELETE          pembayaran-ob/{id} pembayaran-ob.de???
+  POST            pembayaran-ob/{id}/approve pembayar???
+  GET|HEAD        pembayaran-ob/{id}/edit pembayaran-???
+  GET|HEAD        pembayaran-ob/{id}/print pembayaran???
+  POST            pembayaran-ob/{id}/reject pembayara???
+  GET|HEAD        pembayaran-pranota-cat pembayaran-p???
+  POST            pembayaran-pranota-cat pembayaran-p???
+  GET|HEAD        pembayaran-pranota-cat/create pemba???
+  POST            pembayaran-pranota-cat/payment-form pembayaran-pranota-cat.payment-form ??? PembayaranPranotaCatController@showPaymentFor???
+  GET|HEAD        pembayaran-pranota-cat/{id} pembaya???
+  PUT             pembayaran-pranota-cat/{id} pembaya???
+  DELETE          pembayaran-pranota-cat/{id} pembaya???
+  GET|HEAD        pembayaran-pranota-cat/{id}/edit pe???
+  GET|HEAD        pembayaran-pranota-cat/{id}/print p???
+  GET|HEAD        pembayaran-pranota-invoice-vendor-supir pembayaran-pranota-invoice-vendor-supir.index ??? PembayaranPranotaInvoiceVendorSupirController@???
+  POST            pembayaran-pranota-invoice-vendor-supir pembayaran-pranota-invoice-vendor-supir.store ??? PembayaranPranotaInvoiceVendorSupirController@???
+  GET|HEAD        pembayaran-pranota-invoice-vendor-supir/create pembayaran-pranota-invoice-vendor-supir.create ??? PembayaranPranotaInvoiceVendorSupirContr???
+  GET|HEAD        pembayaran-pranota-invoice-vendor-supir/{pembayaran} pembayaran-pranota-invoice-vendor-supir.show ??? PembayaranPranotaInvoiceVendorSu???
+  PUT|PATCH       pembayaran-pranota-invoice-vendor-supir/{pembayaran} pembayaran-pranota-invoice-vendor-supir.update ??? PembayaranPranotaInvoiceVendorSupi???
+  DELETE          pembayaran-pranota-invoice-vendor-supir/{pembayaran} pembayaran-pranota-invoice-vendor-supir.destroy ??? PembayaranPranotaInvoiceVendorSupir???
+  GET|HEAD        pembayaran-pranota-invoice-vendor-supir/{pembayaran}/edit pembayaran-pranota-invoice-vendor-supir.edit ??? PembayaranPranotaInvoiceVen???
+  GET|HEAD        pembayaran-pranota-kontainer pembay???
+  POST            pembayaran-pranota-kontainer pembay???
+  GET|HEAD        pembayaran-pranota-kontainer/create pembayaran-pranota-kontainer.create ??? PembayaranPranotaKontainerController@creat???
+  GET|HEAD        pembayaran-pranota-kontainer/generate-nomor pembayaran-pranota-kontainer.generate-nomor ??? PembayaranPranotaKontainerController@generateNomorP???
+  GET|HEAD        pembayaran-pranota-kontainer/get-available-dp pembayaran-pranota-kontainer.get-available-dp ??? PembayaranPranotaKontainerController@get???
+  POST            pembayaran-pranota-kontainer/payment-form pembayaran-pranota-kontainer.payment-form ??? PembayaranPranotaKontainerController@showPaym???
+  GET|HEAD        pembayaran-pranota-kontainer/{id} p???
+  PUT             pembayaran-pranota-kontainer/{id} p???
+  DELETE          pembayaran-pranota-kontainer/{id} p???
+  GET|HEAD        pembayaran-pranota-kontainer/{id}/edit pembayaran-pranota-kontainer.edit ??? PembayaranPranotaKontainerController@???
+  GET|HEAD        pembayaran-pranota-kontainer/{id}/print pembayaran-pranota-kontainer.print ??? PembayaranPranotaKontainerController@???
+  DELETE          pembayaran-pranota-kontainer/{pembayaranId}/pranota/{pranotaId} pembayaran-pranota-kontainer.remove-pranota ??? PembayaranPranotaKont???
+  GET|HEAD        pembayaran-pranota-ob pembayaran-pr???
+  POST            pembayaran-pranota-ob pembayaran-pr???
+  GET|HEAD        pembayaran-pranota-ob/create pembay???
+  GET|HEAD        pembayaran-pranota-ob/select-criteria pembayaran-pranota-ob.select-criteria ??? PembayaranPranotaObController@selectCrite???
+  GET|HEAD        pembayaran-pranota-ob/{id} pembayar???
+  PUT             pembayaran-pranota-ob/{id} pembayar???
+  DELETE          pembayaran-pranota-ob/{id} pembayar???
+  GET|HEAD        pembayaran-pranota-ob/{id}/edit pem???
+  GET|HEAD        pembayaran-pranota-ob/{id}/print pe???
+  GET|HEAD        pembayaran-pranota-perbaikan-kontainer pembayaran-pranota-perbaikan-kontainer.index ??? PembayaranPranotaPerbaikanKontainerController@i???
+  POST            pembayaran-pranota-perbaikan-kontainer pembayaran-pranota-perbaikan-kontainer.store ??? PembayaranPranotaPerbaikanKontainerController@s???
+  GET|HEAD        pembayaran-pranota-perbaikan-kontainer/create pembayaran-pranota-perbaikan-kontainer.create ??? PembayaranPranotaPerbaikanKontainerContro???
+  GET|HEAD        pembayaran-pranota-perbaikan-kontainer/{pembayaran} pembayaran-pranota-perbaikan-kontainer.show ??? PembayaranPranotaPerbaikanKontain???
+  PUT             pembayaran-pranota-perbaikan-kontainer/{pembayaran} pembayaran-pranota-perbaikan-kontainer.update ??? PembayaranPranotaPerbaikanKontainer???
+  DELETE          pembayaran-pranota-perbaikan-kontainer/{pembayaran} pembayaran-pranota-perbaikan-kontainer.destroy ??? PembayaranPranotaPerbaikanKontainerC???
+  GET|HEAD        pembayaran-pranota-perbaikan-kontainer/{pembayaran}/edit pembayaran-pranota-perbaikan-kontainer.edit ??? PembayaranPranotaPerbaikanKo???
+  GET|HEAD        pembayaran-pranota-perbaikan-kontainer/{pembayaran}/print pembayaran-pranota-perbaikan-kontainer.print ??? PembayaranPranotaPerbaikanKo???
+  GET|HEAD        pembayaran-pranota-supir pembayaran???
+  POST            pembayaran-pranota-supir pembayaran???
+  GET|HEAD        pembayaran-pranota-supir/create pem???
+  GET|HEAD        pembayaran-pranota-supir/generate-nomor pembayaran-pranota-supir.generate-nomor ??? PembayaranPranotaSupirController@generateNomorPemba???
+  GET|HEAD        pembayaran-pranota-supir/{pembayaran} pembayaran-pranota-supir.show ??? PembayaranPranotaSupirController@s???
+  PUT             pembayaran-pranota-supir/{pembayaran} pembayaran-pranota-supir.update ??? PembayaranPranotaSupirController@upd???
+  DELETE          pembayaran-pranota-supir/{pembayaran} pembayaran-pranota-supir.destroy ??? PembayaranPranotaSupirController@dest???
+  GET|HEAD        pembayaran-pranota-supir/{pembayaran}/edit pembayaran-pranota-supir.edit ??? PembayaranPranotaSupirControl???
+  GET|HEAD        pembayaran-pranota-supir/{pembayaran}/print pembayaran-pranota-supir.print ??? PembayaranPranotaSupirControl???
+  GET|HEAD        pembayaran-pranota-surat-jalan pemb???
+  POST            pembayaran-pranota-surat-jalan pemb???
+  GET|HEAD        pembayaran-pranota-surat-jalan/create pembayaran-pranota-surat-jalan.create ??? PembayaranPranotaSuratJalanController@cre???
+  GET|HEAD        pembayaran-pranota-surat-jalan/generate-nomor pembayaran-pranota-surat-jalan.generate-nomor ??? PembayaranPranotaSuratJalanController@generatePa???
+  GET|HEAD        pembayaran-pranota-surat-jalan/{pembayaranPranotaSuratJalan} pembayaran-pranota-surat-jalan.show ??? PembayaranPranot???
+  PUT             pembayaran-pranota-surat-jalan/{pembayaranPranotaSuratJalan} pembayaran-pranota-surat-jalan.update ??? PembayaranPranotaS???
+  DELETE          pembayaran-pranota-surat-jalan/{pembayaranPranotaSuratJalan} pembayaran-pranota-surat-jalan.destroy ??? PembayaranPranotaSu???
+  GET|HEAD        pembayaran-pranota-surat-jalan/{pembayaranPranotaSuratJalan}/edit pembayaran-pranota-surat-jalan.edit ??? PembayaranP???
+  GET|HEAD        pembayaran-pranota-uang-jalan pemba???
+  POST            pembayaran-pranota-uang-jalan pemba???
+  GET|HEAD        pembayaran-pranota-uang-jalan-bongkaran pembayaran-pranota-uang-jalan-bongkaran.index ??? PembayaranPranotaUangJalanBongkaranController@???
+  POST            pembayaran-pranota-uang-jalan-bongkaran pembayaran-pranota-uang-jalan-bongkaran.store ??? PembayaranPranotaUangJalanBongkaranController@???
+  GET|HEAD        pembayaran-pranota-uang-jalan-bongkaran/create pembayaran-pranota-uang-jalan-bongkaran.create ??? PembayaranPranotaUangJalanBongkaranContr???
+  GET|HEAD        pembayaran-pranota-uang-jalan-bongkaran/generate-nomor pembayaran-pranota-uang-jalan-bongkaran.generate-nomor ??? PembayaranPranotaUangJalanBongkaranCont???
+  GET|HEAD        pembayaran-pranota-uang-jalan-bongkaran/{pembayaran} pembayaran-pranota-uang-jalan-bongkaran.show ??? PembayaranPranotaUangJalanBongka???
+  PUT             pembayaran-pranota-uang-jalan-bongkaran/{pembayaran} pembayaran-pranota-uang-jalan-bongkaran.update ??? PembayaranPranotaUangJalanBongkara???
+  DELETE          pembayaran-pranota-uang-jalan-bongkaran/{pembayaran} pembayaran-pranota-uang-jalan-bongkaran.destroy ??? PembayaranPranotaUangJalanBongkaran???
+  GET|HEAD        pembayaran-pranota-uang-jalan-bongkaran/{pembayaran}/edit pembayaran-pranota-uang-jalan-bongkaran.edit ??? PembayaranPranotaUangJalanB???
+  GET|HEAD        pembayaran-pranota-uang-jalan/create pembayaran-pranota-uang-jalan.create ??? PembayaranPranotaUangJalanController@crea???
+  GET|HEAD        pembayaran-pranota-uang-jalan/generate-nomor pembayaran-pranota-uang-jalan.generate-nomor ??? PembayaranPranotaUangJalanController@gen???
+  GET|HEAD        pembayaran-pranota-uang-jalan/{pembayaranPranotaUangJalan} pembayaran-pranota-uang-jalan.show ??? PembayaranPranota???
+  PUT             pembayaran-pranota-uang-jalan/{pembayaranPranotaUangJalan} pembayaran-pranota-uang-jalan.update ??? PembayaranPranotaUa???
+  DELETE          pembayaran-pranota-uang-jalan/{pembayaranPranotaUangJalan} pembayaran-pranota-uang-jalan.destroy ??? PembayaranPranotaUan???
+  GET|HEAD        pembayaran-pranota-uang-jalan/{pembayaranPranotaUangJalan}/edit pembayaran-pranota-uang-jalan.edit ??? PembayaranPr???
+  GET|HEAD        pembayaran-uang-muka pembayaran-uan???
+  POST            pembayaran-uang-muka pembayaran-uan???
+  GET|HEAD        pembayaran-uang-muka/create pembaya???
+  GET|HEAD        pembayaran-uang-muka/generate-nomor pembayaran-uang-muka.generate-nomor ??? PembayaranUangMukaController@generateNomo???
+  GET|HEAD        pembayaran-uang-muka/{id} pembayara???
+  PUT             pembayaran-uang-muka/{id} pembayara???
+  DELETE          pembayaran-uang-muka/{id} pembayara???
+  GET|HEAD        pembayaran-uang-muka/{id}/edit pemb???
+  POST            pengembalian-kontainer pengembalian???
+  GET|HEAD        perbaikan-kontainer perbaikan-konta???
+  POST            perbaikan-kontainer perbaikan-konta???
+  POST            perbaikan-kontainer/add-catatan per???
+  DELETE          perbaikan-kontainer/bulk-delete per???
+  PATCH           perbaikan-kontainer/bulk-pranota pe???
+  PATCH           perbaikan-kontainer/bulk-update-status perbaikan-kontainer.bulk-update-status ??? PerbaikanKontainerController@bulkUpdateSt???
+  GET|HEAD        perbaikan-kontainer/create perbaika???
+  GET|HEAD        perbaikan-kontainer/print perbaikan???
+  GET|HEAD        perbaikan-kontainer/{perbaikanKontainer} perbaikan-kontainer.show ??? PerbaikanKontainerControlle???
+  PUT             perbaikan-kontainer/{perbaikanKontainer} perbaikan-kontainer.update ??? PerbaikanKontainerController@???
+  DELETE          perbaikan-kontainer/{perbaikanKontainer} perbaikan-kontainer.destroy ??? PerbaikanKontainerController@d???
+  GET|HEAD        perbaikan-kontainer/{perbaikanKontainer}/edit perbaikan-kontainer.edit ??? PerbaikanKontainerCont???
+  GET|HEAD        perbaikan-kontainer/{perbaikanKontainer}/print perbaikan-kontainer.print ??? PerbaikanKontainerCont???
+  PATCH           perbaikan-kontainer/{perbaikanKontainer}/status perbaikan-kontainer.update-status ??? PerbaikanKontainerController???
+  GET|HEAD        pergerakan-kapal pergerakan-kapal.i???
+  POST            pergerakan-kapal pergerakan-kapal.s???
+  GET|HEAD        pergerakan-kapal/create pergerakan-???
+  GET|HEAD        pergerakan-kapal/export pergerakan-???
+  GET|HEAD        pergerakan-kapal/print pergerakan-k???
+  GET|HEAD        pergerakan-kapal/{pergerakanKapal} ???
+  PUT|PATCH       pergerakan-kapal/{pergerakanKapal} ???
+  DELETE          pergerakan-kapal/{pergerakanKapal} ???
+  PATCH           pergerakan-kapal/{pergerakanKapal}/approve pergerakan-kapal.approve ??? PergerakanKapalController???
+  GET|HEAD        pergerakan-kapal/{pergerakanKapal}/edit pergerakan-kapal.edit ??? PergerakanKapalController???
+  GET|HEAD        pergerakan-kontainer pergerakan-kon???
+  POST            pergerakan-kontainer pergerakan-kon???
+  GET|HEAD        permohonan permohonan.index ??? Permo???
+  POST            permohonan permohonan.store ??? Permo???
+  DELETE          permohonan/bulk-delete permohonan.b???
+  GET|HEAD        permohonan/create permohonan.create???
+  GET|HEAD        permohonan/export permohonan.export???
+  GET|HEAD        permohonan/export-excel permohonan.???
+  POST            permohonan/import permohonan.import???
+  GET|HEAD        permohonan/print/by-date permohonan???
+  GET|HEAD        permohonan/{permohonan} permohonan.???
+  PUT             permohonan/{permohonan} permohonan.???
+  DELETE          permohonan/{permohonan} permohonan.???
+  GET|HEAD        permohonan/{permohonan}/edit permoh???
+  GET|HEAD        permohonan/{permohonan}/print permo???
+  GET|HEAD        pranota pranota.index ??? PranotaTagi???
+  POST            pranota pranota.store ??? PranotaTagi???
+  GET|HEAD        pranota-cat pranota-cat.index ??? Pra???
+  POST            pranota-cat pranota-cat.store ??? Pra???
+  POST            pranota-cat/bulk-create-from-tagihan-cat pranota-cat.bulk-create-from-tagihan-cat ??? PranotaTagihanCatController@bulkCreateFromTagi???
+  POST            pranota-cat/bulk-status-update pran???
+  GET|HEAD        pranota-cat/generate-nomor pranota-???
+  GET|HEAD        pranota-cat/{id} pranota-cat.show  ???
+  GET|HEAD        pranota-cat/{id}/print pranota-cat.???
+  GET|HEAD        pranota-invoice-vendor-supir pranot???
+  POST            pranota-invoice-vendor-supir pranot???
+  GET|HEAD        pranota-invoice-vendor-supir/create pranota-invoice-vendor-supir.create ??? PranotaInvoiceVendorSupirController@creat???
+  POST            pranota-invoice-vendor-supir/{id}/add-pph pranota-invoice-vendor-supir.add-pph ??? PranotaInvoiceVendorSupirController???
+  GET|HEAD        pranota-invoice-vendor-supir/{id}/print pranota-invoice-vendor-supir.print ??? PranotaInvoiceVendorSupirController@???
+  GET|HEAD        pranota-invoice-vendor-supir/{pranota_invoice_vendor_supir} pranota-invoice-vendor-supir.show ??? PranotaInvoiceV???
+  PUT|PATCH       pranota-invoice-vendor-supir/{pranota_invoice_vendor_supir} pranota-invoice-vendor-supir.update ??? PranotaInvoiceVen???
+  DELETE          pranota-invoice-vendor-supir/{pranota_invoice_vendor_supir} pranota-invoice-vendor-supir.destroy ??? PranotaInvoiceVend???
+  GET|HEAD        pranota-invoice-vendor-supir/{pranota_invoice_vendor_supir}/edit pranota-invoice-vendor-supir.edit ??? PranotaInv???
+  GET|HEAD        pranota-kontainer-sewa pranota-kont???
+  POST            pranota-kontainer-sewa pranota-kont???
+  DELETE          pranota-kontainer-sewa-bulk-delete ???
+  POST            pranota-kontainer-sewa/add-items-to-existing pranota-kontainer-sewa.add-items-to-existing ??? PranotaTagihanKontainerSewaController@addItems???
+  POST            pranota-kontainer-sewa/bulk-create-from-tagihan-kontainer-sewa pranota-kontainer-sewa.bulk-create-from-tagihan-kontainer-sewa ??? PranotaTagihanKontainerSewaController@bulkCr???
+  POST            pranota-kontainer-sewa/bulk-status-update pranota-kontainer-sewa.bulk-update-status ??? PranotaTagihanKontainerSewaController@bulkStatu???
+  GET|HEAD        pranota-kontainer-sewa/create prano???
+  POST            pranota-kontainer-sewa/create-by-vendor-invoice-group pranota-kontainer-sewa.create-by-vendor-invoice-group ??? PranotaTagihanKontainerSewaController@createPranotaB???
+  GET|HEAD        pranota-kontainer-sewa/import prano???
+  POST            pranota-kontainer-sewa/import prano???
+  GET|HEAD        pranota-kontainer-sewa/next-number ???
+  POST            pranota-kontainer-sewa/preview-vendor-invoice-grouping pranota-kontainer-sewa.preview-vendor-invoice-grouping ??? PranotaTagihanKontainerSewaController@previewV???
+  GET|HEAD        pranota-kontainer-sewa/template/csv pranota-kontainer-sewa.template.csv ??? PranotaTagihanKontainerSewaController@downloadTemplateCs???
+  POST            pranota-kontainer-sewa/update-grand-total pranota-kontainer-sewa.update-grand-total ??? PranotaTagihanKontainerSewaController@updateGra???
+  GET|HEAD        pranota-kontainer-sewa/{pranota} pr???
+  PUT             pranota-kontainer-sewa/{pranota} pr???
+  DELETE          pranota-kontainer-sewa/{pranota} pr???
+  GET|HEAD        pranota-kontainer-sewa/{pranota}/edit pranota-kontainer-sewa.edit ??? PranotaTagihanKontainerSewaController@e???
+  POST            pranota-kontainer-sewa/{pranota}/lepas-kontainer pranota-kontainer-sewa.lepas-kontainer ??? PranotaTagihanKontainerSewaController@???
+  GET|HEAD        pranota-kontainer-sewa/{pranota}/print pranota-kontainer-sewa.print ??? PranotaTagihanKontainerSewaController@p???
+  PATCH           pranota-kontainer-sewa/{pranota}/status pranota-kontainer-sewa.update.status ??? PranotaTagihanKontainerSewaController@updateS???
+  GET|HEAD        pranota-lembur pranota-lembur.index???
+  POST            pranota-lembur pranota-lembur.store???
+  GET|HEAD        pranota-lembur/create pranota-lembu???
+  GET|HEAD        pranota-lembur/list pranota-lembur.???
+  GET|HEAD        pranota-lembur/{pranotaLembur} pran???
+  DELETE          pranota-lembur/{pranotaLembur} pran???
+  POST            pranota-lembur/{pranotaLembur}/approve pranota-lembur.approve ??? PranotaLemburController@app???
+  POST            pranota-lembur/{pranotaLembur}/cancel pranota-lembur.cancel ??? PranotaLemburController@can???
+  GET|HEAD        pranota-lembur/{pranotaLembur}/print pranota-lembur.print ??? PranotaLemburController@pri???
+  POST            pranota-lembur/{pranotaLembur}/submit pranota-lembur.submit ??? PranotaLemburController@sub???
+  GET|HEAD        pranota-ob pranota-ob.index ??? Prano???
+  GET|HEAD        pranota-ob/{pranota_ob} pranota-ob.???
+  DELETE          pranota-ob/{pranota_ob} pranota-ob.???
+  GET|HEAD        pranota-ob/{pranota}/input-dp prano???
+  GET|HEAD        pranota-ob/{pranota}/print pranota-???
+  GET|HEAD        pranota-perbaikan-kontainer pranota???
+  POST            pranota-perbaikan-kontainer pranota???
+  GET|HEAD        pranota-perbaikan-kontainer/create ???
+  GET|HEAD        pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer} pranota-perbaikan-kontainer.show ??? PranotaPerbaikanKon???
+  PUT             pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer} pranota-perbaikan-kontainer.update ??? PranotaPerbaikanKonta???
+  DELETE          pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer} pranota-perbaikan-kontainer.destroy ??? PranotaPerbaikanKontai???
+  GET|HEAD        pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/edit pranota-perbaikan-kontainer.edit ??? PranotaPerbaik???
+  GET|HEAD        pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/print pranota-perbaikan-kontainer.print ??? PranotaPerbaik???
+  GET|HEAD        pranota-rit pranota-rit.index ??? Pra???
+  POST            pranota-rit pranota-rit.store ??? Pra???
+  GET|HEAD        pranota-rit/create pranota-rit.crea???
+  GET|HEAD        pranota-rit/{pranota_rit} pranota-r???
+  PUT|PATCH       pranota-rit/{pranota_rit} pranota-r???
+  DELETE          pranota-rit/{pranota_rit} pranota-r???
+  GET|HEAD        pranota-rit/{pranota_rit}/edit pran???
+  GET|HEAD        pranota-stock pranota-stock.index  ???
+  DELETE          pranota-stock/{id} pranota-stock.de???
+  GET|HEAD        pranota-stock/{id}/print pranota-st???
+  GET|HEAD        pranota-supir pranota-supir.index  ???
+  POST            pranota-supir pranota-supir.store  ???
+  GET|HEAD        pranota-supir/create pranota-supir.???
+  GET|HEAD        pranota-supir/print/by-date pranota???
+  GET|HEAD        pranota-supir/{pranotaSupir} pranot???
+  PUT             pranota-supir/{pranotaSupir} pranot???
+  DELETE          pranota-supir/{pranotaSupir} pranot???
+  GET|HEAD        pranota-supir/{pranotaSupir}/edit p???
+  GET|HEAD        pranota-supir/{pranotaSupir}/print ???
+  GET|HEAD        pranota-uang-jalan pranota-uang-jal???
+  POST            pranota-uang-jalan pranota-uang-jal???
+  GET|HEAD        pranota-uang-jalan-batam pranota-ua???
+  POST            pranota-uang-jalan-batam pranota-ua???
+  GET|HEAD        pranota-uang-jalan-batam/create pra???
+  GET|HEAD        pranota-uang-jalan-batam/{pranotaUangJalanBatam}/print pranota-uang-jalan-batam.print ??? PranotaUangJalanB???
+  GET|HEAD        pranota-uang-jalan-batam/{pranota_uang_jalan_batam} pranota-uang-jalan-batam.show ??? PranotaUangJalanBat???
+  PUT|PATCH       pranota-uang-jalan-batam/{pranota_uang_jalan_batam} pranota-uang-jalan-batam.update ??? PranotaUangJalanBatam???
+  DELETE          pranota-uang-jalan-batam/{pranota_uang_jalan_batam} pranota-uang-jalan-batam.destroy ??? PranotaUangJalanBatamC???
+  GET|HEAD        pranota-uang-jalan-batam/{pranota_uang_jalan_batam}/edit pranota-uang-jalan-batam.edit ??? PranotaUangJal???
+  GET|HEAD        pranota-uang-jalan-bongkaran pranot???
+  POST            pranota-uang-jalan-bongkaran pranot???
+  GET|HEAD        pranota-uang-jalan-bongkaran/create pranota-uang-jalan-bongkaran.create ??? PranotaUangJalanBongkaranController@creat???
+  GET|HEAD        pranota-uang-jalan-bongkaran/{pranotaUangJalanBongkaran}/print pranota-uang-jalan-bongkaran.print ??? PranotaUangJa???
+  GET|HEAD        pranota-uang-jalan-bongkaran/{pranota_uang_jalan_bongkaran} pranota-uang-jalan-bongkaran.show ??? PranotaUangJala???
+  PUT|PATCH       pranota-uang-jalan-bongkaran/{pranota_uang_jalan_bongkaran} pranota-uang-jalan-bongkaran.update ??? PranotaUangJalanB???
+  DELETE          pranota-uang-jalan-bongkaran/{pranota_uang_jalan_bongkaran} pranota-uang-jalan-bongkaran.destroy ??? PranotaUangJalanBo???
+  GET|HEAD        pranota-uang-jalan-bongkaran/{pranota_uang_jalan_bongkaran}/edit pranota-uang-jalan-bongkaran.edit ??? PranotaUan???
+  GET|HEAD        pranota-uang-jalan/create pranota-u???
+  GET|HEAD        pranota-uang-jalan/export pranota-u???
+  GET|HEAD        pranota-uang-jalan/{pranotaUangJalan}/print pranota-uang-jalan.print ??? PranotaSuratJalanControl???
+  POST            pranota-uang-jalan/{pranotaUangJalan}/update-total pranota-uang-jalan.update-total ??? PranotaSuratJalanContro???
+  GET|HEAD        pranota-uang-jalan/{pranota_uang_jalan} pranota-uang-jalan.show ??? PranotaSuratJalanController???
+  PUT|PATCH       pranota-uang-jalan/{pranota_uang_jalan} pranota-uang-jalan.update ??? PranotaSuratJalanController@u???
+  DELETE          pranota-uang-jalan/{pranota_uang_jalan} pranota-uang-jalan.destroy ??? PranotaSuratJalanController@de???
+  GET|HEAD        pranota-uang-jalan/{pranota_uang_jalan}/edit pranota-uang-jalan.edit ??? PranotaSuratJalanContr???
+  GET|HEAD        pranota-uang-kenek pranota-uang-ken???
+  POST            pranota-uang-kenek pranota-uang-ken???
+  GET|HEAD        pranota-uang-kenek/create pranota-u???
+  PATCH           pranota-uang-kenek/{pranotaUangKenek}/approve pranota-uang-kenek.approve ??? PranotaUangKenekControl???
+  PATCH           pranota-uang-kenek/{pranotaUangKenek}/mark-as-paid pranota-uang-kenek.mark-as-paid ??? PranotaUangKenekContr???
+  GET|HEAD        pranota-uang-kenek/{pranotaUangKenek}/print pranota-uang-kenek.print ??? PranotaUangKenekControl???
+  PATCH           pranota-uang-kenek/{pranotaUangKenek}/submit pranota-uang-kenek.submit ??? PranotaUangKenekControl???
+  GET|HEAD        pranota-uang-kenek/{pranota_uang_kenek} pranota-uang-kenek.show ??? PranotaUangKenekController???
+  PUT|PATCH       pranota-uang-kenek/{pranota_uang_kenek} pranota-uang-kenek.update ??? PranotaUangKenekController@u???
+  DELETE          pranota-uang-kenek/{pranota_uang_kenek} pranota-uang-kenek.destroy ??? PranotaUangKenekController@de???
+  GET|HEAD        pranota-uang-kenek/{pranota_uang_kenek}/edit pranota-uang-kenek.edit ??? PranotaUangKenekContr???
+  GET|HEAD        pranota-uang-rit pranota-uang-rit.i???
+  POST            pranota-uang-rit pranota-uang-rit.s???
+  GET|HEAD        pranota-uang-rit-kenek pranota-uang???
+  POST            pranota-uang-rit-kenek pranota-uang???
+  GET|HEAD        pranota-uang-rit-kenek/create prano???
+  POST            pranota-uang-rit-kenek/export-excel pranota-uang-rit-kenek.export-excel ??? PranotaUangRitKenekController@exportExce???
+  POST            pranota-uang-rit-kenek/from-selection pranota-uang-rit-kenek.from-selection ??? PranotaUangRitKenekController@createFromSelect???
+  GET|HEAD        pranota-uang-rit-kenek/select-date ???
+  GET|HEAD        pranota-uang-rit-kenek/select-uang-jalan pranota-uang-rit-kenek.select-uang-jalan ??? PranotaUangRitKenekController@selectUan???
+  POST            pranota-uang-rit-kenek/{pranotaUangRitKenek}/approve pranota-uang-rit-kenek.approve ??? PranotaUangRitKenek???
+  GET|HEAD        pranota-uang-rit-kenek/{pranotaUangRitKenek}/export-surat-jalan pranota-uang-rit-kenek.export-surat-jalan ??? PranotaUangRitKen???
+  POST            pranota-uang-rit-kenek/{pranotaUangRitKenek}/mark-as-paid pranota-uang-rit-kenek.mark-as-paid ??? PranotaUangRitKen???
+  GET|HEAD        pranota-uang-rit-kenek/{pranotaUangRitKenek}/print pranota-uang-rit-kenek.print ??? PranotaUangRitKenek???
+  POST            pranota-uang-rit-kenek/{pranotaUangRitKenek}/submit pranota-uang-rit-kenek.submit ??? PranotaUangRitKenek???
+  GET|HEAD        pranota-uang-rit-kenek/{pranota_uang_rit_kenek} pranota-uang-rit-kenek.show ??? PranotaUangRitKenekCo???
+  PUT|PATCH       pranota-uang-rit-kenek/{pranota_uang_rit_kenek} pranota-uang-rit-kenek.update ??? PranotaUangRitKenekCont???
+  DELETE          pranota-uang-rit-kenek/{pranota_uang_rit_kenek} pranota-uang-rit-kenek.destroy ??? PranotaUangRitKenekContr???
+  GET|HEAD        pranota-uang-rit-kenek/{pranota_uang_rit_kenek}/edit pranota-uang-rit-kenek.edit ??? PranotaUangRitKe???
+  GET|HEAD        pranota-uang-rit/create pranota-uan???
+  POST            pranota-uang-rit/export-excel prano???
+  POST            pranota-uang-rit/from-selection pra???
+  GET|HEAD        pranota-uang-rit/select-date pranot???
+  GET|HEAD        pranota-uang-rit/select-uang-jalan ???
+  POST            pranota-uang-rit/{pranotaUangRit}/approve pranota-uang-rit.approve ??? PranotaUangRitController@???
+  GET|HEAD        pranota-uang-rit/{pranotaUangRit}/export-single pranota-uang-rit.export-single ??? PranotaUangRitController???
+  GET|HEAD        pranota-uang-rit/{pranotaUangRit}/export-surat-jalan pranota-uang-rit.export-surat-jalan ??? PranotaUangRitControlle???
+  POST            pranota-uang-rit/{pranotaUangRit}/mark-as-paid pranota-uang-rit.mark-as-paid ??? PranotaUangRitControlle???
+  GET|HEAD        pranota-uang-rit/{pranotaUangRit}/print pranota-uang-rit.print ??? PranotaUangRitController@???
+  POST            pranota-uang-rit/{pranotaUangRit}/submit pranota-uang-rit.submit ??? PranotaUangRitController@???
+  GET|HEAD        pranota-uang-rit/{pranota_uang_rit} pranota-uang-rit.show ??? PranotaUangRitController@sho???
+  PUT|PATCH       pranota-uang-rit/{pranota_uang_rit} pranota-uang-rit.update ??? PranotaUangRitController@updat???
+  DELETE          pranota-uang-rit/{pranota_uang_rit} pranota-uang-rit.destroy ??? PranotaUangRitController@destro???
+  GET|HEAD        pranota-uang-rit/{pranota_uang_rit}/edit pranota-uang-rit.edit ??? PranotaUangRitControlle???
+  POST            pranota/bulk pranota.bulk.store ??? P???
+  GET|HEAD        pranota/create pranota.create ??? Pra???
+  GET|HEAD        pranota/{pranota} pranota.show ??? Pr???
+  DELETE          pranota/{pranota} pranota.destroy  ???
+  POST            pranota/{pranota}/lepas-kontainer p???
+  GET|HEAD        pranota/{pranota}/print pranota.pri???
+  PATCH           pranota/{pranota}/status pranota.up???
+  GET|HEAD        pricelist-uang-jalan-batam pricelis???
+  POST            pricelist-uang-jalan-batam pricelis???
+  GET|HEAD        pricelist-uang-jalan-batam/create p???
+  GET|HEAD        pricelist-uang-jalan-batam/download-template pricelist-uang-jalan-batam.download-template ??? PricelistUangJalanBatamController@downlo???
+  GET|HEAD        pricelist-uang-jalan-batam/export p???
+  POST            pricelist-uang-jalan-batam/import p???
+  GET|HEAD        pricelist-uang-jalan-batam/{pricelist_uang_jalan_batam} pricelist-uang-jalan-batam.show ??? PricelistUangJala???
+  PUT|PATCH       pricelist-uang-jalan-batam/{pricelist_uang_jalan_batam} pricelist-uang-jalan-batam.update ??? PricelistUangJalanB???
+  DELETE          pricelist-uang-jalan-batam/{pricelist_uang_jalan_batam} pricelist-uang-jalan-batam.destroy ??? PricelistUangJalanBa???
+  GET|HEAD        pricelist-uang-jalan-batam/{pricelist_uang_jalan_batam}/edit pricelist-uang-jalan-batam.edit ??? PricelistUan???
+  GET|HEAD        profile profile.show ??? ProfileContr???
+  PUT             profile/account profile.update.acco???
+  POST            profile/avatar profile.update.avata???
+  DELETE          profile/delete profile.destroy ??? Pr???
+  GET|HEAD        profile/edit profile.edit ??? Profile???
+  PUT             profile/personal profile.update.per???
+  GET|HEAD        prospek prospek.index ??? ProspekCont???
+  POST            prospek/execute-naik-kapal prospek.???
+  GET|HEAD        prospek/export-excel prospek.export???
+  POST            prospek/gabungkan-lcl prospek.gabun???
+  GET|HEAD        prospek/get-voyage-by-kapal prospek???
+  GET|HEAD        prospek/pilih-tujuan prospek.pilih-???
+  GET|HEAD        prospek/proses-naik-kapal prospek.p???
+  POST            prospek/proses-naik-kapal prospek.p???
+  POST            prospek/scan-surat-jalan prospek.sc???
+  GET|HEAD        prospek/{prospek} prospek.show ??? Pr???
+  PUT             prospek/{prospek} prospek.update ??? ???
+  DELETE          prospek/{prospek} prospek.destroy  ???
+  GET|HEAD        prospek/{prospek}/edit prospek.edit???
+  POST            prospek/{prospek}/sync-from-surat-jalan prospek.sync-from-surat-jalan ??? ProspekController@syncFromSurat???
+  PATCH           prospek/{prospek}/update-seal prosp???
+  PATCH           prospek/{prospek}/update-status pro???
+  GET|HEAD        realisasi-uang-muka realisasi-uang-???
+  POST            realisasi-uang-muka realisasi-uang-???
+  GET|HEAD        realisasi-uang-muka/api/get-supir-by-voyage realisasi-uang-muka. ??? RealisasiUangMukaController@getSupi???
+  GET|HEAD        realisasi-uang-muka/api/get-voyage-list realisasi-uang-muka. ??? RealisasiUangMukaController@getVoyag???
+  GET|HEAD        realisasi-uang-muka/create realisas???
+  POST            realisasi-uang-muka/force-generate-nomor realisasi-uang-muka.force-generate-nomor ??? RealisasiUangMukaController@forceGenerat???
+  POST            realisasi-uang-muka/generate-nomor ???
+  GET|HEAD        realisasi-uang-muka/{id} realisasi-???
+  PUT             realisasi-uang-muka/{id} realisasi-???
+  DELETE          realisasi-uang-muka/{id} realisasi-???
+  POST            realisasi-uang-muka/{id}/approve re???
+  GET|HEAD        realisasi-uang-muka/{id}/edit reali???
+  GET|HEAD        realisasi-uang-muka/{id}/print real???
+  POST            realisasi-uang-muka/{id}/reject rea???
+  GET|HEAD        report/kas-truck report.kas-truck.i???
+  POST            report/kas-truck/topup report.kas-t???
+  GET|HEAD        report/kas-truck/view report.kas-tr???
+  GET|HEAD        report/lembur report.lembur.index  ???
+  GET|HEAD        report/lembur/view report.lembur.vi???
+  GET|HEAD        report/manifests report.manifests.i???
+  POST            report/manifests report.manifests.s???
+  POST            report/manifests/auto-update-nomor-urut report.manifests.auto-update-nomor-urut ??? ManifestController@autoUpdateNomo???
+  POST            report/manifests/auto-update-nomor-urut-all report.manifests.auto-update-nomor-urut-all ??? ManifestController@autoUpdateNom???
+  POST            report/manifests/auto-update-size r???
+  POST            report/manifests/bulk-import report???
+  GET|HEAD        report/manifests/create report.mani???
+  GET|HEAD        report/manifests/download-bulk-template report.manifests.download-bulk-template ??? ManifestController@downloadBulkTem???
+  GET|HEAD        report/manifests/download-template ???
+  GET|HEAD        report/manifests/export report.mani???
+  POST            report/manifests/import report.mani???
+  GET|HEAD        report/manifests/select-ship report???
+  POST            report/manifests/{id}/update-nomor-bl report.manifests.update-nomor-bl ??? ManifestController@updateNomo???
+  POST            report/manifests/{id}/update-nomor-urut report.manifests.update-nomor-urut ??? ManifestController@updateNomo???
+  POST            report/manifests/{id}/update-satuan report.manifests.update-satuan ??? ManifestController@updateSatua???
+  GET|HEAD        report/manifests/{manifest} report.???
+  PUT|PATCH       report/manifests/{manifest} report.???
+  DELETE          report/manifests/{manifest} report.???
+  GET|HEAD        report/manifests/{manifest}/edit re???
+  GET|HEAD        report/ongkos-truk report.ongkos-tr???
+  GET|HEAD        report/ongkos-truk/export report.on???
+  GET|HEAD        report/ongkos-truk/print report.ong???
+  GET|HEAD        report/ongkos-truk/view report.ongk???
+  GET|HEAD        report/pembayaran report.pembayaran???
+  GET|HEAD        report/pembayaran/export report.pem???
+  GET|HEAD        report/pembayaran/print report.pemb???
+  GET|HEAD        report/pranota-ob report.pranota-ob???
+  GET|HEAD        report/pranota-ob/export report.pra???
+  GET|HEAD        report/pranota-ob/print report.pran???
+  GET|HEAD        report/pranota-ob/view report.prano???
+  GET|HEAD        report/rit report.rit.index ??? Repor???
+  GET|HEAD        report/rit/export report.rit.export???
+  GET|HEAD        report/rit/print report.rit.print  ???
+  GET|HEAD        report/rit/view report.rit.view ??? R???
+  GET|HEAD        report/surat-jalan report.surat_jal???
+  GET|HEAD        report/surat-jalan/export report.su???
+  GET|HEAD        report/surat-jalan/view report.sura???
+  GET|HEAD        report/tagihan report.tagihan.index???
+  GET|HEAD        report/tagihan/export report.tagiha???
+  GET|HEAD        stock-amprahan stock-amprahan.index???
+  POST            stock-amprahan stock-amprahan.store???
+  GET|HEAD        stock-amprahan/create stock-ampraha???
+  GET|HEAD        stock-amprahan/generate-nomor-pranota stock-amprahan.generate-nomor-pranota ??? StockAmprahanController@generateNomorPran???
+  GET|HEAD        stock-amprahan/history/all stock-am???
+  GET|HEAD        stock-amprahan/history/print stock-???
+  POST            stock-amprahan/masuk-pranota stock-???
+  GET|HEAD        stock-amprahan/{id}/history stock-a???
+  POST            stock-amprahan/{id}/usage stock-amp???
+  GET|HEAD        stock-amprahan/{stock_amprahan} sto???
+  PUT|PATCH       stock-amprahan/{stock_amprahan} sto???
+  DELETE          stock-amprahan/{stock_amprahan} sto???
+  GET|HEAD        stock-amprahan/{stock_amprahan}/edit stock-amprahan.edit ??? StockAmprahanController@ed???
+  GET|HEAD        stock-ban stock-ban.index ??? StockBa???
+  POST            stock-ban stock-ban.store ??? StockBa???
+  GET|HEAD        stock-ban-dalam/{id} stock-ban-dala???
+  GET|HEAD        stock-ban-dalam/{id}/use stock-ban-???
+  POST            stock-ban-dalam/{id}/use stock-ban-???
+  POST            stock-ban-luar-batam stock-ban-luar???
+  GET|HEAD        stock-ban-luar-batam/create stock-b???
+  PUT             stock-ban-luar-batam/{id} stock-ban???
+  DELETE          stock-ban-luar-batam/{id} stock-ban???
+  GET|HEAD        stock-ban-luar-batam/{id} stock-ban???
+  GET|HEAD        stock-ban-luar-batam/{id}/edit stoc???
+  GET|HEAD        stock-ban/all-usage-history stock-b???
+  GET|HEAD        stock-ban/ban-dalam/{id} stock-ban.???
+  GET|HEAD        stock-ban/ban-dalam/{id}/use stock-???
+  POST            stock-ban/ban-dalam/{id}/use stock-???
+  POST            stock-ban/bulk-masak stock-ban.bulk???
+  GET|HEAD        stock-ban/create stock-ban.create  ???
+  POST            stock-ban/store-quantity-usage stoc???
+  POST            stock-ban/{id}/use stock-ban.store-???
+  GET|HEAD        stock-ban/{stock_ban} stock-ban.sho???
+  PUT             stock-ban/{stock_ban} stock-ban.upd???
+  DELETE          stock-ban/{stock_ban} stock-ban.des???
+  GET|HEAD        stock-ban/{stock_ban}/edit stock-ba???
+  PUT             stock-ban/{stock_ban}/kirim stock-b???
+  PUT             stock-ban/{stock_ban}/masak stock-b???
+  PUT             stock-ban/{stock_ban}/restore-to-stock stock-ban.restore-to-stock ??? StockBanController@restoreToS???
+  PUT             stock-ban/{stock_ban}/return stock-???
+  PUT             stock-ban/{stock_ban}/return-masak ???
+  PUT             stock-ban/{stock_ban}/return-to-shop stock-ban.return-to-shop ??? StockBanController@returnToSh???
+  POST            stock-ban/{stock_ban}/use stock-ban???
+  GET|HEAD        storage/{path} ....... storage.local
+  GET|HEAD        supir/api/kontainer/search supir.ap???
+  GET|HEAD        supir/cek-kendaraan supir.cek-kenda???
+  POST            supir/cek-kendaraan supir.cek-kenda???
+  GET|HEAD        supir/cek-kendaraan/create supir.ce???
+  GET|HEAD        supir/cek-kendaraan/{cekKendaraan} ???
+  GET|HEAD        supir/dashboard supir.dashboard ??? S???
+  GET|HEAD        supir/ob-bongkar supir.ob-bongkar  ???
+  POST            supir/ob-bongkar supir.ob-bongkar.s???
+  GET|HEAD        supir/ob-bongkar/index supir.ob-bon???
+  POST            supir/ob-bongkar/process supir.ob-b???
+  GET|HEAD        supir/ob-muat supir.ob-muat ??? Supir???
+  POST            supir/ob-muat supir.ob-muat.store  ???
+  GET|HEAD        supir/ob-muat/index supir.ob-muat.i???
+  POST            supir/ob-muat/process supir.ob-muat???
+  GET|HEAD        supir/permohonan/{permohonan}/checkpoint supir.checkpoint.create ??? CheckpointController@???
+  POST            supir/permohonan/{permohonan}/checkpoint supir.checkpoint.store ??? CheckpointController???
+  GET|HEAD        supir/surat-jalan-bongkaran/{id}/checkpoint supir.checkpoint.create-surat-jalan-bongkaran ??? CheckpointController@createSuratJalan???
+  POST            supir/surat-jalan-bongkaran/{id}/checkpoint supir.checkpoint.store-surat-jalan-bongkaran ??? CheckpointController@storeSuratJalan???
+  GET|HEAD        supir/surat-jalan/{suratJalan}/checkpoint supir.checkpoint.create-surat-jalan ??? CheckpointController@createSur???
+  POST            supir/surat-jalan/{suratJalan}/checkpoint supir.checkpoint.store-surat-jalan ??? CheckpointController@storeSur???
+  GET|HEAD        surat-jalan surat-jalan.index ??? Sur???
+  POST            surat-jalan surat-jalan.store ??? Sur???
+  GET|HEAD        surat-jalan-batam surat-jalan-batam???
+  POST            surat-jalan-batam surat-jalan-batam???
+  GET|HEAD        surat-jalan-batam/create surat-jala???
+  POST            surat-jalan-batam/generate-number s???
+  GET|HEAD        surat-jalan-batam/select-order sura???
+  GET|HEAD        surat-jalan-batam/{id} surat-jalan-???
+  PUT             surat-jalan-batam/{id} surat-jalan-???
+  DELETE          surat-jalan-batam/{id} surat-jalan-???
+  GET|HEAD        surat-jalan-batam/{id}/edit surat-j???
+  GET|HEAD        surat-jalan-batam/{id}/print surat-???
+  GET|HEAD        surat-jalan-batam/{id}/print-memo s???
+  GET|HEAD        surat-jalan-batam/{id}/print-preprinted surat-jalan-batam.print-preprinted ??? SuratJalanBatamController@printPrepr???
+  POST            surat-jalan-batam/{id}/update-status surat-jalan-batam.update-status ??? SuratJalanBatamController@updateStat???
+  GET|HEAD        surat-jalan-bongkaran surat-jalan-b???
+  POST            surat-jalan-bongkaran surat-jalan-b???
+  GET|HEAD        surat-jalan-bongkaran/api/bl-data s???
+  GET|HEAD        surat-jalan-bongkaran/create surat-???
+  GET|HEAD        surat-jalan-bongkaran/export surat-???
+  GET|HEAD        surat-jalan-bongkaran/get-voyages s???
+  GET|HEAD        surat-jalan-bongkaran/list surat-ja???
+  GET|HEAD        surat-jalan-bongkaran/print-ba/{bl} surat-jalan-bongkaran.print-ba ??? SuratJalanBongkaranController@printB???
+  GET|HEAD        surat-jalan-bongkaran/print-from-bl/{bl} surat-jalan-bongkaran.print-from-bl ??? SuratJalanBongkaranController@print???
+  GET|HEAD        surat-jalan-bongkaran/select-kapal ???
+  GET|HEAD        surat-jalan-bongkaran/select-ship s???
+  GET|HEAD        surat-jalan-bongkaran/{suratJalanBongkaran} surat-jalan-bongkaran.show ??? SuratJalanBongkaranContro???
+  PUT             surat-jalan-bongkaran/{suratJalanBongkaran} surat-jalan-bongkaran.update ??? SuratJalanBongkaranControll???
+  PATCH           surat-jalan-bongkaran/{suratJalanBongkaran} surat-jalan-bongkaran.update ??? SuratJalanBongkaranControll???
+  DELETE          surat-jalan-bongkaran/{suratJalanBongkaran} surat-jalan-bongkaran.destroy ??? SuratJalanBongkaranControlle???
+  GET|HEAD        surat-jalan-bongkaran/{suratJalanBongkaran}/download surat-jalan-bongkaran.download ??? SuratJalanBongkaranCont???
+  GET|HEAD        surat-jalan-bongkaran/{suratJalanBongkaran}/edit surat-jalan-bongkaran.edit ??? SuratJalanBongkaranC???
+  GET|HEAD        surat-jalan-bongkaran/{suratJalanBongkaran}/print surat-jalan-bongkaran.print ??? SuratJalanBongkaranC???
+  GET|HEAD        surat-jalan/create surat-jalan.crea???
+  GET|HEAD        surat-jalan/create-without-order su???
+  GET|HEAD        surat-jalan/export surat-jalan.expo???
+  GET|HEAD        surat-jalan/generate-nomor surat-ja???
+  GET|HEAD        surat-jalan/select-order surat-jala???
+  POST            surat-jalan/store-without-order sur???
+  GET|HEAD        surat-jalan/{suratJalan} surat-jala???
+  PUT             surat-jalan/{suratJalan} surat-jala???
+  PATCH           surat-jalan/{suratJalan} surat-jala???
+  DELETE          surat-jalan/{suratJalan} surat-jala???
+  GET|HEAD        surat-jalan/{suratJalan}/download s???
+  GET|HEAD        surat-jalan/{suratJalan}/edit surat???
+  GET|HEAD        surat-jalan/{suratJalan}/print sura???
+  GET|HEAD        surat-jalan/{suratJalan}/print-memo surat-jalan.print-memo ??? SuratJalanController@printMem???
+  GET|HEAD        surat-jalan/{suratJalan}/print-preprinted surat-jalan.print-preprinted ??? SuratJalanController@printPre???
+  POST            surat-jalan/{suratJalan}/update-status surat-jalan.update-status ??? SuratJalanController@updateSt???
+  POST            surat-jalan/{suratJalan}/update-supir surat-jalan.update-supir ??? SuratJalanController@updateSu???
+  GET|HEAD        tagihan-cat tagihan-cat.index ??? Tag???
+  POST            tagihan-cat tagihan-cat.store ??? Tag???
+  POST            tagihan-cat/bulk-delete tagihan-cat???
+  POST            tagihan-cat/bulk-update-status tagi???
+  GET|HEAD        tagihan-cat/create tagihan-cat.crea???
+  GET|HEAD        tagihan-cat/{tagihanCat} tagihan-ca???
+  PUT             tagihan-cat/{tagihanCat} tagihan-ca???
+  DELETE          tagihan-cat/{tagihanCat} tagihan-ca???
+  GET|HEAD        tagihan-cat/{tagihanCat}/edit tagih???
+  GET|HEAD        tagihan-ob tagihan-ob.index ??? Tagih???
+  POST            tagihan-ob tagihan-ob.store ??? Tagih???
+  GET|HEAD        tagihan-ob/create tagihan-ob.create???
+  POST            tagihan-ob/create-from-ob-muat tagi???
+  GET|HEAD        tagihan-ob/{tagihanOb} tagihan-ob.s???
+  PUT             tagihan-ob/{tagihanOb} tagihan-ob.u???
+  DELETE          tagihan-ob/{tagihanOb} tagihan-ob.d???
+  GET|HEAD        tagihan-ob/{tagihanOb}/edit tagihan???
+  POST            tagihan-ob/{tagihanOb}/update-field tagihan-ob.update-field ??? TagihanObController@updateFiel???
+  GET|HEAD        tagihan-supir-vendor tagihan-supir-???
+  POST            tagihan-supir-vendor tagihan-supir-???
+  GET|HEAD        tagihan-supir-vendor/create tagihan???
+  GET|HEAD        tagihan-supir-vendor/{tagihan_supir_vendor} tagihan-supir-vendor.show ??? TagihanSupirVendorContro???
+  PUT|PATCH       tagihan-supir-vendor/{tagihan_supir_vendor} tagihan-supir-vendor.update ??? TagihanSupirVendorControll???
+  DELETE          tagihan-supir-vendor/{tagihan_supir_vendor} tagihan-supir-vendor.destroy ??? TagihanSupirVendorControlle???
+  GET|HEAD        tagihan-supir-vendor/{tagihan_supir_vendor}/edit tagihan-supir-vendor.edit ??? TagihanSupirVendorC???
+  GET|HEAD        tanda-terima tanda-terima.index ??? T???
+  POST            tanda-terima tanda-terima.store ??? T???
+  GET|HEAD        tanda-terima-bongkaran tanda-terima???
+  POST            tanda-terima-bongkaran tanda-terima???
+  GET|HEAD        tanda-terima-bongkaran-next-number ???
+  GET|HEAD        tanda-terima-bongkaran/create tanda???
+  GET|HEAD        tanda-terima-bongkaran/export/excel tanda-terima-bongkaran.export ??? TandaTerimaBongkaranController@exportExce???
+  GET|HEAD        tanda-terima-bongkaran/{tandaTerimaBongkaran}/print tanda-terima-bongkaran.print ??? TandaTerimaBongkara???
+  GET|HEAD        tanda-terima-bongkaran/{tanda_terima_bongkaran} tanda-terima-bongkaran.show ??? TandaTerimaBongkaranCo???
+  PUT|PATCH       tanda-terima-bongkaran/{tanda_terima_bongkaran} tanda-terima-bongkaran.update ??? TandaTerimaBongkaranCont???
+  DELETE          tanda-terima-bongkaran/{tanda_terima_bongkaran} tanda-terima-bongkaran.destroy ??? TandaTerimaBongkaranContr???
+  GET|HEAD        tanda-terima-bongkaran/{tanda_terima_bongkaran}/edit tanda-terima-bongkaran.edit ??? TandaTerimaBongka???
+  GET|HEAD        tanda-terima-lcl tanda-terima-lcl.i???
+  POST            tanda-terima-lcl tanda-terima-lcl.s???
+  POST            tanda-terima-lcl/assign-container t???
+  DELETE          tanda-terima-lcl/bulk-delete tanda-???
+  PATCH           tanda-terima-lcl/bulk-seal tanda-te???
+  POST            tanda-terima-lcl/bulk-split tanda-t???
+  GET|HEAD        tanda-terima-lcl/create tanda-terim???
+  GET|HEAD        tanda-terima-lcl/export tanda-terim???
+  POST            tanda-terima-lcl/get-barang-from-containers tanda-terima-lcl.get-barang-from-containers ??? TandaTerimaLclController@getBarangFromC???
+  POST            tanda-terima-lcl/get-barang-from-containers-by-nomor tanda-terima-lcl.get-barang-from-containers-by-nomor ??? TandaTerimaLclController@getBarangFro???
+  GET|HEAD        tanda-terima-lcl/print tanda-terima???
+  POST            tanda-terima-lcl/seal tanda-terima-???
+  GET|HEAD        tanda-terima-lcl/show-container/{nomor_kontainer} tanda-terima-lcl.show-container ??? TandaTerimaLclControlle???
+  GET|HEAD        tanda-terima-lcl/stuffing tanda-ter???
+  POST            tanda-terima-lcl/stuffing/process t???
+  POST            tanda-terima-lcl/sync-prospek tanda???
+  POST            tanda-terima-lcl/unseal tanda-terim???
+  POST            tanda-terima-lcl/validate-containers tanda-terima-lcl.validate-containers ??? TandaTerimaLclController@validateContaine???
+  POST            tanda-terima-lcl/{id}/remove-from-container tanda-terima-lcl.remove-from-container ??? TandaTerimaLclController@removeFrom???
+  POST            tanda-terima-lcl/{id}/sync-penerima-pengirim tanda-terima-lcl.sync-penerima-pengirim ??? TandaTerimaLclController@syncPeneri???
+  POST            tanda-terima-lcl/{tandaTerimaLcl}/add-to-prospek tanda-terima-lcl.add-to-prospek ??? TandaTerimaLclControlle???
+  GET|HEAD        tanda-terima-lcl/{tandaTerimaTanpaSuratJalan}/download-image/{imageIndex} tanda-terima-lcl.download-image  ???
+  GET|HEAD        tanda-terima-lcl/{tanda_terima_lcl} tanda-terima-lcl.show ??? TandaTerimaLclController@sho???
+  PUT|PATCH       tanda-terima-lcl/{tanda_terima_lcl} tanda-terima-lcl.update ??? TandaTerimaLclController@updat???
+  DELETE          tanda-terima-lcl/{tanda_terima_lcl} tanda-terima-lcl.destroy ??? TandaTerimaLclController@destro???
+  GET|HEAD        tanda-terima-lcl/{tanda_terima_lcl}/edit tanda-terima-lcl.edit ??? TandaTerimaLclControlle???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan tand???
+  POST            tanda-terima-tanpa-surat-jalan tand???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan-batam tanda-terima-tanpa-surat-jalan-batam.index ??? TandaTerimaTanpaSuratJalanBatamController@ind???
+  POST            tanda-terima-tanpa-surat-jalan-batam tanda-terima-tanpa-surat-jalan-batam.store ??? TandaTerimaTanpaSuratJalanBatamController@sto???
+  POST            tanda-terima-tanpa-surat-jalan-batam/assign-container tanda-terima-tanpa-surat-jalan-bat???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan-batam/create tanda-terima-tanpa-surat-jalan-batam.create ??? TandaTerimaTanpaSuratJalanBatamControll???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan-batam/create-lcl tanda-terima-tanpa-surat-jalan-batam.create-lcl ??? TandaTerimaLclCont???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan-batam/export tanda-terima-tanpa-surat-jalan-bat???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan-batam/pilih-tipe tanda-terima-tanpa-surat-jalan-batam.pilih-tipe ??? TandaTerimaTanpaSuratJalanBatamControl???
+  POST            tanda-terima-tanpa-surat-jalan-batam/{id}/add-to-prospek tanda-terima-tanpa-surat-jala???
+  POST            tanda-terima-tanpa-surat-jalan-batam/{id}/sync-penerima-pengirim tanda-terima-tanpa-surat-jala???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan-batam/{tandaTerimaBatam} tanda-terima-tanpa-surat-jalan-batam.show ??? TandaTerimaTanpaSuratJala???
+  PUT|PATCH       tanda-terima-tanpa-surat-jalan-batam/{tandaTerimaBatam} tanda-terima-tanpa-surat-jalan-batam.update ??? TandaTerimaTanpaSuratJalanB???
+  DELETE          tanda-terima-tanpa-surat-jalan-batam/{tandaTerimaBatam} tanda-terima-tanpa-surat-jalan-batam.destroy ??? TandaTerimaTanpaSuratJalanBa???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan-batam/{tandaTerimaBatam}/edit tanda-terima-tanpa-surat-jalan-batam.edit ??? TandaTerimaTanpaSura???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan/create tanda-terima-tanpa-surat-jalan.create ??? TandaTerimaTanpaSuratJalanController@cre???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan/create-lcl tanda-terima-tanpa-surat-jalan.create-lcl ??? TandaTerimaLclController???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan/export tanda-terima-tanpa-surat-jalan.export ??? TandaTerimaTanpaSuratJalanController@bulkExp???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan/pilih-tipe tanda-terima-tanpa-surat-jalan.pilih-tipe ??? TandaTerimaTanpaSuratJalanController@pi???
+  POST            tanda-terima-tanpa-surat-jalan/{id}/sync-penerima-pengirim tanda-terima-tanpa-surat-jalan.sync-penerima-pengirim ??? TandaTerimaTanpaSuratJalanControl???
+  POST            tanda-terima-tanpa-surat-jalan/{tandaTerimaTanpaSuratJalan}/add-to-prospek tanda-terima-tanpa-surat-jalan.add-to-prospek ??? TandaTeri???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan/{tandaTerimaTanpaSuratJalan}/download-image/{imageIndex} tanda-terima-tanpa-surat-jalan.download-image???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan/{tanda_terima_tanpa_surat_jalan} tanda-terima-tanpa-surat-jalan.show ??? TandaTerimaT???
+  PUT|PATCH       tanda-terima-tanpa-surat-jalan/{tanda_terima_tanpa_surat_jalan} tanda-terima-tanpa-surat-jalan.update ??? TandaTerimaTan???
+  DELETE          tanda-terima-tanpa-surat-jalan/{tanda_terima_tanpa_surat_jalan} tanda-terima-tanpa-surat-jalan.destroy ??? TandaTerimaTanp???
+  GET|HEAD        tanda-terima-tanpa-surat-jalan/{tanda_terima_tanpa_surat_jalan}/edit tanda-terima-tanpa-surat-jalan.edit ??? TandaTe???
+  POST            tanda-terima/bulk-add-to-prospek ta???
+  DELETE          tanda-terima/bulk-delete tanda-teri???
+  GET|HEAD        tanda-terima/create tanda-terima.cr???
+  GET|HEAD        tanda-terima/export tanda-terima.ex???
+  POST            tanda-terima/export tanda-terima.ex???
+  POST            tanda-terima/export-excel tanda-ter???
+  GET|HEAD        tanda-terima/from-surat-jalan/{suratJalan} tanda-terima.from-surat-jalan ??? TandaTerimaController@createFromSu???
+  GET|HEAD        tanda-terima/penerima/create tanda-???
+  POST            tanda-terima/penerima/store tanda-t???
+  GET|HEAD        tanda-terima/select-surat-jalan tan???
+  POST            tanda-terima/update-manifest tanda-???
+  POST            tanda-terima/{tandaTerima}/add-to-prospek tanda-terima.add-to-prospek ??? TandaTerimaController@addTo???
+  POST            tanda-terima/{tandaTerima}/update-jenis-barang tanda-terima.update-jenis-barang ??? TandaTerimaController@updat???
+  GET|HEAD        tanda-terima/{tanda_terima} tanda-t???
+  PUT             tanda-terima/{tanda_terima} tanda-t???
+  DELETE          tanda-terima/{tanda_terima} tanda-t???
+  GET|HEAD        tanda-terima/{tanda_terima}/edit ta???
+  GET|HEAD        test-gate-in-ajax .................. 
+  GET|HEAD        test-import ............ test-import
+  GET|HEAD        uang-jalan uang-jalan.index ??? UangJ???
+  POST            uang-jalan uang-jalan.store ??? UangJ???
+  GET|HEAD        uang-jalan-batam uang-jalan-batam.i???
+  POST            uang-jalan-batam uang-jalan-batam.s???
+  GET|HEAD        uang-jalan-batam/create uang-jalan-???
+  GET|HEAD        uang-jalan-batam/select-surat-jalan uang-jalan-batam.select-surat-jalan ??? UangJalanBatamController@selectSuratJala???
+  GET|HEAD        uang-jalan-batam/{uang_jalan_batam} uang-jalan-batam.show ??? UangJalanBatamController@sho???
+  PUT|PATCH       uang-jalan-batam/{uang_jalan_batam} uang-jalan-batam.update ??? UangJalanBatamController@updat???
+  DELETE          uang-jalan-batam/{uang_jalan_batam} uang-jalan-batam.destroy ??? UangJalanBatamController@destro???
+  GET|HEAD        uang-jalan-batam/{uang_jalan_batam}/edit uang-jalan-batam.edit ??? UangJalanBatamControlle???
+  GET|HEAD        uang-jalan-bongkaran uang-jalan-bon???
+  POST            uang-jalan-bongkaran uang-jalan-bon???
+  GET|HEAD        uang-jalan-bongkaran/create uang-ja???
+  GET|HEAD        uang-jalan-bongkaran/select-surat-jalan-bongkaran uang-jalan-bongkaran.select-surat-jalan-bongkaran ??? UangJalanBongkaranController@selectSura???
+  GET|HEAD        uang-jalan-bongkaran/{uang_jalan_bongkaran} uang-jalan-bongkaran.show ??? UangJalanBongkaranContro???
+  PUT|PATCH       uang-jalan-bongkaran/{uang_jalan_bongkaran} uang-jalan-bongkaran.update ??? UangJalanBongkaranControll???
+  DELETE          uang-jalan-bongkaran/{uang_jalan_bongkaran} uang-jalan-bongkaran.destroy ??? UangJalanBongkaranControlle???
+  GET|HEAD        uang-jalan-bongkaran/{uang_jalan_bongkaran}/edit uang-jalan-bongkaran.edit ??? UangJalanBongkaranC???
+  GET|HEAD        uang-jalan/adjustment/create uang-j???
+  GET|HEAD        uang-jalan/adjustment/get-first-uang-jalan uang-jalan.adjustment.get-first-uang-jalan ??? UangJalanController@getFirstUangJalanForAd???
+  GET|HEAD        uang-jalan/adjustment/select-surat-jalan uang-jalan.adjustment.select-surat-jalan ??? UangJalanController@selectSuratJalanAdju???
+  GET|HEAD        uang-jalan/adjustment/select-uang-jalan uang-jalan.adjustment.select-uang-jalan ??? UangJalanController@selectUangJalanAdjus???
+  POST            uang-jalan/adjustment/store uang-ja???
+  GET|HEAD        uang-jalan/create uang-jalan.create???
+  GET|HEAD        uang-jalan/export uang-jalan.export???
+  GET|HEAD        uang-jalan/select-surat-jalan uang-???
+  GET|HEAD        uang-jalan/select-surat-jalan-penyesuaian uang-jalan.select-surat-jalan-penyesuaian ??? UangJalanController@selectSur???
+  GET|HEAD        uang-jalan/{uang_jalan} uang-jalan.???
+  PUT|PATCH       uang-jalan/{uang_jalan} uang-jalan.???
+  DELETE          uang-jalan/{uang_jalan} uang-jalan.???
+  GET|HEAD        uang-jalan/{uang_jalan}/edit uang-j???
+  GET|HEAD        up ................................. 
+
+                                 Showing [1667] routes
+

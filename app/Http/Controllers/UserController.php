@@ -613,6 +613,7 @@ class UserController extends Controller
                 'pembatalan-surat-jalan' => 'pembatalan-surat-jalan',
                 'uang-jalan-bongkaran' => 'uang-jalan-bongkaran',
                 'tanda-terima' => 'tanda-terima',
+                'tanda-terima-batam' => 'tanda-terima-batam',
                 'tanda-terima-tanpa-surat-jalan' => 'tanda-terima-tanpa-surat-jalan',
                 'tanda-terima-tanpa-surat-jalan-batam' => 'tanda-terima-tanpa-surat-jalan-batam',
                 'gate-in' => 'gate-in',

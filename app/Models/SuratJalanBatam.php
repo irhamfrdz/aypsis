@@ -145,4 +145,12 @@ class SuratJalanBatam extends Model
     {
         return $this->hasOne(UangJalanBatam::class, 'surat_jalan_batam_id');
     }
+
+    /**
+     * Relationship with TandaTerimaBatam
+     */
+    public function tandaTerima()
+    {
+        return $this->hasOne(TandaTerimaBatam::class, 'surat_jalan_id');
+    }
 }

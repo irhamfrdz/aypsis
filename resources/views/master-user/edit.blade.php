@@ -1268,6 +1268,23 @@
                                 <td><input type="checkbox" name="permissions[tanda-terima][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima']['export']) && $userMatrixPermissions['tanda-terima']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Tanda Terima Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-green-600 font-bold">Tanda Terima Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-batam']['view']) && $userMatrixPermissions['tanda-terima-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-batam']['create']) && $userMatrixPermissions['tanda-terima-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-batam']['update']) && $userMatrixPermissions['tanda-terima-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-batam']['delete']) && $userMatrixPermissions['tanda-terima-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Tanda Terima Tanpa Surat Jalan --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

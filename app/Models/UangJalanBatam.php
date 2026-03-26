@@ -59,6 +59,19 @@ class UangJalanBatam extends Model
     }
 
     /**
+     * Relationship ke PranotaUangJalanBatam
+     */
+    public function pranotaUangJalanBatams()
+    {
+        return $this->belongsToMany(
+            PranotaUangJalanBatam::class, 
+            'pranota_uang_jalan_batam_items', 
+            'uang_jalan_batam_id', 
+            'pranota_uang_jalan_batam_id'
+        )->withTimestamps();
+    }
+
+    /**
      * Scope untuk filter berdasarkan status
      */
     public function scopeByStatus($query, $status)

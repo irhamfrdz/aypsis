@@ -6,7 +6,7 @@
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
             <div>
-                <h1 class="text-lg font-semibold text-gray-900">Buat Pranota Uang Jalan Batam Batam</h1>
+                <h1 class="text-lg font-semibold text-gray-900">Buat Pranota Uang Jalan Batam</h1>
                 <p class="text-xs text-gray-600 mt-0.5">Pilih Uang Jalan Batam yang akan dimasukkan ke pranota</p>
             </div>
             <a href="{{ route('pranota-uang-jalan-batam.index') }}" 
@@ -133,25 +133,22 @@
                                         </td>
                                         <td class="px-3 py-2">
                                             <div class="text-sm font-medium text-gray-900">{{ $uangJalan->nomor_uang_jalan }}</div>
-                                            <div class="text-xs text-gray-500">{{ $uangJalan->kegiatan_bongkar_muat }}</div>
+                                            <div class="text-xs text-gray-500">{{ $uangJalan->kegiatan_bongkar_muat ?? '-' }}</div>
                                         </td>
                                         <td class="px-3 py-2 text-sm text-gray-900">
                                             {{ $uangJalan->tanggal_uang_jalan ? $uangJalan->tanggal_uang_jalan->format('d/m/Y') : '-' }}
                                         </td>
                                         <td class="px-3 py-2">
-                                            @if($uangJalan->suratJalan)
-                                                <div class="text-sm text-gray-900">{{ $uangJalan->suratJalan->no_surat_jalan }}</div>
-                                                <div class="text-xs text-gray-500">{{ $uangJalan->suratJalan->kegiatan }}</div>
-                                            @elseif($uangJalan->suratJalanBongkaran)
-                                                <div class="text-sm text-gray-900">{{ $uangJalan->suratJalanBongkaran->nomor_surat_jalan }}</div>
-                                                <div class="text-xs text-gray-500">{{ $uangJalan->suratJalanBongkaran->kegiatan ?? 'Bongkar' }}</div>
+                                            @if($uangJalan->suratJalanBatam)
+                                                <div class="text-sm text-gray-900">{{ $uangJalan->suratJalanBatam->no_surat_jalan }}</div>
+                                                <div class="text-xs text-gray-500">{{ $uangJalan->suratJalanBatam->kegiatan ?? '-' }}</div>
                                             @else
                                                 <div class="text-sm text-gray-500">-</div>
                                             @endif
                                         </td>
                                         <td class="px-3 py-2">
                                             @php
-                                                $surat = $uangJalan->suratJalan ?? $uangJalan->suratJalanBongkaran;
+                                                $surat = $uangJalan->suratJalanBatam;
                                             @endphp
                                             @if($surat)
                                                 <div class="text-xs text-gray-900">
@@ -159,12 +156,6 @@
                                                         <span class="font-medium">Supir:</span> {{ $surat->supir ?? '-' }}
                                                         @if(isset($surat->supir_nik) && $surat->supir_nik)
                                                             <span class="text-gray-500">({{ $surat->supir_nik }})</span>
-                                                        @endif
-                                                    </div>
-                                                    <div>
-                                                        <span class="font-medium">Kenek:</span> {{ $surat->kenek ?? '-' }}
-                                                        @if(isset($surat->kenek_nik) && $surat->kenek_nik)
-                                                            <span class="text-gray-500">({{ $surat->kenek_nik }})</span>
                                                         @endif
                                                     </div>
                                                 </div>
@@ -283,7 +274,7 @@
                         </svg>
                         <p class="text-gray-500 text-sm">Tidak ada Uang Jalan Batam yang tersedia</p>
                         <p class="text-xs text-gray-400 mt-1">Semua Uang Jalan Batam sudah masuk pranota atau belum ada yang dibuat</p>
-                        <a href="{{ route('uang-jalan.select-surat-jalan') }}" 
+                        <a href="{{ route('uang-jalan-batam.select-surat-jalan') }}" 
                            class="mt-2 inline-block text-indigo-600 hover:text-indigo-500 text-sm">
                             Buat Uang Jalan Batam baru
                         </a>
