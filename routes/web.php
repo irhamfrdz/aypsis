@@ -1786,6 +1786,10 @@ Route::middleware([
          ->name('pricelist-uang-jalan-batam.import')
          ->middleware('can:master-pricelist-uang-jalan-batam-create');
 
+    Route::get('pricelist-uang-jalan-batam/export', [\App\Http\Controllers\PricelistUangJalanBatamController::class, 'export'])
+         ->name('pricelist-uang-jalan-batam.export')
+         ->middleware('can:master-pricelist-uang-jalan-batam-view');
+
     Route::resource('pricelist-uang-jalan-batam', \App\Http\Controllers\PricelistUangJalanBatamController::class)
          ->names('pricelist-uang-jalan-batam')
          ->middleware([

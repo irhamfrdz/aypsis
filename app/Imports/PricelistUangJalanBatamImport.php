@@ -7,6 +7,7 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmptyRows
 {
@@ -20,69 +21,76 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
      */
     public function model(array $row)
     {
-        $this->rowNumber++;
+        $this->rowNumber = ($this->rowNumber ?: 0) + 1;
         
         try {
-            // Try different possible key names (case insensitive)
+            // Try different possible key names (case insensitive and with special characters)
             $expedisi = $this->getRowValue($row, ['expedisi', 'Expedisi', 'EXPEDISI']);
             $ring = $this->getRowValue($row, ['ring', 'Ring', 'RING']);
+            $rute = $this->getRowValue($row, ['rute', 'Rute', 'RUTE']);
             $size = $this->getRowValue($row, ['size', 'Size', 'SIZE']);
             $f_e = $this->getRowValue($row, ['f_e', 'fe', 'F/E', 'f/e', 'FE']);
             $tarif = $this->getRowValue($row, ['tarif', 'Tarif', 'TARIF']);
+            $tarif_base = $this->getRowValue($row, ['tarif_base', 'Tarif Base', 'TARIF BASE', 'tarifbase']);
             $status = $this->getRowValue($row, ['status', 'Status', 'STATUS']);
             
+            // Basic data cleaning
+            $expedisi = !empty($expedisi) ? trim($expedisi) : '';
+            $ring = !empty($ring) ? trim($ring) : '';
+            $rute = !empty($rute) ? trim($rute) : null;
+            $size = !empty($size) ? trim($size) : '';
+            $f_e = !empty($f_e) ? trim($f_e) : '';
+            $tarif = $this->cleanTarif($tarif);
+            $tarif_base = !empty($tarif_base) ? $this->cleanTarif($tarif_base) : $tarif; // Default to tarif if base is empty
+            $status = !empty($status) ? trim($status) : null;
+
             // Skip if all required fields are empty
             if (empty($expedisi) && empty($ring) && empty($size)) {
                 return null;
             }
 
-            // Clean and validate data
-            $expedisi = trim($expedisi);
-            $ring = trim($ring);
-            $size = trim($size);
-            $f_e = trim($f_e);
-            $tarif = $this->cleanTarif($tarif);
-            $status = !empty($status) ? trim($status) : null;
-
-            // Normalize Size - add FT if missing
+            // Normalize Size - ensure it ends with FT
             if (is_numeric($size)) {
                 $size = $size . 'FT';
             }
             $size = strtoupper($size);
+            if (!Str::endsWith($size, 'FT')) {
+                $size = $size . 'FT';
+            }
 
             // Normalize F/E values
             $f_e = ucfirst(strtolower($f_e)); // Full or Empty
 
-            // Normalize Status to uppercase
+            // Normalize Status
             if ($status) {
                 $status = strtoupper($status);
+                // Allow some common variations
+                if (str_contains($status, 'AQUA')) $status = 'AQUA';
+                if (str_contains($status, 'CHASIS')) $status = 'CHASIS PB';
             }
 
-            // Validate F/E
+            // Validations
+            if (empty($expedisi) || empty($ring) || empty($size) || empty($f_e)) {
+                $this->errorCount++;
+                $this->errors[] = "Baris {$this->rowNumber}: Data wajib (Expedisi, Ring, Size, F/E) tidak boleh kosong.";
+                return null;
+            }
+
             if (!in_array($f_e, ['Full', 'Empty'])) {
                 $this->errorCount++;
-                $this->errors[] = "Baris dengan expedisi {$expedisi}: F/E harus Full atau Empty, ditemukan '{$f_e}'";
+                $this->errors[] = "Baris {$this->rowNumber} ({$expedisi}): F/E harus Full atau Empty, ditemukan '{$f_e}'.";
                 return null;
             }
 
-            // Validate Size
             if (!in_array($size, ['20FT', '40FT', '45FT'])) {
                 $this->errorCount++;
-                $this->errors[] = "Baris dengan expedisi {$expedisi}: Size harus 20FT, 40FT, atau 45FT, ditemukan '{$size}'";
+                $this->errors[] = "Baris {$this->rowNumber} ({$expedisi}): Size harus 20FT, 40FT, atau 45FT, ditemukan '{$size}'.";
                 return null;
             }
 
-            // Validate Status if provided
             if ($status && !in_array($status, ['AQUA', 'CHASIS PB'])) {
                 $this->errorCount++;
-                $this->errors[] = "Baris {$this->rowNumber} (Expedisi: {$expedisi}): Status harus AQUA atau CHASIS PB, ditemukan '{$status}'";
-                return null;
-            }
-
-            // Validate required fields have values
-            if (empty($expedisi) || empty($ring) || empty($size) || empty($f_e) || $tarif <= 0) {
-                $this->errorCount++;
-                $this->errors[] = "Baris {$this->rowNumber}: Data tidak lengkap (Expedisi: '{$expedisi}', Ring: '{$ring}', Size: '{$size}', F/E: '{$f_e}', Tarif: '{$tarif}')";
+                $this->errors[] = "Baris {$this->rowNumber} ({$expedisi}): Status '{$status}' tidak valid (Gunakan AQUA atau CHASIS PB).";
                 return null;
             }
 
@@ -94,9 +102,10 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 ->first();
 
             if ($exists) {
-                // Update existing record
                 $exists->update([
+                    'rute' => $rute ?? $exists->rute,
                     'tarif' => $tarif,
+                    'tarif_base' => $tarif_base,
                     'status' => $status,
                 ]);
                 $this->successCount++;
@@ -108,15 +117,17 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             return new PricelistUangJalanBatam([
                 'expedisi' => $expedisi,
                 'ring' => $ring,
+                'rute' => $rute,
                 'size' => $size,
                 'f_e' => $f_e,
                 'tarif' => $tarif,
+                'tarif_base' => $tarif_base,
                 'status' => $status,
             ]);
 
         } catch (\Exception $e) {
             $this->errorCount++;
-            $this->errors[] = "Baris {$this->rowNumber}: Error - " . $e->getMessage();
+            $this->errors[] = "Baris {$this->rowNumber}: " . $e->getMessage();
             return null;
         }
     }

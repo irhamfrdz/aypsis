@@ -7,7 +7,9 @@ use App\Models\PricelistUangJalanBatam;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PricelistUangJalanBatamTemplateExport;
+use App\Exports\PricelistUangJalanBatamExport;
 use App\Imports\PricelistUangJalanBatamImport;
+use Illuminate\Support\Facades\Log;
 
 class PricelistUangJalanBatamController extends Controller
 {
@@ -162,11 +164,24 @@ class PricelistUangJalanBatamController extends Controller
                 ->with('success', $message);
                 
         } catch (\Exception $e) {
-            \Log::error('Import error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Import error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return redirect()->route('pricelist-uang-jalan-batam.index')
                 ->with('error', 'Import gagal! Error: ' . $e->getMessage() . ' (Cek log untuk detail)');
         }
+    }
+
+    /**
+     * Export data to Excel
+     */
+    public function export(Request $request)
+    {
+        $search = $request->get('search', '');
+        
+        return Excel::download(
+            new PricelistUangJalanBatamExport($search), 
+            'pricelist_uang_jalan_batam_' . date('YmdHis') . '.xlsx'
+        );
     }
 }
