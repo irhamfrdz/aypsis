@@ -358,7 +358,7 @@
         const vendorTypes = pricelistLabuhTambatData.filter(item => 
             item.nama_agen === vendorName && 
             (selectedLokasi === '' || item.lokasi === selectedLokasi) &&
-            (selectedKapal === '' || item.nama_kapal === selectedKapal || !item.nama_kapal)
+            (vendorName === 'ABQORI PRIMA MANDIRI' || selectedKapal === '' || item.nama_kapal === selectedKapal || !item.nama_kapal)
         );
         
         let options = '<option value="">-- Pilih Type --</option>';
