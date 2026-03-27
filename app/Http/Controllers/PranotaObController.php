@@ -292,23 +292,21 @@ class PranotaObController extends Controller
             $pranota = PranotaOb::with('itemsPivot')->findOrFail($id);
             $updatedCount = 0;
             
-            // Load price list for this kapal & voyage
-            $priceList = DB::table('price_list_pranota_obs')
-                ->where('nama_kapal', $pranota->nama_kapal)
-                ->where('no_voyage', $pranota->no_voyage)
-                ->get();
+            // Load all OB pricelists
+            $priceList = DB::table('master_pricelist_ob')->get();
 
             // Internal helper for price lookup
             $lookupPrice = function($size, $status) use ($priceList) {
                 if ($priceList->isEmpty()) return null;
+                // Normalize search size (e.g., '20' or '20ft' -> '20')
                 $searchSize = preg_replace('/[^0-9]/', '', $size);
                 $searchStatus = strtolower($status ?: 'full');
                 
                 foreach ($priceList as $pl) {
-                    $plSize = preg_replace('/[^0-9]/', '', $pl->ukuran_kontainer);
+                    $plSize = preg_replace('/[^0-9]/', '', $pl->size_kontainer);
                     $plStatus = strtolower($pl->status_kontainer);
                     if ($plSize == $searchSize && $plStatus == $searchStatus) {
-                        return $pl->nominal;
+                        return $pl->biaya;
                     }
                 }
                 return null;
