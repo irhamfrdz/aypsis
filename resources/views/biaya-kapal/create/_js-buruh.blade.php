@@ -173,12 +173,13 @@
                     '20_full': null,
                     '20_empty': null,
                     '40_full': null,
-                    '40_empty': null
+                    '40_empty': null,
+                    'cargo': null
                 };
                 
                 // Find pricelist IDs from pricelistBuruhData
                 pricelistBuruhData.forEach(p => {
-                    const barangLower = p.barang.toLowerCase();
+                    const barangLower = (p.barang || '').toLowerCase();
                     if (barangLower.includes('kontainer') && barangLower.includes('20') && barangLower.includes('full')) {
                         pricelistIds['20_full'] = p.id;
                     } else if (barangLower.includes('kontainer') && barangLower.includes('20') && barangLower.includes('empty')) {
@@ -187,6 +188,8 @@
                         pricelistIds['40_full'] = p.id;
                     } else if (barangLower.includes('kontainer') && barangLower.includes('40') && barangLower.includes('empty')) {
                         pricelistIds['40_empty'] = p.id;
+                    } else if (barangLower === 'cargo') {
+                        pricelistIds['cargo'] = p.id;
                     }
                 });
                 
@@ -211,6 +214,12 @@
                 // Add 40' EMPTY if count > 0
                 if (data.counts['40'] && data.counts['40'].empty > 0 && pricelistIds['40_empty']) {
                     addBarangToSectionWithValue(sectionIndex, pricelistIds['40_empty'], data.counts['40'].empty);
+                    barangAdded = true;
+                }
+
+                // Add CARGO if count > 0
+                if (data.counts['cargo_max_tv_sum'] > 0 && pricelistIds['cargo']) {
+                    addBarangToSectionWithValue(sectionIndex, pricelistIds['cargo'], data.counts['cargo_max_tv_sum']);
                     barangAdded = true;
                 }
                 
