@@ -5127,6 +5127,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->name('naik-kapal.update-size')
                ->middleware('can:prospek-edit');
 
+          Route::post('naik-kapal/bulk-update-size', [NaikKapalController::class, 'bulkUpdateSize'])
+               ->name('naik-kapal.bulk-update-size')
+               ->middleware('can:prospek-edit');
+
           Route::resource('naik-kapal', NaikKapalController::class)
                      ->middleware('can:prospek-edit');
 

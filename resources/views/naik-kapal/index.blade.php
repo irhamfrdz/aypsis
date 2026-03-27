@@ -48,6 +48,10 @@
                     <i class="fas fa-exchange-alt mr-2"></i>
                     Ganti Kapal/Voyage
                 </a>
+                <button type="button" id="btnUpdateSize" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Update Size
+                </button>
                 <button type="button" id="btnPrint" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-print mr-2"></i>
                     Print
@@ -604,6 +608,60 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+
+    // Bulk Update Size Functionality
+    const btnUpdateSize = document.getElementById('btnUpdateSize');
+    if (btnUpdateSize) {
+        btnUpdateSize.addEventListener('click', function() {
+            const shipName = "{{ $kapal ? $kapal->nama_kapal : '' }}";
+            const voyage = "{{ request('no_voyage') }}";
+
+            if (!shipName || !voyage) {
+                alert('Silakan pilih kapal dan voyage terlebih dahulu');
+                return;
+            }
+
+            if (!confirm(`Apakah Anda yakin ingin memperbarui size kontainer untuk kapal "${shipName}" voyage "${voyage}"? Data akan diambil dari table stock_kontainers dan kontainers.`)) {
+                return;
+            }
+
+            // Show loading state
+            const btn = this;
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+
+            fetch("{{ route('naik-kapal.bulk-update-size', [], false) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    nama_kapal: shipName,
+                    no_voyage: voyage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', data.message);
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan sistem.'));
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Terjadi kesalahan sistem.');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            });
+        });
+    }
 
 });
 </script>

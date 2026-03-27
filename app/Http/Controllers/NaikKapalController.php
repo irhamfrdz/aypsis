@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\NaikKapal;
 use App\Models\Prospek;
+use App\Models\StockKontainer;
+use App\Models\Kontainer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -812,5 +814,94 @@ class NaikKapalController extends Controller
 
         // Return Excel download
         return Excel::download(new NaikKapalExport($filters, $kapal->nama_kapal, $noVoyage), $filename);
+    }
+
+    /**
+     * Bulk update size for Naik Kapal records based on ship and voyage
+     */
+    public function bulkUpdateSize(Request $request)
+    {
+        $request->validate([
+            'nama_kapal' => 'required|string',
+            'no_voyage' => 'required|string',
+        ]);
+
+        try {
+            $nama_kapal = $request->nama_kapal;
+            $no_voyage = $request->no_voyage;
+
+            Log::info("NaikKapal BulkUpdateSize start", ['nama_kapal' => $nama_kapal, 'no_voyage' => $no_voyage]);
+
+            // Filter by ship and voyage
+            $naikKapals = NaikKapal::where('nama_kapal', $nama_kapal)
+                ->where('no_voyage', $no_voyage)
+                ->get();
+
+            Log::info("NaikKapal BulkUpdateSize: Found " . $naikKapals->count() . " records");
+
+            $updatedCount = 0;
+            $alreadyMatchCount = 0;
+            $notFoundCount = 0;
+
+            foreach ($naikKapals as $naikKapal) {
+                if (!$naikKapal->nomor_kontainer) {
+                    continue;
+                }
+                
+                $nomorKontainer = trim($naikKapal->nomor_kontainer);
+                $ukuran = null;
+                $source = '';
+                
+                // Seek in StockKontainer
+                $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                if ($stock) {
+                    $ukuran = $stock->ukuran;
+                    $source = 'Stock';
+                }
+
+                if (!$ukuran) {
+                    // Seek in Kontainer
+                    $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                    if ($kontainer) {
+                        $ukuran = $kontainer->ukuran;
+                        $source = 'Master';
+                    }
+                }
+
+                if ($ukuran) {
+                    // Normalize: remove 'ft', 'feet', and whitespace
+                    $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
+                    
+                    if ($naikKapal->size_kontainer != $normalizedUkuran) {
+                        Log::info("Updating NaikKapal ID {$naikKapal->id} container {$nomorKontainer}: {$naikKapal->size_kontainer} -> {$normalizedUkuran} (from {$source})");
+                        $naikKapal->update(['size_kontainer' => $normalizedUkuran]);
+                        $updatedCount++;
+                    } else {
+                        $alreadyMatchCount++;
+                    }
+                } else {
+                    $notFoundCount++;
+                }
+            }
+
+            Log::info("NaikKapal BulkUpdateSize finished", [
+                'updated' => $updatedCount, 
+                'already_match' => $alreadyMatchCount, 
+                'not_found' => $notFoundCount
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Selesai. {$updatedCount} size diperbarui, {$alreadyMatchCount} sudah sesuai, {$notFoundCount} tidak ditemukan di master.",
+                'updated_count' => $updatedCount
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('BulkUpdateSize NaikKapal error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
