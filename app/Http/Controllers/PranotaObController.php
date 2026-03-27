@@ -102,22 +102,28 @@ class PranotaObController extends Controller
         $perSupirCounts = []; // per supir counts for status and size
         $totalTlContainers = 0; // count TL containers
         foreach ($displayItems as $item) {
-            // Check if container is TL - check both is_tl flag and biaya === null
-            $isTl = ($item['is_tl'] ?? false) === 1 || 
+            $supirName = trim($item['supir'] ?? '');
+            
+            // A container is TL if:
+            // 1. the is_tl flag is set to true
+            // 2. supir is explicitly 'TL'
+            // 3. supir is empty/perusahaan AND biaya is null or zero
+            $isTl = ($item['is_tl'] ?? false) == 1 || 
                     ($item['is_tl'] ?? false) === true || 
-                    ($item['is_tl'] ?? false) === '1' ||
-                    (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) === 0);
+                    (strtolower($supirName) === 'tl') ||
+                    ((empty($supirName) || strtolower($supirName) === 'perusahaan') && (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0));
+
             if ($isTl) {
                 $totalTlContainers++;
+                // If it's pure TL (empty supir or 'perusahaan'), set name to 'TL'
+                if ($supirName === '' || strtolower($supirName) === 'perusahaan') {
+                    $supirName = 'TL';
+                }
             }
             
             $amount = (float)($item['biaya'] ?? 0);
             $totalBiaya += $amount;
             
-            $supirName = trim($item['supir'] ?? '');
-            if (($supirName === '' || strtolower($supirName) === 'perusahaan') && $isTl) {
-                $supirName = 'TL';
-            }
             if ($supirName === '') {
                 $supirName = 'Perusahaan';
             }
