@@ -3899,6 +3899,37 @@ Route::get('/test-gate-in-ajax', function () {
                     ->middleware('can:pembayaran-pranota-uang-jalan-bongkaran-delete');
           });
 
+    // 💰 PEMBAYARAN PRANOTA UANG JALAN BATAM (Travel Allowance Payment Batam)
+    Route::prefix('pembayaran-pranota-uang-jalan-batam')
+        ->name('pembayaran-pranota-uang-jalan-batam.')
+        ->middleware(['auth'])
+        ->group(function() {
+            Route::get('/', [\App\Http\Controllers\PembayaranPranotaUangJalanBatamController::class, 'index'])
+                ->name('index')
+                ->middleware('can:pembayaran-pranota-uang-jalan-batam-view');
+            Route::get('/create', [\App\Http\Controllers\PembayaranPranotaUangJalanBatamController::class, 'create'])
+                ->name('create')
+                ->middleware('can:pembayaran-pranota-uang-jalan-batam-create');
+            Route::get('/generate-nomor', [\App\Http\Controllers\PembayaranPranotaUangJalanBatamController::class, 'generateNomor'])
+                ->name('generate-nomor')
+                ->middleware('can:pembayaran-pranota-uang-jalan-batam-create');
+            Route::post('/', [\App\Http\Controllers\PembayaranPranotaUangJalanBatamController::class, 'store'])
+                ->name('store')
+                ->middleware('can:pembayaran-pranota-uang-jalan-batam-create');
+            Route::get('/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBatamController::class, 'show'])
+                ->name('show')
+                ->middleware('can:pembayaran-pranota-uang-jalan-batam-view');
+            Route::get('/{pembayaran}/edit', [\App\Http\Controllers\PembayaranPranotaUangJalanBatamController::class, 'edit'])
+                ->name('edit')
+                ->middleware('can:pembayaran-pranota-uang-jalan-batam-edit');
+            Route::put('/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBatamController::class, 'update'])
+                ->name('update')
+                ->middleware('can:pembayaran-pranota-uang-jalan-batam-edit');
+            Route::delete('/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaUangJalanBatamController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:pembayaran-pranota-uang-jalan-batam-delete');
+        });
+
 /*
 |===========================================================================
 | 🚚 SUPIR (DRIVER) SPECIFIC ROUTES - Role-Based Access

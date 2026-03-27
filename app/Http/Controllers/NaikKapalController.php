@@ -66,6 +66,14 @@ class NaikKapalController extends Controller
         if ($request->filled('tipe_kontainer')) {
             $query->where('tipe_kontainer', $request->tipe_kontainer);
         }
+
+        // Filter by size (tanpa size)
+        if ($request->filled('tanpa_size') && $request->tanpa_size == '1') {
+            $query->where(function($q) {
+                $q->whereNull('size_kontainer')
+                  ->orWhere('size_kontainer', '');
+            });
+        }
         
         // Additional filters
         if ($request->filled('status')) {
@@ -210,6 +218,14 @@ class NaikKapalController extends Controller
         // Filter by tipe kontainer
         if ($request->filled('tipe_kontainer')) {
             $query->where('tipe_kontainer', $request->tipe_kontainer);
+        }
+
+        // Filter by size (tanpa size)
+        if ($request->filled('tanpa_size') && $request->tanpa_size == '1') {
+            $query->where(function($q) {
+                $q->whereNull('size_kontainer')
+                  ->orWhere('size_kontainer', '');
+            });
         }
         
         // Filter by status BL if provided (legacy support)
@@ -791,7 +807,10 @@ class NaikKapalController extends Controller
         // Generate filename
         $filename = 'Naik_Kapal_' . str_replace(' ', '_', $kapal->nama_kapal) . '_' . str_replace('/', '-', $noVoyage) . '_' . date('YmdHis') . '.xlsx';
 
-        // Return Excel download - export semua data tanpa filter
-        return Excel::download(new NaikKapalExport([], $kapal->nama_kapal, $noVoyage), $filename);
+        // Get all filters from request
+        $filters = $request->only(['search', 'status_bl', 'tipe_kontainer', 'status_filter', 'tanpa_size']);
+
+        // Return Excel download
+        return Excel::download(new NaikKapalExport($filters, $kapal->nama_kapal, $noVoyage), $filename);
     }
 }

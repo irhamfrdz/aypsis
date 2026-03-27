@@ -1296,6 +1296,26 @@
                                 <td><input type="checkbox" name="permissions[realisasi-uang-muka][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
+                            {{-- Pembayaran Pranota Uang Jalan Batam --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span class="text-green-600 font-bold">Pembayaran Pranota Uang Jalan Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-batam.view')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-batam.create')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-batam.update')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-batam.delete')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-batam][approve]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-batam.approve')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-batam][print]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-batam.print')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-uang-jalan-batam.export')) checked @endif></td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="pembayaran">
                                 <td class="submodule">
                                     <div class="flex items-center">

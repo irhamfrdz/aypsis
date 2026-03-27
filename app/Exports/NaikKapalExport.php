@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use Illuminate\Support\Facades\Log;
 
 class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
 {
@@ -27,16 +28,59 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
 
     public function collection()
     {
-        // Ambil semua data dari kapal dan voyage yang dipilih tanpa filter
-        $query = NaikKapal::with(['prospek.suratJalan', 'prospek.tandaTerima'])
+        // Ambil semua data dari kapal dan voyage yang dipilih
+        $query = NaikKapal::with(['prospek.suratJalan', 'prospek.tandaTerima', 'prospek.tttsj'])
             ->where('nama_kapal', $this->kapalNama)
-            ->where('no_voyage', $this->noVoyage)
-            ->orderBy('created_at', 'desc');
+            ->where('no_voyage', $this->noVoyage);
 
-        $naikKapals = $query->get();
+        // Apply filters from $this->filters
+        if (!empty($this->filters['search'])) {
+            $search = $this->filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_kontainer', 'like', "%{$search}%")
+                  ->orWhere('jenis_barang', 'like', "%{$search}%")
+                  ->orWhere('no_seal', 'like', "%{$search}%")
+                  ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($this->filters['status_bl'])) {
+            if ($this->filters['status_bl'] === 'sudah_bl') {
+                $query->where('status', 'Moved to BLS');
+            } elseif ($this->filters['status_bl'] === 'belum_bl') {
+                $query->where(function($q) {
+                    $q->where('status', '!=', 'Moved to BLS')
+                      ->orWhereNull('status');
+                });
+            }
+        }
+
+        if (!empty($this->filters['status_filter'])) {
+            if ($this->filters['status_filter'] === 'sudah_bl') {
+                $query->where('status', 'Moved to BLS');
+            } elseif ($this->filters['status_filter'] === 'belum_bl') {
+                $query->where(function($q) {
+                    $q->where('status', '!=', 'Moved to BLS')
+                      ->orWhereNull('status');
+                });
+            }
+        }
+
+        if (!empty($this->filters['tipe_kontainer'])) {
+            $query->where('tipe_kontainer', $this->filters['tipe_kontainer']);
+        }
+
+        if (!empty($this->filters['tanpa_size']) && $this->filters['tanpa_size'] == '1') {
+            $query->where(function($q) {
+                $q->whereNull('size_kontainer')
+                  ->orWhere('size_kontainer', '');
+            });
+        }
+
+        $naikKapals = $query->orderBy('created_at', 'desc')->get();
         
         // Debug: log jumlah data yang diambil
-        \Log::info('Excel Export - Kapal: ' . $this->kapalNama . ', Voyage: ' . $this->noVoyage . ', Total Data: ' . $naikKapals->count());
+        Log::info('Excel Export - Kapal: ' . $this->kapalNama . ', Voyage: ' . $this->noVoyage . ', Total Data: ' . $naikKapals->count());
 
         return $naikKapals->map(function($naikKapal, $index) {
             $prospek = $naikKapal->prospek;

@@ -153,4 +153,49 @@ class SuratJalanBatam extends Model
     {
         return $this->hasOne(TandaTerimaBatam::class, 'surat_jalan_batam_id');
     }
+
+    public function supirKaryawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'supir', 'nama_panggilan');
+    }
+
+    public function supir2Karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'supir2', 'nama_panggilan');
+    }
+
+    public function kenekKaryawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'kenek', 'nama_lengkap');
+    }
+
+    public function kraniKaryawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'krani', 'nama_lengkap');
+    }
+
+    public function pengirimRelation()
+    {
+        return $this->belongsTo(Pengirim::class, 'pengirim', 'id');
+    }
+
+    public function jenisBarangRelation()
+    {
+        return $this->belongsTo(JenisBarang::class, 'jenis_barang', 'id');
+    }
+
+    public function tujuanPengambilanRelation()
+    {
+        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_pengambilan', 'ke');
+    }
+
+    public function tujuanPengirimanRelation()
+    {
+        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_pengiriman', 'id');
+    }
+
+    public function termRelation()
+    {
+        return $this->belongsTo(Term::class, 'term', 'id');
+    }
 }

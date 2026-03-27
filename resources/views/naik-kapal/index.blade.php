@@ -86,7 +86,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <!-- Search -->
-                <div class="md:col-span-4">
+                <div class="md:col-span-3">
                     <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Cari Kontainer</label>
                     <input type="text" 
                            name="search" 
@@ -97,7 +97,7 @@
                 </div>
 
                 <!-- Status BL Filter -->
-                <div class="md:col-span-3">
+                <div class="md:col-span-2">
                     <label for="status_bl" class="block text-sm font-medium text-gray-700 mb-2">Status BL</label>
                     <select name="status_bl" 
                             id="status_bl"
@@ -109,7 +109,7 @@
                 </div>
 
                 <!-- Tipe Kontainer -->
-                <div class="md:col-span-3">
+                <div class="md:col-span-2">
                     <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
                     <select name="tipe_kontainer" 
                             id="tipe_kontainer"
@@ -119,6 +119,14 @@
                         <option value="LCL" {{ request('tipe_kontainer') == 'LCL' ? 'selected' : '' }}>LCL</option>
                         <option value="CARGO" {{ request('tipe_kontainer') == 'CARGO' ? 'selected' : '' }}>CARGO</option>
                     </select>
+                </div>
+
+                <!-- Tanpa Size -->
+                <div class="md:col-span-3 flex items-end">
+                    <label class="w-full flex items-center px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition duration-200">
+                        <input type="checkbox" name="tanpa_size" value="1" {{ request('tanpa_size') == '1' ? 'checked' : '' }} class="rounded border-gray-300 text-purple-600 focus:ring-purple-500 mr-3 w-5 h-5">
+                        <span class="text-sm font-medium text-gray-700">Filter Tanpa Size</span>
+                    </label>
                 </div>
 
                 <!-- Buttons -->
@@ -377,6 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const search = urlParams.get('search') || '';
         const statusBl = urlParams.get('status_bl') || '';
         const tipeKontainer = urlParams.get('tipe_kontainer') || '';
+        const tanpaSize = urlParams.get('tanpa_size') || '';
         
         // Debug: log values
         console.log('Print - Kapal ID:', kapalId);
@@ -403,6 +412,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tipeKontainer) {
             printUrl += "&tipe_kontainer=" + tipeKontainer;
         }
+        if (tanpaSize) {
+            printUrl += "&tanpa_size=" + tanpaSize;
+        }
         
         // Debug: log final URL
         console.log('Print URL:', printUrl);
@@ -421,6 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const search = urlParams.get('search') || '';
         const statusBl = urlParams.get('status_bl') || '';
         const tipeKontainer = urlParams.get('tipe_kontainer') || '';
+        const tanpaSize = urlParams.get('tanpa_size') || '';
         
         if (!kapalId || !noVoyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
@@ -446,6 +459,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (tipeKontainer) {
             exportUrl += "&tipe_kontainer=" + tipeKontainer;
+        }
+        if (tanpaSize) {
+            exportUrl += "&tanpa_size=" + tanpaSize;
         }
         
         // Create temporary link and trigger download

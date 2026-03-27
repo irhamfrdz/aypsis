@@ -576,39 +576,11 @@ class UserController extends Controller
             }
 
 
-            // Special handling for tanda-terima-tanpa-surat-jalan permissions (dash notation)
-            if (strpos($permissionName, 'tanda-terima-tanpa-surat-jalan-') === 0) {
-                $module = 'tanda-terima-tanpa-surat-jalan';
-                $action = str_replace('tanda-terima-tanpa-surat-jalan-', '', $permissionName);
-
-                // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
-                    $matrixPermissions[$module] = [];
-                }
-
-                // Map database actions to matrix actions
-                $actionMap = [
-                    'view' => 'view',
-                    'create' => 'create',
-                    'edit' => 'update',
-                    'update' => 'update',
-                    'delete' => 'delete',
-                    'print' => 'print',
-                    'export' => 'export',
-                    'approve' => 'approve'
-                ];
-
-                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
-                $matrixPermissions[$module][$mappedAction] = true;
-                continue; // Skip other patterns
-            }
-
             // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
             // IMPORTANT: More specific (longer) prefixes MUST come before shorter ones.
             // e.g. 'tanda-terima-batam' before 'tanda-terima', otherwise strpos will
             // match the short prefix first and mis-parse the permission name.
             $operationalModules = [
-                'order-management' => 'order', // Map order-management to order for permission names
                 'surat-jalan-bongkaran' => 'surat-jalan-bongkaran',
                 'surat-jalan-batam' => 'surat-jalan-batam',
                 'surat-jalan' => 'surat-jalan',
@@ -624,6 +596,7 @@ class UserController extends Controller
                 'gate-in' => 'gate-in',
                 'pranota-surat-jalan' => 'pranota-surat-jalan',
                 'pranota-uang-jalan-bongkaran' => 'pranota-uang-jalan-bongkaran',
+                'pranota-uang-jalan-batam' => 'pranota-uang-jalan-batam',
                 'pranota-uang-jalan' => 'pranota-uang-jalan',
                 'pranota-lembur' => 'pranota-lembur',
                 'tagihan-supir-vendor' => 'tagihan-supir-vendor',
@@ -649,6 +622,7 @@ class UserController extends Controller
                 'ob' => 'ob',
                 'ongkos-truck' => 'ongkos-truck',
                 'order-batam' => 'order-batam',
+                'order-management' => 'order', // Map order-management to order for permission names
                 'pembayaran-aktivitas-lain' => 'pembayaran-aktivitas-lain',
                 'pembayaran-ob' => 'pembayaran-ob',
                 'pembayaran-pranota-cat' => 'pembayaran-pranota-cat',
@@ -658,6 +632,7 @@ class UserController extends Controller
                 'pembayaran-pranota-supir' => 'pembayaran-pranota-supir',
                 'pembayaran-pranota-surat-jalan' => 'pembayaran-pranota-surat-jalan',
                 'pembayaran-pranota-uang-jalan-bongkaran' => 'pembayaran-pranota-uang-jalan-bongkaran',
+                'pembayaran-pranota-uang-jalan-batam' => 'pembayaran-pranota-uang-jalan-batam',
                 'pembayaran-pranota-uang-jalan' => 'pembayaran-pranota-uang-jalan',
                 'pembayaran-uang-muka' => 'pembayaran-uang-muka',
                 'pergerakan-kapal' => 'pergerakan-kapal',
@@ -3571,6 +3546,28 @@ class UserController extends Controller
                             'delete' => 'pembayaran-pranota-uang-jalan-bongkaran-delete',
                             'approve' => 'pembayaran-pranota-uang-jalan-bongkaran-approve',
                             'mark-paid' => 'pembayaran-pranota-uang-jalan-bongkaran-mark-paid'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pembayaran-pranota-uang-jalan-batam module
+                    if ($module === 'pembayaran-pranota-uang-jalan-batam') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'pembayaran-pranota-uang-jalan-batam-view',
+                            'create' => 'pembayaran-pranota-uang-jalan-batam-create',
+                            'update' => 'pembayaran-pranota-uang-jalan-batam-edit', // Map matrix 'update' to DB 'edit'
+                            'delete' => 'pembayaran-pranota-uang-jalan-batam-delete',
+                            'approve' => 'pembayaran-pranota-uang-jalan-batam-approve',
+                            'print' => 'pembayaran-pranota-uang-jalan-batam-print',
+                            'export' => 'pembayaran-pranota-uang-jalan-batam-export'
                         ];
 
                         if (isset($actionMap[$action])) {
