@@ -292,6 +292,28 @@ class PranotaObController extends Controller
             $pranota = PranotaOb::with('itemsPivot')->findOrFail($id);
             $updatedCount = 0;
             
+            // Load price list for this kapal & voyage
+            $priceList = DB::table('price_list_pranota_obs')
+                ->where('nama_kapal', $pranota->nama_kapal)
+                ->where('no_voyage', $pranota->no_voyage)
+                ->get();
+
+            // Internal helper for price lookup
+            $lookupPrice = function($size, $status) use ($priceList) {
+                if ($priceList->isEmpty()) return null;
+                $searchSize = preg_replace('/[^0-9]/', '', $size);
+                $searchStatus = strtolower($status ?: 'full');
+                
+                foreach ($priceList as $pl) {
+                    $plSize = preg_replace('/[^0-9]/', '', $pl->ukuran_kontainer);
+                    $plStatus = strtolower($pl->status_kontainer);
+                    if ($plSize == $searchSize && $plStatus == $searchStatus) {
+                        return $pl->nominal;
+                    }
+                }
+                return null;
+            };
+
             // 1. Update items in pivot table (pranota_ob_items)
             $pivotItems = $pranota->itemsPivot;
             foreach ($pivotItems as $item) {
@@ -302,7 +324,6 @@ class PranotaObController extends Controller
                 
                 $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                 if ($stock) $ukuran = $stock->ukuran;
-                
                 if (!$ukuran) {
                     $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                     if ($kontainer) $ukuran = $kontainer->ukuran;
@@ -310,8 +331,24 @@ class PranotaObController extends Controller
                 
                 if ($ukuran) {
                     $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
+                    $dataToUpdate = [];
+                    $hasChange = false;
+
                     if ($item->size != $normalizedUkuran) {
-                        $item->update(['size' => $normalizedUkuran]);
+                        $dataToUpdate['size'] = $normalizedUkuran;
+                        $hasChange = true;
+                    }
+
+                    // Always try to update price if we have a price list, even if size didn't change (forced sync)
+                    // or if size DID change, definitely update price.
+                    $newPrice = $lookupPrice($normalizedUkuran, $item->status);
+                    if ($newPrice !== null && $item->biaya != $newPrice) {
+                        $dataToUpdate['biaya'] = $newPrice;
+                        $hasChange = true;
+                    }
+
+                    if ($hasChange) {
+                        $item->update($dataToUpdate);
                         $updatedCount++;
                     }
                 }
@@ -323,19 +360,16 @@ class PranotaObController extends Controller
                 $jsonUpdated = false;
                 
                 foreach ($jsonItems as &$jItem) {
-                    // Check various potential keys for container number
                     $nomorKontainer = null;
                     if (!empty($jItem['nomor_kontainer'])) $nomorKontainer = $jItem['nomor_kontainer'];
                     elseif (!empty($jItem['no_kontainer'])) $nomorKontainer = $jItem['no_kontainer'];
                     
                     if (!$nomorKontainer) continue;
-                    
                     $nomorKontainer = trim($nomorKontainer);
                     $ukuran = null;
                     
                     $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                     if ($stock) $ukuran = $stock->ukuran;
-                    
                     if (!$ukuran) {
                         $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                         if ($kontainer) $ukuran = $kontainer->ukuran;
@@ -343,9 +377,9 @@ class PranotaObController extends Controller
                     
                     if ($ukuran) {
                         $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
-                        
-                        // Check if update is needed for any possible size field
                         $needsUpdate = false;
+
+                        // Update size fields
                         if (($jItem['size'] ?? '') != $normalizedUkuran) {
                             $jItem['size'] = $normalizedUkuran;
                             $needsUpdate = true;
@@ -358,10 +392,17 @@ class PranotaObController extends Controller
                             $jItem['ukuran_kontainer'] = $normalizedUkuran;
                             $needsUpdate = true;
                         }
+
+                        // Update price fields
+                        $itemStatus = $jItem['status'] ?? ($jItem['status_kontainer'] ?? 'full');
+                        $newPrice = $lookupPrice($normalizedUkuran, $itemStatus);
+                        if ($newPrice !== null && ($jItem['biaya'] ?? 0) != $newPrice) {
+                            $jItem['biaya'] = $newPrice;
+                            $needsUpdate = true;
+                        }
                         
                         if ($needsUpdate) {
                             $jsonUpdated = true;
-                            // If there were no pivot items, we count JSON updates
                             if ($pivotItems->count() === 0) {
                                 $updatedCount++;
                             }
