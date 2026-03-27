@@ -6,25 +6,35 @@
 <style>
     @page {
         size: landscape; /* Use landscape for wide tables */
-        margin: 0.5cm;
+        margin: 0.3cm;
     }
     
     @media print {
         body {
             width: 100%;
             height: auto;
+            margin: 0;
+            padding: 0;
         }
         .print-container {
             width: 100%;
+            padding: 0 !important;
         }
+    }
+
+    /* Override layout's table-layout fixed */
+    .print-container table {
+        table-layout: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
     
     /* Adjust font sizes for better fit */
     .print-container h2 {
-        font-size: 18px;
+        font-size: 16px;
     }
     .print-container p, .print-container td, .print-container th {
-        font-size: 9px;
+        font-size: 8px;
     }
     
     /* Pertebal border table */
@@ -85,16 +95,13 @@
                     })->toArray();
 
                     $supirCount = count($filteredPerSupirCounts);
-                    // More aggressive font size scaling
-                    if ($supirCount > 12) {
+                    // Even more aggressive scaling
+                    if ($supirCount > 10) {
                         $tableFontSize = '6px';
                         $tablePadding = '1px 1px';
-                    } elseif ($supirCount > 8) {
-                        $tableFontSize = '7px';
-                        $tablePadding = '1px 2px';
                     } elseif ($supirCount >= 6) {
-                        $tableFontSize = '8px';
-                        $tablePadding = '1px 2px';
+                        $tableFontSize = '7.5px';
+                        $tablePadding = '1px 1.5px';
                     } else {
                         $tableFontSize = '9px';
                         $tablePadding = '2px 4px';
@@ -115,15 +122,15 @@
 
                     $grandTotalKontainer = $totalFull20 + $totalEmpty20 + $totalFull40 + $totalEmpty40;
                 @endphp
-            <table class="min-w-full table-auto border-collapse" style="font-size: {{ $tableFontSize }};">
+            <table class="border-collapse" style="font-size: {{ $tableFontSize }}; margin-bottom: 2px;">
                 <thead>
                     <tr>
-                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;" rowspan="2"></th>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important; width: 30px;" rowspan="2"></th>
                         @foreach($filteredPerSupirCounts as $supirName => $counts)
-                            <th class="border text-center" style="padding: {{ $tablePadding }} !important; max-width: 60px; word-wrap: break-word;" colspan="2">{{ $supirName }}</th>
+                            <th class="border text-center" style="padding: {{ $tablePadding }} !important; max-width: 50px; word-wrap: break-word;" colspan="2">{{ $supirName }}</th>
                         @endforeach
                         <th class="border text-center" style="padding: {{ $tablePadding }} !important;" colspan="2">TOTAL</th>
-                        <th class="border text-center" style="padding: {{ $tablePadding }} !important;" rowspan="2">JUMLAH</th>
+                        <th class="border text-center" style="padding: {{ $tablePadding }} !important; width: 60px;" rowspan="2">JUMLAH</th>
                     </tr>
                     <tr>
                         @foreach($filteredPerSupirCounts as $supirName => $counts)
