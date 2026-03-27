@@ -295,10 +295,12 @@
             $sortedItems = collect($displayItems)->filter(function($item) use($normalizeName) {
                 $rawName = $item['supir'] ?? ($item['nama_supir'] ?? '');
                 $name = $normalizeName($rawName);
+                
+                // Consistency with Controller Logic:
                 $isTl = ($item['is_tl'] ?? false) == 1 || 
                         ($item['is_tl'] ?? false) === true || 
-                        ($item['is_tl'] ?? false) === '1' ||
-                        (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0);
+                        (strtolower(trim($item['supir'] ?? '')) === 'tl') ||
+                        (($name === '' || $name === 'perusahaan') && (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0));
                 
                 return ($name !== '' && $name !== 'perusahaan') || $isTl;
             })->map(function($item) use($normalizeName) {
@@ -307,8 +309,8 @@
                 if ($name === '' || $name === 'perusahaan') {
                     $isTl = ($item['is_tl'] ?? false) == 1 || 
                             ($item['is_tl'] ?? false) === true || 
-                            ($item['is_tl'] ?? false) === '1' ||
-                            (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0);
+                            (strtolower(trim($item['supir'] ?? '')) === 'tl') ||
+                            (($name === '' || $name === 'perusahaan') && (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0));
                     if ($isTl) {
                         $item['supir'] = 'TL';
                     }

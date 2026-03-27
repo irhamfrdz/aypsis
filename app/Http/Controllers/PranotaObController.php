@@ -107,11 +107,12 @@ class PranotaObController extends Controller
             // A container is TL if:
             // 1. the is_tl flag is set to true
             // 2. supir is explicitly 'TL'
-            // 3. supir is empty/perusahaan AND biaya is null or zero
+            // 3. supir is empty, perusahaan, or a placeholder (like '-') AND biaya is null or zero
+            $cleanSupir = preg_replace('/[^a-z0-9]/i', '', $supirName);
             $isTl = ($item['is_tl'] ?? false) == 1 || 
                     ($item['is_tl'] ?? false) === true || 
                     (strtolower($supirName) === 'tl') ||
-                    ((empty($supirName) || strtolower($supirName) === 'perusahaan') && (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0));
+                    ((empty($cleanSupir) || strtolower($cleanSupir) === 'perusahaan') && (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0));
 
             if ($isTl) {
                 $totalTlContainers++;
