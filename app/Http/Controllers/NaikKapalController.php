@@ -320,7 +320,11 @@ class NaikKapalController extends Controller
             ->orderBy('tanggal', 'desc')
             ->get();
             
-        return view('naik-kapal.edit', compact('naikKapal', 'prospeks'));
+        $kapals = \App\Models\MasterKapal::where('status', 'aktif')
+            ->orderBy('nama_kapal')
+            ->get();
+            
+        return view('naik-kapal.edit', compact('naikKapal', 'prospeks', 'kapals'));
     }
 
     /**
