@@ -5,8 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\PranotaOb;
 use App\Models\NaikKapal;
+use App\Models\StockKontainer;
+use App\Models\Kontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PranotaObController extends Controller
 {
@@ -264,6 +268,119 @@ class PranotaObController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('pranota-ob.index')
                 ->with('error', 'Gagal menghapus pranota OB: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk update container sizes for a Pranota OB
+     */
+    public function bulkUpdateSize($id)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->can('pranota-ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $pranota = PranotaOb::with('itemsPivot')->findOrFail($id);
+            $updatedCount = 0;
+            
+            // 1. Update items in pivot table (pranota_ob_items)
+            $pivotItems = $pranota->itemsPivot;
+            foreach ($pivotItems as $item) {
+                if (empty($item->nomor_kontainer)) continue;
+                
+                $nomorKontainer = trim($item->nomor_kontainer);
+                $ukuran = null;
+                
+                $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                if ($stock) $ukuran = $stock->ukuran;
+                
+                if (!$ukuran) {
+                    $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                    if ($kontainer) $ukuran = $kontainer->ukuran;
+                }
+                
+                if ($ukuran) {
+                    $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
+                    if ($item->size != $normalizedUkuran) {
+                        $item->update(['size' => $normalizedUkuran]);
+                        $updatedCount++;
+                    }
+                }
+            }
+
+            // 2. Update items in JSON array (fallback for old records or specific uses)
+            if (is_array($pranota->items)) {
+                $jsonItems = $pranota->items;
+                $jsonUpdated = false;
+                
+                foreach ($jsonItems as &$jItem) {
+                    // Check various potential keys for container number
+                    $nomorKontainer = null;
+                    if (!empty($jItem['nomor_kontainer'])) $nomorKontainer = $jItem['nomor_kontainer'];
+                    elseif (!empty($jItem['no_kontainer'])) $nomorKontainer = $jItem['no_kontainer'];
+                    
+                    if (!$nomorKontainer) continue;
+                    
+                    $nomorKontainer = trim($nomorKontainer);
+                    $ukuran = null;
+                    
+                    $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                    if ($stock) $ukuran = $stock->ukuran;
+                    
+                    if (!$ukuran) {
+                        $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                        if ($kontainer) $ukuran = $kontainer->ukuran;
+                    }
+                    
+                    if ($ukuran) {
+                        $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
+                        
+                        // Check if update is needed for any possible size field
+                        $needsUpdate = false;
+                        if (($jItem['size'] ?? '') != $normalizedUkuran) {
+                            $jItem['size'] = $normalizedUkuran;
+                            $needsUpdate = true;
+                        }
+                        if (isset($jItem['size_kontainer']) && $jItem['size_kontainer'] != $normalizedUkuran) {
+                            $jItem['size_kontainer'] = $normalizedUkuran;
+                            $needsUpdate = true;
+                        }
+                        if (isset($jItem['ukuran_kontainer']) && $jItem['ukuran_kontainer'] != $normalizedUkuran) {
+                            $jItem['ukuran_kontainer'] = $normalizedUkuran;
+                            $needsUpdate = true;
+                        }
+                        
+                        if ($needsUpdate) {
+                            $jsonUpdated = true;
+                            // If there were no pivot items, we count JSON updates
+                            if ($pivotItems->count() === 0) {
+                                $updatedCount++;
+                            }
+                        }
+                    }
+                }
+                
+                if ($jsonUpdated) {
+                    $pranota->update(['items' => $jsonItems]);
+                }
+            }
+
+            Log::info("Pranota OB BulkUpdateSize finished - ID: $id, Updated: $updatedCount");
+
+            return response()->json([
+                'success' => true,
+                'message' => "Selesai. {$updatedCount} size kontainer berhasil diperbarui dari master.",
+                'updated_count' => $updatedCount
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Pranota OB bulkUpdateSize error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

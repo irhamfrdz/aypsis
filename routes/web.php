@@ -2699,6 +2699,11 @@ Route::middleware(['auth'])->group(function () {
                ->name('pranota-ob.print')
                ->middleware('can:pranota-ob-view');
 
+     // Pranota OB Bulk Update Size
+          Route::post('pranota-ob/{pranota}/bulk-update-size', [\App\Http\Controllers\PranotaObController::class, 'bulkUpdateSize'])
+               ->name('pranota-ob.bulk-update-size')
+               ->middleware('can:pranota-ob-view');
+
      // Pranota OB Input DP route
           Route::get('pranota-ob/{pranota}/input-dp', [\App\Http\Controllers\PranotaObController::class, 'inputDp'])
                ->name('pranota-ob.input-dp')

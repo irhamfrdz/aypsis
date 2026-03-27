@@ -8,6 +8,7 @@
             <p class="text-xs text-gray-600">Nomor Pranota: {{ $pranota->nomor_pranota }}</p>
         </div>
         <div class="flex space-x-2">
+            <button type="button" id="btnUpdateSize" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded transition duration-200">Update Size</button>
             <a href="{{ route('pranota-ob.print', $pranota->id) }}" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Print</a>
             <a href="{{ route('pranota-ob.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Kembali</a>
         </div>
@@ -74,4 +75,48 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnUpdateSize = document.getElementById('btnUpdateSize');
+    if (btnUpdateSize) {
+        btnUpdateSize.addEventListener('click', function() {
+            if (!confirm('Apakah Anda yakin ingin memperbarui size kontainer berdasarkan master data (stock & master kontainer)?')) {
+                return;
+            }
+
+            const btn = this;
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = 'Memproses...';
+
+            fetch("{{ route('pranota-ob.bulk-update-size', $pranota->id) }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan sistem.'));
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Terjadi kesalahan sistem.');
+                btn.disabled = false;
+                btn.innerText = originalText;
+            });
+        });
+    }
+});
+</script>
 @endsection
