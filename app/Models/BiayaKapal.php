@@ -22,6 +22,7 @@ class BiayaKapal extends Model
         'jenis_biaya',
         'vendor_id',
         'nominal',
+        'adjustment',
         'dp',
         'sisa_pembayaran',
         'penerima',
@@ -39,6 +40,7 @@ class BiayaKapal extends Model
     protected $casts = [
         'tanggal' => 'date',
         'nominal' => 'decimal:2',
+        'adjustment' => 'decimal:2',
         'dp' => 'decimal:2',
         'sisa_pembayaran' => 'decimal:2',
         'ppn' => 'decimal:2',

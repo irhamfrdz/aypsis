@@ -995,7 +995,18 @@ class BiayaKapalController extends Controller
             // AUTO-CALCULATE NOMINAL FOR LABUH TAMBAT
             if ($request->has('labuh_tambat') && !empty($request->labuh_tambat)) {
                 $totalLabuh = BiayaKapalLabuhTambat::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
-                $biayaKapal->update(['nominal' => $totalLabuh]);
+                
+                // Handle adjustment
+                $adjustment = 0;
+                if ($request->has('labuh_tambat_adjustment')) {
+                    $adjustmentRaw = $request->input('labuh_tambat_adjustment', 0);
+                    $adjustment = floatval(str_replace(['.', ','], ['', '.'], (string)$adjustmentRaw));
+                }
+                
+                $biayaKapal->update([
+                    'nominal' => $totalLabuh + $adjustment,
+                    'adjustment' => $adjustment
+                ]);
             }
 
             // Store barang details - Handle both old and new structure
@@ -2182,7 +2193,7 @@ class BiayaKapalController extends Controller
         $data = $request->all();
         
         // Root fields
-        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air'];
+        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air', 'labuh_tambat_adjustment'];
         foreach ($fieldsToClean as $field) {
             if (isset($data[$field]) && $data[$field] !== null) {
                 $data[$field] = str_replace(',', '.', str_replace('.', '', $data[$field]));
@@ -2946,9 +2957,18 @@ class BiayaKapalController extends Controller
                 
                 // Update nominal from total labuh tambat
                 $totalLabuh = BiayaKapalLabuhTambat::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
-                if ($totalLabuh > 0) {
-                    $biayaKapal->update(['nominal' => $totalLabuh]);
+                
+                // Handle adjustment
+                $adjustment = 0;
+                if ($request->has('labuh_tambat_adjustment')) {
+                    $adjustmentRaw = $request->input('labuh_tambat_adjustment', 0);
+                    $adjustment = floatval(str_replace(['.', ','], ['', '.'], (string)$adjustmentRaw));
                 }
+                
+                $biayaKapal->update([
+                    'nominal' => $totalLabuh + $adjustment,
+                    'adjustment' => $adjustment
+                ]);
             }
 
             // PERIJINAN UPDATE

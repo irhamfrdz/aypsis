@@ -531,10 +531,24 @@
             const grandTotalVal = section.querySelector('.grand-total-value');
             totalGrandTotal += parseFloat(grandTotalVal ? grandTotalVal.value : 0) || 0;
         });
-        if (totalGrandTotal > 0) {
-            nominalInput.value = totalGrandTotal.toLocaleString('id-ID');
+
+        // Add adjustment if exists
+        const adjustmentInput = document.getElementById('labuh_tambat_adjustment');
+        if (adjustmentInput && adjustmentInput.value) {
+            const adjustment = parseFloat(adjustmentInput.value.replace(/\./g, '')) || 0;
+            totalGrandTotal += adjustment;
+        }
+
+        // Update the summary display
+        const allSectionsTotalDisplay = document.getElementById('labuh_tambat_all_sections_total');
+        if (allSectionsTotalDisplay) {
+            allSectionsTotalDisplay.textContent = totalGrandTotal !== 0 ? `Rp ${totalGrandTotal.toLocaleString('id-ID')}` : 'Rp 0';
+        }
+
+        if (totalGrandTotal !== 0) {
+            if (nominalInput) nominalInput.value = totalGrandTotal.toLocaleString('id-ID');
         } else {
-            nominalInput.value = '';
+            if (nominalInput) nominalInput.value = '';
         }
     }
 

@@ -227,7 +227,7 @@
             $subtotalLabel = 0;
             $ppnTotal = $biayaKapal->labuhTambatDetails->sum('ppn');
             $materaiTotal = $biayaKapal->labuhTambatDetails->sum('biaya_materai');
-            $totalGrandTotal = $biayaKapal->labuhTambatDetails->sum('grand_total');
+            $totalGrandTotal = $biayaKapal->labuhTambatDetails->sum('grand_total') + ($biayaKapal->adjustment ?? 0);
         @endphp
 
         <div class="info-section">
@@ -356,6 +356,14 @@
                     <td class="text-center">{{ $no++ }}</td>
                     <td>BIAYA MATERAI</td>
                     <td class="text-right">Rp {{ number_format($materaiTotal, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+
+                @if(($biayaKapal->adjustment ?? 0) != 0)
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td>ADJUSTMENT</td>
+                    <td class="text-right">Rp {{ number_format($biayaKapal->adjustment, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 
