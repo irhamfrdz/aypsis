@@ -102,6 +102,15 @@ class BlController extends Controller
             \Log::info("Filter by no_voyage (exact): {$noVoyage}");
         }
 
+        // Filter berdasarkan tanpa_size
+        if ($request->filled('tanpa_size') && $request->tanpa_size == '1') {
+            $query->where(function($q) {
+                $q->whereNull('size_kontainer')
+                  ->orWhere('size_kontainer', '');
+            });
+            \Log::info("Filter by tanpa_size: active");
+        }
+
         // Sort berdasarkan parameter
         $sortBy = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');

@@ -80,6 +80,10 @@
                             <i class="fas fa-sync-alt mr-2"></i> Update Size
                         </button>
                         @endcan
+                        <a href="{{ request()->fullUrlWithQuery(['tanpa_size' => request('tanpa_size') == '1' ? null : '1']) }}" 
+                           class="inline-flex items-center px-4 py-2 {{ request('tanpa_size') == '1' ? 'bg-red-500 hover:bg-red-600' : 'bg-cyan-500 hover:bg-cyan-600' }} text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                            <i class="fas fa-filter mr-2"></i> {{ request('tanpa_size') == '1' ? 'Tampilkan Semua' : 'Data Tanpa Size' }}
+                        </a>
                         <a href="{{ route('bl.export', request()->all()) }}" 
                            class="inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
                             <i class="fas fa-file-excel mr-2"></i> Download Excel
@@ -136,6 +140,9 @@
                 @endif
                 @if(request('no_voyage'))
                     <input type="hidden" name="no_voyage" value="{{ request('no_voyage') }}">
+                @endif
+                @if(request('tanpa_size'))
+                    <input type="hidden" name="tanpa_size" value="{{ request('tanpa_size') }}">
                 @endif
 
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
