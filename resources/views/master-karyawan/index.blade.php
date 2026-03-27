@@ -338,6 +338,23 @@
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
+                                <span>KANTOR CABANG AYP</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'cabang', 'direction' => 'asc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'cabang' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'cabang', 'direction' => 'desc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'cabang' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>PEKERJAAN</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'pekerjaan', 'direction' => 'asc'])) }}"
@@ -437,6 +454,13 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
+                                @if($karyawan->cabang)
+                                    {{ strtoupper($karyawan->cabang) }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 @if($karyawan->pekerjaan && $karyawan->pekerjaan !== '0')
                                     {{ strtoupper($karyawan->pekerjaan) }}
                                 @endif
@@ -525,7 +549,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ request('show_berhenti') ? '10' : '9' }}" class="px-6 py-2 text-center text-gray-500">
+                            <td colspan="{{ request('show_berhenti') ? '11' : '10' }}" class="px-6 py-2 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
@@ -579,6 +603,10 @@
                         <div>
                             <span class="block text-gray-400 mb-0.5">Pekerjaan</span>
                             <span class="font-medium">{{ $karyawan->pekerjaan && $karyawan->pekerjaan !== '0' ? strtoupper($karyawan->pekerjaan) : '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-gray-400 mb-0.5">Kantor Cabang</span>
+                            <span class="font-medium">{{ $karyawan->cabang ? strtoupper($karyawan->cabang) : '-' }}</span>
                         </div>
                         <div>
                             <span class="block text-gray-400 mb-0.5">No HP</span>

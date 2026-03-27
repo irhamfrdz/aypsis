@@ -150,7 +150,7 @@ class KaryawanController extends Controller
         // Handle sorting
         $sortField = $request->get('sort', 'nama_lengkap');
         $sortDirection = $request->get('direction', 'asc');
-        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti', 'cabang'];
         
         if (!in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
