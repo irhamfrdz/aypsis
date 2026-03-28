@@ -296,7 +296,7 @@
             <tbody>
                 @php
                     $perKapal = $biayaKapal->airDetails->groupBy(function($item) {
-                        return ($item->kapal ?? '-') . ($item->voyage ? ' ('.$item->voyage.')' : '');
+                        return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->vendor ?? '-') . '|' . ($item->lokasi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-') . '|' . ($item->nomor_referensi ?? '-');
                     });
                 @endphp
                 

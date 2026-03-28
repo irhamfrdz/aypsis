@@ -268,7 +268,7 @@
             <tbody>
                 @php
                     $perKapal = $biayaKapal->labuhTambatDetails->groupBy(function($item) {
-                        return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                        return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->nomor_referensi ?? $item->no_referensi ?? '-');
                     });
                 @endphp
                 

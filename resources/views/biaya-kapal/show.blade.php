@@ -306,7 +306,7 @@
         <div class="space-y-6">
             @php
                 $groupedAir = $biayaKapal->airDetails->groupBy(function($item) {
-                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->vendor ?? '-') . '|' . ($item->lokasi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->vendor ?? '-') . '|' . ($item->lokasi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-') . '|' . ($item->nomor_referensi ?? '-');
                 });
             @endphp
             @foreach($groupedAir as $groupKey => $details)
@@ -559,7 +559,7 @@
         <div class="space-y-6">
             @php
                 $groupedLabuh = $biayaKapal->labuhTambatDetails->groupBy(function($item) {
-                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->vendor ?? '-') . '|' . ($item->lokasi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-');
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->vendor ?? '-') . '|' . ($item->lokasi ?? '-') . '|' . ($item->tanggal_invoice_vendor ?? '-') . '|' . ($item->nomor_referensi ?? $item->no_referensi ?? '-');
                 });
             @endphp
             @foreach($groupedLabuh as $groupKey => $details)

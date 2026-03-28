@@ -304,11 +304,11 @@
                     @php
                         if ($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->barangDetails && $biayaKapal->barangDetails->count() > 0) {
                             $groupedDetails = $biayaKapal->barangDetails->groupBy(function($item) {
-                                return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                                return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->nomor_referensi ?? '-');
                             });
                         } elseif ($biayaKapal->oppOptDetails && $biayaKapal->oppOptDetails->count() > 0) {
                             $groupedDetails = $biayaKapal->oppOptDetails->groupBy(function($item) {
-                                return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                                return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->nomor_referensi ?? '-');
                             });
                         } else {
                             $namaKapals = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [$biayaKapal->nama_kapal];
