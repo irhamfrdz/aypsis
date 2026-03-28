@@ -1133,6 +1133,22 @@
                                 <td>-</td>
                             </tr>
 
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center text-indigo-600 font-bold">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Kontainer Sewa Final</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[kontainer-sewa-final][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[kontainer-sewa-final][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[kontainer-sewa-final][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[kontainer-sewa-final][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                            </tr>
+
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">
                                 <td class="module-header">

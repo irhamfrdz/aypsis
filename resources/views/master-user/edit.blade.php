@@ -1539,6 +1539,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Kontainer Sewa Final --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-indigo-600 font-bold">Kontainer Sewa Final</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[kontainer-sewa-final][view]" value="1" class="permission-checkbox" @if(old('permissions.kontainer-sewa-final.view') || (isset($userMatrixPermissions['kontainer-sewa-final']['view']) && $userMatrixPermissions['kontainer-sewa-final']['view']) || ($user && $user->can('kontainer-sewa-final-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[kontainer-sewa-final][create]" value="1" class="permission-checkbox" @if(old('permissions.kontainer-sewa-final.create') || (isset($userMatrixPermissions['kontainer-sewa-final']['create']) && $userMatrixPermissions['kontainer-sewa-final']['create']) || ($user && $user->can('kontainer-sewa-final-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[kontainer-sewa-final][update]" value="1" class="permission-checkbox" @if(old('permissions.kontainer-sewa-final.update') || (isset($userMatrixPermissions['kontainer-sewa-final']['update']) && $userMatrixPermissions['kontainer-sewa-final']['update']) || ($user && $user->can('kontainer-sewa-final-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[kontainer-sewa-final][delete]" value="1" class="permission-checkbox" @if(old('permissions.kontainer-sewa-final.delete') || (isset($userMatrixPermissions['kontainer-sewa-final']['delete']) && $userMatrixPermissions['kontainer-sewa-final']['delete']) || ($user && $user->can('kontainer-sewa-final-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
                             {{-- User --}}
                             <tr class="module-row" data-module="user">

@@ -1494,6 +1494,10 @@
                             <a href="{{ route('kontainer-sewa-billing.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('kontainer-sewa-billing.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Kontainer Sewa Billing (Baru)</span>
                             </a>
+                            
+                            <a href="{{ route('kontainer-sewa-final.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('kontainer-sewa-final.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs font-bold text-blue-600">Kontainer Sewa Final</span>
+                            </a>
                         @endif
 
                         {{-- Invoice Tagihan Sewa - menggunakan permission tagihan-kontainer-sewa-index --}}

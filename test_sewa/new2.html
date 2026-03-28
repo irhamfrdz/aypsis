@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>AYPSIS - SISTEM PENYEWA KONTAINER (2026)</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; font-size: 11px; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 230px; background: #2c3e50; color: white; padding: 15px; display: flex; flex-direction: column; }
+        .main { flex: 1; padding: 20px; overflow-y: auto; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 4px solid #34495e; }
+        .nav-btn { width: 100%; padding: 10px; border: none; background: none; color: #ecf0f1; text-align: left; cursor: pointer; font-weight: bold; border-bottom: 1px solid #34495e; }
+        .nav-btn.active { background: #3498db; color: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #eee; padding: 6px; text-align: left; }
+        th { background: #f8f9fa; position: sticky; top: 0; z-index: 10; }
+        .btn { padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px; }
+        .btn-blue { background: #2980b9; color: white; } .btn-green { background: #27ae60; color: white; }
+        .btn-orange { background: #f39c12; color: white; } .btn-red { background: #e74c3c; color: white; }
+        input, select, textarea { padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 11px; }
+        .pagination { margin-top: 10px; display: flex; gap: 5px; justify-content: center; }
+        .pg-btn { padding: 4px 8px; border: 1px solid #ddd; background: white; cursor: pointer; }
+        .pg-btn.active { background: #2c3e50; color: white; }
+        .non-aktif { background: #f2f2f2; color: #aaa; text-decoration: line-through; }
+        .st-sewa { color: #e74c3c; font-weight: bold; } .st-selesai { color: #27ae60; font-weight: bold; }
+        .judul-audit { color: #2c3e50 !important; font-weight: 900; font-size: 14px; margin-bottom: 10px; display: block; }
+        .tab-audit-container { display: flex; gap: 10px; margin-bottom: 10px; }
+        .tab-audit-btn { padding: 8px 15px; border: 1px solid #3498db; background: white; cursor: pointer; border-radius: 5px; font-weight: bold; color: #3498db; }
+        .tab-audit-btn.active { background: #3498db; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h3 style="text-align:center; color:#3498db;">MASTER BTM</h3>
+    <div style="background:#1a252f; padding:10px; border-radius:5px; margin-bottom:15px;">
+        <button class="btn btn-blue" style="width:100%; margin-bottom:5px;" onclick="document.getElementById('fIn').click()">📂 BUKA FILE DATA</button>
+        <button class="btn btn-green" style="width:100%;" onclick="simpanData()">💾 SIMPAN DATA</button>
+        <input type="file" id="fIn" style="display:none" onchange="loadFile(event)">
+    </div>
+    <button class="nav-btn" onclick="showTab(event, 'tab-vtz')">1. VENDOR / TIPE / UKURAN</button>
+    <button class="nav-btn" onclick="showTab(event, 'tab-tarif')">2. MASTER TARIF</button>
+    <button class="nav-btn" onclick="showTab(event, 'tab-unit')">3. MASTER KONTAINER</button>
+    <button class="nav-btn" onclick="showTab(event, 'tab-trx')">4. TRANSAKSI IN (OUT)</button>
+    <button class="nav-btn active" onclick="showTab(event, 'tab-rekon')">5. REKON & AUDIT</button>
+</div>
+
+<div class="main">
+    <div id="tab-vtz" style="display:none">
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
+            <div class="card"><h4>Vendor</h4><div style="display:flex; gap:5px;"><input id="in-v" style="flex:1"><button class="btn btn-blue" onclick="addM('v','in-v')">+</button></div><table id="tbl-v"><tbody></tbody></table></div>
+            <div class="card"><h4>Tipe</h4><div style="display:flex; gap:5px;"><input id="in-t" style="flex:1"><button class="btn btn-blue" onclick="addM('t','in-t')">+</button></div><table id="tbl-t"><tbody></tbody></table></div>
+            <div class="card"><h4>Size</h4><div style="display:flex; gap:5px;"><input id="in-z" style="flex:1"><button class="btn btn-blue" onclick="addM('z','in-z')">+</button></div><table id="tbl-z"><tbody></tbody></table></div>
+        </div>
+    </div>
+
+    <div id="tab-tarif" style="display:none">
+        <div class="card"><h4>➕ Setup Tarif</h4><div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-bottom:10px;"><select id="rt-v"></select><select id="rt-t"></select><select id="rt-z"></select> <input id="rt-bln" type="number" placeholder="Bln"><input id="rt-hr" type="number" placeholder="Hr"></div><button class="btn btn-blue" style="width:100%;" onclick="addR()">SIMPAN TARIF</button></div>
+        <div class="card"><table id="tbl-rt"><thead><tr><th>No.</th><th>Vendor</th><th>Tipe/Size</th><th>Bln</th><th>Hr</th><th>Aksi</th></tr></thead><tbody id="body-rt"></tbody></table></div>
+    </div>
+
+    <div id="tab-unit" style="display:none">
+        <div class="card" id="edit-unit-zone" style="display:none; background: #fff9db;">
+            <h4>✏️ Edit Master Unit</h4>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap:10px;"><input type="hidden" id="edu-idx"><input type="text" id="edu-no"><select id="edu-v"></select><select id="edu-t"></select><select id="edu-z"></select><button class="btn btn-orange" onclick="simpanEditUnit()">SIMPAN</button></div><button class="btn btn-red" style="margin-top:5px;" onclick="batalEditUnit()">Batal</button>
+        </div>
+        <div class="card" id="entry-unit-zone">
+            <h4>➕ Entry Unit Baru</h4>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap:10px;"><input type="text" id="mu-no" placeholder="No. Unit"><select id="mu-v"></select><select id="mu-t"></select><select id="mu-z"></select><button class="btn btn-green" onclick="tambahUnitManual()">TAMBAH</button></div>
+        </div>
+        <div class="card"><input type="text" id="src-u" onkeyup="pgU=1;renderU()" placeholder="🔍 Cari Unit..." style="width:100%; margin-bottom:10px; padding:10px;"><table id="tbl-u"><thead><tr><th>No.</th><th>Unit</th><th>Vendor</th><th>Tipe/Size</th><th>Aksi</th></tr></thead><tbody id="body-u"></tbody></table><div id="pg-u" class="pagination"></div></div>
+    </div>
+
+    <div id="tab-trx" style="display:none">
+        <div class="card" id="edit-trx-zone" style="display:none; background: #fff9db;">
+            <h4>✏️ Edit Transaksi</h4>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap:10px;"><input type="hidden" id="edx-idx"><select id="edx-no"></select><input type="text" id="edx-s" placeholder="Ambil (dd/mm/yyyy)"><input type="text" id="edx-e" placeholder="Kembali"><select id="edx-st-t"><option value="B">Bulanan (B)</option><option value="H">Harian (H)</option></select><button class="btn btn-orange" onclick="simpanEditTrx()">SIMPAN</button></div><button class="btn btn-red" style="margin-top:5px;" onclick="batalEditTrx()">Batal</button>
+        </div>
+        <div class="card" id="entry-trx-zone">
+            <h4>➕ Entry Transaksi</h4>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap:10px;"><input type="text" id="tx-no" list="list-u" placeholder="No Unit..."><datalist id="list-u"></datalist><input type="text" id="tx-s" placeholder="Ambil (dd/mm/yyyy)"><input type="text" id="tx-e" placeholder="Kembali"><select id="tx-st-t"><option value="B">Bulanan (B)</option><option value="H">Harian (H)</option></select><button class="btn btn-green" onclick="tambahTrx()">TAMBAH TRX</button></div>
+        </div>
+        <div class="card">
+            <div style="display:flex; justify-content: space-between; align-items: center;"><h4>📊 Riwayat Transaksi</h4><button class="btn btn-orange" onclick="dlTrx()">📂 DOWNLOAD CSV</button></div>
+            <input type="text" id="src-x" onkeyup="pgX=1;renderX()" placeholder="🔍 Cari Unit..." style="width:100%; margin:10px 0; padding:10px;">
+            <table id="tbl-x"><thead><tr><th>No.</th><th>ID TRX</th><th>Unit</th><th>Ambil</th><th>Kembali</th><th>St Tarif</th><th>St Unit</th><th>Biaya</th><th>Aksi</th></tr></thead><tbody id="body-x"></tbody></table>
+            <div id="pg-x" class="pagination"></div>
+        </div>
+    </div>
+
+    <div id="tab-rekon">
+        <div class="card">
+            <span class="judul-audit">📌 Audit Tagihan Vendor</span>
+            <div class="tab-audit-container">
+                <button id="btn-outstanding" class="tab-audit-btn active" onclick="switchAuditTab('outstanding')">Tab A: Outstanding</button>
+                <button id="btn-keranjang" class="tab-audit-btn" onclick="switchAuditTab('keranjang')">Tab B: Keranjang / Permohonan</button>
+            </div>
+            
+            <div id="area-outstanding">
+                <input type="text" id="src-audit" onkeyup="renderAudit()" placeholder="🔍 Search Unit to Audit..." style="width:100%; padding:10px; border:2px solid #3498db; border-radius:5px; margin-bottom:10px;">
+                <table id="tbl-audit">
+                    <thead><tr style="background:#3498db; color:white;"><th>ID TRX Induk</th><th>Unit</th><th>Ambil</th><th>Kembali</th><th>St Unit</th><th>Aksi</th></tr></thead>
+                    <tbody id="body-audit"></tbody>
+                </table>
+            </div>
+
+            <div id="area-keranjang" style="display:none">
+                <div style="margin-bottom:15px; display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; background:#f9f9f9; padding:10px; border:1px solid #ddd;">
+                    <div><label><b>Pilih Vendor:</b></label><br><select id="aud-v-name" style="width:100%"></select></div>
+                    <div><label><b>No. Invoice:</b></label><br><input type="text" id="aud-no-inv" style="width:100%"></div>
+                    <div><label><b>Tgl. Invoice:</b></label><br><input type="text" id="aud-tgl-inv" placeholder="dd/mm/yyyy" style="width:100%"></div>
+                </div>
+                <table id="tbl-cart">
+                    <thead><tr style="background:#27ae60; color:white;"><th>No</th><th>Unit</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Selisih</th><th>Aksi</th></tr></thead>
+                    <tbody id="body-cart"></tbody>
+                    <tfoot id="foot-cart" style="background:#eee; font-weight:bold;"></tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[] };
+let pgU = 1, pgX = 1; const rPP = 15;
+let expAudit = null;
+let currentAuditTab = 'outstanding';
+
+// --- LOGIKA UTAMA AUDIT (MENU 5) ---
+function genPeriode(x, idInduk) {
+    const dAmbil = parseD(x.s); 
+    const dAkhir = x.e ? parseD(x.e) : new Date(); 
+    const mu = db.u.find(unit => unit.no === x.no);
+    const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z) : null;
+    const biayaSnapshot = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0));
+    
+    let h = `<table style="width:100%; background:white;"><thead><tr style="background:#eee"><th>Periode</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Aksi</th></tr></thead>`;
+    let curr = new Date(dAmbil), p = 1;
+    
+    // LOOP GENERATE SAMPAI TGL KEMBALI (TANPA BATAS BULAN)
+    while (true) {
+        let sP = new Date(curr);
+        let eP = new Date(curr.getFullYear(), curr.getMonth() + 1, curr.getDate() - 1);
+        
+        if (sP > dAkhir) break; 
+        if (x.e && eP > dAkhir) eP = dAkhir;
+
+        const diff = Math.ceil((eP - sP) / 86400000) + 1;
+        const nilaiAYPSIS = (diff >= 28) ? biayaSnapshot : Math.round((diff/30)*biayaSnapshot);
+        const idp = `${idInduk}-${p}`;
+
+        if(!db.cart.some(c => c.idp === idp)) {
+            h += `<tr><td>Ke-${p}</td><td>${fmtTglLay(sP)} - ${fmtTglLay(eP)}</td><td>${fmtRibuan(nilaiAYPSIS)}</td><td><input type="text" id="v-${idp}" value="${fmtRibuan(nilaiAYPSIS)}" oninput="inputRibuan(this)" style="width:80px"></td><td><button class="btn btn-green" onclick="saveToCart('${idp}','${x.no}','${fmtTglDB(sP)} - ${fmtTglDB(eP)}',${nilaiAYPSIS})">Add</button></td></tr>`;
+        }
+        
+        if (x.e && eP >= dAkhir) break; 
+        curr.setMonth(curr.getMonth() + 1); p++;
+    }
+    return h + `</table>`;
+}
+
+function saveToCart(idp, unit, masa, aypsis) {
+    const vendorBill = cleanNum(document.getElementById('v-'+idp).value);
+    db.cart.push({ idp, unit, masa, aypsis, vendorBill });
+    updateDB();
+}
+
+function renderCart() {
+    const body = document.getElementById('body-cart');
+    const foot = document.getElementById('foot-cart');
+    if(!body) return;
+
+    // Link ke Master Vendor
+    const vSelect = document.getElementById('aud-v-name');
+    if(vSelect) vSelect.innerHTML = db.v.filter(v => v.act !== false).map(v => `<option value="${v.val||v}">${v.val||v}</option>`).join('');
+
+    let tBill = 0;
+    body.innerHTML = db.cart.map((c, i) => {
+        tBill += c.vendorBill;
+        return `<tr><td>${i+1}</td><td>${c.unit}</td><td>${c.masa}</td><td>${fmtRibuan(c.aypsis)}</td><td>${fmtRibuan(c.vendorBill)}</td><td>${fmtRibuan(c.vendorBill - c.aypsis)}</td><td><button class="btn btn-red" onclick="db.cart.splice(${i},1);updateDB()">X</button></td></tr>`;
+    }).join('');
+
+    // HITUNG OTOMATIS DPP, PPN 11%, PPH 2%
+    const dpp = tBill;
+    const ppn = Math.round(dpp * 0.11);
+    const pph = Math.round(dpp * 0.02);
+    const grand = dpp + ppn - pph;
+
+    foot.innerHTML = `
+        <tr><td colspan="4" align="right">DPP (Total Bill)</td><td colspan="3">${fmtRibuan(dpp)}</td></tr>
+        <tr><td colspan="4" align="right">PPN 11% (+)</td><td colspan="3">${fmtRibuan(ppn)}</td></tr>
+        <tr><td colspan="4" align="right">PPh 2% (-)</td><td colspan="3" style="color:red">${fmtRibuan(pph)}</td></tr>
+        <tr style="background:#27ae60; color:white;"><td colspan="4" align="right">GRAND TOTAL</td><td colspan="3">${fmtRibuan(grand)}</td></tr>`;
+}
+
+// --- FUNGSI FORMATTING & TOOLS ---
+function fmtTglLay(d) {
+    const blnArr = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+    return `${d.getDate()} ${blnArr[d.getMonth()]} ${d.getFullYear().toString().substr(-2)}`;
+}
+function fmtTglDB(d) {
+    return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+}
+function fmtRibuan(n) { return Math.round(n).toLocaleString('id-ID'); }
+function cleanNum(s) { return parseInt(s.toString().replace(/\./g, '')) || 0; }
+function inputRibuan(el) {
+    let val = el.value.replace(/\./g, '');
+    if(!isNaN(val) && val !== "") { el.value = parseInt(val).toLocaleString('id-ID'); }
+}
+
+// --- FUNGSI UPDATE & RENDER (STANDAR BAPAK) ---
+function updateDB() {
+    localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
+    renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart();
+    const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value="${x.val||x}">${x.val||x}</option>`).join('');
+    ['v','t','z'].forEach(k => { 
+        if(document.getElementById('rt-'+k)) document.getElementById('rt-'+k).innerHTML = ops(k); 
+        if(document.getElementById('mu-'+k)) document.getElementById('mu-'+k).innerHTML = ops(k);
+        if(document.getElementById('edu-'+k)) document.getElementById('edu-'+k).innerHTML = ops(k);
+    });
+    if(document.getElementById('list-u')) document.getElementById('list-u').innerHTML = db.u.filter(u => u.act !== false).map(u => `<option value="${u.no}">${u.v} | ${u.t} | ${u.z}</option>`).join('');
+}
+
+function switchAuditTab(tab) {
+    currentAuditTab = tab;
+    document.getElementById('btn-outstanding').classList.toggle('active', tab === 'outstanding');
+    document.getElementById('btn-keranjang').classList.toggle('active', tab === 'keranjang');
+    document.getElementById('area-outstanding').style.display = tab === 'outstanding' ? 'block' : 'none';
+    document.getElementById('area-keranjang').style.display = tab === 'keranjang' ? 'block' : 'none';
+    if(tab === 'keranjang') renderCart();
+}
+
+function renderAudit() {
+    const s = (document.getElementById('src-audit')?.value || "").toUpperCase();
+    const body = document.getElementById('body-audit');
+    if(!body) return;
+    body.innerHTML = db.x.filter(x => x.no.includes(s)).map(x => {
+        const idTrx = x.no + toExcelSerial(x.s);
+        const isExp = expAudit === idTrx;
+        return `<tr><td><b>${idTrx}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td class="${x.e?'st-selesai':'st-sewa'}">${x.e?'SELESAI':'SEWA'}</td><td><button class="btn btn-blue" onclick="toggleAudit('${idTrx}')">${isExp?'− Close':'+ Pilih'}</button></td></tr>` + 
+        (isExp ? `<tr><td colspan="6" style="background:#f4f7f6; padding:10px; border:1px solid #ddd;">${genPeriode(x, idTrx)}</td></tr>` : '');
+    }).join('');
+}
+
+function toggleAudit(id) { expAudit = (expAudit === id) ? null : id; renderAudit(); }
+function parseD(s) { if(!s) return new Date(); const [d,m,y] = s.split('/').map(Number); return new Date(y, m-1, d); }
+function toExcelSerial(d) { if(!d||!d.includes('/')) return "0"; const [dd,mm,yy]=d.split('/').map(Number); return Math.floor((new Date(yy,mm-1,dd)-new Date(1899,11,30))/86400000); }
+
+// --- MENU 1-4 (EDIT & OFF SESUAI BACKUP) ---
+function renderVTZ() { ['v','t','z'].forEach(k => { const body = document.querySelector(`#tbl-${k} tbody`); if(body) body.innerHTML = db[k].map((x,i) => `<tr class="${x.act===false?'non-aktif':''}"><td>${i+1}</td><td>${x.val||x}</td><td><button class="btn btn-orange" onclick="edM('${k}',${i})">Edit</button> ${x.act!==false?`<button class="btn btn-red" onclick="delM('${k}',${i})">Off</button>`:''}</td></tr>`).join(''); }); }
+function renderRT() { const body = document.getElementById('body-rt'); if(body) body.innerHTML = db.r.map((x,i) => `<tr class="${x.act===false?'non-aktif':''}"><td>${i+1}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td>${fmtRibuan(x.rb)}</td><td>${fmtRibuan(x.rh)}</td><td><button class="btn btn-orange" onclick="edR(${i})">Edit</button> ${x.act!==false?`<button class="btn btn-red" onclick="delR(${i})">Off</button>`:''}</td></tr>`).join(''); }
+function renderU() { const s = document.getElementById('src-u').value.toUpperCase(); const fil = db.u.filter(x => x.no.includes(s)); document.getElementById('body-u').innerHTML = fil.slice((pgU-1)*rPP, pgU*rPP).map((x,i) => { const idx = db.u.indexOf(x); return `<tr class="${x.act===false?'non-aktif':''}"><td>${((pgU-1)*rPP)+i+1}</td><td>${x.no}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td><button class="btn btn-orange" onclick="bukaEditUnit(${idx})">Edit</button> ${x.act!==false?`<button class="btn btn-red" onclick="delU(${idx})">Off</button>`:''}</td></tr>`; }).join(''); renderPg('pg-u', fil.length, 'pgU', 'renderU'); }
+function renderX() { const s = document.getElementById('src-x').value.toUpperCase(); const fil = db.x.filter(x => x.no.includes(s)); document.getElementById('body-x').innerHTML = fil.slice((pgX-1)*rPP, pgX*rPP).map((x,i) => { const idx = db.x.indexOf(x); const mu = db.u.find(unit => unit.no === x.no); const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z && rt.act !== false) : null; const biaya = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0)); return `<tr><td>${((pgX-1)*rPP)+i+1}</td><td><b>${x.no + toExcelSerial(x.s)}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td>${x.stT||'B'}</td><td class="${x.e?'st-selesai':'st-sewa'}">${x.e?'SELESAI':'SEWA'}</td><td align="right">${fmtRibuan(biaya)}</td><td><button class="btn btn-orange" onclick="bukaEditTrx(${idx})">Edit</button> <button class="btn btn-red" onclick="delX(${idx})">X</button></td></tr>`; }).join(''); renderPg('pg-x', fil.length, 'pgX', 'renderX'); }
+
+function edM(k, i) { const n = prompt("Ubah:", (db[k][i].val || db[k][i])); if(n) { if(typeof db[k][i] === 'object') db[k][i].val = n.toUpperCase(); else db[k][i] = {val:n.toUpperCase(), act:true}; updateDB(); } }
+function edR(i) { const b = prompt("Bln:", db.r[i].rb), h = prompt("Hr:", db.r[i].rh); if(b) db.r[i].rb = parseInt(b); if(h) db.r[i].rh = parseInt(h); updateDB(); }
+function bukaEditUnit(i) { document.getElementById('entry-unit-zone').style.display='none'; document.getElementById('edit-unit-zone').style.display='block'; document.getElementById('edu-idx').value=i; document.getElementById('edu-no').value=db.u[i].no; document.getElementById('edu-v').value=db.u[i].v; document.getElementById('edu-t').value=db.u[i].t; document.getElementById('edu-z').value=db.u[i].z; window.scrollTo(0,0); }
+function simpanEditUnit() { const i = document.getElementById('edu-idx').value; db.u[i].no = document.getElementById('edu-no').value.toUpperCase(); db.u[i].v = document.getElementById('edu-v').value; db.u[i].t = document.getElementById('edu-t').value; db.u[i].z = document.getElementById('edu-z').value; batalEditUnit(); updateDB(); }
+function batalEditUnit() { document.getElementById('entry-unit-zone').style.display='block'; document.getElementById('edit-unit-zone').style.display='none'; }
+function bukaEditTrx(i) { document.getElementById('entry-trx-zone').style.display='none'; document.getElementById('edit-trx-zone').style.display='block'; document.getElementById('edx-idx').value=i; document.getElementById('edx-no').value=db.x[i].no; document.getElementById('edx-s').value=db.x[i].s; document.getElementById('edx-e').value=db.x[i].e; document.getElementById('edx-st-t').value=db.x[i].stT; window.scrollTo(0,0); }
+function simpanEditTrx() { const i = document.getElementById('edx-idx').value; db.x[i].no = document.getElementById('edx-no').value; db.x[i].s = document.getElementById('edx-s').value; db.x[i].e = document.getElementById('edx-e').value; db.x[i].stT = document.getElementById('edx-st-t').value; batalEditTrx(); updateDB(); }
+function batalEditTrx() { document.getElementById('entry-trx-zone').style.display='block'; document.getElementById('edit-trx-zone').style.display='none'; }
+function showTab(e, id) { document.querySelectorAll('[id^="tab-"]').forEach(x => x.style.display='none'); document.getElementById(id).style.display='block'; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); e.currentTarget.classList.add('active'); if(id==='tab-rekon') updateDB(); }
+function addM(k, id) { const v = document.getElementById(id).value.toUpperCase(); if(v) { db[k].push({val:v, act:true}); document.getElementById(id).value=''; updateDB(); } }
+function addR() { db.r.push({ v:document.getElementById('rt-v').value, t:document.getElementById('rt-t').value, z:document.getElementById('rt-z').value, rb:parseInt(document.getElementById('rt-bln').value)||0, rh:parseInt(document.getElementById('rt-hr').value)||0, act:true }); updateDB(); }
+function tambahUnitManual() { const no = document.getElementById('mu-no').value.toUpperCase(); if(no) { db.u.push({ no, v:document.getElementById('mu-v').value, t:document.getElementById('mu-t').value, z:document.getElementById('mu-z').value, act:true }); document.getElementById('mu-no').value=''; updateDB(); } }
+function tambahTrx() { const no = document.getElementById('tx-no').value.toUpperCase(); const u = db.u.find(unit => unit.no === no && unit.act !== false); if(u && document.getElementById('tx-s').value) { db.x.push({ no:u.no, s:document.getElementById('tx-s').value, e:document.getElementById('tx-e').value, stT:document.getElementById('tx-st-t').value }); updateDB(); document.getElementById('tx-no').value=''; document.getElementById('tx-s').value=''; document.getElementById('tx-e').value=''; } else { alert("Unit Off/Data Kurang!"); } }
+function renderPg(id, tot, pgVar, func) { const pgs = Math.ceil(tot/rPP); let h = `<button class="pg-btn" onclick="window['${pgVar}']=Math.max(1,window['${pgVar}']-1);${func}()">Prev</button>`; for(let i=1; i<=pgs; i++) { if(i===1||i===pgs||(i>=window[pgVar]-2 && i<=window[pgVar]+2)) h+=`<button class="pg-btn ${i===window[pgVar]?'active':''}" onclick="window['${pgVar}']=${i};${func}()">${i}</button>`; } const el = document.getElementById(id); if(el) el.innerHTML = h + `<button class="pg-btn" onclick="window['${pgVar}']=Math.min(${pgs},window['${pgVar}']+1);${func}()">Next</button>`; }
+function delU(i) { if(confirm("Set Off?")) { db.u[i].act = false; updateDB(); } }
+function delM(k, i) { if(confirm("Set Off?")) { if(typeof db[k][i] === 'object') db[k][i].act = false; else db[k][i] = {val:db[k][i], act:false}; updateDB(); } }
+function delR(i) { if(confirm("Set Off?")) { db.r[i].act = false; updateDB(); } }
+function delX(i) { if(confirm("Hapus Trx?")) { db.x.splice(i, 1); updateDB(); } }
+function loadFile(e) { const fr = new FileReader(); fr.onload = (x) => { db = JSON.parse(x.target.result); if(!db.cart) db.cart = []; updateDB(); }; fr.readAsText(e.target.files[0]); }
+function simpanData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(db)])); a.download = "AYPSIS_DATA.json"; a.click(); }
+window.onload = () => { const s = localStorage.getItem('AYPSIS_2026_DB'); if(s) { db = JSON.parse(s); if(!db.cart) db.cart = []; updateDB(); } };
+</script>
+</body>
+</html>

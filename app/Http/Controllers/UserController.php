@@ -654,7 +654,8 @@ class UserController extends Controller
                 'tagihan-cat' => 'tagihan-cat',
                 'tagihan-kontainer-sewa' => 'tagihan-kontainer-sewa',
                 'tagihan-perbaikan-kontainer' => 'tagihan-perbaikan-kontainer',
-                'vendor-kontainer-sewa' => 'vendor-kontainer-sewa'
+                'vendor-kontainer-sewa' => 'vendor-kontainer-sewa',
+                'kontainer-sewa-final' => 'kontainer-sewa-final'
             ];
 
 
@@ -3507,6 +3508,26 @@ class UserController extends Controller
 
                         if (isset($actionMap[$action])) {
                             $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for kontainer-sewa-final module
+                    if ($module === 'kontainer-sewa-final') {
+                        $directActionMap = [
+                            'view' => 'kontainer-sewa-final-view',
+                            'create' => 'kontainer-sewa-final-create',
+                            'update' => 'kontainer-sewa-final-update',
+                            'delete' => 'kontainer-sewa-final-delete'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
                                 $found = true;

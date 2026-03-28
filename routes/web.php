@@ -163,6 +163,9 @@ Route::middleware([
           Route::post('daftar-tagihan-kontainer-sewa/{id}/create-next-periode', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'createNextPeriode'])
                ->name('daftar-tagihan-kontainer-sewa.create-next-periode');
           
+          Route::get('/kontainer-sewa-final', [App\Http\Controllers\KontainerSewaFinalController::class, 'index'])->name('kontainer-sewa-final.index');
+          Route::post('/kontainer-sewa-final/sync', [App\Http\Controllers\KontainerSewaFinalController::class, 'sync'])->name('kontainer-sewa-final.sync');
+          
           Route::get('daftar-tagihan-kontainer-sewa-2/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getPricelistForDpp'])->name('daftar-tagihan-kontainer-sewa-2.get_pricelist');
           Route::get('daftar-tagihan-kontainer-sewa-2/create-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'createGroup'])->name('daftar-tagihan-kontainer-sewa-2.create-group');
           Route::post('daftar-tagihan-kontainer-sewa-2/store-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'storeGroup'])->name('daftar-tagihan-kontainer-sewa-2.store-group');
