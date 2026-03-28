@@ -76,7 +76,7 @@ class PranotaOb extends Model
                 $enrichedItems[] = [
                     'nomor_kontainer' => $p->nomor_kontainer ?? '-',
                     'nama_barang' => $p->nama_barang ?? '-',
-                    'supir' => $resolveNickname($p->supir ?? '-'),
+                    'supir' => $p->supir ?? '-',
                     'size' => $p->size ?? '-',
                     'biaya' => $p->biaya ?? null,
                 ];
@@ -93,7 +93,7 @@ class PranotaOb extends Model
                 $enrichedItems[] = [
                     'nomor_kontainer' => $item['nomor_kontainer'] ?? '-',
                     'nama_barang' => $item['nama_barang'] ?? ($item['jenis_barang'] ?? '-'),
-                    'supir' => $resolveNickname($item['supir'] ?? '-'),
+                    'supir' => $item['supir'] ?? '-',
                     'size' => $item['size'] ?? ($item['size_kontainer'] ?? '-'),
                     'biaya' => $item['biaya'] ?? null,
                 ];
@@ -104,7 +104,7 @@ class PranotaOb extends Model
                 $enrichedItems[] = [
                     'nomor_kontainer' => $item['nomor_kontainer'] ?? ('ID: ' . ($item['id'] ?? '?')),
                     'nama_barang' => $item['nama_barang'] ?? ('Type: ' . ($item['type'] ?? '?')),
-                    'supir' => $resolveNickname($item['supir'] ?? '-'),
+                    'supir' => $item['supir'] ?? '-',
                     'size' => $item['size'] ?? '-',
                     'biaya' => $item['biaya'] ?? null,
                 ];

@@ -1989,7 +1989,7 @@ class ObController extends Controller
                         
                         if (!empty($bl->supir_id)) {
                             $sup = \DB::table('karyawans')->find($bl->supir_id);
-                            $itemsToSave[$idx]['supir'] = $sup ? ($sup->nama_lengkap ?? $sup->name ?? null) : null;
+                            $itemsToSave[$idx]['supir'] = $sup ? ($sup->nama_panggilan ?? $sup->nama_lengkap ?? $sup->name ?? null) : null;
                         }
                     }
                 } elseif ($it['type'] === 'naik_kapal') {
@@ -2037,7 +2037,7 @@ class ObController extends Controller
                         
                         if (!empty($nk->supir_id)) {
                             $sup = \DB::table('karyawans')->find($nk->supir_id);
-                            $itemsToSave[$idx]['supir'] = $sup ? ($sup->nama_lengkap ?? $sup->name ?? null) : null;
+                            $itemsToSave[$idx]['supir'] = $sup ? ($sup->nama_panggilan ?? $sup->nama_lengkap ?? $sup->name ?? null) : null;
                         }
                     }
                 }
