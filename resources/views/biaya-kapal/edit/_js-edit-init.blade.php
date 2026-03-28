@@ -209,91 +209,107 @@
         if(existingKapalSections.length > 0) {
             clearAllKapalSections();
             existingKapalSections.forEach(myData => {
-                addKapalSection();
-                const sectionIndex = kapalSectionCounter;
-                const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
-                
-                if(section) {
-                    const kapalSel = section.querySelector('.kapal-select');
-                    if (kapalSel) {
-                        kapalSel.value = myData.kapal;
-                        kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
+                (async function() {
+                    const section = addKapalSection();
+                    const sectionIndex = section.getAttribute('data-section-index');
+                    
+                    if(section) {
+                        const kapalSel = section.querySelector('.kapal-select');
+                        if (kapalSel && myData.kapal) {
+                            kapalSel.value = myData.kapal;
+                        }
+                        
+                        const voySel = section.querySelector('.voyage-select');
+                        if (myData.kapal) {
+                            try {
+                                const res = await fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(myData.kapal)}`);
+                                const vData = await res.json();
+                                voySel.disabled = false;
+                                let opt = '<option value="">-- Pilih Voyage --</option>';
+                                if (vData && vData.success && vData.voyages) {
+                                    vData.voyages.forEach(v => opt += `<option value="${v}">${v}</option>`);
+                                }
+                                voySel.innerHTML = opt;
+                                if (myData.voyage) voySel.value = myData.voyage;
+                            } catch(e) {
+                                voySel.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
+                                voySel.value = myData.voyage;
+                                voySel.disabled = false;
+                            }
+                        }
+                        
+                        section.querySelector('.barang-container-section').innerHTML = '';
+                        myData.barang.forEach(b => {
+                            addBarangToSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
+                        });
+                        calculateTotalFromAllSections();
                     }
-                    
-                    const voySel = section.querySelector('.voyage-select');
-                    voySel.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
-                    voySel.value = myData.voyage;
-                    voySel.disabled = false;
-                    
-                    section.querySelector('.barang-container-section').innerHTML = '';
-                    myData.barang.forEach(b => {
-                        addBarangToSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
-                    });
-                }
+                })();
             });
-            calculateTotalFromAllSections();
         }
 
         // 3. AIR SECTIONS
         if(existingAirSections.length > 0) {
-            // Need to expose addAirSection or click the button
-            const addBtn = document.getElementById('add_air_section_btn');
-            // But we can just use the function directly if available (it is inside script tag)
-             // However, addAirSection uses 'airSectionCounter' which is global in that script.
-             
-             // We need to clear first?
              const airContainer = document.getElementById('air_sections_container');
              if(airContainer) airContainer.innerHTML = '';
-             // Reset counter? No access to variable directly if scoped... wait, it is in script tag so global to window (or script block scope).
-             // Since it's in the same file, variables are shared.
              
              existingAirSections.forEach(data => {
-                 // Simulate adding section
-                 document.getElementById('add_air_section_btn').click();
-                 // The counter is incremented.
-                 // We need to find the *last* added section. 
-                 const sections = document.querySelectorAll('.air-section');
-                 const sec = sections[sections.length - 1]; // Last one
-                 const sectionIndex = sec.getAttribute('data-section-index');
-                 
-                  const kapalSel = sec.querySelector('.kapal-select-air');
-            if (kapalSel) {
-                kapalSel.value = data.kapal;
-                kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-                 
-                 const voySel = sec.querySelector('.voyage-select-air');
-                 voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
-                 voySel.value = data.voyage;
-                 voySel.disabled = false;
-                 
-                 if(data.lokasi) {
-                     sec.querySelector('.lokasi-select-air').value = data.lokasi;
-                     updateVendorsForLokasi(sectionIndex, data.lokasi);
-                 } else {
-                     sec.querySelector('.lokasi-select-air').value = '';
-                     updateVendorsForLokasi(sectionIndex, '');
-                 }
-                 
-                 if (data.vendor) {
-                     sec.querySelector('.vendor-select-air').value = data.vendor;
-                     loadTypesForVendor(sectionIndex, data.vendor); // Synchronous
-                 }
-                 
-                 sec.querySelector('.jasa-air-input').value = data.jasa_air;
-                 if(data.penerima) sec.querySelector('.penerima-input-air').value = data.penerima;
-                 if(data.nomor_rekening) sec.querySelector('.nomor-rekening-input-air').value = data.nomor_rekening;
-                 if(data.nomor_referensi) sec.querySelector('input[name="air['+sectionIndex+'][nomor_referensi]"]').value = data.nomor_referensi;
-                 if(data.tanggal_invoice_vendor) sec.querySelector('input[name="air['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor;
-                 
-                 const typesList = sec.querySelector('.types-list-air');
-                 typesList.innerHTML = ''; // clear default template
-                 data.types.forEach((t) => {
-                     // Add each type
-                     addTypeToAirSectionWithValue(sectionIndex, t.type_id, t.type_keterangan, t.is_lumpsum, t.kuantitas, t.harga);
-                 });
-                 
-                 calculateAirSectionTotal(sectionIndex);
+                (async function() {
+                    const sec = addAirSection();
+                    const sectionIndex = sec.getAttribute('data-section-index');
+                    
+                    const kapalSel = sec.querySelector('.kapal-select-air');
+                    if (kapalSel && data.kapal) {
+                        kapalSel.value = data.kapal;
+                    }
+                    
+                    // Load voyages async and set saved value
+                    const voyageSelect = sec.querySelector('.voyage-select-air');
+                    if (data.kapal) {
+                        try {
+                            const res = await fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(data.kapal)}`);
+                            const vData = await res.json();
+                            voyageSelect.disabled = false;
+                            let opt = '<option value="">-- Pilih Voyage --</option><option value="DOCK">DOCK</option>';
+                            if (vData && vData.success && vData.voyages) {
+                                vData.voyages.forEach(v => opt += `<option value="${v}">${v}</option>`);
+                            }
+                            voyageSelect.innerHTML = opt;
+                            if (data.voyage) voyageSelect.value = data.voyage;
+                        } catch(e) {
+                            voyageSelect.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
+                            voyageSelect.value = data.voyage;
+                            voyageSelect.disabled = false;
+                        }
+                    }
+                    
+                    if(data.lokasi) {
+                        sec.querySelector('.lokasi-select-air').value = data.lokasi;
+                        updateVendorsForLokasi(sectionIndex, data.lokasi);
+                    } else {
+                        sec.querySelector('.lokasi-select-air').value = '';
+                        updateVendorsForLokasi(sectionIndex, '');
+                    }
+                    
+                    if (data.vendor) {
+                        sec.querySelector('.vendor-select-air').value = data.vendor;
+                        loadTypesForVendor(sectionIndex, data.vendor); 
+                    }
+                    
+                    sec.querySelector('.jasa-air-input').value = data.jasa_air;
+                    if(data.penerima) sec.querySelector('.penerima-input-air').value = data.penerima;
+                    if(data.nomor_rekening) sec.querySelector('.nomor-rekening-input-air').value = data.nomor_rekening;
+                    if(data.nomor_referensi) sec.querySelector('input[name="air['+sectionIndex+'][nomor_referensi]"]').value = data.nomor_referensi;
+                    if(data.tanggal_invoice_vendor) sec.querySelector('input[name="air['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor;
+                    
+                    const typesList = sec.querySelector('.types-list-air');
+                    typesList.innerHTML = ''; // clear default template
+                    data.types.forEach((t) => {
+                        addTypeToAirSectionWithValue(sectionIndex, t.type_id, t.type_keterangan, t.is_lumpsum, t.kuantitas, t.harga);
+                    });
+                    
+                    calculateAirSectionTotal(sectionIndex);
+                })();
              });
         }
 
@@ -301,33 +317,47 @@
         if(existingTkbmSections.length > 0) {
             clearAllTkbmSections();
             existingTkbmSections.forEach(data => {
-                addTkbmSection();
-                const sectionIndex = tkbmSectionCounter;
-                const sec = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);
-                
-                const kapalSel = sec.querySelector('.tkbm-kapal-select');
-            if (kapalSel) {
-                kapalSel.value = data.kapal;
-                kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-                
-                const voySel = sec.querySelector('.tkbm-voyage-select');
-                voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
-                voySel.value = data.voyage;
-                voySel.disabled = false;
-                
-                sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][no_referensi]"]').value = data.no_referensi;
-                sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor;
-                if(data.adjustment) {
-                    sec.querySelector('.tkbm-adjustment-input').value = data.adjustment;
-                }
-                
-                sec.querySelector('.tkbm-barang-container').innerHTML = '';
-                data.barang.forEach(b => {
-                    addBarangToTkbmSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
-                });
+                (async function() {
+                    const sec = addTkbmSection();
+                    const sectionIndex = sec.getAttribute('data-tkbm-section-index');
+                    
+                    const kapalSel = sec.querySelector('.tkbm-kapal-select');
+                    if (kapalSel && data.kapal) {
+                        kapalSel.value = data.kapal;
+                    }
+                    
+                    const voySel = sec.querySelector('.tkbm-voyage-select');
+                    if (data.kapal) {
+                        try {
+                            const res = await fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(data.kapal)}`);
+                            const vData = await res.json();
+                            voySel.disabled = false;
+                            let opt = '<option value="">-- Pilih Voyage --</option>';
+                            if (vData && vData.success && vData.voyages) {
+                                vData.voyages.forEach(v => opt += `<option value="${v}">${v}</option>`);
+                            }
+                            voySel.innerHTML = opt;
+                            if (data.voyage) voySel.value = data.voyage;
+                        } catch(e) {
+                            voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
+                            voySel.value = data.voyage;
+                            voySel.disabled = false;
+                        }
+                    }
+                    
+                    sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][no_referensi]"]').value = data.no_referensi;
+                    sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor;
+                    if(data.adjustment) {
+                        sec.querySelector('.tkbm-adjustment-input').value = data.adjustment;
+                    }
+                    
+                    sec.querySelector('.tkbm-barang-container').innerHTML = '';
+                    data.barang.forEach(b => {
+                        addBarangToTkbmSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
+                    });
+                    calculateTotalFromAllTkbmSections();
+                })();
             });
-            calculateTotalFromAllTkbmSections();
         }
 
         // 5. OPERASIONAL SECTIONS
@@ -339,68 +369,95 @@
         if (existingStuffingSections.length > 0) {
             clearAllStuffingSections();
             existingStuffingSections.forEach(myData => {
-                addStuffingSection();
-                const sectionIndex = stuffingSectionCounter;
-                const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);
-                
-                if (section) {
-                    const kapalSel = section.querySelector('.stuffing-kapal-select');
-                if (kapalSel) {
-                    kapalSel.value = myData.kapal;
-                    kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
-                }
+                (async function() {
+                    const section = addStuffingSection();
+                    const sectionIndex = section.getAttribute('data-stuffing-section-index');
                     
-                    // Trigger voyage load or set manually
-                    const voySel = section.querySelector('.stuffing-voyage-select');
-                    voySel.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
-                    voySel.value = myData.voyage;
-                    voySel.disabled = false;
-                    
-                    // Load Tanda Terimas
-                    const ttContainer = section.querySelector('.stuffing-tt-container');
-                    ttContainer.innerHTML = '';
-                    
-                    if (myData.tanda_terima_ids && myData.tanda_terima_ids.length > 0) {
-                        myData.tanda_terima_ids.forEach(ttId => {
-                            addTandaTerimaToSectionWithId(sectionIndex, ttId);
-                        });
-                    } else {
-                        addTandaTerimaToSection(sectionIndex);
+                    if (section) {
+                        const kapalSel = section.querySelector('.stuffing-kapal-select');
+                        if (kapalSel && myData.kapal) {
+                            kapalSel.value = myData.kapal;
+                        }
+                        
+                        const voySel = section.querySelector('.stuffing-voyage-select');
+                        if (myData.kapal) {
+                            try {
+                                const res = await fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(myData.kapal)}`);
+                                const vData = await res.json();
+                                voySel.disabled = false;
+                                let opt = '<option value="">-- Pilih Voyage --</option>';
+                                if (vData && vData.success && vData.voyages) {
+                                    vData.voyages.forEach(v => opt += `<option value="${v}">${v}</option>`);
+                                }
+                                voySel.innerHTML = opt;
+                                if (myData.voyage) voySel.value = myData.voyage;
+                            } catch(e) {
+                                voySel.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
+                                voySel.value = myData.voyage;
+                                voySel.disabled = false;
+                            }
+                        }
+                        
+                        // Load Tanda Terimas
+                        const ttContainer = section.querySelector('.stuffing-tt-container');
+                        if (ttContainer) ttContainer.innerHTML = '';
+                        
+                        if (myData.tanda_terima_ids && myData.tanda_terima_ids.length > 0) {
+                            myData.tanda_terima_ids.forEach(ttId => {
+                                addTandaTerimaToSectionWithId(sectionIndex, ttId);
+                            });
+                        } else {
+                            addTandaTerimaToSection(sectionIndex);
+                        }
                     }
-                }
+                })();
             });
         }
         // 7. TRUCKING SECTIONS
         if (existingTruckingSections.length > 0) {
             clearAllTruckingSections();
             existingTruckingSections.forEach(myData => {
-                addTruckingSection();
-                const sectionIndex = truckingSectionCounter;
-                const section = document.querySelector(`[data-trucking-section-index="${sectionIndex}"]`);
-                
-                if (section) {
-                    const kapalSel = section.querySelector('.trucking-kapal-select');
-                if (kapalSel) {
-                   kapalSel.value = myData.kapal;
-                   kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
-                }
+                (async function() {
+                    const section = addTruckingSection();
+                    const sectionIndex = section.getAttribute('data-trucking-section-index');
                     
-                    const voyageSelect = section.querySelector('.trucking-voyage-select');
-                    voyageSelect.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
-                    voyageSelect.value = myData.voyage;
-                    voyageSelect.disabled = false;
-                    
-                    section.querySelector('.trucking-vendor-select').value = myData.nama_vendor;
-                    
-                    if (myData.no_bl_ids && myData.no_bl_ids.length > 0) {
-                        myData.no_bl_ids.forEach(blId => {
-                            addBlChipToTruckingSection(sectionIndex, blId);
-                        });
+                    if (section) {
+                        const kapalSel = section.querySelector('.trucking-kapal-select');
+                        if (kapalSel && myData.kapal) {
+                            kapalSel.value = myData.kapal;
+                        }
+                        
+                        const voyageSelect = section.querySelector('.trucking-voyage-select');
+                        if (myData.kapal) {
+                            try {
+                                const res = await fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(myData.kapal)}`);
+                                const vData = await res.json();
+                                voyageSelect.disabled = false;
+                                let opt = '<option value="">-- Pilih Voyage --</option>';
+                                if (vData && vData.success && vData.voyages) {
+                                    vData.voyages.forEach(v => opt += `<option value="${v}">${v}</option>`);
+                                }
+                                voyageSelect.innerHTML = opt;
+                                if (myData.voyage) voyageSelect.value = myData.voyage;
+                            } catch(e) {
+                                voyageSelect.innerHTML = `<option value="${myData.voyage}">${myData.voyage}</option>`;
+                                voyageSelect.value = myData.voyage;
+                                voyageSelect.disabled = false;
+                            }
+                        }
+                        
+                        section.querySelector('.trucking-vendor-select').value = myData.nama_vendor;
+                        
+                        if (myData.no_bl_ids && myData.no_bl_ids.length > 0) {
+                            myData.no_bl_ids.forEach(blId => {
+                                addBlChipToTruckingSection(sectionIndex, blId);
+                            });
+                        }
+                        
+                        section.querySelector('.trucking-subtotal-input').value = new Intl.NumberFormat('id-ID').format(myData.subtotal);
+                        calculateTruckingTotals(sectionIndex);
                     }
-                    
-                    section.querySelector('.trucking-subtotal-input').value = new Intl.NumberFormat('id-ID').format(myData.subtotal);
-                    calculateTruckingTotals(sectionIndex);
-                }
+                })();
             });
         }
 

@@ -26,7 +26,7 @@
         });
     }
     
-    function addStuffingSection() {
+    window.addStuffingSection = function() {
         if (!stuffingSectionsContainer) return;
         stuffingSectionCounter++;
         const sectionIndex = stuffingSectionCounter;
@@ -67,9 +67,6 @@
                 </div>
             </div>
             
-                </button>
-            </div>
-
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Subtotal Biaya</label>
@@ -128,7 +125,10 @@
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
+
+        return section;
     }
+
     
     window.removeStuffingSection = function(sectionIndex) {
         const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);

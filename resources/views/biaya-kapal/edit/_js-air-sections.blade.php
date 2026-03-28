@@ -88,7 +88,7 @@
         calculateAirSectionTotal(sectionIndex);
     };
 
-    function addAirSection() {
+    window.addAirSection = function() {
         airSectionCounter++;
         const sectionIndex = airSectionCounter;
         
@@ -342,7 +342,10 @@
         
         // Trigger initial calculation for this section
         calculateAirSectionTotal(sectionIndex);
+
+        return section;
     }
+
     
     window.removeAirSection = function(sectionIndex) {
         const section = document.querySelector(`.air-section[data-section-index="${sectionIndex}"]`);

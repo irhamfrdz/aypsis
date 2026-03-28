@@ -29,7 +29,7 @@
         });
     }
     
-    function addTkbmSection() {
+    window.addTkbmSection = function() {
         if (!tkbmSectionsContainer) return;
         tkbmSectionCounter++;
         const sectionIndex = tkbmSectionCounter;
@@ -161,7 +161,10 @@
         
         // Add first barang input
         addBarangToTkbmSection(sectionIndex);
+
+        return section;
     }
+
     
     window.removeTkbmSection = function(sectionIndex) {
         const section = document.querySelector(`[data-tkbm-section-index="${sectionIndex}"]`);

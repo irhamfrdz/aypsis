@@ -15,7 +15,7 @@
         });
     }
 
-    function addTruckingSection() {
+    window.addTruckingSection = function() {
         if (!truckingSectionsContainer) return;
         truckingSectionCounter++;
         const sectionIndex = truckingSectionCounter;
@@ -157,7 +157,10 @@
                 blDropdown.classList.add('hidden');
             }
         });
+
+        return section;
     }
+
 
     window.removeTruckingSection = function(index) {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${index}"]`);

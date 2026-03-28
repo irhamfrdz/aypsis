@@ -49,7 +49,7 @@
         addKapalSection();
     });
     
-    function addKapalSection() {
+    window.addKapalSection = function() {
         kapalSectionCounter++;
         const sectionIndex = kapalSectionCounter;
         
@@ -162,7 +162,10 @@
         
         // Add first barang input
         addBarangToSection(sectionIndex);
+
+        return section;
     }
+
     
     // Auto-fill barang based on container counts from BL table
     function autoFillBarangForSection(sectionIndex, kapalNama, voyage) {
