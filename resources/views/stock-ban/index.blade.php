@@ -529,6 +529,15 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end gap-2">
+                                        @if($ban->status == 'Stok' || $ban->status == 'Rusak')
+                                            <button type="button" 
+                                                class="btn-jual-modal text-amber-600 hover:text-amber-900" 
+                                                data-id="{{ $ban->id }}" 
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Jual Ban">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
+                                        @endif
                                         @if($ban->status == 'Stok')
                                             <button type="button" 
                                                 class="btn-usage-modal text-green-600 hover:text-green-900" 
@@ -538,13 +547,6 @@
                                                 <i class="fas fa-wrench"></i>
                                             </button>
 
-                                            <button type="button" 
-                                                class="btn-jual-modal text-amber-600 hover:text-amber-900" 
-                                                data-id="{{ $ban->id }}" 
-                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
-                                                title="Jual Ban">
-                                                <i class="fas fa-shopping-cart"></i>
-                                            </button>
                                             
                                              @if($ban->kondisi != 'kanisir' && $ban->kondisi != 'afkir')
                                              <form action="{{ route('stock-ban.masak', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin masak ban ini jadi kanisir?')">
@@ -763,6 +765,15 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end gap-2">
+                                        @if($ban->status == 'Stok' || $ban->status == 'Rusak')
+                                            <button type="button" 
+                                                class="btn-jual-modal text-amber-600 hover:text-amber-900" 
+                                                data-id="{{ $ban->id }}" 
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Jual Ban">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
+                                        @endif
                                         @if($ban->status == 'Stok')
                                             <button type="button" 
                                                 class="btn-usage-modal text-green-600 hover:text-green-900" 
@@ -772,13 +783,6 @@
                                                 <i class="fas fa-wrench"></i>
                                             </button>
 
-                                            <button type="button" 
-                                                class="btn-jual-modal text-amber-600 hover:text-amber-900" 
-                                                data-id="{{ $ban->id }}" 
-                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
-                                                title="Jual Ban">
-                                                <i class="fas fa-shopping-cart"></i>
-                                            </button>
                                             
                                              @if($ban->kondisi != 'kanisir' && $ban->kondisi != 'afkir')
                                              <form action="{{ route('stock-ban.masak', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin masak ban ini jadi kanisir?')">

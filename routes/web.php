@@ -4927,6 +4927,14 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/lembur', [\App\Http\Controllers\ReportLemburController::class, 'index'])->name('lembur.index');
     Route::get('/lembur/view', [\App\Http\Controllers\ReportLemburController::class, 'view'])->name('lembur.view');
 
+    // Report Uang Jalan
+    Route::get('/uang-jalan', [App\Http\Controllers\ReportUangJalanController::class, 'index'])->name('uang-jalan.index');
+    Route::get('/uang-jalan/view', [App\Http\Controllers\ReportUangJalanController::class, 'view'])->name('uang-jalan.view');
+
+    // Report Uang Jalan
+    Route::get('/uang-jalan', [App\Http\Controllers\ReportUangJalanController::class, 'index'])->name('uang-jalan.index');
+    Route::get('/uang-jalan/view', [App\Http\Controllers\ReportUangJalanController::class, 'view'])->name('uang-jalan.view');
+
     // Report Ongkos Truk
     Route::get('/ongkos-truk', [App\Http\Controllers\ReportOngkosTrukController::class, 'index'])->name('ongkos-truk.index');
     Route::get('/ongkos-truk/view', [App\Http\Controllers\ReportOngkosTrukController::class, 'view'])->name('ongkos-truk.view');

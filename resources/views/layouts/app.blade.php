@@ -1947,7 +1947,7 @@
 
 {{-- Report Dropdown --}}
 @php
-    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.pranota-ob.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.surat_jalan.*') || Request::routeIs('report.kas-truck.*');
+    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.uang-jalan.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.pranota-ob.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.surat_jalan.*') || Request::routeIs('report.kas-truck.*');
     // Check if user has view permissions for tagihan, pranota, or pembayaran modules
     $hasReportPermission = $user && (
         $isAdmin ||
@@ -2020,6 +2020,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
             </svg>
             Report Lembur/Nginap
+        </a>
+
+        {{-- Report Uang Jalan --}}
+        <a href="{{ route('report.uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.uang-jalan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+            <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Report Uang Jalan
         </a>
 
         {{-- Report Kas Truck --}}
