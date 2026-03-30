@@ -472,7 +472,7 @@ function genPeriode(x, idInduk) {
     const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z) : null;
     const biayaSnapshot = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0));
     
-    let h = `<table style=\"width:100%; background:white; border-radius: 8px; margin-top: 10px;\"><thead><tr style=\"background:#f1f5f9\"><th>Periode</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Aksi</th></tr></thead>`;
+    let h = `<table style="width:100%; background:white; border-radius: 8px; margin-top: 10px;"><thead><tr style="background:#f1f5f9"><th>Periode</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Aksi</th></tr></thead>`;
     let curr = new Date(dAmbil), p = 1;
     
     while (true) {
@@ -487,7 +487,7 @@ function genPeriode(x, idInduk) {
         const idp = `${idInduk}-${p}`;
 
         if(!db.cart.some(c => c.idp === idp)) {
-            h += `<tr><td>Bulan ke-${p}</td><td>${fmtTglLay(sP)} - ${fmtTglLay(eP)}</td><td>${fmtRibuan(nilaiAYPSIS)}</td><td><input type=\"text\" id=\"v-${idp}\" value=\"${fmtRibuan(nilaiAYPSIS)}\" oninput=\"inputRibuan(this)\" style=\"width:100px; padding: 4px 8px;\"></td><td><button class=\"btn btn-green\" onclick=\"saveToCart('${idp}','${x.no}','${fmtTglDB(sP)} - ${fmtTglDB(eP)}',${nilaiAYPSIS})\">+</button></td></tr>`;
+            h += `<tr><td>Bulan ke-${p}</td><td>${fmtTglLay(sP)} - ${fmtTglLay(eP)}</td><td>${fmtRibuan(nilaiAYPSIS)}</td><td><input type="text" id="v-${idp}" value="${fmtRibuan(nilaiAYPSIS)}" oninput="inputRibuan(this)" style="width:100px; padding: 4px 8px;"></td><td><button class="btn btn-green" onclick="saveToCart('${idp}','${x.no}','${fmtTglDB(sP)} - ${fmtTglDB(eP)}',${nilaiAYPSIS})">+</button></td></tr>`;
         }
         
         if (x.e && eP >= dAkhir) break; 
@@ -508,12 +508,12 @@ function renderCart() {
     if(!body) return;
 
     const vSelect = document.getElementById('aud-v-name');
-    if(vSelect) vSelect.innerHTML = db.v.filter(v => v.act !== false).map(v => `<option value=\"${v.val||v}\">${v.val||v}</option>`).join('');
+    if(vSelect) vSelect.innerHTML = db.v.filter(v => v.act !== false).map(v => `<option value="${v.val||v}">${v.val||v}</option>`).join('');
 
     let tBill = 0;
     body.innerHTML = db.cart.map((c, i) => {
         tBill += c.vendorBill;
-        return `<tr><td>${i+1}</td><td>${c.unit}</td><td>${c.masa}</td><td>${fmtRibuan(c.aypsis)}</td><td>${fmtRibuan(c.vendorBill)}</td><td>${fmtRibuan(c.vendorBill - c.aypsis)}</td><td><button class=\"btn btn-red\" style=\"padding: 4px 8px;\" onclick=\"db.cart.splice(${i},1);updateDB()\">Hapus</button></td></tr>`;
+        return `<tr><td>${i+1}</td><td>${c.unit}</td><td>${c.masa}</td><td>${fmtRibuan(c.aypsis)}</td><td>${fmtRibuan(c.vendorBill)}</td><td>${fmtRibuan(c.vendorBill - c.aypsis)}</td><td><button class="btn btn-red" style="padding: 4px 8px;" onclick="db.cart.splice(${i},1);updateDB()">Hapus</button></td></tr>`;
     }).join('');
 
     const dpp = tBill;
@@ -522,10 +522,10 @@ function renderCart() {
     const grand = dpp + ppn - pph;
 
     foot.innerHTML = `
-        <tr><td colspan=\"4\" align=\"right\" style=\"padding: 12px;\">DPP (Total Bill)</td><td colspan=\"3\">${fmtRibuan(dpp)}</td></tr>
-        <tr><td colspan=\"4\" align=\"right\" style=\"padding: 12px;\">PPN 11% (+)</td><td colspan=\"3\">${fmtRibuan(ppn)}</td></tr>
-        <tr><td colspan=\"4\" align=\"right\" style=\"padding: 12px;\">PPh 2% (-)</td><td colspan=\"3\" style=\"color:var(--danger)\">${fmtRibuan(pph)}</td></tr>
-        <tr style=\"background:var(--success); color:white;\"><td colspan=\"4\" align=\"right\" style=\"padding: 15px; font-size: 1rem;\">GRAND TOTAL</td><td colspan=\"3\" style=\"font-size: 1rem;\">Rp ${fmtRibuan(grand)}</td></tr>`;
+        <tr><td colspan="4" align="right" style="padding: 12px;">DPP (Total Bill)</td><td colspan="3">${fmtRibuan(dpp)}</td></tr>
+        <tr><td colspan="4" align="right" style="padding: 12px;">PPN 11% (+)</td><td colspan="3">${fmtRibuan(ppn)}</td></tr>
+        <tr><td colspan="4" align="right" style="padding: 12px;">PPh 2% (-)</td><td colspan="3" style="color:var(--danger)">${fmtRibuan(pph)}</td></tr>
+        <tr style="background:var(--success); color:white;"><td colspan="4" align="right" style="padding: 15px; font-size: 1rem;">GRAND TOTAL</td><td colspan="3" style="font-size: 1rem;">Rp ${fmtRibuan(grand)}</td></tr>`;
 }
 
 // --- FUNGSI FORMATTING & TOOLS ---
@@ -547,13 +547,13 @@ function inputRibuan(el) {
 function updateDB() {
     localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
     renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart();
-    const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value=\"${x.val||x}\">${x.val||x}</option>`).join('');
+    const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value="${x.val||x}">${x.val||x}</option>`).join('');
     ['v','t','z'].forEach(k => { 
         if(document.getElementById('rt-'+k)) document.getElementById('rt-'+k).innerHTML = ops(k); 
         if(document.getElementById('mu-'+k)) document.getElementById('mu-'+k).innerHTML = ops(k);
         if(document.getElementById('edu-'+k)) document.getElementById('edu-'+k).innerHTML = ops(k);
     });
-    if(document.getElementById('list-u')) document.getElementById('list-u').innerHTML = db.u.filter(u => u.act !== false).map(u => `<option value=\"${u.no}\">${u.v} | ${u.t} | ${u.z}</option>`).join('');
+    if(document.getElementById('list-u')) document.getElementById('list-u').innerHTML = db.u.filter(u => u.act !== false).map(u => `<option value="${u.no}">${u.v} | ${u.t} | ${u.z}</option>`).join('');
 }
 
 function switchAuditTab(tab) {
@@ -572,8 +572,8 @@ function renderAudit() {
     body.innerHTML = db.x.filter(x => x.no.includes(s)).map(x => {
         const idTrx = x.no + toExcelSerial(x.s);
         const isExp = expAudit === idTrx;
-        return `<tr><td><b>${idTrx}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td class=\"${x.e?'st-selesai':'st-sewa'}\">${x.e?'SELESAI':'SEWA'}</td><td><button class=\"btn btn-blue\" style=\"min-width: 100px;\" onclick=\"toggleAudit('${idTrx}')\">${isExp?'− Tutup':'+ Pilih'}</button></td></tr>` + 
-        (isExp ? `<tr><td colspan=\"6\" style=\"background:#f1f5f9; padding:20px; border:1px solid var(--border-color);\">${genPeriode(x, idTrx)}</td></tr>` : '');
+        return `<tr><td><b>${idTrx}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td class="${x.e?'st-selesai':'st-sewa'}">${x.e?'SELESAI':'SEWA'}</td><td><button class="btn btn-blue" style="min-width: 100px;" onclick="toggleAudit('${idTrx}')">${isExp?'− Tutup':'+ Pilih'}</button></td></tr>` + 
+        (isExp ? `<tr><td colspan="6" style="background:#f1f5f9; padding:20px; border:1px solid var(--border-color);">${genPeriode(x, idTrx)}</td></tr>` : '');
     }).join('');
 }
 
@@ -582,35 +582,32 @@ function parseD(s) { if(!s) return new Date(); const [d,m,y] = s.split('/').map(
 function toExcelSerial(d) { if(!d||!d.includes('/')) return "0"; const [dd,mm,yy]=d.split('/').map(Number); return Math.floor((new Date(yy,mm-1,dd)-new Date(1899,11,30))/86400000); }
 
 // --- MENU 1-4 ---
-function renderVTZ() { ['v','t','z'].forEach(k => { const body = document.querySelector(`#tbl-${k} tbody`); if(body) body.innerHTML = db[k].map((x,i) => `<tr class=\"${x.act===false?'non-aktif':''}\"><td>${i+1}</td><td>${x.val||x}</td><td><button class=\"btn btn-orange\" style=\"padding: 4px 10px;\" onclick=\"edM('${k}',${i})\">Edit</button> ${x.act!==false?`<button class=\"btn btn-red\" style=\"padding: 4px 10px;\" onclick=\"delM('${k}',${i})\">Off</button>`:''}</td></tr>`).join(''); }); }
-function renderRT() { const body = document.getElementById('body-rt'); if(body) body.innerHTML = db.r.map((x,i) => `<tr class=\"${x.act===false?'non-aktif':''}\"><td>${i+1}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td>${fmtRibuan(x.rb)}</td><td>${fmtRibuan(x.rh)}</td><td><button class=\"btn btn-orange\" style=\"padding: 4px 10px;\" onclick=\"edR(${i})\">Edit</button> ${x.act!==false?`<button class=\"btn btn-red\" style=\"padding: 4px 10px;\" onclick=\"delR(${i})\">Off</button>`:''}</td></tr>`).join(''); }
-function renderU() { const s = document.getElementById('src-u').value.toUpperCase(); const fil = db.u.filter(x => x.no.includes(s)); document.getElementById('body-u').innerHTML = fil.slice((pgU-1)*rPP, pgU*rPP).map((x,i) => { const idx = db.u.indexOf(x); return `<tr class=\"${x.act===false?'non-aktif':''}\"><td>${((pgU-1)*rPP)+i+1}</td><td>${x.no}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td><button class=\"btn btn-orange\" style=\"padding: 4px 10px;\" onclick=\"bukaEditUnit(${idx})\">Edit</button> ${x.act!==false?`<button class=\"btn btn-red\" style=\"padding: 4px 10px;\" onclick=\"delU(${idx})\">Off</button>`:''}</td></tr>`; }).join(''); renderPg('pg-u', fil.length, 'pgU', 'renderU'); }
-function renderX() { const s = document.getElementById('src-x').value.toUpperCase(); const fil = db.x.filter(x => x.no.includes(s)); document.getElementById('body-x').innerHTML = fil.slice((pgX-1)*rPP, pgX*rPP).map((x,i) => { const idx = db.x.indexOf(x); const mu = db.u.find(unit => unit.no === x.no); const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z && rt.act !== false) : null; const biaya = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0)); return `<tr><td>${((pgX-1)*rPP)+i+1}</td><td><b>${x.no + toExcelSerial(x.s)}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td>${x.stT||'B'}</td><td class=\"${x.e?'st-selesai':'st-sewa'}\">${x.e?'SELESAI':'SEWA'}</td><td align=\"right\">${fmtRibuan(biaya)}</td><td><button class=\"btn btn-orange\" style=\"padding: 4px 10px;\" onclick=\"bukaEditTrx(${idx})\">Edit</button> <button class=\"btn btn-red\" style=\"padding: 4px 10px;\" onclick=\"delX(${idx})\">Hapus</button></td></tr>`; }).join(''); renderPg('pg-x', fil.length, 'pgX', 'renderX'); }
+function renderVTZ() { ['v','t','z'].forEach(k => { const body = document.querySelector(`#tbl-${k} tbody`); if(body) body.innerHTML = db[k].map((x,i) => `<tr class="${x.act===false?'non-aktif':''}"><td>${i+1}</td><td>${x.val||x}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="edM('${k}',${i})">Edit</button> ${x.act!==false?`<button class="btn btn-red" style="padding: 4px 10px;" onclick="delM('${k}',${i})">Off</button>`:''}</td></tr>`).join(''); }); }
+function renderRT() { const body = document.getElementById('body-rt'); if(body) body.innerHTML = db.r.map((x,i) => `<tr class="${x.act===false?'non-aktif':''}"><td>${i+1}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td>${fmtRibuan(x.rb)}</td><td>${fmtRibuan(x.rh)}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="edR(${i})">Edit</button> ${x.act!==false?`<button class="btn btn-red" style="padding: 4px 10px;" onclick="delR(${i})">Off</button>`:''}</td></tr>`).join(''); }
+function renderU() { const s = document.getElementById('src-u').value.toUpperCase(); const fil = db.u.filter(x => x.no.includes(s)); document.getElementById('body-u').innerHTML = fil.slice((pgU-1)*rPP, pgU*rPP).map((x,i) => { const idx = db.u.indexOf(x); return `<tr class="${x.act===false?'non-aktif':''}"><td>${((pgU-1)*rPP)+i+1}</td><td>${x.no}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="bukaEditUnit(${idx})">Edit</button> ${x.act!==false?`<button class="btn btn-red" style="padding: 4px 10px;" onclick="delU(${idx})">Off</button>`:''}</td></tr>`; }).join(''); renderPg('pg-u', fil.length, 'pgU', 'renderU'); }
+function renderX() { const s = document.getElementById('src-x').value.toUpperCase(); const fil = db.x.filter(x => x.no.includes(s)); document.getElementById('body-x').innerHTML = fil.slice((pgX-1)*rPP, pgX*rPP).map((x,i) => { const idx = db.x.indexOf(x); const mu = db.u.find(unit => unit.no === x.no); const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z && rt.act !== false) : null; const biaya = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0)); return `<tr><td>${((pgX-1)*rPP)+i+1}</td><td><b>${x.no + toExcelSerial(x.s)}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td>${x.stT||'B'}</td><td class="${x.e?'st-selesai':'st-sewa'}">${x.e?'SELESAI':'SEWA'}</td><td align="right">${fmtRibuan(biaya)}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="bukaEditTrx(${idx})">Edit</button> <button class="btn btn-red" style="padding: 4px 10px;" onclick="delX(${idx})">Hapus</button></td></tr>`; }).join(''); renderPg('pg-x', fil.length, 'pgX', 'renderX'); }
 
-function edM(k, i) { const n = prompt(\"Ubah:\", (db[k][i].val || db[k][i])); if(n) { if(typeof db[k][i] === 'object') db[k][i].val = n.toUpperCase(); else db[k][i] = {val:n.toUpperCase(), act:true}; updateDB(); } }
-function edR(i) { const b = prompt(\"Bln:\", db.r[i].rb), h = prompt(\"Hr:\", db.r[i].rh); if(b) db.r[i].rb = parseInt(b); if(h) db.r[i].rh = parseInt(h); updateDB(); }
+function edM(k, i) { const n = prompt("Ubah:", (db[k][i].val || db[k][i])); if(n) { if(typeof db[k][i] === 'object') db[k][i].val = n.toUpperCase(); else db[k][i] = {val:n.toUpperCase(), act:true}; updateDB(); } }
+function edR(i) { const b = prompt("Bln:", db.r[i].rb), h = prompt("Hr:", db.r[i].rh); if(b) db.r[i].rb = parseInt(b); if(h) db.r[i].rh = parseInt(h); updateDB(); }
 function bukaEditUnit(i) { document.getElementById('entry-unit-zone').style.display='none'; document.getElementById('edit-unit-zone').style.display='block'; document.getElementById('edu-idx').value=i; document.getElementById('edu-no').value=db.u[i].no; document.getElementById('edu-v').value=db.u[i].v; document.getElementById('edu-t').value=db.u[i].t; document.getElementById('edu-z').value=db.u[i].z; window.scrollTo(0,0); }
 function simpanEditUnit() { const i = document.getElementById('edu-idx').value; db.u[i].no = document.getElementById('edu-no').value.toUpperCase(); db.u[i].v = document.getElementById('edu-v').value; db.u[i].t = document.getElementById('edu-t').value; db.u[i].z = document.getElementById('edu-z').value; batalEditUnit(); updateDB(); }
 function batalEditUnit() { document.getElementById('entry-unit-zone').style.display='block'; document.getElementById('edit-unit-zone').style.display='none'; }
 function bukaEditTrx(i) { document.getElementById('entry-trx-zone').style.display='none'; document.getElementById('edit-trx-zone').style.display='block'; document.getElementById('edx-idx').value=i; document.getElementById('edx-no').value=db.x[i].no; document.getElementById('edx-s').value=db.x[i].s; document.getElementById('edx-e').value=db.x[i].e; document.getElementById('edx-st-t').value=db.x[i].stT; window.scrollTo(0,0); }
 function simpanEditTrx() { const i = document.getElementById('edx-idx').value; db.x[i].no = document.getElementById('edx-no').value; db.x[i].s = document.getElementById('edx-s').value; db.x[i].e = document.getElementById('edx-e').value; db.x[i].stT = document.getElementById('edx-st-t').value; batalEditTrx(); updateDB(); }
 function batalEditTrx() { document.getElementById('entry-trx-zone').style.display='block'; document.getElementById('edit-trx-zone').style.display='none'; }
-function showTab(e, id) { document.querySelectorAll('[id^=\"tab-\"]').forEach(x => x.style.display='none'); document.getElementById(id).style.display='block'; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); e.currentTarget.classList.add('active'); if(id==='tab-rekon') updateDB(); }
+function showTab(e, id) { document.querySelectorAll('[id^="tab-"]').forEach(x => x.style.display='none'); document.getElementById(id).style.display='block'; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); e.currentTarget.classList.add('active'); if(id==='tab-rekon') updateDB(); }
 function addM(k, id) { const v = document.getElementById(id).value.toUpperCase(); if(v) { db[k].push({val:v, act:true}); document.getElementById(id).value=''; updateDB(); } }
 function addR() { db.r.push({ v:document.getElementById('rt-v').value, t:document.getElementById('rt-t').value, z:document.getElementById('rt-z').value, rb:parseInt(document.getElementById('rt-bln').value)||0, rh:parseInt(document.getElementById('rt-hr').value)||0, act:true }); updateDB(); }
 function tambahUnitManual() { const no = document.getElementById('mu-no').value.toUpperCase(); if(no) { db.u.push({ no, v:document.getElementById('mu-v').value, t:document.getElementById('mu-t').value, z:document.getElementById('mu-z').value, act:true }); document.getElementById('mu-no').value=''; updateDB(); } }
-function tambahTrx() { const no = document.getElementById('tx-no').value.toUpperCase(); const u = db.u.find(unit => unit.no === no && unit.act !== false); if(u && document.getElementById('tx-s').value) { db.x.push({ no:u.no, s:document.getElementById('tx-s').value, e:document.getElementById('tx-e').value, stT:document.getElementById('tx-st-t').value }); updateDB(); document.getElementById('tx-no').value=''; document.getElementById('tx-s').value=''; document.getElementById('tx-e').value=''; } else { alert(\"Unit Off/Data Kurang!\"); } }
-function renderPg(id, tot, pgVar, func) { const pgs = Math.ceil(tot/rPP); let h = `<button class=\"pg-btn\" onclick=\"window['${pgVar}']=Math.max(1,window['${pgVar}']-1);${func}()\">Prev</button>`; for(let i=1; i<=pgs; i++) { if(i===1||i===pgs||(i>=window[pgVar]-2 && i<=window[pgVar]+2)) h+=`<button class=\"pg-btn ${i===window[pgVar]?'active':''}\" onclick=\"window['${pgVar}']=${i};${func}()\">${i}</button>`; } const el = document.getElementById(id); if(el) el.innerHTML = h + `<button class=\"pg-btn\" onclick=\"window['${pgVar}']=Math.min(${pgs},window['${pgVar}']+1);${func}()\">Next</button>`; }
-function delU(i) { if(confirm(\"Set Off?\")) { db.u[i].act = false; updateDB(); } }
-function delM(k, i) { if(confirm(\"Set Off?\")) { if(typeof db[k][i] === 'object') db[k][i].act = false; else db[k][i] = {val:db[k][i], act:false}; updateDB(); } }
-function delR(i) { if(confirm(\"Set Off?\")) { db.r[i].act = false; updateDB(); } }
-function delX(i) { if(confirm(\"Hapus Trx?\")) { db.x.splice(i, 1); updateDB(); } }
+function tambahTrx() { const no = document.getElementById('tx-no').value.toUpperCase(); const u = db.u.find(unit => unit.no === no && unit.act !== false); if(u && document.getElementById('tx-s').value) { db.x.push({ no:u.no, s:document.getElementById('tx-s').value, e:document.getElementById('tx-e').value, stT:document.getElementById('tx-st-t').value }); updateDB(); document.getElementById('tx-no').value=''; document.getElementById('tx-s').value=''; document.getElementById('tx-e').value=''; } else { alert("Unit Off/Data Kurang!"); } }
+function renderPg(id, tot, pgVar, func) { const pgs = Math.ceil(tot/rPP); let h = `<button class="pg-btn" onclick="window['${pgVar}']=Math.max(1,window['${pgVar}']-1);${func}()">Prev</button>`; for(let i=1; i<=pgs; i++) { if(i===1||i===pgs||(i>=window[pgVar]-2 && i<=window[pgVar]+2)) h+=`<button class="pg-btn ${i===window[pgVar]?'active':''}" onclick="window['${pgVar}']=${i};${func}()">${i}</button>`; } const el = document.getElementById(id); if(el) el.innerHTML = h + `<button class="pg-btn" onclick="window['${pgVar}']=Math.min(${pgs},window['${pgVar}']+1);${func}()">Next</button>`; }
+function delU(i) { if(confirm("Set Off?")) { db.u[i].act = false; updateDB(); } }
+function delM(k, i) { if(confirm("Set Off?")) { if(typeof db[k][i] === 'object') db[k][i].act = false; else db[k][i] = {val:db[k][i], act:false}; updateDB(); } }
+function delR(i) { if(confirm("Set Off?")) { db.r[i].act = false; updateDB(); } }
+function delX(i) { if(confirm("Hapus Trx?")) { db.x.splice(i, 1); updateDB(); } }
 function loadFile(e) { const fr = new FileReader(); fr.onload = (x) => { db = JSON.parse(x.target.result); if(!db.cart) db.cart = []; updateDB(); }; fr.readAsText(e.target.files[0]); }
 function simpanData() {
-    // Also save to database
     syncWithDB();
-    
-    // Original download function
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(db)]));
     a.download = "AYPSIS_DATA.json";
@@ -631,8 +628,6 @@ function syncWithDB() {
         if(d.success) {
             console.log("Synced with DB");
             alert("Data berhasil disinkronkan ke Database!");
-            // Optional: refresh if we want to get the new IDs from DB
-            // location.reload();
         } else {
             alert("Sync Error: " + d.message);
         }
@@ -641,10 +636,7 @@ function syncWithDB() {
 }
 
 window.onload = () => { 
-    // Try to load from localStorage first for local persistency
     const s = localStorage.getItem('AYPSIS_2026_DB'); 
-    
-    // Or from the backend initial data
     let initial = {!! $initialData !!};
     
     if (typeof initial === 'string') {
