@@ -101,7 +101,7 @@
                     </div>
 
                     <!-- Additional Info (Read-only display) -->
-                    <div class="md:col-span-2 bg-blue-50 border border-blue-200 rounded-lg p-4 grid grid-cols-2 md:grid-cols-4 gap-4" id="receipt_info_section">
+                    <div class="md:col-span-2 bg-blue-50 border border-blue-200 rounded-lg p-4 grid grid-cols-2 md:grid-cols-5 gap-4" id="receipt_info_section">
                         <div>
                             <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">No. Kontainer</p>
                             <p class="text-sm font-bold text-gray-800" id="info_no_kontainer">{{ $selectedReceipt ? ($selectedReceipt->no_kontainer ?? $selectedReceipt->nomor_kontainer ?? '-') : '-' }}</p>
@@ -133,7 +133,7 @@
                             </p>
                         </div>
                         <div>
-                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Jumlah Barang</p>
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Jumlah</p>
                             <p class="text-sm font-bold text-gray-800" id="info_jumlah_barang">
                                 @if($selectedReceipt)
                                     @if($selectedType == 'tt') {{ $selectedReceipt->jumlah ?? '-' }}
@@ -145,9 +145,22 @@
                                 @endif
                             </p>
                         </div>
+                        <div>
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Satuan</p>
+                            <p class="text-sm font-bold text-gray-800" id="info_satuan">
+                                @if($selectedReceipt)
+                                    @if($selectedType == 'tt') {{ $selectedReceipt->satuan ?? '-' }}
+                                    @elseif($selectedType == 'tttsj') {{ $selectedReceipt->satuan_barang ?? '-' }}
+                                    @elseif($selectedType == 'lcl') {{ $selectedReceipt->items->pluck('satuan')->filter()->unique()->implode(', ') ?: '-' }}
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </p>
+                        </div>
 
                         <!-- View Button -->
-                        <div class="md:col-span-4 flex justify-end mt-2 pt-2 border-t border-blue-100 {{ $selectedReceipt ? '' : 'hidden' }}" id="view_receipt_wrapper">
+                        <div class="md:col-span-5 flex justify-end mt-2 pt-2 border-t border-blue-100 {{ $selectedReceipt ? '' : 'hidden' }}" id="view_receipt_wrapper">
                              <a id="btn_view_receipt" href="{{ $selectedReceipt ? (
                                 $selectedType == 'tt' ? route('tanda-terima.show', $selectedReceipt->id) : (
                                     $selectedType == 'tttsj' ? route('tanda-terima-tanpa-surat-jalan.show', $selectedReceipt->id) : (
@@ -285,6 +298,7 @@
         const infoNoSuratJalan = document.getElementById('info_no_surat_jalan');
         const infoNamaBarang = document.getElementById('info_nama_barang');
         const infoJumlahBarang = document.getElementById('info_jumlah_barang');
+        const infoSatuan = document.getElementById('info_satuan');
         const viewWrapper = document.getElementById('view_receipt_wrapper');
         const viewBtn = document.getElementById('btn_view_receipt');
 
@@ -293,6 +307,7 @@
             infoNoSuratJalan.textContent = '-';
             infoNamaBarang.textContent = '-';
             infoJumlahBarang.textContent = '-';
+            infoSatuan.textContent = '-';
             viewWrapper.classList.add('hidden');
             return;
         }
@@ -302,6 +317,7 @@
         infoNoSuratJalan.textContent = '...';
         infoNamaBarang.textContent = '...';
         infoJumlahBarang.textContent = '...';
+        infoSatuan.textContent = '...';
 
         fetch(`/asuransi-tanda-terima/get-receipt-details/${type}/${id}`)
             .then(response => response.json())
@@ -311,6 +327,7 @@
                 infoNamaBarang.textContent = data.nama_barang || '-';
                 infoNamaBarang.title = data.nama_barang || '-';
                 infoJumlahBarang.textContent = data.jumlah_barang || '-';
+                infoSatuan.textContent = data.satuan || '-';
                 
                 // Update Button
                 let baseUrl = '';
@@ -331,6 +348,7 @@
                 infoNoSuratJalan.textContent = 'Error';
                 infoNamaBarang.textContent = 'Error';
                 infoJumlahBarang.textContent = 'Error';
+                infoSatuan.textContent = 'Error';
                 viewWrapper.classList.add('hidden');
             });
     }

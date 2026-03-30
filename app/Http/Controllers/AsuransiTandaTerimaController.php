@@ -223,6 +223,7 @@ class AsuransiTandaTerimaController extends Controller
             'no_surat_jalan' => '-',
             'nama_barang' => '-',
             'jumlah_barang' => '-',
+            'satuan' => '-',
         ];
 
         if ($type == 'tt') {
@@ -232,6 +233,7 @@ class AsuransiTandaTerimaController extends Controller
                 $details['no_surat_jalan'] = $tt->no_surat_jalan ?? '-';
                 $details['nama_barang'] = is_array($tt->nama_barang) ? implode(', ', $tt->nama_barang) : ($tt->nama_barang ?? '-');
                 $details['jumlah_barang'] = (string)($tt->jumlah ?? '-');
+                $details['satuan'] = $tt->satuan ?? '-';
             }
         } elseif ($type == 'tttsj') {
             $tttsj = TandaTerimaTanpaSuratJalan::find($id);
@@ -240,6 +242,7 @@ class AsuransiTandaTerimaController extends Controller
                 $details['no_surat_jalan'] = $tttsj->nomor_surat_jalan_customer ?? '-';
                 $details['nama_barang'] = $tttsj->nama_barang ?? '-';
                 $details['jumlah_barang'] = (string)($tttsj->jumlah_barang ?? '-');
+                $details['satuan'] = $tttsj->satuan_barang ?? '-';
             }
         } elseif ($type == 'lcl') {
             $lcl = TandaTerimaLcl::with(['items', 'kontainerPivot'])->find($id);
@@ -248,6 +251,7 @@ class AsuransiTandaTerimaController extends Controller
                 $details['no_surat_jalan'] = $lcl->no_surat_jalan_customer ?? '-';
                 $details['nama_barang'] = $lcl->items->pluck('nama_barang')->filter()->unique()->implode(', ') ?: '-';
                 $details['jumlah_barang'] = (string)($lcl->items->sum('jumlah') ?: '-');
+                $details['satuan'] = $lcl->items->pluck('satuan')->filter()->unique()->implode(', ') ?: '-';
             }
         }
 
