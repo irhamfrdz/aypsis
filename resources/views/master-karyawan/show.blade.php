@@ -201,7 +201,7 @@
             const textarea = document.getElementById('catatanTextarea');
             
             // Reset textarea value to original
-            textarea.value = '{{ $karyawan->catatan_pekerjaan }}';
+            textarea.value = {!! json_encode($karyawan->catatan_pekerjaan) !!};
             
             displayDiv.style.display = 'block';
             editDiv.style.display = 'none';
