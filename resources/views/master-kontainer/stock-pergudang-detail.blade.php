@@ -21,50 +21,38 @@
             </a>
         </div>
 
+        <!-- Warehouse Summary Card -->
+        <div class="flex justify-center mb-6">
+            <div style="background: linear-gradient(135deg, #16A34A 0%, #14532D 100%)" class="px-8 py-5 rounded-2xl shadow-md text-white min-w-[240px] text-center">
+                <h3 class="text-xs font-bold uppercase tracking-wider opacity-80">Total Kontainer di Gudang</h3>
+                <p class="text-3xl font-black mt-1">{{ $allContainers->count() }}</p>
+                <div class="mt-2 h-1 w-12 bg-white/30 rounded mx-auto"></div>
+            </div>
+        </div>
+
         <!-- Table Card List -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-16">No.</th>
                             <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No. Kontainer</th>
                             <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ukuran</th>
                             <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipe</th>
-                            <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Sumber</th>
-                            <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($allContainers as $item)
                         <tr class="hover:bg-gray-50/50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-500">{{ $loop->iteration }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">{{ $item->nomor_seri_gabungan }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600">{{ $item->ukuran ?? '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600">{{ $item->tipe_kontainer ?? '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                @if($item->tipe_sumber == 'Sewa')
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Sewa</span>
-                                @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Stock (Milik)</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                @php
-                                    $statusClass = [
-                                        'available' => 'bg-green-100 text-green-800',
-                                        'active' => 'bg-green-100 text-green-800',
-                                        'rented' => 'bg-blue-100 text-blue-800',
-                                        'maintenance' => 'bg-yellow-100 text-yellow-800',
-                                        'damaged' => 'bg-red-100 text-red-800',
-                                    ][$item->status] ?? 'bg-gray-100 text-gray-800';
-                                @endphp
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusClass }}">
-                                    {{ ucfirst($item->status) }}
-                                </span>
-                            </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-gray-500 text-sm">
+                            <td colspan="4" class="px-6 py-12 text-center text-gray-500 text-sm">
                                 <svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0l-4 4m-4-4l-4 4m6-12v12"></path>
                                 </svg>
