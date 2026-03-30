@@ -248,15 +248,17 @@
                                             ?? optional($sj->supirKaryawan)->nama_lengkap
                                             ?? $sj->supir
                                             ?? '-';
-                                        $uangJalanNominal = optional($sj->uangJalan)->jumlah_total
-                                            ?? optional($sj->uangJalan)->subtotal
-                                            ?? optional($sj->uangJalan)->jumlah_uang_jalan
-                                            ?? 0;
                                     } else {
                                         // Bongkaran
                                         $namaSupir = $sj->supir ?? '-';
-                                        $uangJalanNominal = $sj->uang_jalan_nominal ?? 0;
                                     }
+
+                                    // Get nominal from unified Uang Jalan table if available, else fallback to SJ table field
+                                    $uangJalanNominal = optional($sj->uangJalan)->jumlah_total
+                                        ?? optional($sj->uangJalan)->subtotal
+                                        ?? optional($sj->uangJalan)->jumlah_uang_jalan
+                                        ?? ($sj->tipe_sj === 'reguler' ? $sj->uang_jalan : $sj->uang_jalan_nominal)
+                                        ?? 0;
                                 @endphp
                                 <tr class="sj-row hover:bg-gray-50 cursor-pointer transition-colors" 
                                     data-id="{{ $sj->id }}" 

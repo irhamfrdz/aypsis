@@ -41,7 +41,7 @@ class PembatalanSuratJalanController extends Controller
             ->where('status', '!=', 'cancelled');
         
         // 2. Bongkaran SJ Query
-        $queryBongkaran = \App\Models\SuratJalanBongkaran::query()
+        $queryBongkaran = \App\Models\SuratJalanBongkaran::with(['uangJalan'])
             ->where('status', '!=', 'cancelled');
 
         if ($request->filled('search_sj')) {
@@ -172,17 +172,32 @@ class PembatalanSuratJalanController extends Controller
             if ($tipeSj === 'reguler') {
                 $pblData['surat_jalan_id'] = $suratJalan->id;
 
-                // Hapus data prospek yang terkait (by surat_jalan_id or no_surat_jalan)
+                // Hapus data prospek yang terkait
                 \App\Models\Prospek::where('surat_jalan_id', $suratJalan->id)
                     ->orWhere('no_surat_jalan', $noSuratJalan)
                     ->delete();
 
-                // Hapus data tanda terima yang terkait (by surat_jalan_id or no_surat_jalan)
+                // Hapus data tanda terima yang terkait
                 \App\Models\TandaTerima::where('surat_jalan_id', $suratJalan->id)
                     ->orWhere('no_surat_jalan', $noSuratJalan)
                     ->delete();
+
+                // Hapus data uang jalan yang terkait (unified table)
+                $uangJalan = \App\Models\UangJalan::where('surat_jalan_id', $suratJalan->id)->first();
+                if ($uangJalan) {
+                    // Hapus juga adjustment terkait jika ada
+                    $uangJalan->adjustments()->delete();
+                    $uangJalan->delete();
+                }
             } else {
                 $pblData['surat_jalan_bongkaran_id'] = $suratJalan->id;
+                
+                // Hapus data uang jalan yang terkait (bongkaran)
+                $uangJalan = \App\Models\UangJalan::where('surat_jalan_bongkaran_id', $suratJalan->id)->first();
+                if ($uangJalan) {
+                    $uangJalan->adjustments()->delete();
+                    $uangJalan->delete();
+                }
             }
 
             PembatalanSuratJalan::create($pblData);

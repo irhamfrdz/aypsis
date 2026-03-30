@@ -428,8 +428,53 @@ class InvoiceAktivitasLainController extends Controller
             }
         }
         
+        // Addition logic for "Pembayaran Adjustment Uang Jalan"
+        if ($invoice->jenis_aktivitas === 'Pembayaran Adjustment Uang Jalan' && $request->jenis_penyesuaian === 'penambahan' && $request->surat_jalan_id) {
+            $source = $request->input('surat_jalan_source', 'regular');
+            $sjModel = ($source === 'bongkar') ? \App\Models\SuratJalanBongkaran::class : \App\Models\SuratJalan::class;
+            $suratJalan = $sjModel::find($request->surat_jalan_id);
+
+            if ($suratJalan) {
+                // 1. Update Master Surat Jalan
+                $addedAmount = (float)$invoice->total;
+                $suratJalan->increment('uang_jalan', $addedAmount);
+
+                // 2. Update UangJalan table (unified)
+                $ujQuery = \App\Models\UangJalan::query();
+                if ($source === 'bongkar') {
+                    $ujQuery->where('surat_jalan_bongkaran_id', $suratJalan->id);
+                } else {
+                    $ujQuery->where('surat_jalan_id', $suratJalan->id);
+                }
+                $uangJalan = $ujQuery->latest()->first();
+
+                if ($uangJalan) {
+                    $tipeDetails = $request->input('tipe_penyesuaian_detail', []);
+                    if (is_array($tipeDetails)) {
+                        foreach ($tipeDetails as $detail) {
+                            $tipe = strtolower($detail['tipe'] ?? '');
+                            $nominalStr = isset($detail['nominal']) ? (string)$detail['nominal'] : '0';
+                            $nominal = (float)str_replace(['.', ','], '', $nominalStr);
+                            
+                            if ($tipe === 'mel') {
+                                $uangJalan->increment('jumlah_mel', $nominal);
+                            } elseif ($tipe === 'parkir') {
+                                $uangJalan->increment('jumlah_parkir', $nominal);
+                            } elseif ($tipe === 'pelancar') {
+                                $uangJalan->increment('jumlah_pelancar', $nominal);
+                            } elseif ($tipe === 'kawalan') {
+                                $uangJalan->increment('jumlah_kawalan', $nominal);
+                            } else {
+                                $uangJalan->increment('jumlah_penyesuaian', $nominal);
+                            }
+                            $uangJalan->increment('jumlah_total', $nominal);
+                        }
+                    }
+                }
+            }
+        }
+
         // Remove Prospek's Surat Jalan if pengembalian penuh
-        // Remove Prospek's Surat Jalan and Delete Surat Jalan if pengembalian penuh
         if ($request->jenis_penyesuaian == 'pengembalian penuh' && $request->surat_jalan_id) {
             $source = $request->input('surat_jalan_source', 'regular');
             $suratJalan = null;

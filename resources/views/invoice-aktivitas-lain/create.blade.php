@@ -473,9 +473,31 @@
                                 var selected = $(this).find(':selected');
                                 var source = selected.data('source');
                                 $('#surat_jalan_source').val(source);
+                                if (typeof updateUangJalanDisplay === 'function') {
+                                    updateUangJalanDisplay();
+                                }
                             });
                         });
                     </script>
+                    
+                    <!-- Uang Jalan Info Summary -->
+                    <div id="uang_jalan_info" class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200 hidden">
+                        <h4 class="text-xs font-bold text-blue-800 uppercase tracking-wider mb-2">Ringkasan Uang Jalan</h4>
+                        <div class="space-y-1 text-sm">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Uang Jalan Saat Ini:</span>
+                                <span id="current_uang_jalan_display" class="font-medium">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span id="adjustment_label">Penyesuaian:</span>
+                                <span id="adjustment_display" class="font-medium">Rp 0</span>
+                            </div>
+                            <div class="flex justify-between pt-1 border-t border-blue-200 font-bold text-blue-700">
+                                <span>Estimasi Uang Jalan Baru:</span>
+                                <span id="new_uang_jalan_display">Rp 0</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Jenis Penyesuaian (conditional for Adjustment) -->
@@ -1941,6 +1963,7 @@ console.log('Akun COAs data:', akunCoasData);
             const nominalInput = inputGroup.querySelector('input');
             nominalInput.addEventListener('input', function(e) {
                 calculateTotalFromTipePenyesuaian();
+                updateUangJalanDisplay();
             });
         }
 
@@ -1965,6 +1988,56 @@ console.log('Akun COAs data:', akunCoasData);
             const totalInput = document.getElementById('total');
             if (total > 0) {
                 totalInput.value = total.toLocaleString('id-ID');
+            }
+            updateUangJalanDisplay();
+        }
+
+        window.updateUangJalanDisplay = function() {
+            const selectedSJ = $('#surat_jalan_select').find('option:selected');
+            const currentUJ = parseFloat(selectedSJ.data('uang-jalan')) || 0;
+            const jenisPenyesuaian = $('#jenis_penyesuaian_select').val();
+            
+            const infoWrapper = document.getElementById('uang_jalan_info');
+            const currentDisplay = document.getElementById('current_uang_jalan_display');
+            const newDisplay = document.getElementById('new_uang_jalan_display');
+            const adjustmentLabel = document.getElementById('adjustment_label');
+            const adjustmentDisplay = document.getElementById('adjustment_display');
+
+            if (!selectedSJ.val() || !jenisPenyesuaian) {
+                if (infoWrapper) infoWrapper.classList.add('hidden');
+                return;
+            }
+
+            if (infoWrapper) infoWrapper.classList.remove('hidden');
+            if (currentDisplay) currentDisplay.textContent = 'Rp ' + currentUJ.toLocaleString('id-ID');
+
+            let adjustment = 0;
+            if (jenisPenyesuaian === 'penambahan') {
+                const container = document.getElementById('tipe_penyesuaian_container');
+                const nominalInputs = container ? container.querySelectorAll('input[name*="[nominal]"]') : [];
+                nominalInputs.forEach(input => {
+                    adjustment += parseFloat(input.value) || 0;
+                });
+                adjustmentLabel.textContent = 'Penambahan:';
+                adjustmentDisplay.textContent = '+ Rp ' + adjustment.toLocaleString('id-ID');
+                adjustmentDisplay.className = 'font-medium text-green-600';
+                newDisplay.textContent = 'Rp ' + (currentUJ + adjustment).toLocaleString('id-ID');
+            } else if (jenisPenyesuaian === 'pengembalian sebagian') {
+                const totalInput = document.getElementById('total');
+                const val = totalInput ? totalInput.value.replace(/\./g, '').replace(/,/g, '') : '0';
+                adjustment = parseFloat(val) || 0;
+                adjustmentLabel.textContent = 'Pengembalian:';
+                adjustmentDisplay.textContent = '- Rp ' + adjustment.toLocaleString('id-ID');
+                adjustmentDisplay.className = 'font-medium text-red-600';
+                newDisplay.textContent = 'Rp ' + Math.max(0, currentUJ - adjustment).toLocaleString('id-ID');
+            } else if (jenisPenyesuaian === 'pengembalian penuh') {
+                adjustment = currentUJ;
+                adjustmentLabel.textContent = 'Pengembalian Penuh:';
+                adjustmentDisplay.textContent = '- Rp ' + adjustment.toLocaleString('id-ID');
+                adjustmentDisplay.className = 'font-medium text-red-600';
+                newDisplay.textContent = 'Rp 0';
+            } else {
+                if (infoWrapper) infoWrapper.classList.add('hidden');
             }
         }
 
@@ -2354,11 +2427,23 @@ console.log('Akun COAs data:', akunCoasData);
         if (jenisPenyesuaianSelect) {
             $('#jenis_penyesuaian_select').on('change', function() {
                 toggleTipePenyesuaian();
+                if (typeof updateUangJalanDisplay === 'function') {
+                    updateUangJalanDisplay();
+                }
                 if ($(this).val() === 'pengembalian penuh') {
                     $('#pembatalan_modal').removeClass('hidden');
                 }
             });
         }
+
+        // Also watch for total input changes for 'pengembalian sebagian'
+        $('#total').on('input', function() {
+            if ($('#jenis_penyesuaian_select').val() === 'pengembalian sebagian') {
+                if (typeof updateUangJalanDisplay === 'function') {
+                    updateUangJalanDisplay();
+                }
+            }
+        });
 
         // Close Modal Listener
         $('#close_pembatalan_modal').on('click', function() {
