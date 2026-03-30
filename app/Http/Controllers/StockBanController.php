@@ -670,6 +670,46 @@ class StockBanController extends Controller
     }
 
     /**
+     * Sell ban.
+     */
+    public function jual(Request $request, $id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        if ($stockBan->status !== 'Stok') {
+            return redirect()->route('stock-ban.index')->with('error', 'Hanya ban dengan status "Stok" yang bisa dijual.');
+        }
+
+        $request->validate([
+            'harga_jual' => 'required|numeric|min:0',
+            'pembeli' => 'required|string|max:255',
+            'tanggal_jual' => 'required|date',
+            'keterangan_jual' => 'nullable|string',
+        ]);
+
+        $jualNote = "[Dijual] Pembeli: " . $request->pembeli . ", Harga: " . number_format($request->harga_jual, 0, ',', '.') . ", Tgl: " . date('d-m-Y', strtotime($request->tanggal_jual));
+        if ($request->filled('keterangan_jual')) {
+            $jualNote .= ", Ket: " . $request->keterangan_jual;
+        }
+
+        $stockBan->update([
+            'status' => 'Dijual',
+            'harga_jual' => $request->harga_jual,
+            'pembeli' => $request->pembeli,
+            'tanggal_jual' => $request->tanggal_jual,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $jualNote) : $jualNote,
+            'mobil_id' => null,
+            'alat_berat_id' => null,
+            'penerima_id' => null,
+            'kapal_id' => null,
+            'tanggal_keluar' => null,
+            'tanggal_kirim' => null,
+        ]);
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dijual.');
+    }
+
+    /**
      * Restore returned ban to stock.
      */
     public function restoreToStock(Request $request, $id)

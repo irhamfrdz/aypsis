@@ -377,6 +377,19 @@
                         <div class="text-2xl font-bold text-teal-900">{{ $banAsliStok }}</div>
                         <p class="text-xs text-teal-600 mt-1">Siap Pakai</p>
                     </div>
+
+                    <!-- Ban Dijual -->
+                    @php
+                        $banDijual = $stockBans->where('status', 'Dijual')->count();
+                    @endphp
+                    <div id="card-dijual" onclick="setCardFilter('dijual')" class="cursor-pointer bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-amber-600 uppercase">Ban Terjual</span>
+                            <i class="fas fa-shopping-cart text-amber-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-amber-900">{{ $banDijual }}</div>
+                        <p class="text-xs text-amber-600 mt-1">Laku</p>
+                    </div>
                 </div>
             </div>
 
@@ -452,7 +465,8 @@
                                            ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
                                            ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
                                            ($ban->status == 'Dikirim Ke Batam' ? 'bg-cyan-100 text-cyan-800' : 
-                                           ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')))) }}">
+                                           ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
+                                           ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
                                         {{ $ban->status }}
                                     </span>
                                 </td>
@@ -522,6 +536,14 @@
                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
                                                 title="Gunakan / Pasang">
                                                 <i class="fas fa-wrench"></i>
+                                            </button>
+
+                                            <button type="button" 
+                                                class="btn-jual-modal text-amber-600 hover:text-amber-900" 
+                                                data-id="{{ $ban->id }}" 
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Jual Ban">
+                                                <i class="fas fa-shopping-cart"></i>
                                             </button>
                                             
                                              @if($ban->kondisi != 'kanisir' && $ban->kondisi != 'afkir')
@@ -677,7 +699,8 @@
                                            ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
                                            ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
                                            ($ban->status == 'Dikirim Ke Batam' ? 'bg-cyan-100 text-cyan-800' : 
-                                           ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')))) }}">
+                                           ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
+                                           ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
                                         {{ $ban->status }}
                                     </span>
                                 </td>
@@ -747,6 +770,14 @@
                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
                                                 title="Gunakan / Pasang">
                                                 <i class="fas fa-wrench"></i>
+                                            </button>
+
+                                            <button type="button" 
+                                                class="btn-jual-modal text-amber-600 hover:text-amber-900" 
+                                                data-id="{{ $ban->id }}" 
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                title="Jual Ban">
+                                                <i class="fas fa-shopping-cart"></i>
                                             </button>
                                             
                                              @if($ban->kondisi != 'kanisir' && $ban->kondisi != 'afkir')
@@ -1968,7 +1999,7 @@
             card.classList.remove('active-filter', 'ring-2');
             
             // Remove specific color rings
-            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400', 'ring-cyan-400', 'ring-rose-400');
+            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400', 'ring-cyan-400', 'ring-rose-400', 'ring-amber-400');
         });
 
         const activeCard = document.getElementById('card-' + filterType);
@@ -1988,7 +2019,8 @@
                 'ruko-10': 'ring-orange-400',
                 'asli-stok': 'ring-teal-400',
                 'dikirim': 'ring-cyan-400',
-                'dikembalikan': 'ring-rose-400'
+                'dikembalikan': 'ring-rose-400',
+                'dijual': 'ring-amber-400'
             };
             activeCard.classList.add(colorMap[filterType]);
         }
@@ -2128,6 +2160,18 @@
                 return;
             }
 
+            // Check if clicked element or its parent is btn-jual-modal
+            const jualBtn = e.target.closest('.btn-jual-modal');
+            if (jualBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = jualBtn.getAttribute('data-id');
+                const seri = jualBtn.getAttribute('data-seri');
+                console.log('Opening jual modal:', id, seri); // Debug log
+                openJualBanModal(id, seri);
+                return;
+            }
+
             // Check if clicked element or its parent is btn-return-modal
             const returnBtn = e.target.closest('.btn-return-modal');
             if (returnBtn) {
@@ -2167,6 +2211,15 @@
                 if (e.target.textContent.trim() === 'Batal' && e.target.tagName === 'BUTTON') {
                     console.log('Clicked Batal button');
                     closeUsageModal();
+                    return;
+                }
+            }
+
+            // Check if clicking on modal backdrop or close button for Jual Ban
+            const jualBanModal = document.getElementById('jualBanModal');
+            if (jualBanModal && !jualBanModal.classList.contains('hidden')) {
+                if (e.target.classList.contains('bg-gray-500') && e.target.classList.contains('bg-opacity-75')) {
+                    closeJualBanModal();
                     return;
                 }
             }
@@ -2250,6 +2303,8 @@
                         filterMatch = status === 'dikirim ke batam';
                     } else if (currentCardFilter === 'dikembalikan') {
                         filterMatch = status === 'dikembalikan';
+                    } else if (currentCardFilter === 'dijual') {
+                        filterMatch = status === 'dijual';
                     }
                 }
 
@@ -2527,6 +2582,64 @@
         form.submit();
     }
 
+    // Jual Ban Functions
+    function openJualBanModal(id, seri) {
+        const modal = document.getElementById('jualBanModal');
+        const modalBanId = document.getElementById('jual_ban_id');
+        const modalNomorSeri = document.getElementById('jual_nomor_seri');
+        const modalPembeli = document.getElementById('jual_pembeli');
+        const modalHarga = document.getElementById('jual_harga');
+
+        if (!modal) return;
+
+        modalBanId.value = id;
+        modalNomorSeri.textContent = seri || '-';
+        modalPembeli.value = '';
+        modalHarga.value = '';
+        document.getElementById('jual_tanggal').value = new Date().toISOString().split('T')[0];
+        document.getElementById('jual_keterangan').value = '';
+
+        modal.classList.remove('hidden');
+        
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
+        modal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
+    }
+
+    function closeJualBanModal() {
+        const modal = document.getElementById('jualBanModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style');
+        }
+    }
+
+    function submitJualBanForm() {
+        const banId = document.getElementById('jual_ban_id').value;
+        const pembeli = document.getElementById('jual_pembeli').value;
+        const harga = document.getElementById('jual_harga').value;
+        
+        if (!pembeli) {
+            alert('Mohon isi nama pembeli!');
+            return;
+        }
+        
+        if (!harga) {
+            alert('Mohon isi harga jual!');
+            return;
+        }
+
+        const form = document.getElementById('jualBanForm');
+        form.action = `{{ url('stock-ban') }}/${banId}/jual`;
+        form.submit();
+    }
+
+    window.openJualBanModal = openJualBanModal;
+    window.closeJualBanModal = closeJualBanModal;
+    window.submitJualBanForm = submitJualBanForm;
+
     window.openRestoreStockModal = openRestoreStockModal;
     window.closeRestoreStockModal = closeRestoreStockModal;
     window.submitRestoreStockForm = submitRestoreStockForm;
@@ -2721,6 +2834,69 @@
                         Jadikan Stok
                     </button>
                     <button type="button" onclick="closeRestoreStockModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Jual Ban -->
+<div id="jualBanModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeJualBanModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="jualBanForm" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="ban_id" id="jual_ban_id">
+                
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-shopping-cart text-amber-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Jual Ban: <span id="jual_nomor_seri" class="font-bold text-amber-600"></span>
+                            </h3>
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label class="form-label-premium">Nama Pembeli <span class="text-red-500">*</span></label>
+                                    <input type="text" name="pembeli" id="jual_pembeli" class="form-input-premium" placeholder="Nama pembeli..." required>
+                                </div>
+
+                                <div>
+                                    <label class="form-label-premium">Harga Jual <span class="text-red-500">*</span></label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-sm">Rp</span>
+                                        </div>
+                                        <input type="number" name="harga_jual" id="jual_harga" class="form-input-premium pl-10" placeholder="0" min="0" required>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="jual_tanggal" class="form-label-premium">Tanggal Jual <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_jual" id="jual_tanggal" class="form-input-premium" value="{{ date('Y-m-d') }}" required>
+                                </div>
+
+                                <div>
+                                    <label for="jual_keterangan" class="form-label-premium">Keterangan (Opsional)</label>
+                                    <textarea name="keterangan_jual" id="jual_keterangan" class="form-input-premium" rows="2" placeholder="Catatan tambahan..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                    <button type="button" onclick="submitJualBanForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-amber-600 text-base font-medium text-white hover:bg-amber-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Jual Sekarang
+                    </button>
+                    <button type="button" onclick="closeJualBanModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Batal
                     </button>
                 </div>
