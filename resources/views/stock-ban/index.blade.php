@@ -1190,7 +1190,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <span class="text-gray-500 sm:text-sm">Rp</span>
                                     </div>
-                                    <input type="number" id="kanisir_harga" class="form-input-premium pl-10" placeholder="0" required>
+                                    <input type="number" id="kanisir_harga" class="form-input-premium" style="padding-left: 3rem !important;" placeholder="0" required>
                                 </div>
                                 <p class="mt-2 text-xs text-gray-400 italic">Harga yang dimasukkan akan diupdate ke data ban.</p>
                             </div>
@@ -2830,7 +2830,7 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                    <button type="button" onclick="submitRestoreStockForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="submitRestoreStockForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm" style="background-color: #16a34a !important; color: white !important;">
                         Jadikan Stok
                     </button>
                     <button type="button" onclick="closeRestoreStockModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
@@ -2875,7 +2875,7 @@
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <span class="text-gray-500 sm:text-sm">Rp</span>
                                         </div>
-                                        <input type="number" name="harga_jual" id="jual_harga" class="form-input-premium pl-10" placeholder="0" min="0" required>
+                                        <input type="number" name="harga_jual" id="jual_harga" class="form-input-premium" style="padding-left: 3rem !important;" placeholder="0" min="0" required>
                                     </div>
                                 </div>
 
@@ -2893,7 +2893,7 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                    <button type="button" onclick="submitJualBanForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-amber-600 text-base font-medium text-white hover:bg-amber-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="submitJualBanForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-amber-600 text-base font-medium text-white hover:bg-amber-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm" style="background-color: #d97706 !important; color: white !important;">
                         Jual Sekarang
                     </button>
                     <button type="button" onclick="closeJualBanModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
