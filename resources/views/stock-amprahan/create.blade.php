@@ -84,6 +84,7 @@
                                     <option value="Stock" {{ old('type_amprahan') == 'Stock' ? 'selected' : '' }}>Stock</option>
                                     <option value="Pemakaian" {{ old('type_amprahan') == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
                                     <option value="Perbaikan" {{ old('type_amprahan') == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
+                                    <option value="Perlengkapan" {{ old('type_amprahan') == 'Perlengkapan' ? 'selected' : '' }}>Perlengkapan</option>
                                 </select>
                                 @error('type_amprahan')
                                     <p class="mt-2 text-xs font-medium text-red-500 flex items-center">

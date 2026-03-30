@@ -62,6 +62,8 @@
                                         <span class="text-emerald-600">PEMAKAIAN</span>
                                     @elseif($item->type_amprahan == 'Perbaikan')
                                         <span class="text-orange-600">PERBAIKAN</span>
+                                    @elseif($item->type_amprahan == 'Perlengkapan')
+                                        <span class="text-purple-600">PERLENGKAPAN</span>
                                     @else
                                         -
                                     @endif

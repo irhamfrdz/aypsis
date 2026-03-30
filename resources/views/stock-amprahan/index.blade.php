@@ -220,6 +220,8 @@
                                 <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-700 uppercase tracking-wider shadow-sm">Pemakaian</span>
                             @elseif($item->type_amprahan == 'Perbaikan')
                                 <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-orange-100 text-orange-700 uppercase tracking-wider shadow-sm">Perbaikan</span>
+                            @elseif($item->type_amprahan == 'Perlengkapan')
+                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-purple-100 text-purple-700 uppercase tracking-wider shadow-sm">Perlengkapan</span>
                             @else
                                 <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-gray-100 text-gray-700 uppercase tracking-wider">-</span>
                             @endif
