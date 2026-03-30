@@ -121,6 +121,7 @@ class StockAmprahanController extends Controller
         $stockData = [
             'nomor_bukti' => $data['nomor_bukti'],
             'tanggal_beli' => $data['tanggal_beli'],
+            'type_amprahan' => $data['type_amprahan'],
             'nama_barang' => $data['nama_barang'],
             'master_nama_barang_amprahan_id' => $data['master_nama_barang_amprahan_id'],
             'harga_satuan' => $data['harga_satuan'],
@@ -637,6 +638,15 @@ class StockAmprahanController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
+            // Update status_pranota pada item yang bersangkutan
+            if (isset($data['items']) && is_array($data['items'])) {
+                foreach ($data['items'] as $item) {
+                    if (isset($item['id'])) {
+                        \App\Models\StockAmprahan::where('id', $item['id'])->update(['status_pranota' => 'Sudah']);
+                    }
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Berhasil memasukkan ke pranota',
@@ -674,6 +684,16 @@ class StockAmprahanController extends Controller
     {
         try {
             $pranota = \App\Models\PranotaStock::findOrFail($id);
+            
+            // Revert status_pranota pada item
+            if (is_array($pranota->items)) {
+                foreach ($pranota->items as $item) {
+                    if (isset($item['id'])) {
+                        \App\Models\StockAmprahan::where('id', $item['id'])->update(['status_pranota' => 'Belum']);
+                    }
+                }
+            }
+
             $pranota->delete();
             return redirect()->route('pranota-stock.index')->with('success', 'Pranota berhasil dihapus');
         } catch (\Exception $e) {

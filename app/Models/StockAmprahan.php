@@ -12,6 +12,7 @@ class StockAmprahan extends Model
         'nomor_bukti',
         'tanggal_beli',
         'type_amprahan',
+        'status_pranota',
         'master_nama_barang_amprahan_id',
         'nama_barang',
         'type_barang',

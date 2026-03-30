@@ -188,6 +188,7 @@
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Harga</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Satuan</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Lokasi</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Status Pranota</th>
                         <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -246,6 +247,13 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $item->lokasi ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            @if($item->status_pranota == 'Sudah')
+                                <span class="px-2.5 py-1 text-[10px] font-black rounded-full bg-indigo-600 text-white uppercase tracking-tighter shadow-sm">Sudah Dibuat Pranota</span>
+                            @else
+                                <span class="px-2.5 py-1 text-[10px] font-black rounded-full bg-gray-100 text-gray-400 uppercase tracking-tighter shadow-sm border border-gray-200">Belum Dibuat Pranota</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
