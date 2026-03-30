@@ -7,6 +7,7 @@ use App\Models\Gudang;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockKontainerPergudangController extends Controller
 {
@@ -101,19 +102,70 @@ class StockKontainerPergudangController extends Controller
         return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id'));
     }
 
+    public function downloadTemplate()
+    {
+        $headers = ['Nomor Kontainer'];
+        
+        // Use a simple CSV output for the template
+        $callback = function() use ($headers) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $headers);
+            // Add some example rows
+            fputcsv($file, ['AYPU1234567']);
+            fputcsv($file, ['AYPU7654321']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=template_sync_kontainer.csv",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ]);
+    }
+
     public function storeUpload(Request $request, $id)
     {
         $request->validate([
-            'container_numbers' => 'required|string',
+            'container_numbers' => 'nullable|string',
+            'file_excel' => 'nullable|file',
         ]);
 
         $gudangId = $id === 'none' || $id == '' ? null : $id;
+        $inputNumbers = [];
 
-        // Parse input: split by newline, comma, or space, then trim
-        $inputNumbers = preg_split('/[\n,\r\s]+/', $request->container_numbers);
-        $inputNumbers = array_map('trim', $inputNumbers);
-        $inputNumbers = array_filter($inputNumbers); // Remove empty strings
-        $inputNumbers = array_unique($inputNumbers); // Unique list
+        // 1. Process Excel File if uploaded
+        if ($request->hasFile('file_excel')) {
+            try {
+                $data = Excel::toArray([], $request->file('file_excel'));
+                if (!empty($data) && count($data) > 0) {
+                    foreach ($data[0] as $row) {
+                        $val = trim($row[0] ?? '');
+                        if ($val && strtolower($val) !== 'nomor kontainer' && strtolower($val) !== 'no kontainer') {
+                            $inputNumbers[] = $val;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Gagal membaca file Excel/CSV. Pastikan format file benar. Error: ' . $e->getMessage());
+            }
+        }
+
+        // 2. Process Text Area Input
+        if ($request->container_numbers) {
+            $textNumbers = preg_split('/[\n,\r\s]+/', $request->container_numbers);
+            foreach ($textNumbers as $n) {
+                $trimmed = trim($n);
+                if ($trimmed) $inputNumbers[] = $trimmed;
+            }
+        }
+
+        $inputNumbers = array_unique($inputNumbers);
+
+        if (empty($inputNumbers)) {
+            return redirect()->back()->with('error', 'Daftar kontainer kosong. Silakan isi text area atau upload file Excel.');
+        }
 
         // 1. Identify "excess" containers (In DB for this warehouse, but NOT in uploaded list)
         // We do this by finding all containers currently in this warehouse and checking if they are in the input
