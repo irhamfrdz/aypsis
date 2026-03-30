@@ -67,13 +67,38 @@
                     @method('PUT')
                     
                     <div class="space-y-6">
-                        {{-- Nomor Bukti --}}
-                        <div>
-                            <label for="nomor_bukti" class="block text-sm font-semibold text-gray-700 mb-1">Nomor Bukti</label>
-                            <input type="text" name="nomor_bukti" id="nomor_bukti" value="{{ old('nomor_bukti', $item->nomor_bukti) }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
-                            @error('nomor_bukti')
-                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {{-- Nomor Bukti --}}
+                            <div>
+                                <label for="nomor_bukti" class="block text-sm font-semibold text-gray-700 mb-1">Nomor Bukti</label>
+                                <input type="text" name="nomor_bukti" id="nomor_bukti" value="{{ old('nomor_bukti', $item->nomor_bukti) }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                @error('nomor_bukti')
+                                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            {{-- Tanggal Beli --}}
+                            <div>
+                                <label for="tanggal_beli" class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Beli</label>
+                                <input type="date" name="tanggal_beli" id="tanggal_beli" value="{{ old('tanggal_beli', $item->tanggal_beli ? \Carbon\Carbon::parse($item->tanggal_beli)->format('Y-m-d') : '') }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                @error('tanggal_beli')
+                                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            {{-- Type Amprahan --}}
+                            <div>
+                                <label for="type_amprahan" class="block text-sm font-semibold text-gray-700 mb-1">Type Amprahan <span class="text-red-500">*</span></label>
+                                <select name="type_amprahan" id="type_amprahan" required 
+                                        class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                    <option value="Stock" {{ old('type_amprahan', $item->type_amprahan) == 'Stock' ? 'selected' : '' }}>Stock</option>
+                                    <option value="Pemakaian" {{ old('type_amprahan', $item->type_amprahan) == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
+                                    <option value="Perbaikan" {{ old('type_amprahan', $item->type_amprahan) == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
+                                </select>
+                                @error('type_amprahan')
+                                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         {{-- Nama Barang --}}
@@ -147,6 +172,16 @@
                                     <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                                 @enderror
                             </div>
+                        </div>
+
+                        {{-- Harga Total --}}
+                        <div>
+                            <label for="harga_total" class="block text-sm font-semibold text-gray-700 mb-1">Harga Total</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">Rp</span>
+                                <input type="text" id="harga_total" readonly class="w-full pl-10 rounded-lg bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed font-semibold" value="0">
+                            </div>
+                            <p class="mt-1 text-[10px] text-gray-500 italic">Otomatis dihitung dari Harga Satuan × Jumlah</p>
                         </div>
 
                         {{-- Lokasi --}}
@@ -346,6 +381,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Function to update total price
+    function updateHargaTotal() {
+        const harga = parseFloat(document.getElementById('harga_satuan').value) || 0;
+        const jumlah = parseFloat(document.getElementById('jumlah').value) || 0;
+        const total = harga * jumlah;
+        
+        document.getElementById('harga_total').value = total.toLocaleString('id-ID');
+    }
+
+    // Attach listeners for total price calculation
+    document.getElementById('harga_satuan').addEventListener('input', updateHargaTotal);
+    document.getElementById('jumlah').addEventListener('input', updateHargaTotal);
+    
+    // Initial calculation
+    updateHargaTotal();
 });
 </script>
 @endpush

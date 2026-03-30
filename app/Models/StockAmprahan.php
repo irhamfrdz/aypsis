@@ -11,6 +11,7 @@ class StockAmprahan extends Model
     protected $fillable = [
         'nomor_bukti',
         'tanggal_beli',
+        'type_amprahan',
         'master_nama_barang_amprahan_id',
         'nama_barang',
         'type_barang',

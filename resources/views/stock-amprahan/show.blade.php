@@ -34,6 +34,41 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                     {{-- Quantity & Unit --}}
                     <div class="space-y-6">
+                        {{-- Nomor Bukti & Tanggal --}}
+                        <div class="p-5 rounded-2xl bg-gray-50/80 border border-gray-100 grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nomor Bukti</p>
+                                <p class="text-sm font-bold text-gray-900 tracking-tight">{{ $item->nomor_bukti ?? '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tanggal Beli</p>
+                                <p class="text-sm font-bold text-gray-900 tracking-tight">{{ $item->tanggal_beli ? $item->tanggal_beli->format('d M Y') : '-' }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Type Amprahan --}}
+                        <div class="flex items-center space-x-4 p-5 rounded-2xl bg-gray-50/80 border border-gray-100">
+                            <div class="p-3 bg-amber-100 text-amber-600 rounded-xl">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M17 7h.01M17 11h.01M17 15h.01"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Type Amprahan</p>
+                                <p class="text-lg font-black text-gray-900 tracking-tight leading-none">
+                                    @if($item->type_amprahan == 'Stock')
+                                        <span class="text-blue-600">STOCK</span>
+                                    @elseif($item->type_amprahan == 'Pemakaian')
+                                        <span class="text-emerald-600">PEMAKAIAN</span>
+                                    @elseif($item->type_amprahan == 'Perbaikan')
+                                        <span class="text-orange-600">PERBAIKAN</span>
+                                    @else
+                                        -
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+
                         <div class="flex items-center space-x-4 p-5 rounded-2xl bg-gray-50/80 border border-gray-100">
                             <div class="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +76,7 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1 text-white">Stock Tersedia</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Stock Tersedia</p>
                                 <p class="text-2xl font-black text-gray-900 leading-none">
                                     {{ number_format($item->jumlah, 0, ',', '.') }} 
                                     <span class="text-indigo-600 text-lg ml-1">{{ $item->satuan ?? 'Unit' }}</span>
@@ -57,7 +92,7 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Lokasi Penyimpanan</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Lokasi Penyimpanan</p>
                                 <p class="text-lg font-bold text-gray-900 leading-none">
                                     {{ $item->lokasi ?? 'Tidak Ditentukan' }}
                                 </p>

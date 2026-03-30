@@ -47,7 +47,7 @@
                     @csrf
                     
                     <div class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {{-- Nomor Bukti --}}
                             <div class="group">
                                 <label for="nomor_bukti" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
@@ -68,6 +68,24 @@
                                 </label>
                                 <input type="date" name="tanggal_beli" id="tanggal_beli" value="{{ old('tanggal_beli', date('Y-m-d')) }}" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
                                 @error('tanggal_beli')
+                                    <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
+
+                            {{-- Type Amprahan --}}
+                            <div class="group">
+                                <label for="type_amprahan" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                    <i class="fas fa-list mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Type Amprahan <span class="text-red-500">*</span>
+                                </label>
+                                <select name="type_amprahan" id="type_amprahan" required 
+                                        class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
+                                    <option value="Stock" {{ old('type_amprahan') == 'Stock' ? 'selected' : '' }}>Stock</option>
+                                    <option value="Pemakaian" {{ old('type_amprahan') == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
+                                    <option value="Perbaikan" {{ old('type_amprahan') == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
+                                </select>
+                                @error('type_amprahan')
                                     <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
                                         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                     </p>
