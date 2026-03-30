@@ -477,6 +477,9 @@ Route::middleware([
         Route::get('kontainer/stock-pergudang/{id}', [\App\Http\Controllers\StockKontainerPergudangController::class, 'show'])
              ->name('kontainer.stock-pergudang.show')
              ->middleware('can:master-kontainer-view');
+        Route::post('kontainer/stock-pergudang/{id}/upload', [\App\Http\Controllers\StockKontainerPergudangController::class, 'storeUpload'])
+             ->name('kontainer.stock-pergudang.upload')
+             ->middleware('can:master-kontainer-update');
 
         // Master kontainer import/export routes (MUST BE BEFORE {kontainer} routes)
         Route::get('kontainer/download-template', [KontainerImportController::class, 'downloadTemplate'])

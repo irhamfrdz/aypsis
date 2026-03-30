@@ -98,6 +98,62 @@ class StockKontainerPergudangController extends Controller
         // Merge lists together
         $allContainers = $sewas->concat($stocks);
 
-        return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang'));
+        return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id'));
+    }
+
+    public function storeUpload(Request $request, $id)
+    {
+        $request->validate([
+            'container_numbers' => 'required|string',
+        ]);
+
+        $gudangId = $id === 'none' || $id == '' ? null : $id;
+
+        // Parse input: split by newline, comma, or space, then trim
+        $inputNumbers = preg_split('/[\n,\r\s]+/', $request->container_numbers);
+        $inputNumbers = array_map('trim', $inputNumbers);
+        $inputNumbers = array_filter($inputNumbers); // Remove empty strings
+        $inputNumbers = array_unique($inputNumbers); // Unique list
+
+        // 1. Identify "excess" containers (In DB for this warehouse, but NOT in uploaded list)
+        // We do this by finding all containers currently in this warehouse and checking if they are in the input
+        
+        // Sewa Containers
+        $sewasInWarehouse = \App\Models\Kontainer::where('gudangs_id', $gudangId)->get();
+        foreach ($sewasInWarehouse as $sewa) {
+            if (!in_array($sewa->nomor_seri_gabungan, $inputNumbers)) {
+                $sewa->update(['gudangs_id' => null]);
+            }
+        }
+
+        // Stock Containers
+        $stocksInWarehouse = \App\Models\StockKontainer::where('gudangs_id', $gudangId)->get();
+        foreach ($stocksInWarehouse as $stock) {
+            if (!in_array($stock->nomor_seri_gabungan, $inputNumbers)) {
+                $stock->update(['gudangs_id' => null]);
+            }
+        }
+
+        // 2. Add/Move containers from the list to this warehouse (Optional, but usually expected for a sync)
+        // If the user only wants to DELETE excess, step 1 is enough. 
+        // But usually "upload to warehouse" means ensuring these ARE the containers in the warehouse.
+        if ($gudangId !== null) {
+            foreach ($inputNumbers as $number) {
+                // Try Sewa first
+                $sewa = \App\Models\Kontainer::where('nomor_seri_gabungan', 'like', "%$number%")->first();
+                if ($sewa) {
+                    $sewa->update(['gudangs_id' => $gudangId]);
+                    continue;
+                }
+                
+                // Then Stock
+                $stock = \App\Models\StockKontainer::where('nomor_seri_gabungan', 'like', "%$number%")->first();
+                if ($stock) {
+                    $stock->update(['gudangs_id' => $gudangId]);
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Sinkronisasi kontainer gudang berhasil. Kontainer yang tidak ada dalam daftar telah dihapus lokasinya dari gudang ini.');
     }
 }
