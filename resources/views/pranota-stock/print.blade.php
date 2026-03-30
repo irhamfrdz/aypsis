@@ -93,10 +93,13 @@
                 @foreach($pranota->items as $item)
                 <tr>
                     <td style="text-align: center;">{{ $i++ }}</td>
-                    <td>{{ $item['nama_barang'] ?? '-' }}</td>
+                    <td>
+                        <strong>{{ $item['nama_barang'] ?? '-' }}</strong><br>
+                        <small style="color: #666;">Bukti: {{ $item['kode'] ?? '-' }}</small>
+                    </td>
                     <td style="text-align: center;">{{ number_format($item['jumlah'] ?? 0, 2, ',', '.') }}</td>
                     <td style="text-align: center;">{{ $item['satuan'] ?? '-' }}</td>
-                    <td>{{ $item['keterangan'] ?? '-' }}</td>
+                    <td>{{ $item['keterangan'] ?? ($pranota->keterangan ?? '-') }}</td>
                 </tr>
                 @endforeach
             @else

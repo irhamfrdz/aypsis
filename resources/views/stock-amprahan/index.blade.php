@@ -1511,7 +1511,7 @@
                 if (cb.checked) {
                     items.push({
                         id: cb.value,
-                        nama: cb.dataset.nama,
+                        nama_barang: cb.dataset.nama,
                         kode: cb.dataset.kode,
                         harga: cb.dataset.harga,
                         jumlah: cb.dataset.jumlah,
