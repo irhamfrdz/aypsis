@@ -66,4 +66,44 @@ class ReportUangJalanController extends Controller
             'search' => $search
         ]);
     }
+
+    public function export(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('surat-jalan-view')) {
+            abort(403, 'Unauthorized');
+        }
+
+        $startDate = Carbon::parse($request->input('start_date', now()->startOfMonth()))->startOfDay();
+        $endDate = Carbon::parse($request->input('end_date', now()->endOfMonth()))->endOfDay();
+        $search = $request->input('search');
+
+        $query = UangJalan::query()
+            ->with(['suratJalan', 'suratJalanBongkaran', 'createdBy'])
+            ->whereBetween('tanggal_uang_jalan', [$startDate, $endDate]);
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_uang_jalan', 'like', "%{$search}%")
+                  ->orWhereHas('suratJalan', function($sq) use ($search) {
+                      $sq->where('no_surat_jalan', 'like', "%{$search}%")
+                         ->orWhere('supir', 'like', "%{$search}%")
+                         ->orWhere('no_plat', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('suratJalanBongkaran', function($sq) use ($search) {
+                      $sq->where('nomor_surat_jalan', 'like', "%{$search}%")
+                         ->orWhere('supir', 'like', "%{$search}%")
+                         ->orWhere('no_plat', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $uangJalans = $query->orderBy('tanggal_uang_jalan', 'asc')->get();
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ReportUangJalanExport($uangJalans, $startDate, $endDate), 
+            'Report_Uang_Jalan_' . $startDate->format('Y-m-d') . '_to_' . $endDate->format('Y-m-d') . '.xlsx'
+        );
+    }
 }

@@ -26,6 +26,10 @@
                 <button onclick="window.print()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow hover:shadow-md transition duration-200">
                     <i class="fas fa-print mr-2"></i> Cetak Report
                 </button>
+                <a href="{{ route('report.uang-jalan.export', ['start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d'), 'search' => $search]) }}" 
+                   class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg shadow hover:shadow-md transition duration-200">
+                    <i class="fas fa-file-excel mr-2"></i> Export Excel
+                </a>
             </div>
         </div>
     </div>
@@ -68,6 +72,7 @@
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">No</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Tanggal / No UJ</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Surat Jalan / Tipe</th>
+                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest text-amber-600 font-bold">Tujuan Ambil</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Supir & Plat</th>
                         <th class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Uang Jalan</th>
                         <th class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Lain-lain</th>
@@ -83,6 +88,7 @@
                             $sjNumber = $uj->suratJalan ? $uj->suratJalan->no_surat_jalan : ($uj->suratJalanBongkaran ? $uj->suratJalanBongkaran->nomor_surat_jalan : '-');
                             $supir = $relatedSJ->supir ?? '-';
                             $plat = $relatedSJ->no_plat ?? '-';
+                            $tujuanAmbil = $relatedSJ->tujuan_pengambilan ?? '-';
                             
                             $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
                         @endphp
@@ -97,6 +103,9 @@
                                 <span class="px-2 py-0.5 inline-flex text-[10px] leading-4 font-bold rounded-full {{ $typeLabel === 'Muat' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700' }}">
                                     {{ $typeLabel }}
                                 </span>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <div class="text-xs font-bold text-gray-700 bg-amber-50 border border-amber-100 px-2 py-1 rounded w-fit">{{ $tujuanAmbil }}</div>
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-gray-700">{{ $supir }}</div>
@@ -117,7 +126,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-16 text-center">
+                            <td colspan="9" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center">
                                     <div class="p-4 bg-gray-50 rounded-full mb-3">
                                         <i class="fas fa-folder-open text-gray-300 text-4xl"></i>
@@ -132,7 +141,7 @@
                 @if($uangJalans->count() > 0)
                 <tfoot class="bg-gray-50 border-t-2 border-gray-100">
                     <tr>
-                        <th colspan="4" class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Summary Total</th>
+                        <th colspan="5" class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Summary Total</th>
                         <th class="px-4 py-4 text-right text-sm font-bold text-gray-700">
                             {{ number_format($uangJalans->sum('jumlah_uang_jalan'), 0, ',', '.') }}
                         </th>

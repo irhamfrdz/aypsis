@@ -4930,10 +4930,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     // Report Uang Jalan
     Route::get('/uang-jalan', [App\Http\Controllers\ReportUangJalanController::class, 'index'])->name('uang-jalan.index');
     Route::get('/uang-jalan/view', [App\Http\Controllers\ReportUangJalanController::class, 'view'])->name('uang-jalan.view');
-
-    // Report Uang Jalan
-    Route::get('/uang-jalan', [App\Http\Controllers\ReportUangJalanController::class, 'index'])->name('uang-jalan.index');
-    Route::get('/uang-jalan/view', [App\Http\Controllers\ReportUangJalanController::class, 'view'])->name('uang-jalan.view');
+    Route::get('/uang-jalan/export', [App\Http\Controllers\ReportUangJalanController::class, 'export'])->name('uang-jalan.export');
 
     // Report Ongkos Truk
     Route::get('/ongkos-truk', [App\Http\Controllers\ReportOngkosTrukController::class, 'index'])->name('ongkos-truk.index');
