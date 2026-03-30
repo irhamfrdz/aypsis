@@ -38,7 +38,13 @@
         
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex} (OPP/OPT)</h3>
+                <div class="flex items-center gap-4">
+                    <h3 class="text-md font-semibold text-gray-800">Kapal ${sectionIndex} (OPP/OPT)</h3>
+                    <label class="flex items-center gap-2 px-3 py-1 bg-white border border-purple-300 rounded-lg cursor-pointer hover:bg-purple-100 transition shadow-sm">
+                        <input type="checkbox" name="opp_opt_sections[${sectionIndex}][is_bongkaran]" class="opp-opt-is-bongkaran-checkbox rounded border-purple-400 text-purple-600 focus:ring-purple-500" value="1">
+                        <span class="text-xs font-bold text-purple-700">BONGKARAN</span>
+                    </label>
+                </div>
                 ${sectionIndex > 1 ? `<button type="button" onclick="removeOppOptSection(${sectionIndex})" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded-lg transition"><i class="fas fa-trash mr-1"></i>Hapus</button>` : ''}
             </div>
             
@@ -138,6 +144,14 @@
             }
         });
         
+        // Setup voyage change listener for Bongkaran toggle
+        const bongkaranCheckbox = section.querySelector('.opp-opt-is-bongkaran-checkbox');
+        bongkaranCheckbox.addEventListener('change', function() {
+            if (kapalSelect.value && (voyageSelect.value || voyageInput.value)) {
+                autoFillOppOptBarangForSection(sectionIndex, kapalSelect.value, voyageSelect.value || voyageInput.value);
+            }
+        });
+
         // Add first barang input as default
         addBarangToOppOptSection(sectionIndex);
     }
@@ -180,32 +194,64 @@
                 pricelistOppOptData.forEach(p => {
                     pricelistIds[p.nama_barang] = p.id;
                 });
+
+                const isBongkaran = section.querySelector('.opp-opt-is-bongkaran-checkbox') && section.querySelector('.opp-opt-is-bongkaran-checkbox').checked;
+
+                if (isBongkaran) {
+                    // Logic full empty like TKBM
+                    const fullEmptyIds = { '20_full': null, '20_empty': null, '40_full': null, '40_empty': null };
+                    pricelistOppOptData.forEach(p => {
+                        const name = (p.nama_barang || '').toLowerCase();
+                        if (name.includes('20') && name.includes('full')) fullEmptyIds['20_full'] = p.id;
+                        if (name.includes('20') && name.includes('empty')) fullEmptyIds['20_empty'] = p.id;
+                        if (name.includes('40') && name.includes('full')) fullEmptyIds['40_full'] = p.id;
+                        if (name.includes('40') && name.includes('empty')) fullEmptyIds['40_empty'] = p.id;
+                    });
+                    
+                    if (data.counts['20'] && data.counts['20'].full > 0 && fullEmptyIds['20_full']) {
+                        addBarangToOppOptSectionWithValue(sectionIndex, fullEmptyIds['20_full'], data.counts['20'].full);
+                        itemsAdded = true;
+                    }
+                    if (data.counts['20'] && data.counts['20'].empty > 0 && fullEmptyIds['20_empty']) {
+                        addBarangToOppOptSectionWithValue(sectionIndex, fullEmptyIds['20_empty'], data.counts['20'].empty);
+                        itemsAdded = true;
+                    }
+                    if (data.counts['40'] && data.counts['40'].full > 0 && fullEmptyIds['40_full']) {
+                        addBarangToOppOptSectionWithValue(sectionIndex, fullEmptyIds['40_full'], data.counts['40'].full);
+                        itemsAdded = true;
+                    }
+                    if (data.counts['40'] && data.counts['40'].empty > 0 && fullEmptyIds['40_empty']) {
+                        addBarangToOppOptSectionWithValue(sectionIndex, fullEmptyIds['40_empty'], data.counts['40'].empty);
+                        itemsAdded = true;
+                    }
+                } else {
+                    // Standard Logic (FCL/LCL)
+                    // Add FCL 20FT
+                    if (data.counts['20'] && data.counts['20'].fcl > 0 && pricelistIds['FCL 20FT']) {
+                        addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['FCL 20FT'], data.counts['20'].fcl);
+                        itemsAdded = true;
+                    }
+                    
+                    // Add FCL 40FT
+                    if (data.counts['40'] && data.counts['40'].fcl > 0 && pricelistIds['FCL 40FT']) {
+                        addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['FCL 40FT'], data.counts['40'].fcl);
+                        itemsAdded = true;
+                    }
+                    
+                    // Add LCL 20FT
+                    if (data.counts['20'] && data.counts['20'].lcl > 0 && pricelistIds['LCL 20FT']) {
+                        addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['LCL 20FT'], data.counts['20'].lcl);
+                        itemsAdded = true;
+                    }
+                    
+                    // Add LCL 40FT
+                    if (data.counts['40'] && data.counts['40'].lcl > 0 && pricelistIds['LCL 40FT']) {
+                        addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['LCL 40FT'], data.counts['40'].lcl);
+                        itemsAdded = true;
+                    }
+                } 
                 
-                // Add FCL 20FT
-                if (data.counts['20'] && data.counts['20'].fcl > 0 && pricelistIds['FCL 20FT']) {
-                    addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['FCL 20FT'], data.counts['20'].fcl);
-                    itemsAdded = true;
-                }
-                
-                // Add FCL 40FT
-                if (data.counts['40'] && data.counts['40'].fcl > 0 && pricelistIds['FCL 40FT']) {
-                    addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['FCL 40FT'], data.counts['40'].fcl);
-                    itemsAdded = true;
-                }
-                
-                // Add LCL 20FT
-                if (data.counts['20'] && data.counts['20'].lcl > 0 && pricelistIds['LCL 20FT']) {
-                    addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['LCL 20FT'], data.counts['20'].lcl);
-                    itemsAdded = true;
-                }
-                
-                // Add LCL 40FT
-                if (data.counts['40'] && data.counts['40'].lcl > 0 && pricelistIds['LCL 40FT']) {
-                    addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['LCL 40FT'], data.counts['40'].lcl);
-                    itemsAdded = true;
-                }
-                
-                // Add Extra items (Mobil, Trailer, Truck)
+                // Add Extra items (Mobil, Trailer, Truck) always
                 if (data.counts.extra) {
                     Object.keys(data.counts.extra).forEach(itemName => {
                          const count = data.counts.extra[itemName];
