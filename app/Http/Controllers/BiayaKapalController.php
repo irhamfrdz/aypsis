@@ -3253,13 +3253,28 @@ class BiayaKapalController extends Controller
             }
 
             // Get BL data (Bongkar) for the selected kapal and voyage
-            $cleanKapalNama = str_replace('.', '', $kapalNama);
-            
-            $bls = DB::table('bls')
+            // Normalize ship name for flexible matching like in getVoyagesByShip
+            $normalizedKapal = strtolower(trim(preg_replace('/[.\s]+/', ' ', $kapalNama)));
+            $allKeywords = explode(' ', $normalizedKapal);
+            $ignorePrefixes = ['km', 'mv', 'mt', 'tb', 'spob', 'klm', 'lp', 'mp'];
+            $keywords = array_filter($allKeywords, function($word) use ($ignorePrefixes) {
+                return !in_array($word, $ignorePrefixes);
+            });
+            if (empty($keywords)) $keywords = $allKeywords;
+            $keywords = array_values($keywords);
+
+            $blsQuery = DB::table('bls')
                 ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl', 'max_tv')
-                ->where(DB::raw("REPLACE(nama_kapal, '.', '')"), 'like', "%{$cleanKapalNama}%")
-                ->where('no_voyage', $voyage)
-                ->get();
+                ->where('no_voyage', $voyage);
+            
+            // Add where clause for each keyword for robust matching
+            $blsQuery->where(function($q) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $q->where('nama_kapal', 'like', "%{$keyword}%");
+                }
+            });
+            
+            $bls = $blsQuery->get();
 
             // Count containers by size and type
             $counts = [
