@@ -94,8 +94,8 @@
                 <tr>
                     <td style="text-align: center;">{{ $i++ }}</td>
                     <td>
-                        <strong>{{ $item['nama_barang'] ?? '-' }}</strong><br>
-                        <small style="color: #666;">Bukti: {{ $item['kode'] ?? '-' }}</small>
+                        <strong>{{ $item['nama_barang'] ?? ($item['nama'] ?? '-') }}</strong><br>
+                        <small style="color: #666;">Bukti: {{ $item['kode'] ?? ($item['nomor_bukti'] ?? '-') }}</small>
                     </td>
                     <td style="text-align: center;">{{ number_format($item['jumlah'] ?? 0, 2, ',', '.') }}</td>
                     <td style="text-align: center;">{{ $item['satuan'] ?? '-' }}</td>
