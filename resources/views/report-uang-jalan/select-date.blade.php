@@ -78,7 +78,9 @@
 
             {{-- Submit Button --}}
             <div class="flex flex-col items-center gap-4 pt-6">
-                <button type="submit" class="w-full md:w-auto bg-amber-600 hover:bg-amber-700 text-white px-10 py-4 rounded-lg shadow-lg hover:shadow-xl transform transition duration-200 hover:-translate-y-0.5 inline-flex items-center justify-center text-lg font-bold">
+                <button type="submit" 
+                        style="background-color: #d97706 !important; color: white !important;"
+                        class="w-full md:w-auto hover:bg-amber-700 text-white px-10 py-4 rounded-lg shadow-lg hover:shadow-xl transform transition duration-200 hover:-translate-y-0.5 inline-flex items-center justify-center text-lg font-bold">
                     <i class="fas fa-search mr-2"></i>
                     Tampilkan Laporan Uang Jalan
                 </button>
@@ -87,29 +89,5 @@
         </form>
     </div>
 
-    {{-- Info Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 mb-6">
-        <div class="bg-white p-6 rounded-xl shadow-sm border-t-2 border-amber-400">
-            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Data Muat</h4>
-            <div class="flex items-center">
-                <i class="fas fa-truck-loading text-amber-500 text-2xl mr-3"></i>
-                <p class="text-sm text-gray-600">Laporan mencakup uang jalan muat standar.</p>
-            </div>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border-t-2 border-blue-400">
-            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Data Bongkar</h4>
-            <div class="flex items-center">
-                <i class="fas fa-dolly-flatbed text-blue-500 text-2xl mr-3"></i>
-                <p class="text-sm text-gray-600">Laporan mencakup uang jalan bongkaran.</p>
-            </div>
-        </div>
-        <div class="bg-white p-6 rounded-xl shadow-sm border-t-2 border-indigo-400">
-            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Rincian Komponen</h4>
-            <div class="flex items-center">
-                <i class="fas fa-list-ul text-indigo-500 text-2xl mr-3"></i>
-                <p class="text-sm text-gray-600">Rincian Mel, Pelancar, Kawalan, dan Parkir.</p>
-            </div>
-        </div>
-    </div>
 </div>
 @endsection
