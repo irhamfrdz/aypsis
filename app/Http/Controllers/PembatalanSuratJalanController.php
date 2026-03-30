@@ -14,7 +14,7 @@ class PembatalanSuratJalanController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PembatalanSuratJalan::with(['suratJalan']);
+        $query = PembatalanSuratJalan::with(['suratJalan', 'suratJalanBongkaran']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -34,13 +34,18 @@ class PembatalanSuratJalanController extends Controller
      */
     public function create(Request $request)
     {
-        // List cancelable surat jalans
-        $query = \App\Models\SuratJalan::with(['supirKaryawan', 'uangJalan'])
+        $search = $request->search_sj;
+
+        // 1. Reguler SJ Query
+        $queryReguler = \App\Models\SuratJalan::with(['supirKaryawan', 'uangJalan'])
             ->where('status', '!=', 'cancelled');
         
+        // 2. Bongkaran SJ Query
+        $queryBongkaran = \App\Models\SuratJalanBongkaran::query()
+            ->where('status', '!=', 'cancelled');
+
         if ($request->filled('search_sj')) {
-            $search = $request->search_sj;
-            $query->where(function ($q) use ($search) {
+            $queryReguler->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%")
@@ -49,9 +54,43 @@ class PembatalanSuratJalanController extends Controller
                          ->orWhere('nama_lengkap', 'like', "%{$search}%");
                   });
             });
+
+            $queryBongkaran->where(function ($q) use ($search) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%");
+            });
         }
 
-        $suratJalans = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Get both and tag them
+        $reguler = $queryReguler->get()->map(function($sj) {
+            $sj->tipe_sj = 'reguler';
+            return $sj;
+        });
+
+        $bongkaran = $queryBongkaran->get()->map(function($sj) {
+            $sj->tipe_sj = 'bongkaran';
+            // Alias for consistency with Regulr
+            $sj->no_surat_jalan = $sj->nomor_surat_jalan;
+            return $sj;
+        });
+
+        // Merge and Sort
+        $combined = $reguler->merge($bongkaran)->sortByDesc('created_at');
+
+        // Manual Pagination
+        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+        $perPage = 10;
+        $currentItems = $combined->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        
+        $suratJalans = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems,
+            $combined->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+        );
 
         // Bank options for searchable dropdown (same source as payment forms)
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
@@ -69,7 +108,8 @@ class PembatalanSuratJalanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'surat_jalan_id' => 'required|exists:surat_jalans,id',
+            'surat_jalan_id' => 'required',
+            'tipe_sj' => 'required|in:reguler,bongkaran',
             'alasan_batal' => 'required|string',
             'nomor_pembayaran' => 'nullable|string|max:255',
             'nomor_accurate' => 'nullable|string|max:255',
@@ -95,17 +135,24 @@ class PembatalanSuratJalanController extends Controller
             );
         }
 
-        $suratJalan = \App\Models\SuratJalan::findOrFail($validated['surat_jalan_id']);
+        $tipeSj = $validated['tipe_sj'];
+        if ($tipeSj === 'reguler') {
+            $suratJalan = \App\Models\SuratJalan::findOrFail($validated['surat_jalan_id']);
+            $noSuratJalan = $suratJalan->no_surat_jalan;
+        } else {
+            $suratJalan = \App\Models\SuratJalanBongkaran::findOrFail($validated['surat_jalan_id']);
+            $noSuratJalan = $suratJalan->nomor_surat_jalan;
+        }
 
         if ($suratJalan->status === 'cancelled') {
             return redirect()->back()->with('error', 'Surat Jalan sudah dibatalkan.');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function() use ($validated, $suratJalan) {
-            // Create Cancel Record
-            PembatalanSuratJalan::create([
-                'surat_jalan_id' => $suratJalan->id,
-                'no_surat_jalan' => $suratJalan->no_surat_jalan,
+        \Illuminate\Support\Facades\DB::transaction(function() use ($validated, $suratJalan, $noSuratJalan, $tipeSj) {
+            // Create Cancel Record data
+            $pblData = [
+                'no_surat_jalan' => $noSuratJalan,
+                'tipe_sj' => $tipeSj,
                 'nomor_pembayaran' => $validated['nomor_pembayaran'],
                 'nomor_accurate' => $validated['nomor_accurate'] ?? null,
                 'tanggal_kas' => $validated['tanggal_kas'],
@@ -120,17 +167,25 @@ class PembatalanSuratJalanController extends Controller
                 'alasan_batal' => $validated['alasan_batal'],
                 'status' => 'approved', // auto-approve to cancel immediately
                 'created_by' => auth()->id(),
-            ]);
+            ];
 
-            // Hapus data prospek yang terkait (by surat_jalan_id or no_surat_jalan)
-            \App\Models\Prospek::where('surat_jalan_id', $suratJalan->id)
-                ->orWhere('no_surat_jalan', $suratJalan->no_surat_jalan)
-                ->delete();
+            if ($tipeSj === 'reguler') {
+                $pblData['surat_jalan_id'] = $suratJalan->id;
 
-            // Hapus data tanda terima yang terkait (by surat_jalan_id or no_surat_jalan)
-            \App\Models\TandaTerima::where('surat_jalan_id', $suratJalan->id)
-                ->orWhere('no_surat_jalan', $suratJalan->no_surat_jalan)
-                ->delete();
+                // Hapus data prospek yang terkait (by surat_jalan_id or no_surat_jalan)
+                \App\Models\Prospek::where('surat_jalan_id', $suratJalan->id)
+                    ->orWhere('no_surat_jalan', $noSuratJalan)
+                    ->delete();
+
+                // Hapus data tanda terima yang terkait (by surat_jalan_id or no_surat_jalan)
+                \App\Models\TandaTerima::where('surat_jalan_id', $suratJalan->id)
+                    ->orWhere('no_surat_jalan', $noSuratJalan)
+                    ->delete();
+            } else {
+                $pblData['surat_jalan_bongkaran_id'] = $suratJalan->id;
+            }
+
+            PembatalanSuratJalan::create($pblData);
 
             // Hapus surat jalan yang dibatalkan
             $suratJalan->delete();
@@ -144,7 +199,7 @@ class PembatalanSuratJalanController extends Controller
      */
     public function show(PembatalanSuratJalan $pembatalanSuratJalan)
     {
-        $pembatalanSuratJalan->load('suratJalan');
+        $pembatalanSuratJalan->load(['suratJalan', 'suratJalanBongkaran']);
         return view('pembatalan-surat-jalan.show', compact('pembatalanSuratJalan'));
     }
 

@@ -10,6 +10,8 @@ class PembatalanSuratJalan extends Model
 
     protected $fillable = [
         'surat_jalan_id',
+        'surat_jalan_bongkaran_id',
+        'tipe_sj',
         'no_surat_jalan',
         'nomor_pembayaran',
         'nomor_accurate',
@@ -39,6 +41,11 @@ class PembatalanSuratJalan extends Model
     public function suratJalan()
     {
         return $this->belongsTo(SuratJalan::class, 'surat_jalan_id');
+    }
+
+    public function suratJalanBongkaran()
+    {
+        return $this->belongsTo(SuratJalanBongkaran::class, 'surat_jalan_bongkaran_id');
     }
 
     public function createdBy()

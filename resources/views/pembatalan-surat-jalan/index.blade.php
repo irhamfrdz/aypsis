@@ -53,6 +53,16 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 font-medium text-gray-900">
                             {{ $pembatalan->no_surat_jalan }}
+                            <div class="mt-1">
+                                @if(($pembatalan->tipe_sj ?? 'reguler') === 'reguler')
+                                    <span class="px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-semibold uppercase border border-blue-100">Reguler</span>
+                                @else
+                                    <span class="px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-600 text-[10px] font-semibold uppercase border border-purple-100">Bongkaran</span>
+                                @endif
+                                @if($pembatalan->nomor_accurate)
+                                    <span class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-semibold uppercase border border-amber-100">Synced</span>
+                                @endif
+                            </div>
                         </td>
                         <td class="px-6 py-4 text-gray-700 whitespace-nowrap">
                             {{ $pembatalan->nomor_pembayaran ?? '-' }}

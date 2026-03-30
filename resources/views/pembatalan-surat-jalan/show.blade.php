@@ -96,17 +96,35 @@
                 </p>
             </div>
 
-            @if($pembatalanSuratJalan->suratJalan)
+            @php
+                $sj = $pembatalanSuratJalan->tipe_sj === 'bongkaran' 
+                    ? $pembatalanSuratJalan->suratJalanBongkaran 
+                    : $pembatalanSuratJalan->suratJalan;
+            @endphp
+            @if($sj)
             <div class="border-t border-gray-100 pt-4">
-                <h3 class="text-base font-bold text-gray-800 mb-2">Detail Riwayat Pengiriman</h3>
-                <div class="text-xs text-gray-600 grid grid-cols-2 gap-2">
+                <h3 class="text-base font-bold text-gray-800 mb-2">Detail Riwayat Pengiriman ({{ ucfirst($pembatalanSuratJalan->tipe_sj ?? 'reguler') }})</h3>
+                <div class="text-xs text-gray-600 grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <span class="block">Pengirim:</span>
-                        <b class="text-gray-800">{{ $pembatalanSuratJalan->suratJalan->pengirim ?? '-' }}</b>
+                        <span class="block text-gray-500">Pengirim:</span>
+                        <b class="text-gray-800">{{ $sj->pengirim ?? '-' }}</b>
                     </div>
                     <div>
-                        <span class="block">Tujuan:</span>
-                        <b class="text-gray-800">{{ $pembatalanSuratJalan->suratJalan->tujuan_pengiriman ?? '-' }}</b>
+                        <span class="block text-gray-500">Penerima:</span>
+                        <b class="text-gray-800">{{ $sj->penerima ?? '-' }}</b>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Tujuan:</span>
+                        <b class="text-gray-800">
+                            {{ $pembatalanSuratJalan->tipe_sj === 'bongkaran' 
+                                ? ($sj->tujuan_alamat ?? '-')
+                                : ($sj->tujuan_pengiriman ?? '-') 
+                            }}
+                        </b>
+                    </div>
+                    <div>
+                        <span class="block text-gray-500">Supir:</span>
+                        <b class="text-gray-800">{{ $sj->supir ?? '-' }}</b>
                     </div>
                 </div>
             </div>

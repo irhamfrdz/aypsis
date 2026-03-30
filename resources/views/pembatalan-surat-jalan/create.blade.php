@@ -191,6 +191,7 @@
                         <label class="{{ $labelClasses }}">Surat Jalan Terpilih</label>
                         <input type="text" id="selectedSjText" class="{{ $readonlyInputClasses }} font-medium text-gray-800" readonly placeholder="Belum ada yang dipilih">
                         <input type="hidden" name="surat_jalan_id" id="surat_jalan_id" required>
+                        <input type="hidden" name="tipe_sj" id="tipe_sj" value="reguler">
 
                         <div class="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
                             <div class="flex items-start">
@@ -230,6 +231,7 @@
                         <thead class="bg-gray-50 sticky top-0 z-20">
                             <tr>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Surat</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
@@ -240,24 +242,42 @@
                         <tbody id="sjTableBody" class="bg-white divide-y divide-gray-200">
                             @forelse ($suratJalans as $sj)
                                 @php
-                                    $namaSupir = optional($sj->supirKaryawan)->nama_panggilan
-                                        ?? optional($sj->supirKaryawan)->nama_lengkap
-                                        ?? $sj->supir
-                                        ?? '-';
-                                    $uangJalanNominal = optional($sj->uangJalan)->jumlah_total
-                                        ?? optional($sj->uangJalan)->subtotal
-                                        ?? optional($sj->uangJalan)->jumlah_uang_jalan
-                                        ?? 0;
+                                    $namaSupir = '-';
+                                    if ($sj->tipe_sj === 'reguler') {
+                                        $namaSupir = optional($sj->supirKaryawan)->nama_panggilan
+                                            ?? optional($sj->supirKaryawan)->nama_lengkap
+                                            ?? $sj->supir
+                                            ?? '-';
+                                        $uangJalanNominal = optional($sj->uangJalan)->jumlah_total
+                                            ?? optional($sj->uangJalan)->subtotal
+                                            ?? optional($sj->uangJalan)->jumlah_uang_jalan
+                                            ?? 0;
+                                    } else {
+                                        // Bongkaran
+                                        $namaSupir = $sj->supir ?? '-';
+                                        $uangJalanNominal = $sj->uang_jalan_nominal ?? 0;
+                                    }
                                 @endphp
-                                <tr class="sj-row hover:bg-gray-50 cursor-pointer transition-colors" data-id="{{ $sj->id }}" data-no="{{ $sj->no_surat_jalan }}" data-uang-jalan="{{ (float) $uangJalanNominal }}">
+                                <tr class="sj-row hover:bg-gray-50 cursor-pointer transition-colors" 
+                                    data-id="{{ $sj->id }}" 
+                                    data-tipe="{{ $sj->tipe_sj }}" 
+                                    data-no="{{ $sj->no_surat_jalan }}" 
+                                    data-uang-jalan="{{ (float) $uangJalanNominal }}">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         <input type="radio" name="sj_radio_btn" value="{{ $sj->id }}" class="sj-radio h-3 w-3 text-indigo-600 border-gray-300 pointer-events-none" data-no="{{ $sj->no_surat_jalan }}">
                                     </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        @if($sj->tipe_sj === 'reguler')
+                                            <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold uppercase">Reguler</span>
+                                        @else
+                                            <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-semibold uppercase">Bongkaran</span>
+                                        @endif
+                                    </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium text-indigo-600">{{ $sj->no_surat_jalan ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $sj->created_at ? $sj->created_at->format('d/m/Y') : '-' }}</td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $sj->pengirim ?? '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-semibold">{{ $sj->pengirim ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $namaSupir }}</td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format((float) $uangJalanNominal, 0, ',', '.') }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-bold text-gray-900">Rp {{ number_format((float) $uangJalanNominal, 0, ',', '.') }}</td>
                                 </tr>
                             @empty
                                 <tr id="emptyRow">
@@ -376,13 +396,15 @@
             row.addEventListener('click', function () {
                 const radio = this.querySelector('.sj-radio');
                 const id = this.dataset.id;
+                const tipe = this.dataset.tipe;
                 const no = this.dataset.no;
                 const uangJalan = parseFloat(this.dataset.uangJalan || 0);
 
                 if (radio) radio.checked = true;
 
                 selectedIdInput.value = id;
-                selectedText.value = no;
+                document.getElementById('tipe_sj').value = tipe;
+                selectedText.value = `[${tipe.toUpperCase()}] ${no}`;
 
                 // Sync total pembayaran from selected surat jalan's uang jalan
                 if (totalPembayaranInput) {
