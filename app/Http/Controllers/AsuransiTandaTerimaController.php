@@ -215,4 +215,42 @@ class AsuransiTandaTerimaController extends Controller
         $asuransiTandaTerima->delete();
         return redirect()->route('asuransi-tanda-terima.index')->with('success', 'Data asuransi berhasil dihapus.');
     }
+
+    public function getReceiptDetails($type, $id)
+    {
+        $details = [
+            'no_kontainer' => '-',
+            'no_surat_jalan' => '-',
+            'nama_barang' => '-',
+            'jumlah_barang' => '-',
+        ];
+
+        if ($type == 'tt') {
+            $tt = TandaTerima::find($id);
+            if ($tt) {
+                $details['no_kontainer'] = $tt->no_kontainer ?? '-';
+                $details['no_surat_jalan'] = $tt->no_surat_jalan ?? '-';
+                $details['nama_barang'] = is_array($tt->nama_barang) ? implode(', ', $tt->nama_barang) : ($tt->nama_barang ?? '-');
+                $details['jumlah_barang'] = (string)($tt->jumlah ?? '-');
+            }
+        } elseif ($type == 'tttsj') {
+            $tttsj = TandaTerimaTanpaSuratJalan::find($id);
+            if ($tttsj) {
+                $details['no_kontainer'] = $tttsj->no_kontainer ?? '-';
+                $details['no_surat_jalan'] = $tttsj->nomor_surat_jalan_customer ?? '-';
+                $details['nama_barang'] = $tttsj->nama_barang ?? '-';
+                $details['jumlah_barang'] = (string)($tttsj->jumlah_barang ?? '-');
+            }
+        } elseif ($type == 'lcl') {
+            $lcl = TandaTerimaLcl::with(['items', 'kontainerPivot'])->find($id);
+            if ($lcl) {
+                $details['no_kontainer'] = $lcl->nomor_kontainer ?? '-';
+                $details['no_surat_jalan'] = $lcl->no_surat_jalan_customer ?? '-';
+                $details['nama_barang'] = $lcl->items->pluck('nama_barang')->filter()->unique()->implode(', ') ?: '-';
+                $details['jumlah_barang'] = (string)($lcl->items->sum('jumlah') ?: '-');
+            }
+        }
+
+        return response()->json($details);
+    }
 }

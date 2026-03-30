@@ -1469,6 +1469,10 @@ Route::middleware([
              'destroy' => 'can:master-vendor-asuransi-delete'
          ]);
 
+    Route::get('asuransi-tanda-terima/get-receipt-details/{type}/{id}', [\App\Http\Controllers\AsuransiTandaTerimaController::class, 'getReceiptDetails'])
+         ->name('asuransi-tanda-terima.get-receipt-details')
+         ->middleware('can:asuransi-tanda-terima-view');
+
     Route::resource('asuransi-tanda-terima', AsuransiTandaTerimaController::class)
          ->middleware([
              'index' => 'can:asuransi-tanda-terima-view',

@@ -100,6 +100,66 @@
                         @error('receipt_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
+                    <!-- Additional Info (Read-only display) -->
+                    <div class="md:col-span-2 bg-blue-50 border border-blue-200 rounded-lg p-4 grid grid-cols-2 md:grid-cols-4 gap-4" id="receipt_info_section">
+                        <div>
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">No. Kontainer</p>
+                            <p class="text-sm font-bold text-gray-800" id="info_no_kontainer">{{ $selectedReceipt ? ($selectedReceipt->no_kontainer ?? $selectedReceipt->nomor_kontainer ?? '-') : '-' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">No. Surat Jalan</p>
+                            <p class="text-sm font-bold text-gray-800" id="info_no_surat_jalan">
+                                @if($selectedReceipt)
+                                    @if($selectedType == 'tt') {{ $selectedReceipt->no_surat_jalan ?? '-' }}
+                                    @elseif($selectedType == 'tttsj') {{ $selectedReceipt->nomor_surat_jalan_customer ?? '-' }}
+                                    @elseif($selectedType == 'lcl') {{ $selectedReceipt->no_surat_jalan_customer ?? '-' }}
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Nama Barang</p>
+                            <p class="text-sm font-bold text-gray-800 truncate" id="info_nama_barang" title="{{ $selectedReceipt ? (is_array($selectedReceipt->nama_barang) ? implode(', ', $selectedReceipt->nama_barang) : ($selectedReceipt->nama_barang ?? '-')) : '-' }}">
+                                @if($selectedReceipt)
+                                    @if($selectedType == 'tt') {{ is_array($selectedReceipt->nama_barang) ? implode(', ', $selectedReceipt->nama_barang) : ($selectedReceipt->nama_barang ?? '-') }}
+                                    @elseif($selectedType == 'tttsj') {{ $selectedReceipt->nama_barang ?? '-' }}
+                                    @elseif($selectedType == 'lcl') {{ $selectedReceipt->items->pluck('nama_barang')->filter()->unique()->implode(', ') ?: '-' }}
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Jumlah Barang</p>
+                            <p class="text-sm font-bold text-gray-800" id="info_jumlah_barang">
+                                @if($selectedReceipt)
+                                    @if($selectedType == 'tt') {{ $selectedReceipt->jumlah ?? '-' }}
+                                    @elseif($selectedType == 'tttsj') {{ $selectedReceipt->jumlah_barang ?? '-' }}
+                                    @elseif($selectedType == 'lcl') {{ $selectedReceipt->items->sum('jumlah') ?: '-' }}
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </p>
+                        </div>
+
+                        <!-- View Button -->
+                        <div class="md:col-span-4 flex justify-end mt-2 pt-2 border-t border-blue-100 {{ $selectedReceipt ? '' : 'hidden' }}" id="view_receipt_wrapper">
+                             <a id="btn_view_receipt" href="{{ $selectedReceipt ? (
+                                $selectedType == 'tt' ? route('tanda-terima.show', $selectedReceipt->id) : (
+                                    $selectedType == 'tttsj' ? route('tanda-terima-tanpa-surat-jalan.show', $selectedReceipt->id) : (
+                                        $selectedType == 'lcl' ? route('tanda-terima-lcl.show', $selectedReceipt->id) : '#'
+                                    )
+                                )
+                             ) : '#' }}" target="_blank" class="inline-flex items-center text-blue-700 hover:text-blue-900 border border-blue-300 bg-white px-3 py-1 rounded-md text-xs font-bold shadow-sm transition duration-150">
+                                <i class="fas fa-eye mr-1.5"></i> Lihat Detail Tanda Terima
+                             </a>
+                        </div>
+                    </div>
+
                     <!-- Polis Number -->
                     <div>
                         <label for="nomor_polis" class="block text-sm font-medium text-gray-700 mb-2">Nomor Polis <span class="text-red-500">*</span></label>
@@ -217,6 +277,64 @@
         }
     }
 
+    function updateReceiptInfo() {
+        const type = document.getElementById('receipt_type').value;
+        const id = document.getElementById('receipt_id_' + type).value;
+        
+        const infoNoKontainer = document.getElementById('info_no_kontainer');
+        const infoNoSuratJalan = document.getElementById('info_no_surat_jalan');
+        const infoNamaBarang = document.getElementById('info_nama_barang');
+        const infoJumlahBarang = document.getElementById('info_jumlah_barang');
+        const viewWrapper = document.getElementById('view_receipt_wrapper');
+        const viewBtn = document.getElementById('btn_view_receipt');
+
+        if (!id) {
+            infoNoKontainer.textContent = '-';
+            infoNoSuratJalan.textContent = '-';
+            infoNamaBarang.textContent = '-';
+            infoJumlahBarang.textContent = '-';
+            viewWrapper.classList.add('hidden');
+            return;
+        }
+
+        // Show loading
+        infoNoKontainer.textContent = '...';
+        infoNoSuratJalan.textContent = '...';
+        infoNamaBarang.textContent = '...';
+        infoJumlahBarang.textContent = '...';
+
+        fetch(`/asuransi-tanda-terima/get-receipt-details/${type}/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                infoNoKontainer.textContent = data.no_kontainer || '-';
+                infoNoSuratJalan.textContent = data.no_surat_jalan || '-';
+                infoNamaBarang.textContent = data.nama_barang || '-';
+                infoNamaBarang.title = data.nama_barang || '-';
+                infoJumlahBarang.textContent = data.jumlah_barang || '-';
+                
+                // Update Button
+                let baseUrl = '';
+                if (type === 'tt') baseUrl = '/tanda-terima/';
+                else if (type === 'tttsj') baseUrl = '/tanda-terima-tanpa-surat-jalan/';
+                else if (type === 'lcl') baseUrl = '/tanda-terima-lcl/';
+                
+                if (baseUrl) {
+                    viewBtn.href = baseUrl + id;
+                    viewWrapper.classList.remove('hidden');
+                } else {
+                    viewWrapper.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching receipt details:', error);
+                infoNoKontainer.textContent = 'Error';
+                infoNoSuratJalan.textContent = 'Error';
+                infoNamaBarang.textContent = 'Error';
+                infoJumlahBarang.textContent = 'Error';
+                viewWrapper.classList.add('hidden');
+            });
+    }
+
     // Initialize list toggle
     document.addEventListener('DOMContentLoaded', function() {
         toggleReceiptList();
@@ -225,20 +343,40 @@
         // Add event listeners for grand total
         const vendorSelect = document.getElementById('vendor_asuransi_id');
         const nilaiInput = document.getElementById('nilai_barang');
+        const typeSelect = document.getElementById('receipt_type');
+        const ttSelect = document.getElementById('receipt_id_tt');
+        const tttsjSelect = document.getElementById('receipt_id_tttsj');
+        const lclSelect = document.getElementById('receipt_id_lcl');
 
         if (vendorSelect) {
             vendorSelect.addEventListener('change', calculateGrandTotal);
-            // Handle Select2 change event if jQuery is loaded
-            if (typeof $ !== 'undefined') {
-                $(vendorSelect).on('change', calculateGrandTotal);
-            }
+            if (typeof $ !== 'undefined') { $(vendorSelect).on('change', calculateGrandTotal); }
         }
         if (nilaiInput) {
             nilaiInput.addEventListener('input', calculateGrandTotal);
         }
 
+        if (typeSelect) {
+            typeSelect.addEventListener('change', () => {
+                toggleReceiptList();
+                updateReceiptInfo();
+            });
+        }
+
+        [ttSelect, tttsjSelect, lclSelect].forEach(select => {
+            if (select) {
+                select.addEventListener('change', updateReceiptInfo);
+                if (typeof $ !== 'undefined') { $(select).on('change', updateReceiptInfo); }
+            }
+        });
+
         // Initial calculation
         calculateGrandTotal();
+        
+        // If editing or pre-selected, update info
+        if (document.getElementById('final_receipt_id').value) {
+            updateReceiptInfo();
+        }
     });
 </script>
 @endpush
