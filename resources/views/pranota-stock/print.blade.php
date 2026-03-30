@@ -60,6 +60,21 @@
             <td class="separator">:</td>
             <td>{{ $pranota->creator->name ?? '-' }}</td>
         </tr>
+        @if($pranota->vendor || $pranota->rekening || $pranota->penerima)
+        <tr>
+            <td class="label">Vendor</td>
+            <td class="separator">:</td>
+            <td>{{ $pranota->vendor ?? '-' }}</td>
+            <td class="label">Penerima</td>
+            <td class="separator">:</td>
+            <td>{{ $pranota->penerima ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label">Rekening</td>
+            <td class="separator">:</td>
+            <td colspan="4">{{ $pranota->rekening ?? '-' }}</td>
+        </tr>
+        @endif
     </table>
 
     <table class="items-table">

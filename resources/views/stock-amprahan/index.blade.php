@@ -634,6 +634,33 @@
                                placeholder="Masukkan nomor accurate...">
                     </div>
                 </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label for="vendor_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Vendor
+                        </label>
+                        <input type="text" id="vendor_pranota" name="vendor"
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
+                               placeholder="Nama vendor...">
+                    </div>
+                    <div>
+                        <label for="rekening_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Rekening
+                        </label>
+                        <input type="text" id="rekening_pranota" name="rekening"
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
+                               placeholder="Nomor rekening...">
+                    </div>
+                    <div>
+                        <label for="penerima_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Penerima
+                        </label>
+                        <input type="text" id="penerima_pranota" name="penerima"
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
+                               placeholder="Nama penerima...">
+                    </div>
+                </div>
                 
                 <div class="overflow-x-auto rounded-xl border border-gray-200 mb-6 font-mono text-xs">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -1490,6 +1517,10 @@
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
 
+            const vendor = document.getElementById('vendor_pranota').value;
+            const rekening = document.getElementById('rekening_pranota').value;
+            const penerima = document.getElementById('penerima_pranota').value;
+
             fetch("{{ route('stock-amprahan.masuk-pranota') }}", {
                 method: 'POST',
                 headers: {
@@ -1501,6 +1532,9 @@
                     nomor_pranota: nomor,
                     tanggal_pranota: tanggal,
                     nomor_accurate: accurate,
+                    vendor: vendor,
+                    rekening: rekening,
+                    penerima: penerima,
                     adjustment: adj,
                     keterangan: ket,
                     items: items
