@@ -257,12 +257,12 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">
-                                <button type="button" onclick="openHistoryModal('{{ $item->id }}', '{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}')" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors" title="Riwayat Pengambilan">
+                                <button type="button" onclick="openHistoryModal('{{ $item->id }}', '{{ str_replace("'", "\\'", $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-')) }}')" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors" title="Riwayat Pengambilan">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
                                 </button>
-                                <button type="button" onclick="openUsageModal('{{ $item->id }}', '{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}', '{{ $item->jumlah }}', '{{ $item->satuan ?? '-' }}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Ambil Barang">
+                                <button type="button" onclick="openUsageModal('{{ $item->id }}', '{{ str_replace("'", "\\'", $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-')) }}', '{{ $item->jumlah }}', '{{ str_replace("'", "\\'", $item->satuan ?? '-') }}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Ambil Barang">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
                                     </svg>
@@ -355,7 +355,7 @@
                                                         <div class="penerima-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
                                                              data-value="{{ $karyawan->id }}" 
                                                              data-name="{{ $karyawan->nama_lengkap }}"
-                                                             onclick="selectPenerima('{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')">
+                                                             onclick="selectPenerima('{{ $karyawan->id }}', '{{ str_replace("'", "\\'", $karyawan->nama_lengkap) }}')">
                                                             <span class="block truncate font-medium">{{ $karyawan->nama_lengkap }}</span>
                                                         </div>
                                                     @endforeach
@@ -384,7 +384,7 @@
                                                             <div class="mobil-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
                                                                  data-value="{{ $mobil->id }}" 
                                                                  data-name="{{ $mobil->nomor_polisi }} {{ $mobil->merek }}"
-                                                                 onclick="selectMobil('{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}')">
+                                                                 onclick="selectMobil('{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} - {{ str_replace("'", "\\'", $mobil->merek) }}')">
                                                                 <span class="block truncate font-medium">{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}</span>
                                                             </div>
                                                         @endforeach
@@ -414,7 +414,7 @@
                                                             <div class="buntut-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
                                                                  data-value="{{ $buntut->id }}" 
                                                                  data-name="{{ $buntut->no_kir }} {{ $buntut->nomor_polisi }}"
-                                                                 onclick="selectBuntut('{{ $buntut->id }}', '{{ $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-') }}')">
+                                                                 onclick="selectBuntut('{{ $buntut->id }}', '{{ str_replace("'", "\\'", $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-')) }}')">
                                                                 <span class="block truncate font-medium">{{ $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-') }}</span>
                                                             </div>
                                                         @endforeach
@@ -444,7 +444,7 @@
                                                             <div class="alat-berat-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
                                                                  data-value="{{ $alat->id }}" 
                                                                  data-name="{{ $alat->kode_alat }} {{ $alat->nama }} {{ $alat->merk ?? '' }} {{ $alat->lokasi ?? '' }} {{ $alat->warna ?? '' }}"
-                                                                 onclick="selectAlatBerat('{{ $alat->id }}', '{{ $alat->kode_alat }} - {{ $alat->nama }}{{ $alat->merk ? ' - ' . $alat->merk : '' }}{{ $alat->lokasi ? ' - ' . $alat->lokasi : '' }}{{ $alat->warna ? ' - ' . $alat->warna : '' }}')">
+                                                                 onclick="selectAlatBerat('{{ $alat->id }}', '{{ str_replace("'", "\\'", $alat->kode_alat . " - " . $alat->nama . ($alat->merk ? " - " . $alat->merk : "") . ($alat->lokasi ? " - " . $alat->lokasi : "") . ($alat->warna ? " - " . $alat->warna : "")) }}')">
                                                                 <span class="block font-medium">{{ $alat->kode_alat }} - {{ $alat->nama }}{{ $alat->merk ? ' - ' . $alat->merk : '' }}{{ $alat->lokasi ? ' - ' . $alat->lokasi : '' }}{{ $alat->warna ? ' - ' . $alat->warna : '' }}</span>
                                                             </div>
                                                         @endforeach
@@ -473,7 +473,7 @@
                                                         <div class="kapal-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
                                                              data-value="{{ $kapal->id }}" 
                                                              data-name="{{ $kapal->nama_kapal }}"
-                                                             onclick="selectKapal('{{ $kapal->id }}', '{{ $kapal->nama_kapal }}')">
+                                                             onclick="selectKapal('{{ $kapal->id }}', '{{ str_replace("'", "\\'", $kapal->nama_kapal) }}')">
                                                             <span class="block truncate font-medium">{{ $kapal->nama_kapal }}</span>
                                                         </div>
                                                     @endforeach
