@@ -683,6 +683,48 @@ class StockAmprahanController extends Controller
     public function pranotaPrint($id)
     {
         $pranota = \App\Models\PranotaStock::with('creator')->findOrFail($id);
+
+        // Hydrate items with fresh data from DB to ensure no empty columns
+        if (is_array($pranota->items)) {
+            $itemIds = collect($pranota->items)->pluck('id')->filter()->toArray();
+            $stockItems = \App\Models\StockAmprahan::with(['usages.mobil', 'usages.buntut', 'usages.kapal', 'usages.alatBerat', 'masterNamaBarangAmprahan'])
+                ->whereIn('id', $itemIds)
+                ->get()
+                ->keyBy('id');
+                
+            $hydratedItems = array_map(function($it) use ($stockItems) {
+                $id = $it['id'] ?? null;
+                if ($id && isset($stockItems[$id])) {
+                    $item = $stockItems[$id];
+                    
+                    // Compute Reference from usages
+                    $refItems = [];
+                    $firstUsage = $item->usages->first();
+                    if ($firstUsage) {
+                        if ($firstUsage->kapal) $refItems[] = $firstUsage->kapal->nama_kapal;
+                        if ($firstUsage->alatBerat) $refItems[] = $firstUsage->alatBerat->kode_alat;
+                        if ($firstUsage->mobil) $refItems[] = $firstUsage->mobil->nomor_polisi;
+                        if ($firstUsage->buntut) $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
+                        if ($firstUsage->lain_lain) $refItems[] = $firstUsage->lain_lain;
+                    }
+                    $reference = count($refItems) > 0 ? implode(' / ', $refItems) : '-';
+                    
+                    return array_merge($it, [
+                        'tanggal' => $item->tanggal_beli ? $item->tanggal_beli->format('Y-m-d') : ($item->created_at ? $item->created_at->format('Y-m-d') : '-'),
+                        'type' => $item->type_amprahan ?? '-',
+                        'reference' => $reference,
+                        'keterangan' => $item->keterangan ?? '-',
+                        'nama_barang' => $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? ($it['nama_barang'] ?? '-')),
+                        'harga' => $item->harga_satuan ?? ($it['harga'] ?? 0),
+                        'satuan' => $item->satuan ?? ($it['satuan'] ?? '-'),
+                    ]);
+                }
+                return $it;
+            }, $pranota->items);
+            
+            $pranota->items = $hydratedItems;
+        }
+
         return view('pranota-stock.print', compact('pranota'));
     }
 
