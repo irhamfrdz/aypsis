@@ -442,7 +442,7 @@
                 <div style="margin-bottom:25px; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; background:#f8fafc; padding:20px; border:1px solid var(--border-color); border-radius: 12px;">
                     <div><label style="font-weight:600; font-size: 11px;">VENDOR:</label><select id="aud-v-name" style="width:100%"></select></div>
                     <div><label style="font-weight:600; font-size: 11px;">NO. INVOICE:</label><input type="text" id="aud-no-inv" style="width:100%" placeholder="Inv/2026/..."></div>
-                    <div><label style="font-weight:600; font-size: 11px;">TGL. INVOICE:</label><input type="text" id="aud-tgl-inv" placeholder="dd/mm/yyyy" style="width:100%"></div>
+                    <div><label style="font-weight:600; font-size: 11px;">TGL. INVOICE:</label><input type="text" id="aud-tgl-inv" placeholder="dd/mmm/yyyy" style="width:100%" onfocus="dtF(this)" onblur="dtB(this)"></div>
                 </div>
                 <div style="overflow-x: auto;">
                     <table id="tbl-cart">
@@ -468,7 +468,7 @@
                 <input type="hidden" id="edp-id">
                 <div><label style="font-weight:600; font-size: 11px;">VENDOR:</label><input type="text" id="edp-v" style="width:100%; background:#f1f5f9;" disabled></div>
                 <div><label style="font-weight:600; font-size: 11px;">NO. INVOICE:</label><input type="text" id="edp-no-inv" style="width:100%" placeholder="Inv/2026/..."></div>
-                <div><label style="font-weight:600; font-size: 11px;">TGL. INVOICE:</label><input type="text" id="edp-tgl-inv" placeholder="dd/mm/yyyy" style="width:100%"></div>
+                <div><label style="font-weight:600; font-size: 11px;">TGL. INVOICE:</label><input type="text" id="edp-tgl-inv" placeholder="dd/mmm/yyyy" style="width:100%" onfocus="dtF(this)" onblur="dtB(this)"></div>
                 <div>
                     <label style="font-weight:600; font-size: 11px;">STATUS:</label>
                     <select id="edp-status" style="width:100%">
@@ -502,6 +502,28 @@
 </div>
 
 <script>
+// Helper Date Picker
+const mNames = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+function dtF(el) { 
+    el.type = 'date'; 
+    if (el.value && el.value.includes('/')) { 
+        const [d, mS, y] = el.value.split('/');
+        let m = mNames.indexOf(mS) + 1;
+        if(m===0) m = parseInt(mS);
+        if(isNaN(m)) m = 1;
+        el.value = `${y}-${m.toString().padStart(2,'0')}-${d.padStart(2,'0')}`; 
+    } 
+}
+function dtB(el) { 
+    if (el.value && el.value.includes('-')) { 
+        const [y, m, d] = el.value.split('-'); 
+        el.type = 'text'; 
+        el.value = `${d}/${mNames[parseInt(m)-1]}/${y}`; 
+    } else { 
+        el.type = 'text'; 
+    } 
+}
+
 let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[] };
 let pgU = 1, pgX = 1; const rPP = 15;
 let expAudit = null;

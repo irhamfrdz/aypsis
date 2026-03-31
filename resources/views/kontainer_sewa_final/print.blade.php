@@ -63,33 +63,53 @@
             <td class="separator">:</td>
             <td>{{ $pranota->tgl_invoice ?? '-' }}</td>
         </tr>
-        <tr>
-            <td class="label">Status</td>
-            <td class="separator">:</td>
-            <td>{{ $pranota->status }}</td>
-            <td class="label">Tanggal Cetak</td>
-            <td class="separator">:</td>
-            <td>{{ date('d-m-Y H:i') }}</td>
-        </tr>
     </table>
 
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width: 5%;">NO</th>
+                <th style="width: 4%;">NO</th>
                 <th style="width: 15%;">UNIT</th>
-                <th style="width: 25%;">MASA SEWA</th>
-                <th style="width: 12%;">AYPSIS</th>
-                <th style="width: 12%;">VENDOR BILL</th>
-                <th style="width: 12%;">SELISIH</th>
-                <th style="width: 19%;">KETERANGAN</th>
+                <th style="width: 15%;">PERIODE</th>
+                <th style="width: 21%;">MASA SEWA</th>
+                <th style="width: 10%;">AYPSIS</th>
+                <th style="width: 10%;">VENDOR BILL</th>
+                <th style="width: 10%;">SELISIH</th>
+                <th style="width: 15%;">KETERANGAN</th>
             </tr>
         </thead>
         <tbody>
             @foreach($pranota->audits as $i => $audit)
+            @php
+                $periodNum = '?';
+                $sAmbil = null;
+
+                if ($audit->transaction) {
+                    $sAmbil = \Carbon\Carbon::parse($audit->transaction->date_in);
+                } elseif ($audit->transaction_key) {
+                    // Extract excel serial from key (e.g. AMFU...45358)
+                    $unitNo = $audit->unit_number;
+                    $serialStr = substr($audit->transaction_key, strlen($unitNo));
+                    if (is_numeric($serialStr)) {
+                        $sAmbil = \Carbon\Carbon::create(1899, 12, 30)->addDays((int)$serialStr);
+                    }
+                }
+
+                if ($sAmbil) {
+                    try {
+                        $sPeriodStr = explode(' - ', $audit->period_name)[0] ?? null;
+                        if ($sPeriodStr) {
+                            $sPeriod = \Carbon\Carbon::createFromFormat('d/m/Y', $sPeriodStr);
+                            // Compare Year and Month diff accurately
+                            $periodNum = (($sPeriod->year - $sAmbil->year) * 12) + ($sPeriod->month - $sAmbil->month) + 1;
+                        }
+                    } catch (\Exception $e) {}
+                }
+            @endphp
             <tr>
                 <td class="text-center">{{ $i + 1 }}</td>
                 <td class="text-center"><b>{{ $audit->unit_number }}</b></td>
+                <td class="text-center">Bulan ke-{{ $periodNum }}</td>
                 <td class="text-center">{{ $audit->period_name }}</td>
                 <td class="text-right">{{ number_format($audit->aypsis_nominal, 0, ',', '.') }}</td>
                 <td class="text-right">{{ number_format($audit->vendor_nominal, 0, ',', '.') }}</td>

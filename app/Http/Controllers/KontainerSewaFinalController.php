@@ -332,13 +332,13 @@ class KontainerSewaFinalController extends Controller
     }
     public function printPranota($id)
     {
-        $pranota = BtmSewaPranota::with(['vendor', 'audits'])->findOrFail($id);
+        $pranota = BtmSewaPranota::with(['vendor', 'audits.transaction'])->findOrFail($id);
         return view('kontainer_sewa_final.print', compact('pranota'));
     }
 
     public function showPranota($id)
     {
-        $pranota = BtmSewaPranota::with(['vendor', 'audits'])->findOrFail($id);
+        $pranota = BtmSewaPranota::with(['vendor', 'audits.transaction'])->findOrFail($id);
         return response()->json([
             'success' => true,
             'data' => [
