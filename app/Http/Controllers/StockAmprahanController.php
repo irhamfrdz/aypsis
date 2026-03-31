@@ -585,7 +585,7 @@ class StockAmprahanController extends Controller
     public function generateNomorPranota()
     {
         try {
-            $kode = 'PSA'; // Pranota Stock Amprahan
+            $kode = 'PTP'; // Pranota Transfer Pelabuhan/Pergudangan/Perlengkapan? (User requested PTP)
             $bulan = now()->format('m');
             $tahun = now()->format('y');
             
