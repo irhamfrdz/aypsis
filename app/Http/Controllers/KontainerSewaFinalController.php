@@ -52,7 +52,8 @@ class KontainerSewaFinalController extends Controller
                 'unit' => $i->unit_number,
                 'masa' => $i->period_name,
                 'aypsis' => (float)$i->aypsis_nominal,
-                'vendorBill' => (float)$i->vendor_nominal
+                'vendorBill' => (float)$i->vendor_nominal,
+                'note' => $i->note
             ])
         ];
 
@@ -181,6 +182,7 @@ class KontainerSewaFinalController extends Controller
                             'unit_number' => $c['unit'],
                             'aypsis_nominal' => $c['aypsis'],
                             'vendor_nominal' => $c['vendorBill'],
+                            'note' => $c['note'] ?? null,
                         ]
                     );
                 }

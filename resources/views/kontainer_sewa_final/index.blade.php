@@ -445,7 +445,7 @@
                 </div>
                 <div style="overflow-x: auto;">
                     <table id="tbl-cart">
-                        <thead><tr style="background: var(--success); color:white;"><th>No</th><th>Unit</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Selisih</th><th>Aksi</th></tr></thead>
+                        <thead><tr style="background: var(--success); color:white;"><th>No</th><th>Unit</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Selisih</th><th>Ket.</th><th>Aksi</th></tr></thead>
                         <tbody id="body-cart"></tbody>
                         <tfoot id="foot-cart" style="background:#f8fafc; font-weight:bold;"></tfoot>
                     </table>
@@ -472,7 +472,7 @@ function genPeriode(x, idInduk) {
     const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z) : null;
     const biayaSnapshot = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0));
     
-    let h = `<table style="width:100%; background:white; border-radius: 8px; margin-top: 10px;"><thead><tr style="background:#f1f5f9"><th>Periode</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Aksi</th></tr></thead>`;
+    let h = `<table style="width:100%; background:white; border-radius: 8px; margin-top: 10px;"><thead><tr style="background:#f1f5f9"><th>Periode</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Alasan Selisih</th><th>Aksi</th></tr></thead>`;
     let curr = new Date(dAmbil), p = 1;
     
     while (true) {
@@ -487,7 +487,7 @@ function genPeriode(x, idInduk) {
         const idp = `${idInduk}-${p}`;
 
         if(!db.cart.some(c => c.idp === idp)) {
-            h += `<tr><td>Bulan ke-${p}</td><td>${fmtTglLay(sP)} - ${fmtTglLay(eP)}</td><td>${fmtRibuan(nilaiAYPSIS)}</td><td><input type="text" id="v-${idp}" value="${fmtRibuan(nilaiAYPSIS)}" oninput="inputRibuan(this)" style="width:100px; padding: 4px 8px;"></td><td><button class="btn btn-green" onclick="saveToCart('${idp}','${x.no}','${fmtTglDB(sP)} - ${fmtTglDB(eP)}',${nilaiAYPSIS})">+</button></td></tr>`;
+            h += `<tr><td>Bulan ke-${p}</td><td>${fmtTglLay(sP)} - ${fmtTglLay(eP)}</td><td>${fmtRibuan(nilaiAYPSIS)}</td><td><input type="text" id="v-${idp}" value="${fmtRibuan(nilaiAYPSIS)}" oninput="inputRibuan(this);onInputBill('${idp}',${nilaiAYPSIS})" style="width:110px; padding: 4px 8px;"></td><td><div id="note-wrapper-${idp}" style="display:none;"><input type="text" id="n-${idp}" placeholder="Wajib diisi..." oninput="onInputBill('${idp}',${nilaiAYPSIS})" style="width:180px; font-size:11px; padding:6px 10px; border:1px solid #ddd; border-radius:6px; outline:none;"></div></td><td><button id="btn-${idp}" class="btn btn-green" onclick="saveToCart('${idp}','${x.no}','${fmtTglDB(sP)} - ${fmtTglDB(eP)}',${nilaiAYPSIS})">+</button></td></tr>`;
         }
         
         if (x.e && eP >= dAkhir) break; 
@@ -496,9 +496,41 @@ function genPeriode(x, idInduk) {
     return h + `</table>`;
 }
 
+function onInputBill(idp, aypsis) {
+    const vEl = document.getElementById('v-'+idp);
+    const nWrap = document.getElementById('note-wrapper-'+idp);
+    const nEl = document.getElementById('n-'+idp);
+    const btn = document.getElementById('btn-'+idp);
+    if(!vEl || !nWrap || !nEl || !btn) return;
+
+    const bill = cleanNum(vEl.value);
+    const isDiff = bill !== aypsis;
+    
+    if(isDiff) {
+        nWrap.style.display = 'block';
+        if(nEl.value.trim() === "") {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        } else {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        }
+    } else {
+        nWrap.style.display = 'none';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+    }
+}
+
 function saveToCart(idp, unit, masa, aypsis) {
-    const vendorBill = cleanNum(document.getElementById('v-'+idp).value);
-    db.cart.push({ idp, unit, masa, aypsis, vendorBill });
+    const vEl = document.getElementById('v-'+idp);
+    const nEl = document.getElementById('n-'+idp);
+    const vendorBill = cleanNum(vEl.value);
+    const note = nEl ? nEl.value : "";
+    db.cart.push({ idp, unit, masa, aypsis, vendorBill, note });
     updateDB();
 }
 
@@ -513,7 +545,7 @@ function renderCart() {
     let tBill = 0;
     body.innerHTML = db.cart.map((c, i) => {
         tBill += c.vendorBill;
-        return `<tr><td>${i+1}</td><td>${c.unit}</td><td>${c.masa}</td><td>${fmtRibuan(c.aypsis)}</td><td>${fmtRibuan(c.vendorBill)}</td><td>${fmtRibuan(c.vendorBill - c.aypsis)}</td><td><button class="btn btn-red" style="padding: 4px 8px;" onclick="db.cart.splice(${i},1);updateDB()">Hapus</button></td></tr>`;
+        return `<tr><td>${i+1}</td><td>${c.unit}</td><td>${c.masa}</td><td>${fmtRibuan(c.aypsis)}</td><td>${fmtRibuan(c.vendorBill)}</td><td>${fmtRibuan(c.vendorBill - c.aypsis)}</td><td>${c.note||'-'}</td><td><button class="btn btn-red" style="padding: 4px 8px;" onclick="db.cart.splice(${i},1);updateDB()">Hapus</button></td></tr>`;
     }).join('');
 
     const dpp = tBill;
@@ -522,10 +554,10 @@ function renderCart() {
     const grand = dpp + ppn - pph;
 
     foot.innerHTML = `
-        <tr><td colspan="4" align="right" style="padding: 12px;">DPP (Total Bill)</td><td colspan="3">${fmtRibuan(dpp)}</td></tr>
-        <tr><td colspan="4" align="right" style="padding: 12px;">PPN 11% (+)</td><td colspan="3">${fmtRibuan(ppn)}</td></tr>
-        <tr><td colspan="4" align="right" style="padding: 12px;">PPh 2% (-)</td><td colspan="3" style="color:var(--danger)">${fmtRibuan(pph)}</td></tr>
-        <tr style="background:var(--success); color:white;"><td colspan="4" align="right" style="padding: 15px; font-size: 1rem;">GRAND TOTAL</td><td colspan="3" style="font-size: 1rem;">Rp ${fmtRibuan(grand)}</td></tr>`;
+        <tr><td colspan="4" align="right" style="padding: 12px;">DPP (Total Bill)</td><td colspan="4">${fmtRibuan(dpp)}</td></tr>
+        <tr><td colspan="4" align="right" style="padding: 12px;">PPN 11% (+)</td><td colspan="4">${fmtRibuan(ppn)}</td></tr>
+        <tr><td colspan="4" align="right" style="padding: 12px;">PPh 2% (-)</td><td colspan="4" style="color:var(--danger)">${fmtRibuan(pph)}</td></tr>
+        <tr style="background:var(--success); color:white;"><td colspan="4" align="right" style="padding: 15px; font-size: 1rem;">GRAND TOTAL</td><td colspan="4" style="font-size: 1rem;">Rp ${fmtRibuan(grand)}</td></tr>`;
 }
 
 // --- FUNGSI FORMATTING & TOOLS ---
