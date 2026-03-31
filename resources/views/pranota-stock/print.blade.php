@@ -45,7 +45,7 @@
 <body>
     <div class="header">
         <h1>PERMOHONAN TRANSFER</h1>
-        <p>Laporan Penggunaan Barang Gudang PSA</p>
+
     </div>
 
     <table class="info-table">
@@ -150,11 +150,11 @@
                 </td>
                 <td>
                     <div class="signature-line"></div>
-                    <div class="signature-label">Gudang / Logistik</div>
+                    <div class="signature-label">Diperiksa Oleh</div>
                 </td>
                 <td>
                     <div class="signature-line"></div>
-                    <div class="signature-label">Penerima Barang</div>
+                    <div class="signature-label">Disetujui Oleh</div>
                 </td>
             </tr>
         </table>
