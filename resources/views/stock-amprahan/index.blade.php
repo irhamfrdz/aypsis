@@ -660,13 +660,30 @@
                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
                                placeholder="Nomor rekening...">
                     </div>
-                    <div>
+                    <div class="relative" id="pranota_penerima_dropdown_container">
                         <label for="penerima_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
                             Penerima
                         </label>
-                        <input type="text" id="penerima_pranota" name="penerima"
-                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
-                               placeholder="Nama penerima...">
+                        <div class="relative">
+                            <input type="text" id="penerima_pranota" name="penerima"
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
+                                   placeholder="Nama penerima..." autocomplete="off">
+                            <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="togglePranotaPenerimaDropdown()">
+                                <svg class="h-5 w-5 transition-transform duration-200" id="pranota_penerima_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div id="pranota_penerima_list" class="absolute z-[60] w-full mt-1 bg-white shadow-2xl max-h-60 rounded-xl py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden border border-gray-100">
+                            @foreach($karyawans as $k)
+                                <div class="pranota-penerima-option cursor-pointer select-none relative py-3 pl-4 pr-9 hover:bg-indigo-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                     data-name="{{ $k->nama_lengkap }}"
+                                     onclick="selectPranotaPenerima('{{ str_replace("'", "\\'", $k->nama_lengkap) }}')">
+                                    <span class="block truncate font-medium">{{ $k->nama_lengkap }}</span>
+                                </div>
+                            @endforeach
+                            <div id="pranota_penerima_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada nama yang cocok</div>
+                        </div>
                     </div>
                 </div>
                 
@@ -1400,6 +1417,55 @@
         });
     }
 
+    // Pranota Penerima Dropdown Logic
+    const pranotaPenerimaContainer = document.getElementById('pranota_penerima_dropdown_container');
+    const pranotaPenerimaInput = document.getElementById('penerima_pranota');
+    const pranotaPenerimaList = document.getElementById('pranota_penerima_list');
+    const pranotaPenerimaArrow = document.getElementById('pranota_penerima_arrow');
+    const pranotaPenerimaOptions = document.querySelectorAll('.pranota-penerima-option');
+    const pranotaPenerimaNoResults = document.getElementById('pranota_penerima_no_results');
+
+    function togglePranotaPenerimaDropdown() {
+        pranotaPenerimaList.classList.toggle('hidden');
+        pranotaPenerimaArrow.classList.toggle('rotate-180');
+    }
+
+    if (pranotaPenerimaInput) {
+        pranotaPenerimaInput.addEventListener('focus', function() {
+            pranotaPenerimaList.classList.remove('hidden');
+            pranotaPenerimaArrow.classList.add('rotate-180');
+        });
+
+        pranotaPenerimaInput.addEventListener('input', function() {
+            const value = this.value.toLowerCase();
+            let hasVisible = false;
+            
+            pranotaPenerimaOptions.forEach(option => {
+                const name = option.getAttribute('data-name').toLowerCase();
+                if (name.includes(value)) {
+                    option.classList.remove('hidden');
+                    hasVisible = true;
+                } else {
+                    option.classList.add('hidden');
+                }
+            });
+
+            if (!hasVisible) {
+                pranotaPenerimaNoResults.classList.remove('hidden');
+            } else {
+                pranotaPenerimaNoResults.classList.add('hidden');
+            }
+        });
+    }
+
+    window.selectPranotaPenerima = function(name) {
+        pranotaPenerimaInput.value = name;
+        pranotaPenerimaList.classList.add('hidden');
+        pranotaPenerimaArrow.classList.remove('rotate-180');
+    };
+
+    window.togglePranotaPenerimaDropdown = togglePranotaPenerimaDropdown;
+
     // Modal Functions
     const getPranotaModal = () => document.getElementById('pranotaModal');
 
@@ -1572,6 +1638,12 @@
         const modal = getPranotaModal();
         if (event.target == modal) {
             closePranotaModal();
+        }
+
+        // Close pranota penerima dropdown when clicking outside
+        if (pranotaPenerimaContainer && !pranotaPenerimaContainer.contains(event.target)) {
+            pranotaPenerimaList.classList.add('hidden');
+            pranotaPenerimaArrow.classList.remove('rotate-180');
         }
     }
 </script>
