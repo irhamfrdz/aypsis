@@ -239,6 +239,8 @@
                                 <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-orange-100 text-orange-700 uppercase tracking-wider shadow-sm">Perbaikan</span>
                             @elseif($item->type_amprahan == 'Perlengkapan')
                                 <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-purple-100 text-purple-700 uppercase tracking-wider shadow-sm">Perlengkapan</span>
+                            @elseif($item->type_amprahan == 'Transportasi')
+                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-pink-100 text-pink-700 uppercase tracking-wider shadow-sm">Transportasi</span>
                             @else
                                 <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-gray-100 text-gray-700 uppercase tracking-wider">-</span>
                             @endif

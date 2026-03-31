@@ -95,6 +95,7 @@
                                     <option value="Pemakaian" {{ old('type_amprahan', $item->type_amprahan) == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
                                     <option value="Perbaikan" {{ old('type_amprahan', $item->type_amprahan) == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
                                     <option value="Perlengkapan" {{ old('type_amprahan', $item->type_amprahan) == 'Perlengkapan' ? 'selected' : '' }}>Perlengkapan</option>
+                                    <option value="Transportasi" {{ old('type_amprahan', $item->type_amprahan) == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
                                 </select>
                                 @error('type_amprahan')
                                     <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
