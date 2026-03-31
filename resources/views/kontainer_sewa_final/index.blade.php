@@ -453,7 +453,6 @@
                 </div>
                 <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
                     <button class="btn btn-blue" style="padding: 12px 30px;" onclick="simpanPranota()"><i class="fas fa-save"></i> SIMPAN PRANOTA</button>
-                    <button class="btn btn-green" style="padding: 12px 30px;" onclick="alert('Fitur Print Tagihan sedang diproses...')">🖨️ CETAK PENGAJUAN</button>
                 </div>
             </div>
         </div>
