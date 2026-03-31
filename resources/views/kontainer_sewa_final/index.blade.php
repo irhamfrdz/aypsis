@@ -459,6 +459,36 @@
     </div>
 
     <div id="tab-pranota" style="display:none">
+        <div class="card" id="edit-pranota-zone" style="display:none; background: #fffcf0; border-left: 4px solid var(--warning); margin-bottom: 30px;">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h4>✏️ Edit Pranota: <span id="edp-nomor" style="color:var(--primary)"></span></h4>
+                <button class="btn btn-red" onclick="batalEditPranota()">TUTUP</button>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; background:white; padding:20px; border:1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px;">
+                <input type="hidden" id="edp-id">
+                <div><label style="font-weight:600; font-size: 11px;">VENDOR:</label><input type="text" id="edp-v" style="width:100%; background:#f1f5f9;" disabled></div>
+                <div><label style="font-weight:600; font-size: 11px;">NO. INVOICE:</label><input type="text" id="edp-no-inv" style="width:100%" placeholder="Inv/2026/..."></div>
+                <div><label style="font-weight:600; font-size: 11px;">TGL. INVOICE:</label><input type="text" id="edp-tgl-inv" placeholder="dd/mm/yyyy" style="width:100%"></div>
+                <div>
+                    <label style="font-weight:600; font-size: 11px;">STATUS:</label>
+                    <select id="edp-status" style="width:100%">
+                        <option value="PENDING">PENDING</option>
+                        <option value="APPROVED">APPROVED</option>
+                        <option value="PAID">PAID</option>
+                        <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table id="tbl-edp-items">
+                    <thead><tr style="background: var(--warning); color:white;"><th>No</th><th>Unit</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Selisih</th><th>Ket.</th><th>Aksi</th></tr></thead>
+                    <tbody id="body-edp-items"></tbody>
+                </table>
+            </div>
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-blue" style="padding: 12px 30px;" onclick="simpanEditPranota()"><i class="fas fa-save"></i> UPDATE PRANOTA</button>
+            </div>
+        </div>
         <div class="card">
             <h4>📋 Daftar Pranota Sewa Kontainer (Final)</h4>
             <div style="overflow-x: auto;">
@@ -472,7 +502,7 @@
 </div>
 
 <script>
-let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[] };
+let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[] };
 let pgU = 1, pgX = 1; const rPP = 15;
 let expAudit = null;
 let currentAuditTab = 'outstanding';
@@ -497,10 +527,13 @@ function genPeriode(x, idInduk) {
 
         const diff = Math.ceil((eP - sP) / 86400000) + 1;
         const nilaiAYPSIS = (diff >= 28) ? biayaSnapshot : Math.round((diff/30)*biayaSnapshot);
-        const idp = `${idInduk}-${p}`;
+        const masa_p = `${fmtTglDB(sP)} - ${fmtTglDB(eP)}`;
+        const idp = `${idInduk}-${masa_p}`;
+        const safeId = idp.replace(/[\/\s-]/g, '_');
+        const isAssigned = db.audits_map.includes(idp);
 
-        if(!db.cart.some(c => c.idp === idp)) {
-            h += `<tr><td>Bulan ke-${p}</td><td>${fmtTglLay(sP)} - ${fmtTglLay(eP)}</td><td>${fmtRibuan(nilaiAYPSIS)}</td><td><input type="text" id="v-${idp}" value="${fmtRibuan(nilaiAYPSIS)}" oninput="inputRibuan(this);onInputBill('${idp}',${nilaiAYPSIS})" style="width:110px; padding: 4px 8px;"></td><td><div id="note-wrapper-${idp}" style="display:none;"><input type="text" id="n-${idp}" placeholder="Wajib diisi..." oninput="onInputBill('${idp}',${nilaiAYPSIS})" style="width:180px; font-size:11px; padding:6px 10px; border:1px solid #ddd; border-radius:6px; outline:none;"></div></td><td><button id="btn-${idp}" class="btn btn-green" onclick="saveToCart('${idp}','${x.no}','${fmtTglDB(sP)} - ${fmtTglDB(eP)}',${nilaiAYPSIS})">+</button></td></tr>`;
+        if(!isAssigned && !db.cart.some(c => c.idp === idp)) {
+            h += `<tr><td>Bulan ke-${p}</td><td>${fmtTglLay(sP)} - ${fmtTglLay(eP)}</td><td>${fmtRibuan(nilaiAYPSIS)}</td><td><input type="text" id="v-${safeId}" value="${fmtRibuan(nilaiAYPSIS)}" oninput="inputRibuan(this);onInputBill('${idp}','${safeId}',${nilaiAYPSIS})" style="width:110px; padding: 4px 8px;"></td><td><div id="note-wrapper-${safeId}" style="display:none;"><input type="text" id="n-${safeId}" placeholder="Wajib diisi..." oninput="onInputBill('${idp}','${safeId}',${nilaiAYPSIS})" style="width:180px; font-size:11px; padding:6px 10px; border:1px solid #ddd; border-radius:6px; outline:none;"></div></td><td><button id="btn-${safeId}" class="btn btn-green" onclick="saveToCart('${idp}','${safeId}','${x.no}','${masa_p}',${nilaiAYPSIS})">+</button></td></tr>`;
         }
         
         if (x.e && eP >= dAkhir) break; 
@@ -530,20 +563,40 @@ function onInputBill(idp, aypsis) {
             btn.style.opacity = '1';
             btn.style.cursor = 'pointer';
         }
+    }
+}
+
+function onInputBill(idp, safeId, bi) {
+    const v = cleanNum(document.getElementById(`v-${safeId}`).value);
+    const n = document.getElementById(`n-${safeId}`).value;
+    const wr = document.getElementById(`note-wrapper-${safeId}`);
+    const btn = document.getElementById(`btn-${safeId}`);
+    
+    if(v !== bi) {
+        wr.style.display = 'block';
+        if(!n) {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        } else {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        }
     } else {
-        nWrap.style.display = 'none';
+        wr.style.display = 'none';
         btn.disabled = false;
         btn.style.opacity = '1';
         btn.style.cursor = 'pointer';
     }
 }
 
-function saveToCart(idp, unit, masa, aypsis) {
-    const vEl = document.getElementById('v-'+idp);
-    const nEl = document.getElementById('n-'+idp);
-    const vendorBill = cleanNum(vEl.value);
-    const note = nEl ? nEl.value : "";
-    db.cart.push({ idp, unit, masa, aypsis, vendorBill, note });
+function saveToCart(idp, safeId, unit, masa, bi) {
+    const v = cleanNum(document.getElementById(`v-${safeId}`).value);
+    const n = document.getElementById(`n-${safeId}`).value;
+    if(v !== bi && !n) { alert("Wajib isi alasan selisih!"); return; }
+    
+    db.cart.push({ idp, unit, masa, aypsis: bi, vendorBill: v, note: n });
     updateDB();
 }
 
@@ -610,11 +663,36 @@ function switchAuditTab(tab) {
     if(tab === 'keranjang') renderCart();
 }
 
+function hasOutstandingPeriods(x, idInduk) {
+    const dAmbil = parseD(x.s); 
+    const dAkhir = x.e ? parseD(x.e) : new Date(); 
+    let curr = new Date(dAmbil), p = 1;
+    
+    while (true) {
+        let sP = new Date(curr);
+        let eP = new Date(curr.getFullYear(), curr.getMonth() + 1, curr.getDate() - 1);
+        if (sP > dAkhir) break; 
+        if (x.e && eP > dAkhir) eP = dAkhir;
+
+        const masa_p = `${fmtTglDB(sP)} - ${fmtTglDB(eP)}`;
+        const idp = `${idInduk}-${masa_p}`;
+        if(!db.audits_map.includes(idp) && !db.cart.some(c => c.idp === idp)) return true;
+        
+        if (x.e && eP >= dAkhir) break; 
+        curr.setMonth(curr.getMonth() + 1); p++;
+    }
+    return false;
+}
+
 function renderAudit() {
     const s = (document.getElementById('src-audit')?.value || "").toUpperCase();
     const body = document.getElementById('body-audit');
     if(!body) return;
-    body.innerHTML = db.x.filter(x => x.no.includes(s)).map(x => {
+    
+    body.innerHTML = db.x.filter(x => {
+        const idTrx = x.no + toExcelSerial(x.s);
+        return x.no.includes(s) && hasOutstandingPeriods(x, idTrx);
+    }).map(x => {
         const idTrx = x.no + toExcelSerial(x.s);
         const isExp = expAudit === idTrx;
         return `<tr><td><b>${idTrx}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td class="${x.e?'st-selesai':'st-sewa'}">${x.e?'SELESAI':'SEWA'}</td><td><button class="btn btn-blue" style="min-width: 100px;" onclick="toggleAudit('${idTrx}')">${isExp?'− Tutup':'+ Pilih'}</button></td></tr>` + 
@@ -644,14 +722,123 @@ function renderP() {
             <td align="right">Rp ${fmtRibuan(x.total)}</td>
             <td><span class="${x.status==='PENDING'?'st-sewa':'st-selesai'}">${x.status}</span></td>
             <td>
-                <button class="btn btn-blue" style="padding: 4px 10px;" onclick="cetakPranota(${x.id})">🔍 Show</button>
-                <button class="btn btn-green" style="padding: 4px 10px;" onclick="cetakPranota(${x.id})">🖨️ Print</button>
+                <div style="display:flex; gap:4px;">
+                    <button class="btn btn-blue" style="padding: 4px 8px;" onclick="cetakPranota(${x.id})">🔍</button>
+                    <button class="btn btn-orange" style="padding: 4px 8px;" onclick="bukaEditPranota(${x.id})">Edit</button>
+                    <button class="btn btn-green" style="padding: 4px 8px;" onclick="cetakPranota(${x.id})">🖨️</button>
+                    <button class="btn btn-red" style="padding: 4px 8px;" onclick="hapusPranota(${x.id})">Del</button>
+                </div>
             </td>
         </tr>`).join('');
 }
 
 function cetakPranota(id) {
     window.open('{{ url("/kontainer-sewa-final/print-pranota") }}/' + id, '_blank');
+}
+
+let removedAuditIds = [];
+function bukaEditPranota(id) {
+    removedAuditIds = [];
+    fetch('{{ url("/kontainer-sewa-final/submit-pranota") }}/' + id)
+    .then(r => r.json())
+    .then(res => {
+        if(res.success) {
+            const p = res.data;
+            document.getElementById('edit-pranota-zone').style.display = 'block';
+            document.getElementById('edp-id').value = p.id;
+            document.getElementById('edp-nomor').innerText = p.nomor;
+            document.getElementById('edp-v').value = p.vendor;
+            document.getElementById('edp-no-inv').value = p.no_invoice || '';
+            document.getElementById('edp-tgl-inv').value = p.tgl_invoice || '';
+            document.getElementById('edp-status').value = p.status;
+            
+            renderEditPranotaItems(p.audits);
+            window.scrollTo(0, 0);
+        } else {
+            alert("Error: " + res.message);
+        }
+    })
+    .catch(e => { console.error(e); alert("Network Error!"); });
+}
+
+function renderEditPranotaItems(audits) {
+    const body = document.getElementById('body-edp-items');
+    body.innerHTML = audits.map((c, i) => `
+        <tr>
+            <td>${i+1}</td>
+            <td>${c.unit}</td>
+            <td>${c.masa}</td>
+            <td>${fmtRibuan(c.aypsis)}</td>
+            <td>${fmtRibuan(c.vendorBill)}</td>
+            <td>${fmtRibuan(c.vendorBill - c.aypsis)}</td>
+            <td>${c.note||'-'}</td>
+            <td><button class="btn btn-red" style="padding: 4px 8px;" onclick="removeItemFromPranota(${c.id}, this)">Lepas</button></td>
+        </tr>`).join('');
+}
+
+function removeItemFromPranota(id, btn) {
+    if(!confirm("Keluarkan item ini dari pranota? Item akan kembali ke daftar Outstanding.")) return;
+    removedAuditIds.push(id);
+    btn.closest('tr').style.opacity = '0.3';
+    btn.closest('tr').style.background = '#fee2e2';
+    btn.disabled = true;
+    btn.innerText = "Dilepas";
+}
+
+function batalEditPranota() {
+    document.getElementById('edit-pranota-zone').style.display = 'none';
+}
+
+function simpanEditPranota() {
+    const id = document.getElementById('edp-id').value;
+    const inv = document.getElementById('edp-no-inv').value;
+    const tgl = document.getElementById('edp-tgl-inv').value;
+    const status = document.getElementById('edp-status').value;
+
+    if(!confirm('Update data pranota ini?')) return;
+
+    fetch('{{ url("/kontainer-sewa-final/submit-pranota") }}/' + id, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            no_invoice: inv,
+            tgl_invoice: tgl,
+            status: status,
+            remove_audit_ids: removedAuditIds
+        })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if(d.success) {
+            alert("Pranota Berhasil Diupdate");
+            location.reload();
+        } else {
+            alert("Error: " + d.message);
+        }
+    });
+}
+
+function hapusPranota(id) {
+    if(!confirm("Yakin Hapus Pranota ini? Semua item di dalamnya akan kembali menjadi Outstanding.")) return;
+    
+    fetch('{{ url("/kontainer-sewa-final/submit-pranota") }}/' + id, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(r => r.json())
+    .then(d => {
+        if(d.success) {
+            alert("Pranota Berhasil Dihapus");
+            location.reload();
+        } else {
+            alert("Error: " + d.message);
+        }
+    });
 }
 
 function edM(k, i) { const n = prompt("Ubah:", (db[k][i].val || db[k][i])); if(n) { if(typeof db[k][i] === 'object') db[k][i].val = n.toUpperCase(); else db[k][i] = {val:n.toUpperCase(), act:true}; updateDB(); } }
@@ -759,12 +946,13 @@ window.onload = () => {
         db.p = initial.p || [];
         db.v = initial.v || db.v;
         db.cart = initial.cart || db.cart; 
-    } else {
+        db.audits_map = initial.audits_map || [];    } else {
         db = initial;
     }
     
     if(!db.cart) db.cart = []; 
     if(!db.p) db.p = [];
+    if(!db.audits_map) db.audits_map = [];
     updateDB(); 
 };
 </script>

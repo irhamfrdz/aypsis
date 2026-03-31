@@ -11,6 +11,7 @@ class BtmSewaAudit extends Model
     protected $fillable = [
         'unit_number',
         'transaction_id',
+        'transaction_key',
         'period_name',
         'aypsis_nominal',
         'vendor_nominal',

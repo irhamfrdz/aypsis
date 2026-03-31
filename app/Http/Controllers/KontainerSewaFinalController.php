@@ -15,6 +15,18 @@ use Illuminate\Support\Facades\DB;
 
 class KontainerSewaFinalController extends Controller
 {
+    private function toExcelSerial($date)
+    {
+        if (!$date) return "0";
+        try {
+            $dt = \Carbon\Carbon::parse($date);
+            $baseDate = \Carbon\Carbon::create(1899, 12, 30);
+            return (int)$dt->diffInDays($baseDate);
+        } catch (\Exception $e) {
+            return "0";
+        }
+    }
+
     public function index()
     {
         // Fetch all data from DB
@@ -64,7 +76,20 @@ class KontainerSewaFinalController extends Controller
                 'tgl_inv' => $i->tgl_invoice,
                 'total' => (float)$i->grand_total,
                 'status' => $i->status
-            ])
+            ]),
+            'audits_map' => BtmSewaAudit::with('transaction')->whereNotNull('pranota_id')->get()->map(function($i) {
+                // Use stored transaction_key directly if available (most reliable)
+                if ($i->transaction_key) {
+                    return $i->transaction_key . '-' . $i->period_name;
+                }
+                // Fallback: reconstruct from transaction record
+                $x = $i->transaction;
+                if (!$x) {
+                    $x = \App\Models\BtmSewaTransaction::where('unit_number', $i->unit_number)->orderBy('date_in', 'desc')->first();
+                }
+                $keyTrx = $x ? ($x->unit_number . $this->toExcelSerial($x->date_in)) : $i->unit_number; 
+                return $keyTrx . '-' . $i->period_name;
+            })->toArray()
         ];
 
         // Seed from JSON if DB is empty (initial setup)
@@ -255,9 +280,33 @@ class KontainerSewaFinalController extends Controller
                 ]);
 
                 foreach ($cartData as $c) {
-                    $idpParts = explode('-', $c['idp']);
-                    $transId = (is_numeric($idpParts[0])) ? $idpParts[0] : null;
+                    $idp = $c['idp'] ?? '';
+                    $masa = $c['masa'] ?? '';
 
+                    // Extract transaction_key (the idInduk prefix) from idp by stripping the period_name suffix
+                    $transactionKey = (strlen($idp) > strlen($masa) + 1)
+                        ? substr($idp, 0, strlen($idp) - strlen($masa) - 1)
+                        : null;
+
+                    // Find the correct DB transaction using the excel serial embedded in transaction_key
+                    $transId = null;
+                    if ($transactionKey) {
+                        $unitNumber = $c['unit'] ?? '';
+                        $serialStr = substr($transactionKey, strlen($unitNumber));
+                        if (is_numeric($serialStr)) {
+                            $excelSerial = (int)$serialStr;
+                            $base = \Carbon\Carbon::create(1899, 12, 30);
+                            $transactions = BtmSewaTransaction::where('unit_number', $unitNumber)->get();
+                            foreach ($transactions as $trx) {
+                                if ((int)\Carbon\Carbon::parse($trx->date_in)->diffInDays($base) === $excelSerial) {
+                                    $transId = $trx->id;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Fallback: latest transaction for this unit
                     if (!$transId) {
                         $transId = BtmSewaTransaction::where('unit_number', $c['unit'])->latest()->first()?->id;
                     }
@@ -265,6 +314,7 @@ class KontainerSewaFinalController extends Controller
                     BtmSewaAudit::updateOrCreate(
                         ['transaction_id' => $transId, 'period_name' => $c['masa'], 'unit_number' => $c['unit']],
                         [
+                            'transaction_key' => $transactionKey,
                             'aypsis_nominal' => $c['aypsis'],
                             'vendor_nominal' => $c['vendorBill'],
                             'note' => $c['note'] ?? null,
@@ -284,5 +334,92 @@ class KontainerSewaFinalController extends Controller
     {
         $pranota = BtmSewaPranota::with(['vendor', 'audits'])->findOrFail($id);
         return view('kontainer_sewa_final.print', compact('pranota'));
+    }
+
+    public function showPranota($id)
+    {
+        $pranota = BtmSewaPranota::with(['vendor', 'audits'])->findOrFail($id);
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $pranota->id,
+                'nomor' => $pranota->nomor,
+                'vendor' => $pranota->vendor->name ?? '',
+                'no_invoice' => $pranota->no_invoice,
+                'tgl_invoice' => $pranota->tgl_invoice,
+                'status' => $pranota->status,
+                'audits' => $pranota->audits->map(fn($a) => [
+                    'id' => $a->id,
+                    'unit' => $a->unit_number,
+                    'masa' => $a->period_name,
+                    'aypsis' => (float)$a->aypsis_nominal,
+                    'vendorBill' => (float)$a->vendor_nominal,
+                    'note' => $a->note
+                ])
+            ]
+        ]);
+    }
+
+    public function updatePranota(Request $request, $id)
+    {
+        $pranota = BtmSewaPranota::findOrFail($id);
+        
+        try {
+            DB::beginTransaction();
+            
+            $pranota->update([
+                'no_invoice' => $request->no_invoice,
+                'tgl_invoice' => $request->tgl_invoice,
+                'status' => $request->status ?? $pranota->status
+            ]);
+            
+            // If items are provided, we could update them too, but for simplicity let's stick to header first.
+            // Actually, if we allow deleting items from pranota:
+            if ($request->has('remove_audit_ids')) {
+                BtmSewaAudit::whereIn('id', $request->remove_audit_ids)
+                    ->where('pranota_id', $id)
+                    ->update(['pranota_id' => null, 'is_approved' => false]);
+            }
+            
+            // Recalculate totals
+            $audits = BtmSewaAudit::where('pranota_id', $id)->get();
+            $totalAypsis = $audits->sum('aypsis_nominal');
+            $totalVendor = $audits->sum('vendor_nominal');
+            $dpp = $totalVendor;
+            $ppn = round($dpp * 0.11);
+            $pph = round($dpp * 0.02);
+            $grand = $dpp + $ppn - $pph;
+            
+            $pranota->update([
+                'total_aypsis' => $totalAypsis,
+                'total_vendor_bill' => $totalVendor,
+                'dpp' => $dpp,
+                'ppn' => $ppn,
+                'pph' => $pph,
+                'grand_total' => $grand,
+            ]);
+            
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function destroyPranota($id)
+    {
+        $pranota = BtmSewaPranota::findOrFail($id);
+        try {
+            DB::beginTransaction();
+            // Unlock all audits
+            BtmSewaAudit::where('pranota_id', $id)->update(['pranota_id' => null, 'is_approved' => false]);
+            $pranota->delete();
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 }
