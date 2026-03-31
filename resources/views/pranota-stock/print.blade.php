@@ -141,6 +141,53 @@
     </div>
     @endif
 
+    <div style="width: 250px; margin-left: auto; margin-right: 20px; margin-top: 20px; margin-bottom: 30px;">
+        @php
+            $displayTypes = ['Perlengkapan', 'Transport', 'Pemakaian', 'Perbaikan'];
+            $typeTotals = array_fill_keys($displayTypes, 0);
+            $otherTotal = 0;
+            $summaryGrandTotal = 0;
+
+            if (is_array($pranota->items)) {
+                foreach ($pranota->items as $item) {
+                    $itemType = $item['type'] ?? '';
+                    $itemNominal = floatval($item['harga'] ?? 0) * floatval($item['jumlah'] ?? 0);
+                    
+                    $matched = false;
+                    foreach ($displayTypes as $dt) {
+                        if (stripos($itemType, $dt) !== false) {
+                            $typeTotals[$dt] += $itemNominal;
+                            $matched = true;
+                            break;
+                        }
+                    }
+                    if (!$matched) {
+                        $otherTotal += $itemNominal;
+                    }
+                    $summaryGrandTotal += $itemNominal;
+                }
+            }
+        @endphp
+        <table style="width: 100%; border-collapse: collapse; font-size: 10pt; font-family: 'Arial', sans-serif;">
+            @foreach($typeTotals as $label => $val)
+            <tr>
+                <td style="padding: 2px 0; width: 60%;">{{ $label }}</td>
+                <td style="text-align: right; padding: 2px 0;">{{ $val > 0 ? number_format($val, 0, ',', '.') : '-' }}</td>
+            </tr>
+            @endforeach
+            @if($otherTotal > 0)
+            <tr>
+                <td style="padding: 2px 0;">Lain-lain</td>
+                <td style="text-align: right; padding: 2px 0;">{{ number_format($otherTotal, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            <tr style="border-top: 1px solid #000; font-weight: bold;">
+                <td style="padding: 5px 0;">Total</td>
+                <td style="text-align: right; padding: 5px 0;">{{ number_format($summaryGrandTotal, 0, ',', '.') }}</td>
+            </tr>
+        </table>
+    </div>
+
     <div class="footer">
         <table class="footer-table">
             <tr>
