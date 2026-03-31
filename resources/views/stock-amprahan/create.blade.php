@@ -310,7 +310,7 @@
                                 @enderror
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                                 {{-- Mobil --}}
                                 <div class="group">
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Mobil</label>
@@ -385,6 +385,22 @@
                                         <div id="dropdown_options_alat_berat" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
                                     </div>
                                     @error('alat_berat_id')
+                                        <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                {{-- Lain-lain --}}
+                                <div class="group">
+                                    <label for="lain_lain" class="block text-sm font-bold text-gray-700 mb-2">Lain-lain</label>
+                                    <select name="lain_lain" id="lain_lain" 
+                                            class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                        <option value="">-- Pilih --</option>
+                                        <option value="Montir Garasi" {{ old('lain_lain') == 'Montir Garasi' ? 'selected' : '' }}>Montir Garasi</option>
+                                        <option value="Montir Pelabuhan" {{ old('lain_lain') == 'Montir Pelabuhan' ? 'selected' : '' }}>Montir Pelabuhan</option>
+                                        <option value="Tukang Las Garasi" {{ old('lain_lain') == 'Tukang Las Garasi' ? 'selected' : '' }}>Tukang Las Garasi</option>
+                                        <option value="Tukang Tambal Ban Garasi" {{ old('lain_lain') == 'Tukang Tambal Ban Garasi' ? 'selected' : '' }}>Tukang Tambal Ban Garasi</option>
+                                        <option value="Kenek Montir Garasi" {{ old('lain_lain') == 'Kenek Montir Garasi' ? 'selected' : '' }}>Kenek Montir Garasi</option>
+                                    </select>
+                                    @error('lain_lain')
                                         <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
                                 </div>

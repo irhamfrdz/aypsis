@@ -112,18 +112,13 @@
                 </td>
                 <td>{{ $usage->penerima->nama_lengkap ?? '-' }}</td>
                 <td>
-                    @if($usage->mobil) {{ $usage->mobil->nomor_polisi }}
-                    @endif
-                    @if($usage->buntut) 
-                        {{ $usage->mobil ? ' / ' : '' }} {{ $usage->buntut->no_kir ?? $usage->buntut->nomor_polisi }} (Buntut)
-                    @endif
-                    @if($usage->kapal) 
-                        {{ ($usage->mobil || $usage->buntut) ? ' / ' : '' }} {{ $usage->kapal->nama_kapal }}
-                    @endif
-                    @if($usage->alatBerat) 
-                        {{ ($usage->mobil || $usage->buntut || $usage->kapal) ? ' / ' : '' }} {{ $usage->alatBerat->kode_alat }}
-                    @endif
-                    @if(!$usage->mobil && !$usage->buntut && !$usage->kapal && !$usage->alatBerat) - @endif
+                    @php $parts = []; @endphp
+                    @if($usage->mobil) @php $parts[] = $usage->mobil->nomor_polisi; @endphp @endif
+                    @if($usage->buntut) @php $parts[] = ($usage->buntut->no_kir ?? $usage->buntut->nomor_polisi) . ' (Buntut)'; @endphp @endif
+                    @if($usage->kapal) @php $parts[] = $usage->kapal->nama_kapal; @endphp @endif
+                    @if($usage->alatBerat) @php $parts[] = $usage->alatBerat->kode_alat; @endphp @endif
+                    @if($usage->lain_lain) @php $parts[] = $usage->lain_lain; @endphp @endif
+                    {{ empty($parts) ? '-' : implode(' / ', $parts) }}
                 </td>
                 <td>{{ $usage->kilometer ?? '-' }}</td>
                 <td>{{ $usage->keterangan }}</td>

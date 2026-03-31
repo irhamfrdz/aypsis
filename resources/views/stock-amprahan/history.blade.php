@@ -120,6 +120,7 @@
                         <th class="px-6 py-4 text-left">Buntut</th>
                         <th class="px-6 py-4 text-left">Kapal</th>
                         <th class="px-6 py-4 text-left">Alat Berat</th>
+                        <th class="px-6 py-4 text-left">Lain-lain</th>
                         <th class="px-6 py-4 text-left">KM</th>
                         <th class="px-6 py-4 text-left">Keterangan</th>
                         <th class="px-6 py-4 text-left">Oleh</th>
@@ -190,6 +191,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $usage->alatBerat ? ($usage->alatBerat->kode_alat . ' - ' . $usage->alatBerat->nama . ($usage->alatBerat->merk ? ' - ' . $usage->alatBerat->merk : '')) : '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ $usage->lain_lain ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $usage->kilometer ?? '-' }}
