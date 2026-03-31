@@ -96,7 +96,8 @@
                 @php
                     $hargaSatuan = floatval($item['harga'] ?? 0);
                     $jumlahItems = floatval($item['jumlah'] ?? 0);
-                    $totalBelanja = $hargaSatuan * $jumlahItems;
+                    $adjustmentItem = floatval($item['adjustment'] ?? 0);
+                    $totalBelanja = ($hargaSatuan * $jumlahItems) + $adjustmentItem;
                     $grandTotal += $totalBelanja;
                 @endphp
                 <tr>
@@ -151,7 +152,7 @@
             if (is_array($pranota->items)) {
                 foreach ($pranota->items as $item) {
                     $itemType = $item['type'] ?? '';
-                    $itemNominal = floatval($item['harga'] ?? 0) * floatval($item['jumlah'] ?? 0);
+                    $itemNominal = (floatval($item['harga'] ?? 0) * floatval($item['jumlah'] ?? 0)) + floatval($item['adjustment'] ?? 0);
                     
                     $matched = false;
                     foreach ($displayTypes as $dt) {

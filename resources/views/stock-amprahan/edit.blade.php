@@ -154,6 +154,15 @@
                                     <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                                 @enderror
                             </div>
+
+                            {{-- Adjustment --}}
+                            <div>
+                                <label for="adjustment" class="block text-sm font-semibold text-gray-700 mb-1">Adjustment</label>
+                                <input type="number" name="adjustment" id="adjustment" value="{{ old('adjustment', $item->adjustment ?? 0) }}" placeholder="Contoh: 1000 atau -1000" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                @error('adjustment')
+                                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -183,7 +192,7 @@
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">Rp</span>
                                 <input type="text" id="harga_total" readonly class="w-full pl-10 rounded-lg bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed font-semibold" value="0">
                             </div>
-                            <p class="mt-1 text-[10px] text-gray-500 italic">Otomatis dihitung dari Harga Satuan × Jumlah</p>
+                            <p class="mt-1 text-[10px] text-gray-500 italic">Otomatis dihitung dari (Harga Satuan × Jumlah) + Adjustment</p>
                         </div>
 
                         {{-- Lokasi --}}
@@ -388,7 +397,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateHargaTotal() {
         const harga = parseFloat(document.getElementById('harga_satuan').value) || 0;
         const jumlah = parseFloat(document.getElementById('jumlah').value) || 0;
-        const total = harga * jumlah;
+        const adjustment = parseFloat(document.getElementById('adjustment').value) || 0;
+        const total = (harga * jumlah) + adjustment;
         
         document.getElementById('harga_total').value = total.toLocaleString('id-ID');
     }
@@ -396,6 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Attach listeners for total price calculation
     document.getElementById('harga_satuan').addEventListener('input', updateHargaTotal);
     document.getElementById('jumlah').addEventListener('input', updateHargaTotal);
+    document.getElementById('adjustment').addEventListener('input', updateHargaTotal);
     
     // Initial calculation
     updateHargaTotal();

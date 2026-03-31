@@ -107,7 +107,6 @@
                                 </p>
                             @enderror
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {{-- Type Barang --}}
                             <div class="group">
@@ -160,7 +159,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {{-- Jumlah --}}
                             <div class="group">
                                 <label for="jumlah" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
@@ -186,7 +185,22 @@
                                     </p>
                                 @enderror
                             </div>
+
+                            {{-- Adjustment --}}
+                            <div class="group">
+                                <label for="adjustment" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                    <i class="fas fa-adjust mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Adjustment
+                                </label>
+                                <input type="number" name="adjustment" id="adjustment" value="{{ old('adjustment', 0) }}" placeholder="Contoh: 1000 atau -1000" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
+                                @error('adjustment')
+                                    <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                    </p>
+                                @enderror
+                            </div>
                         </div>
+
+
 
                         {{-- Harga Total --}}
                         <div class="group">
@@ -198,7 +212,7 @@
                                 <input type="text" id="harga_total" readonly class="block w-full pl-12 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 cursor-not-allowed shadow-sm font-semibold" value="0">
                             </div>
                             <p class="mt-1 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>Otomatis dihitung dari Harga Satuan × Jumlah
+                                <i class="fas fa-info-circle mr-1"></i>Otomatis dihitung dari (Harga Satuan × Jumlah) + Adjustment
                             </p>
                         </div>
 
@@ -654,7 +668,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateHargaTotal() {
         const hargaSatuan = parseFloat(document.getElementById('harga_satuan').value) || 0;
         const jumlah = parseFloat(document.getElementById('jumlah').value) || 0;
-        const hargaTotal = hargaSatuan * jumlah;
+        const adjustment = parseFloat(document.getElementById('adjustment').value) || 0;
+        const hargaTotal = (hargaSatuan * jumlah) + adjustment;
         
         // Format number with thousand separators
         const formattedTotal = hargaTotal.toLocaleString('id-ID', {
@@ -668,13 +683,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Add event listeners to harga_satuan and jumlah
+    // Add event listeners to input fields
     const hargaSatuanInput = document.getElementById('harga_satuan');
     const jumlahInput = document.getElementById('jumlah');
+    const adjustmentInput = document.getElementById('adjustment');
     
-    if (hargaSatuanInput && jumlahInput) {
+    if (hargaSatuanInput && jumlahInput && adjustmentInput) {
         hargaSatuanInput.addEventListener('input', updateHargaTotal);
         jumlahInput.addEventListener('input', updateHargaTotal);
+        adjustmentInput.addEventListener('input', updateHargaTotal);
         
         // Calculate on page load if there are old values
         updateHargaTotal();

@@ -186,6 +186,8 @@
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Type Barang</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Jumlah</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Harga</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Adjustment</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Harga Total</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Satuan</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Lokasi</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Status Pranota</th>
@@ -213,6 +215,7 @@
                                 data-nama="{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}"
                                 data-kode="{{ $item->nomor_bukti ?? '-' }}"
                                 data-harga="{{ $item->harga_satuan ?? 0 }}"
+                                data-adjustment="{{ $item->adjustment ?? 0 }}"
                                 data-jumlah="{{ ($item->jumlah ?? 0) + ($item->usages_sum_jumlah ?? 0) }}"
                                 data-satuan="{{ $item->satuan ?? '-' }}"
                                 data-tanggal="{{ $item->tanggal_beli ? $item->tanggal_beli->format('Y-m-d') : ($item->created_at ? $item->created_at->format('Y-m-d') : '-') }}"
@@ -259,6 +262,16 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             Rp {{ number_format($item->harga_satuan ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right {{ ($item->adjustment ?? 0) < 0 ? 'text-red-500' : ($item->adjustment > 0 ? 'text-green-600' : 'text-gray-400') }}">
+                            {{ ($item->adjustment ?? 0) != 0 ? (($item->adjustment > 0 ? '+' : '') . number_format($item->adjustment, 0, ',', '.')) : '0' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
+                            @php
+                                $totalItems = ($item->jumlah ?? 0) + ($item->usages_sum_jumlah ?? 0);
+                                $totalHarga = (($item->harga_satuan ?? 0) * $totalItems) + ($item->adjustment ?? 0);
+                            @endphp
+                            Rp {{ number_format($totalHarga, 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $item->satuan ?? '-' }}
@@ -1527,8 +1540,9 @@
                 const nama = cb.dataset.nama || '-';
                 const kode = cb.dataset.kode || '-';
                 const harga = parseFloat(cb.dataset.harga || 0);
+                const adjustment = parseFloat(cb.dataset.adjustment || 0);
                 const jumlah = parseFloat(cb.dataset.jumlah || 0);
-                const biaya = harga * jumlah;
+                const biaya = (harga * jumlah) + adjustment;
                 totalBiaya += biaya;
 
                 const row = document.createElement('tr');
@@ -1625,6 +1639,7 @@
                         nama_barang: cb.dataset.nama,
                         kode: cb.dataset.kode,
                         harga: cb.dataset.harga,
+                        adjustment: cb.dataset.adjustment,
                         jumlah: cb.dataset.jumlah,
                         satuan: cb.dataset.satuan,
                         tanggal: cb.dataset.tanggal,

@@ -17,6 +17,7 @@ class StockAmprahan extends Model
         'nama_barang',
         'type_barang',
         'harga_satuan',
+        'adjustment',
         'jumlah',
         'satuan',
         'lokasi',
@@ -28,6 +29,7 @@ class StockAmprahan extends Model
     protected $casts = [
         'jumlah' => 'decimal:2',
         'harga_satuan' => 'decimal:2',
+        'adjustment' => 'decimal:2',
         'tanggal_beli' => 'date',
     ];
 

@@ -87,10 +87,11 @@ class StockAmprahanController extends Controller
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
-            'type_amprahan' => 'required|in:Stock,Pemakaian,Perbaikan,Perlengkapan',
+            'type_amprahan' => 'required|in:Stock,Pemakaian,Perbaikan,Perlengkapan,Transportasi',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
+            'adjustment' => 'nullable|numeric',
             'jumlah' => 'required|numeric|min:0',
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
@@ -126,6 +127,7 @@ class StockAmprahanController extends Controller
             'nama_barang' => $data['nama_barang'],
             'master_nama_barang_amprahan_id' => $data['master_nama_barang_amprahan_id'],
             'harga_satuan' => $data['harga_satuan'],
+            'adjustment' => $data['adjustment'] ?? 0,
             'jumlah' => $data['jumlah'],
             'satuan' => $data['satuan'],
             'lokasi' => $data['lokasi'],
@@ -182,10 +184,11 @@ class StockAmprahanController extends Controller
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
-            'type_amprahan' => 'required|in:Stock,Pemakaian,Perbaikan,Perlengkapan',
+            'type_amprahan' => 'required|in:Stock,Pemakaian,Perbaikan,Perlengkapan,Transportasi',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
+            'adjustment' => 'nullable|numeric',
             'jumlah' => 'required|numeric|min:0',
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
@@ -716,6 +719,7 @@ class StockAmprahanController extends Controller
                         'keterangan' => $item->keterangan ?? '-',
                         'nama_barang' => $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? ($it['nama_barang'] ?? '-')),
                         'harga' => $item->harga_satuan ?? ($it['harga'] ?? 0),
+                        'adjustment' => $item->adjustment ?? ($it['adjustment'] ?? 0),
                         'satuan' => $item->satuan ?? ($it['satuan'] ?? '-'),
                     ]);
                 }
