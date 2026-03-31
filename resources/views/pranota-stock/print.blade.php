@@ -85,8 +85,8 @@
                 <th style="width: 15%;">NAMA BARANG</th>
                 <th style="width: 12%;">KETERANGAN</th>
                 <th style="width: 12%;">TOTAL BELANJA</th>
-                <th style="width: 8%;">QTY</th>
-                <th style="width: 13%;">HARGA SATUAN</th>
+                <th style="width: 5%;">QTY</th>
+                <th style="width: 8%;">SATUAN</th>
             </tr>
         </thead>
         <tbody>
@@ -107,8 +107,8 @@
                     <td><span class="font-bold">{{ $item['nama_barang'] ?? ($item['nama'] ?? '-') }}</span></td>
                     <td>{{ $item['keterangan'] ?? '-' }}</td>
                     <td class="text-right">Rp {{ number_format($totalBelanja, 0, ',', '.') }}</td>
-                    <td class="text-center">{{ number_format($jumlahItems, 0, ',', '.') }} {{ $item['satuan'] ?? '' }}</td>
-                    <td class="text-right">Rp {{ number_format($hargaSatuan, 0, ',', '.') }}</td>
+                    <td class="text-center">{{ number_format($jumlahItems, 0, ',', '.') }}</td>
+                    <td class="text-center">{{ $item['satuan'] ?? '-' }}</td>
                 </tr>
                 @endforeach
                 <tr style="background-color: #f9f9f9; font-weight: bold;">
