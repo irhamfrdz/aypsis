@@ -10,6 +10,7 @@ use App\Models\BtmSewaUnit;
 use App\Models\BtmSewaRate;
 use App\Models\BtmSewaTransaction;
 use App\Models\BtmSewaAudit;
+use App\Models\BtmSewaPranota;
 use Illuminate\Support\Facades\DB;
 
 class KontainerSewaFinalController extends Controller
@@ -46,7 +47,7 @@ class KontainerSewaFinalController extends Controller
                 'stT' => $i->billing_mode, 
                 'act' => true
             ]),
-            'cart' => BtmSewaAudit::all()->map(fn($i) => [
+            'cart' => BtmSewaAudit::whereNull('pranota_id')->get()->map(fn($i) => [
                 'id' => $i->id,
                 'idp' => $i->transaction_id . '-' . $i->period_name,
                 'unit' => $i->unit_number,
@@ -54,6 +55,15 @@ class KontainerSewaFinalController extends Controller
                 'aypsis' => (float)$i->aypsis_nominal,
                 'vendorBill' => (float)$i->vendor_nominal,
                 'note' => $i->note
+            ]),
+            'p' => BtmSewaPranota::with('vendor')->latest()->get()->map(fn($i) => [
+                'id' => $i->id,
+                'nomor' => $i->nomor,
+                'vendor' => $i->vendor->name ?? '',
+                'no_inv' => $i->no_invoice,
+                'tgl_inv' => $i->tgl_invoice,
+                'total' => (float)$i->grand_total,
+                'status' => $i->status
             ])
         ];
 
@@ -194,5 +204,85 @@ class KontainerSewaFinalController extends Controller
             DB::rollBack();
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
+    }
+
+    public function submitPranota(Request $request)
+    {
+        $vName = $request->vendor;
+        $noInv = $request->no_invoice;
+        $tglInv = $request->tgl_invoice;
+        $cartData = $request->cart;
+
+        if (empty($cartData)) {
+            return response()->json(['success' => false, 'message' => 'Keranjang kosong']);
+        }
+
+        $vendor = BtmSewaVendor::firstOrCreate(['name' => $vName]);
+        if (!$vendor) {
+            return response()->json(['success' => false, 'message' => 'Gagal membuat/menemukan vendor: ' . $vName]);
+        }
+
+        try {
+            return DB::transaction(function() use ($vendor, $noInv, $tglInv, $cartData) {
+                // Generate Nomor
+                $last = BtmSewaPranota::where('nomor', 'like', 'PTS-BTM-' . date('Y') . '-%')->latest()->first();
+                $num = 1;
+                if ($last) {
+                    $parts = explode('-', $last->nomor);
+                    $num = (int)end($parts) + 1;
+                }
+                $nomor = 'PTS-BTM-' . date('Y') . '-' . str_pad($num, 4, '0', STR_PAD_LEFT);
+
+                $totalAypsis = collect($cartData)->sum('aypsis');
+                $totalVendor = collect($cartData)->sum('vendorBill');
+                $dpp = $totalVendor;
+                $ppn = round($dpp * 0.11);
+                $pph = round($dpp * 0.02);
+                $grand = $dpp + $ppn - $pph;
+
+                $pranota = BtmSewaPranota::create([
+                    'nomor' => $nomor,
+                    'vendor_id' => $vendor->id,
+                    'no_invoice' => $noInv,
+                    'tgl_invoice' => $tglInv,
+                    'total_aypsis' => $totalAypsis,
+                    'total_vendor_bill' => $totalVendor,
+                    'dpp' => $dpp,
+                    'ppn' => $ppn,
+                    'pph' => $pph,
+                    'grand_total' => $grand,
+                    'status' => 'PENDING'
+                ]);
+
+                foreach ($cartData as $c) {
+                    $idpParts = explode('-', $c['idp']);
+                    $transId = (is_numeric($idpParts[0])) ? $idpParts[0] : null;
+
+                    if (!$transId) {
+                        $transId = BtmSewaTransaction::where('unit_number', $c['unit'])->latest()->first()?->id;
+                    }
+
+                    BtmSewaAudit::updateOrCreate(
+                        ['transaction_id' => $transId, 'period_name' => $c['masa'], 'unit_number' => $c['unit']],
+                        [
+                            'aypsis_nominal' => $c['aypsis'],
+                            'vendor_nominal' => $c['vendorBill'],
+                            'note' => $c['note'] ?? null,
+                            'pranota_id' => $pranota->id,
+                            'is_approved' => true
+                        ]
+                    );
+                }
+
+                return response()->json(['success' => true, 'nomor' => $nomor]);
+            });
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+    public function printPranota($id)
+    {
+        $pranota = BtmSewaPranota::with(['vendor', 'audits'])->findOrFail($id);
+        return view('kontainer_sewa_final.print', compact('pranota'));
     }
 }

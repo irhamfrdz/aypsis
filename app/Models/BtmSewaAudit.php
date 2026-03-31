@@ -16,7 +16,14 @@ class BtmSewaAudit extends Model
         'vendor_nominal',
         'is_approved',
         'notes',
+        'note',
+        'pranota_id',
     ];
+
+    public function pranota()
+    {
+        return $this->belongsTo(BtmSewaPranota::class, 'pranota_id');
+    }
 
     public function transaction()
     {

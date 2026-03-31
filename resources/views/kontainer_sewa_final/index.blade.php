@@ -273,6 +273,7 @@
         <button class="nav-btn" onclick="showTab(event, 'tab-unit')"><span>3.</span> Master Kontainer</button>
         <button class="nav-btn" onclick="showTab(event, 'tab-trx')"><span>4.</span> Transaksi IN (OUT)</button>
         <button class="nav-btn active" onclick="showTab(event, 'tab-rekon')"><span>5.</span> Rekon & Audit</button>
+        <button class="nav-btn" onclick="showTab(event, 'tab-pranota')"><span>6.</span> Daftar Pranota</button>
     </nav>
     
     <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #64748b; text-align: center;">
@@ -450,16 +451,29 @@
                         <tfoot id="foot-cart" style="background:#f8fafc; font-weight:bold;"></tfoot>
                     </table>
                 </div>
-                <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn btn-blue" style="padding: 12px 30px;" onclick="simpanPranota()"><i class="fas fa-save"></i> SIMPAN PRANOTA</button>
                     <button class="btn btn-green" style="padding: 12px 30px;" onclick="alert('Fitur Print Tagihan sedang diproses...')">🖨️ CETAK PENGAJUAN</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-pranota" style="display:none">
+        <div class="card">
+            <h4>📋 Daftar Pranota Sewa Kontainer (Final)</h4>
+            <div style="overflow-x: auto;">
+                <table id="tbl-p">
+                    <thead><tr style="background:var(--sidebar-bg); color:white;"><th>No. Pranota</th><th>Vendor</th><th>No. Invoice</th><th>Tgl. Invoice</th><th align="right">Total</th><th>Status</th><th>Aksi</th></tr></thead>
+                    <tbody id="body-p"></tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[] };
+let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[] };
 let pgU = 1, pgX = 1; const rPP = 15;
 let expAudit = null;
 let currentAuditTab = 'outstanding';
@@ -578,7 +592,7 @@ function inputRibuan(el) {
 // --- FUNGSI UPDATE & RENDER ---
 function updateDB() {
     localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
-    renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart();
+    renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP();
     const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value="${x.val||x}">${x.val||x}</option>`).join('');
     ['v','t','z'].forEach(k => { 
         if(document.getElementById('rt-'+k)) document.getElementById('rt-'+k).innerHTML = ops(k); 
@@ -619,6 +633,28 @@ function renderRT() { const body = document.getElementById('body-rt'); if(body) 
 function renderU() { const s = document.getElementById('src-u').value.toUpperCase(); const fil = db.u.filter(x => x.no.includes(s)); document.getElementById('body-u').innerHTML = fil.slice((pgU-1)*rPP, pgU*rPP).map((x,i) => { const idx = db.u.indexOf(x); return `<tr class="${x.act===false?'non-aktif':''}"><td>${((pgU-1)*rPP)+i+1}</td><td>${x.no}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="bukaEditUnit(${idx})">Edit</button> ${x.act!==false?`<button class="btn btn-red" style="padding: 4px 10px;" onclick="delU(${idx})">Off</button>`:''}</td></tr>`; }).join(''); renderPg('pg-u', fil.length, 'pgU', 'renderU'); }
 function renderX() { const s = document.getElementById('src-x').value.toUpperCase(); const fil = db.x.filter(x => x.no.includes(s)); document.getElementById('body-x').innerHTML = fil.slice((pgX-1)*rPP, pgX*rPP).map((x,i) => { const idx = db.x.indexOf(x); const mu = db.u.find(unit => unit.no === x.no); const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z && rt.act !== false) : null; const biaya = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0)); return `<tr><td>${((pgX-1)*rPP)+i+1}</td><td><b>${x.no + toExcelSerial(x.s)}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td>${x.stT||'B'}</td><td class="${x.e?'st-selesai':'st-sewa'}">${x.e?'SELESAI':'SEWA'}</td><td align="right">${fmtRibuan(biaya)}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="bukaEditTrx(${idx})">Edit</button> <button class="btn btn-red" style="padding: 4px 10px;" onclick="delX(${idx})">Hapus</button></td></tr>`; }).join(''); renderPg('pg-x', fil.length, 'pgX', 'renderX'); }
 
+function renderP() {
+    const body = document.getElementById('body-p');
+    if(!body) return;
+    body.innerHTML = db.p.map((x,i) => `
+        <tr>
+            <td><b>${x.nomor}</b></td>
+            <td>${x.vendor}</td>
+            <td>${x.no_inv||'-'}</td>
+            <td>${x.tgl_inv||'-'}</td>
+            <td align="right">Rp ${fmtRibuan(x.total)}</td>
+            <td><span class="${x.status==='PENDING'?'st-sewa':'st-selesai'}">${x.status}</span></td>
+            <td>
+                <button class="btn btn-blue" style="padding: 4px 10px;" onclick="cetakPranota(${x.id})">🔍 Show</button>
+                <button class="btn btn-green" style="padding: 4px 10px;" onclick="cetakPranota(${x.id})">🖨️ Print</button>
+            </td>
+        </tr>`).join('');
+}
+
+function cetakPranota(id) {
+    window.open('{{ url("/kontainer-sewa-final/print-pranota") }}/' + id, '_blank');
+}
+
 function edM(k, i) { const n = prompt("Ubah:", (db[k][i].val || db[k][i])); if(n) { if(typeof db[k][i] === 'object') db[k][i].val = n.toUpperCase(); else db[k][i] = {val:n.toUpperCase(), act:true}; updateDB(); } }
 function edR(i) { const b = prompt("Bln:", db.r[i].rb), h = prompt("Hr:", db.r[i].rh); if(b) db.r[i].rb = parseInt(b); if(h) db.r[i].rh = parseInt(h); updateDB(); }
 function bukaEditUnit(i) { document.getElementById('entry-unit-zone').style.display='none'; document.getElementById('edit-unit-zone').style.display='block'; document.getElementById('edu-idx').value=i; document.getElementById('edu-no').value=db.u[i].no; document.getElementById('edu-v').value=db.u[i].v; document.getElementById('edu-t').value=db.u[i].t; document.getElementById('edu-z').value=db.u[i].z; window.scrollTo(0,0); }
@@ -627,7 +663,7 @@ function batalEditUnit() { document.getElementById('entry-unit-zone').style.disp
 function bukaEditTrx(i) { document.getElementById('entry-trx-zone').style.display='none'; document.getElementById('edit-trx-zone').style.display='block'; document.getElementById('edx-idx').value=i; document.getElementById('edx-no').value=db.x[i].no; document.getElementById('edx-s').value=db.x[i].s; document.getElementById('edx-e').value=db.x[i].e; document.getElementById('edx-st-t').value=db.x[i].stT; window.scrollTo(0,0); }
 function simpanEditTrx() { const i = document.getElementById('edx-idx').value; db.x[i].no = document.getElementById('edx-no').value; db.x[i].s = document.getElementById('edx-s').value; db.x[i].e = document.getElementById('edx-e').value; db.x[i].stT = document.getElementById('edx-st-t').value; batalEditTrx(); updateDB(); }
 function batalEditTrx() { document.getElementById('entry-trx-zone').style.display='block'; document.getElementById('edit-trx-zone').style.display='none'; }
-function showTab(e, id) { document.querySelectorAll('[id^="tab-"]').forEach(x => x.style.display='none'); document.getElementById(id).style.display='block'; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); e.currentTarget.classList.add('active'); if(id==='tab-rekon') updateDB(); }
+function showTab(e, id) { document.querySelectorAll('[id^="tab-"]').forEach(x => x.style.display='none'); document.getElementById(id).style.display='block'; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); e.currentTarget.classList.add('active'); if(id==='tab-rekon'||id==='tab-pranota') updateDB(); }
 function addM(k, id) { const v = document.getElementById(id).value.toUpperCase(); if(v) { db[k].push({val:v, act:true}); document.getElementById(id).value=''; updateDB(); } }
 function addR() { db.r.push({ v:document.getElementById('rt-v').value, t:document.getElementById('rt-t').value, z:document.getElementById('rt-z').value, rb:parseInt(document.getElementById('rt-bln').value)||0, rh:parseInt(document.getElementById('rt-hr').value)||0, act:true }); updateDB(); }
 function tambahUnitManual() { const no = document.getElementById('mu-no').value.toUpperCase(); if(no) { db.u.push({ no, v:document.getElementById('mu-v').value, t:document.getElementById('mu-t').value, z:document.getElementById('mu-z').value, act:true }); document.getElementById('mu-no').value=''; updateDB(); } }
@@ -638,6 +674,45 @@ function delM(k, i) { if(confirm("Set Off?")) { if(typeof db[k][i] === 'object')
 function delR(i) { if(confirm("Set Off?")) { db.r[i].act = false; updateDB(); } }
 function delX(i) { if(confirm("Hapus Trx?")) { db.x.splice(i, 1); updateDB(); } }
 function loadFile(e) { const fr = new FileReader(); fr.onload = (x) => { db = JSON.parse(x.target.result); if(!db.cart) db.cart = []; updateDB(); }; fr.readAsText(e.target.files[0]); }
+function simpanPranota() {
+    const v = document.getElementById('aud-v-name').value;
+    const inv = document.getElementById('aud-no-inv').value;
+    const tgl = document.getElementById('aud-tgl-inv').value;
+    if(!v) return alert('Pilih Vendor Terlebih Dahulu');
+    if(!db.cart.length) return alert('Keranjang masih kosong');
+
+    if(!confirm('Simpan Pranota ini? Data dalam keranjang akan dikunci.')) return;
+
+    fetch('{{ route('kontainer-sewa-final.submit-pranota') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            vendor: v,
+            no_invoice: inv,
+            tgl_invoice: tgl,
+            cart: db.cart
+        })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if(d.success) {
+            alert("Pranota Berhasil Disimpan: " + d.nomor);
+            db.cart = []; // Kosongkan keranjang lokal
+            localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
+            location.reload(); // Reload untuk membersihkan status
+        } else {
+            alert("Error: " + d.message);
+        }
+    })
+    .catch(e => {
+        console.error(e);
+        alert("Terjadi kesalahan sistem");
+    });
+}
+
 function simpanData() {
     syncWithDB();
     const a = document.createElement('a');
@@ -681,11 +756,16 @@ window.onload = () => {
 
     if(s) { 
         db = JSON.parse(s); 
+        // Selalu ambil daftar pranota dan vendor terbaru dari database
+        db.p = initial.p || [];
+        db.v = initial.v || db.v;
+        db.cart = initial.cart || db.cart; 
     } else {
         db = initial;
     }
     
     if(!db.cart) db.cart = []; 
+    if(!db.p) db.p = [];
     updateDB(); 
 };
 </script>
