@@ -196,6 +196,18 @@
                     @forelse($items as $item)
                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $refItems = [];
+                                $firstUsage = $item->usages->first();
+                                if ($firstUsage) {
+                                    if ($firstUsage->kapal) $refItems[] = $firstUsage->kapal->nama_kapal;
+                                    if ($firstUsage->alatBerat) $refItems[] = $firstUsage->alatBerat->kode_alat;
+                                    if ($firstUsage->mobil) $refItems[] = $firstUsage->mobil->nomor_polisi;
+                                    if ($firstUsage->buntut) $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
+                                    if ($firstUsage->lain_lain) $refItems[] = $firstUsage->lain_lain;
+                                }
+                                $reference = count($refItems) > 0 ? implode(' / ', $refItems) : '-';
+                            @endphp
                             <input type="checkbox" class="item-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
                                 value="{{ $item->id }}"
                                 data-nama="{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}"
@@ -203,6 +215,10 @@
                                 data-harga="{{ $item->harga_satuan ?? 0 }}"
                                 data-jumlah="{{ ($item->jumlah ?? 0) + ($item->usages_sum_jumlah ?? 0) }}"
                                 data-satuan="{{ $item->satuan ?? '-' }}"
+                                data-tanggal="{{ $item->tanggal_beli ? $item->tanggal_beli->format('Y-m-d') : ($item->created_at ? $item->created_at->format('Y-m-d') : '-') }}"
+                                data-type="{{ $item->type_amprahan ?? '-' }}"
+                                data-reference="{{ $reference }}"
+                                data-keterangan="{{ $item->keterangan ?? '-' }}"
                             >
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -1598,7 +1614,11 @@
                         kode: cb.dataset.kode,
                         harga: cb.dataset.harga,
                         jumlah: cb.dataset.jumlah,
-                        satuan: cb.dataset.satuan
+                        satuan: cb.dataset.satuan,
+                        tanggal: cb.dataset.tanggal,
+                        type: cb.dataset.type,
+                        reference: cb.dataset.reference,
+                        keterangan: cb.dataset.keterangan
                     });
                 }
             });

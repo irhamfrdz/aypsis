@@ -21,7 +21,7 @@ class StockAmprahanController extends Controller
     {
         $search = $request->get('search');
         
-        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'updatedBy'])
+        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'updatedBy', 'usages.mobil', 'usages.buntut', 'usages.kapal', 'usages.alatBerat'])
             ->withSum('usages', 'jumlah')
             ->latest();
             

@@ -3,34 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pranota Stock Amprahan - {{ $pranota->nomor_pranota }}</title>
+    <title>PERMOHONAN TRANSFER - {{ $pranota->nomor_pranota }}</title>
     <style>
-        body { font-family: 'Arial', sans-serif; font-size: 11pt; margin: 20px; color: #333; }
+        body { font-family: 'Arial', sans-serif; font-size: 10pt; margin: 20px; color: #333; }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #444; padding-bottom: 10px; }
-        .header h1 { margin: 0; font-size: 18pt; color: #000; text-transform: uppercase; }
-        .header p { margin: 5px 0 0; font-size: 10pt; color: #666; }
+        .header h1 { margin: 0; font-size: 16pt; color: #000; text-transform: uppercase; }
+        .header p { margin: 5px 0 0; font-size: 9pt; color: #666; }
         
         .info-table { width: 100%; margin-bottom: 25px; border-collapse: collapse; }
-        .info-table td { padding: 5px 0; vertical-align: top; }
-        .info-table .label { width: 140px; font-weight: bold; }
-        .info-table .separator { width: 20px; text-align: center; }
+        .info-table td { padding: 4px 0; vertical-align: top; }
+        .info-table .label { width: 130px; font-weight: bold; font-size: 9pt; }
+        .info-table .separator { width: 15px; text-align: center; }
+        .info-table td:not(.label):not(.separator) { font-size: 9pt; }
         
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: fixed; }
-        .items-table th { background-color: #f2f2f2; border: 1px solid #ccc; padding: 10px; text-align: left; font-size: 10pt; text-transform: uppercase; }
-        .items-table td { border: 1px solid #ccc; padding: 8px 10px; font-size: 10pt; word-wrap: break-word; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: fixed; border: 1px solid #000; }
+        .items-table th { background-color: #f2f2f2; border: 1px solid #000; padding: 6px 4px; text-align: center; font-size: 8.5pt; text-transform: uppercase; font-weight: bold; }
+        .items-table td { border: 1px solid #000; padding: 6px 4px; font-size: 8.5pt; word-wrap: break-word; vertical-align: middle; }
         
-        .footer { margin-top: 50px; width: 100%; }
+        .footer { margin-top: 40px; width: 100%; }
         .footer-table { width: 100%; border-collapse: collapse; }
-        .footer-table td { width: 33.33%; text-align: center; vertical-align: bottom; height: 120px; }
-        .signature-line { border-bottom: 1px solid #000; width: 180px; margin: 0 auto 5px; }
-        .signature-label { font-size: 10pt; font-weight: bold; }
+        .footer-table td { width: 33.33%; text-align: center; vertical-align: bottom; height: 100px; }
+        .signature-line { border-bottom: 1px solid #000; width: 160px; margin: 0 auto 5px; }
+        .signature-label { font-size: 9pt; font-weight: bold; }
 
-        .keterangan-section { margin-top: 20px; padding: 10px; border: 1px dashed #ccc; background-color: #fdfdfd; }
-        .keterangan-title { font-weight: bold; font-size: 10pt; margin-bottom: 5px; text-decoration: underline; }
-        .keterangan-text { font-size: 10pt; line-height: 1.4; color: #555; }
+        .keterangan-section { margin-top: 15px; padding: 8px; border: 1px dashed #ccc; background-color: #fdfdfd; }
+        .keterangan-title { font-weight: bold; font-size: 9pt; margin-bottom: 4px; text-decoration: underline; }
+        .keterangan-text { font-size: 9pt; line-height: 1.3; color: #555; }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .font-bold { font-weight: bold; }
 
         @media print {
-            body { margin: 10mm; }
+            body { margin: 5mm; }
             .no-print { display: none; }
             .header { border-bottom-color: #000; }
             .items-table th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
@@ -39,7 +44,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Pranota Stock Amprahan</h1>
+        <h1>PERMOHONAN TRANSFER</h1>
         <p>Laporan Penggunaan Barang Gudang PSA</p>
     </div>
 
@@ -48,62 +53,83 @@
             <td class="label">Nomor Pranota</td>
             <td class="separator">:</td>
             <td><strong>{{ $pranota->nomor_pranota }}</strong></td>
-            <td class="label">Nomor Accurate</td>
-            <td class="separator">:</td>
-            <td>{{ $pranota->nomor_accurate ?? '-' }}</td>
-        </tr>
-        <tr>
-            <td class="label">Tanggal</td>
-            <td class="separator">:</td>
-            <td>{{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d F Y') : '-' }}</td>
-            <td class="label">Admin</td>
-            <td class="separator">:</td>
-            <td>{{ $pranota->creator->name ?? '-' }}</td>
-        </tr>
-        @if($pranota->vendor || $pranota->rekening || $pranota->penerima)
-        <tr>
-            <td class="label">Vendor</td>
-            <td class="separator">:</td>
-            <td>{{ $pranota->vendor ?? '-' }}</td>
             <td class="label">Penerima</td>
             <td class="separator">:</td>
             <td>{{ $pranota->penerima ?? '-' }}</td>
         </tr>
         <tr>
+            <td class="label">Tanggal Pranota</td>
+            <td class="separator">:</td>
+            <td>{{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d F Y') : '-' }}</td>
+            <td class="label">Vendor</td>
+            <td class="separator">:</td>
+            <td>{{ $pranota->vendor ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label">Nomor Accurate</td>
+            <td class="separator">:</td>
+            <td>{{ $pranota->nomor_accurate ?? '-' }}</td>
             <td class="label">Rekening</td>
             <td class="separator">:</td>
-            <td colspan="4">{{ $pranota->rekening ?? '-' }}</td>
+            <td>{{ $pranota->rekening ?? '-' }}</td>
         </tr>
-        @endif
     </table>
 
     <table class="items-table">
         <thead>
             <tr>
-                <th style="width: 40px; text-align: center;">No</th>
-                <th style="width: 250px;">Nama Barang / Sparepart</th>
-                <th style="width: 80px; text-align: center;">Jumlah</th>
-                <th style="width: 70px; text-align: center;">Satuan</th>
-                <th>Keterangan Penggunaan</th>
+                <th style="width: 3%;">NO</th>
+                <th style="width: 10%;">TANGGAL BELI</th>
+                <th style="width: 18%;">KAPAL/ALAT/MOBIL/BUNTUT/LAIN</th>
+                <th style="width: 9%;">TYPE</th>
+                <th style="width: 15%;">NAMA BARANG</th>
+                <th style="width: 12%;">KETERANGAN</th>
+                <th style="width: 12%;">TOTAL BELANJA</th>
+                <th style="width: 8%;">QTY</th>
+                <th style="width: 13%;">HARGA SATUAN</th>
             </tr>
         </thead>
         <tbody>
-            @php $i = 1; @endphp
+            @php $i = 1; $grandTotal = 0; @endphp
             @if(is_array($pranota->items))
                 @foreach($pranota->items as $item)
+                @php
+                    $hargaSatuan = floatval($item['harga'] ?? 0);
+                    $jumlahItems = floatval($item['jumlah'] ?? 0);
+                    $totalBelanja = $hargaSatuan * $jumlahItems;
+                    $grandTotal += $totalBelanja;
+                @endphp
                 <tr>
-                    <td style="text-align: center;">{{ $i++ }}</td>
-                    <td>
-                        <strong>{{ $item['nama_barang'] ?? ($item['nama'] ?? '-') }}</strong><br>
-                        <small style="color: #666;">Bukti: {{ $item['kode'] ?? ($item['nomor_bukti'] ?? '-') }}</small>
-                    </td>
-                    <td style="text-align: center;">{{ number_format($item['jumlah'] ?? 0, 2, ',', '.') }}</td>
-                    <td style="text-align: center;">{{ $item['satuan'] ?? '-' }}</td>
-                    <td>{{ $item['keterangan'] ?? ($pranota->keterangan ?? '-') }}</td>
+                    <td class="text-center">{{ $i++ }}</td>
+                    <td class="text-center">{{ $item['tanggal'] ?? '-' }}</td>
+                    <td class="text-center">{{ $item['reference'] ?? '-' }}</td>
+                    <td class="text-center">{{ $item['type'] ?? '-' }}</td>
+                    <td><span class="font-bold">{{ $item['nama_barang'] ?? ($item['nama'] ?? '-') }}</span></td>
+                    <td>{{ $item['keterangan'] ?? '-' }}</td>
+                    <td class="text-right">Rp {{ number_format($totalBelanja, 0, ',', '.') }}</td>
+                    <td class="text-center">{{ number_format($jumlahItems, 0, ',', '.') }} {{ $item['satuan'] ?? '' }}</td>
+                    <td class="text-right">Rp {{ number_format($hargaSatuan, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
+                <tr style="background-color: #f9f9f9; font-weight: bold;">
+                    <td colspan="6" class="text-right px-4">SUBTOTAL</td>
+                    <td class="text-right">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
+                    <td colspan="2"></td>
+                </tr>
+                @if($pranota->adjustment != 0)
+                <tr style="font-weight: bold;">
+                    <td colspan="6" class="text-right px-4">ADJUSTMENT</td>
+                    <td class="text-right">Rp {{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
+                    <td colspan="2"></td>
+                </tr>
+                <tr style="background-color: #eee; font-weight: bold; font-size: 10pt;">
+                    <td colspan="6" class="text-right px-4">TOTAL AKHIR</td>
+                    <td class="text-right">Rp {{ number_format($grandTotal + $pranota->adjustment, 0, ',', '.') }}</td>
+                    <td colspan="2"></td>
+                </tr>
+                @endif
             @else
-                <tr><td colspan="5" style="text-align: center; color: #999;">Tidak ada data item</td></tr>
+                <tr><td colspan="9" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
             @endif
         </tbody>
     </table>
