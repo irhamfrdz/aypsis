@@ -201,7 +201,7 @@
                                 $firstUsage = $item->usages->first();
                                 if ($firstUsage) {
                                     if ($firstUsage->kapal) $refItems[] = $firstUsage->kapal->nama_kapal;
-                                    if ($firstUsage->alatBerat) $refItems[] = $firstUsage->alatBerat->kode_alat;
+                                    if ($firstUsage->alatBerat) $refItems[] = $firstUsage->alatBerat->nama;
                                     if ($firstUsage->mobil) $refItems[] = $firstUsage->mobil->nomor_polisi;
                                     if ($firstUsage->buntut) $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
                                     if ($firstUsage->lain_lain) $refItems[] = $firstUsage->lain_lain;
