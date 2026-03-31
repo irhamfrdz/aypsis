@@ -19,6 +19,7 @@ class AsuransiTandaTerima extends Model
         'nomor_polis',
         'tanggal_polis',
         'nilai_pertanggungan',
+        'asuransi_rate',
         'premi',
         'grand_total',
         'asuransi_path',
@@ -31,6 +32,7 @@ class AsuransiTandaTerima extends Model
     protected $casts = [
         'tanggal_polis' => 'date',
         'nilai_pertanggungan' => 'decimal:2',
+        'asuransi_rate' => 'decimal:4',
         'premi' => 'decimal:2',
         'grand_total' => 'decimal:2',
     ];

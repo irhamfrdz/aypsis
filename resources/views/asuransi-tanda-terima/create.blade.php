@@ -201,6 +201,15 @@
                         @error('nilai_barang') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
+                    <!-- Rate Asuransi -->
+                    <div>
+                        <label for="asuransi_rate" class="block text-sm font-medium text-gray-700 mb-2">Rate Asuransi (%) <span class="text-red-500">*</span></label>
+                        <input type="number" step="0.0001" id="asuransi_rate" name="asuransi_rate" value="{{ old('asuransi_rate', 0) }}" required
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Contoh: 0.2">
+                        @error('asuransi_rate') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
                     <!-- Grand Total -->
                     <div>
                         <label for="grand_total" class="block text-sm font-medium text-gray-700 mb-2">Grand Total (Premi)</label>
@@ -209,7 +218,7 @@
                             <input type="text" id="grand_total" name="grand_total" value="0" readonly
                                    class="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 bg-gray-50 focus:outline-none font-semibold text-gray-800">
                         </div>
-                        <p class="mt-1 text-xs text-gray-500" id="tarif_info_text">Tarif: 0%</p>
+                        <p class="mt-1 text-xs text-gray-500" id="tarif_info_text">Tarif default vendor: 0%</p>
                     </div>
 
                     <!-- File Upload -->
@@ -266,18 +275,17 @@
     function calculateGrandTotal() {
         const select = document.getElementById('vendor_asuransi_id');
         const nilaiInput = document.getElementById('nilai_barang');
+        const rateInput = document.getElementById('asuransi_rate');
         const grandTotalInput = document.getElementById('grand_total');
         const tarifInfo = document.getElementById('tarif_info_text');
 
-        if (!select || !nilaiInput || !grandTotalInput) return;
+        if (!nilaiInput || !rateInput || !grandTotalInput) return;
 
-        const selectedOption = select.options[select.selectedIndex];
-        const tarif = selectedOption ? parseFloat(selectedOption.getAttribute('data-tarif')) || 0 : 0;
+        const rate = parseFloat(rateInput.value) || 0;
         const nilai = parseFloat(nilaiInput.value) || 0;
 
-        const total = nilai * (tarif / 100);
+        const total = nilai * (rate / 100);
         
-        // Format to IDR without fraction if integer, or with 2 decimals if float
         const formatted = new Intl.NumberFormat('id-ID', {
             minimumFractionDigits: 0,
             maximumFractionDigits: 2
@@ -285,9 +293,24 @@
         
         grandTotalInput.value = formatted;
         
-        if (tarifInfo) {
-            tarifInfo.textContent = 'Tarif: ' + tarif + '%';
+        if (select && tarifInfo) {
+            const selectedOption = select.options[select.selectedIndex];
+            const defaultRate = selectedOption ? parseFloat(selectedOption.getAttribute('data-tarif')) || 0 : 0;
+            tarifInfo.textContent = 'Tarif default vendor: ' + defaultRate + '%';
         }
+    }
+
+    function onVendorChange() {
+        const select = document.getElementById('vendor_asuransi_id');
+        const rateInput = document.getElementById('asuransi_rate');
+        if (!select || !rateInput) return;
+
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
+            rateInput.value = tarif;
+        }
+        calculateGrandTotal();
     }
 
     function updateReceiptInfo() {
@@ -361,17 +384,21 @@
         // Add event listeners for grand total
         const vendorSelect = document.getElementById('vendor_asuransi_id');
         const nilaiInput = document.getElementById('nilai_barang');
+        const rateInput = document.getElementById('asuransi_rate');
         const typeSelect = document.getElementById('receipt_type');
         const ttSelect = document.getElementById('receipt_id_tt');
         const tttsjSelect = document.getElementById('receipt_id_tttsj');
         const lclSelect = document.getElementById('receipt_id_lcl');
 
         if (vendorSelect) {
-            vendorSelect.addEventListener('change', calculateGrandTotal);
-            if (typeof $ !== 'undefined') { $(vendorSelect).on('change', calculateGrandTotal); }
+            vendorSelect.addEventListener('change', onVendorChange);
+            if (typeof $ !== 'undefined') { $(vendorSelect).on('change', onVendorChange); }
         }
         if (nilaiInput) {
             nilaiInput.addEventListener('input', calculateGrandTotal);
+        }
+        if (rateInput) {
+            rateInput.addEventListener('input', calculateGrandTotal);
         }
 
         if (typeSelect) {

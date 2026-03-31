@@ -155,6 +155,7 @@ class AsuransiTandaTerimaController extends Controller
             'nomor_polis' => 'required|string|max:255',
             'tanggal_polis' => 'required|date',
             'nilai_barang' => 'required|numeric|min:0',
+            'asuransi_rate' => 'required|numeric|min:0',
             'asuransi_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
@@ -163,8 +164,11 @@ class AsuransiTandaTerimaController extends Controller
         ]);
         
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
+        $rate = $request->asuransi_rate ?? ($vendor->tarif ?? 0);
+        
         $data['nilai_pertanggungan'] = $request->nilai_barang;
-        $data['premi'] = $request->nilai_barang * (($vendor->tarif ?? 0) / 100);
+        $data['asuransi_rate'] = $rate;
+        $data['premi'] = $request->nilai_barang * ($rate / 100);
         $data['grand_total'] = $data['premi'];
 
         // Map receipt type to column
@@ -208,6 +212,7 @@ class AsuransiTandaTerimaController extends Controller
             'nomor_polis' => 'required|string|max:255',
             'tanggal_polis' => 'required|date',
             'nilai_barang' => 'required|numeric|min:0',
+            'asuransi_rate' => 'required|numeric|min:0',
             'asuransi_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
@@ -216,8 +221,11 @@ class AsuransiTandaTerimaController extends Controller
         ]);
 
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
+        $rate = $request->asuransi_rate ?? ($vendor->tarif ?? 0);
+
         $data['nilai_pertanggungan'] = $request->nilai_barang;
-        $data['premi'] = $request->nilai_barang * (($vendor->tarif ?? 0) / 100);
+        $data['asuransi_rate'] = $rate;
+        $data['premi'] = $request->nilai_barang * ($rate / 100);
         $data['grand_total'] = $data['premi'];
 
         if ($request->hasFile('asuransi_file')) {
