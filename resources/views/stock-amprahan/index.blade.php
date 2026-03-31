@@ -270,6 +270,16 @@
                             @else
                                 <span class="px-2.5 py-1 text-[10px] font-black rounded-full bg-gray-100 text-gray-400 uppercase tracking-tighter shadow-sm border border-gray-200">Belum Dibuat Pranota</span>
                             @endif
+
+                            @if(Auth::check() && (strtolower(Auth::user()->username ?? '') == 'kiky' || strtolower(Auth::user()->name ?? '') == 'kiky'))
+                                <form action="{{ route('stock-amprahan.toggle-pranota-status', $item->id) }}" method="POST" class="inline mt-1 block">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="text-[9px] text-gray-400 hover:text-indigo-600 transition-colors uppercase font-bold tracking-tight" onclick="return confirm('Apakah Anda yakin ingin mengubah status pranota barang ini?')">
+                                        (Ubah Status)
+                                    </button>
+                                </form>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end space-x-2">

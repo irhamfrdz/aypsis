@@ -748,4 +748,12 @@ class StockAmprahanController extends Controller
             return redirect()->back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
         }
     }
+    public function togglePranotaStatus($id)
+    {
+        $item = StockAmprahan::findOrFail($id);
+        $item->status_pranota = ($item->status_pranota == 'Sudah') ? 'Belum' : 'Sudah';
+        $item->save();
+        
+        return back()->with('success', 'Status Pranota berhasil diperbarui.');
+    }
 }

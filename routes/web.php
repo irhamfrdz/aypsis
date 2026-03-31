@@ -5036,7 +5036,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                'destroy' => 'can:stock-amprahan-delete'
           ]);
 
-
+    Route::patch('stock-amprahan/{id}/toggle-pranota-status', [\App\Http\Controllers\StockAmprahanController::class, 'togglePranotaStatus'])
+        ->name('stock-amprahan.toggle-pranota-status')
+        ->middleware('only.kiky');
 
     // 📊 Prospek Batam Management
     Route::get('prospek-batam', [ProspekBatamController::class, 'index'])->name('prospek-batam.index')
