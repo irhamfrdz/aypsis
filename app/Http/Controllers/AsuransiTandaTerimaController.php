@@ -20,7 +20,20 @@ class AsuransiTandaTerimaController extends Controller
 
         // Tanda Terima Regular
         $tt = DB::table('tanda_terimas')
-            ->select('id', DB::raw("'tt' as type"), 'no_surat_jalan as number', 'tanggal as date', 'pengirim', 'penerima', 'no_kontainer', 'created_at', DB::raw('NULL as deleted_at'))
+            ->select(
+                'id', 
+                DB::raw("'tt' as type"), 
+                'no_surat_jalan as number', 
+                'tanggal as date', 
+                'pengirim', 
+                'penerima', 
+                'no_kontainer', 
+                'nama_barang', 
+                'jumlah as kuantitas', 
+                'satuan', 
+                'created_at', 
+                DB::raw('NULL as deleted_at')
+            )
             ->when($search, function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
@@ -30,7 +43,20 @@ class AsuransiTandaTerimaController extends Controller
 
         // Tanda Terima Tanpa SJ
         $tttsj = DB::table('tanda_terima_tanpa_surat_jalan')
-            ->select('id', DB::raw("'tttsj' as type"), 'no_tanda_terima as number', 'tanggal_tanda_terima as date', 'pengirim', 'penerima', 'no_kontainer', 'created_at', DB::raw('NULL as deleted_at'))
+            ->select(
+                'id', 
+                DB::raw("'tttsj' as type"), 
+                'no_tanda_terima as number', 
+                'tanggal_tanda_terima as date', 
+                'pengirim', 
+                'penerima', 
+                'no_kontainer', 
+                'nama_barang', 
+                'jumlah_barang as kuantitas', 
+                'satuan_barang as satuan', 
+                'created_at', 
+                DB::raw('NULL as deleted_at')
+            )
             ->when($search, function($q) use ($search) {
                 $q->where('no_tanda_terima', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
@@ -48,7 +74,10 @@ class AsuransiTandaTerimaController extends Controller
                 'tanggal_tanda_terima as date', 
                 'nama_pengirim as pengirim', 
                 'nama_penerima as penerima', 
-                DB::raw('GROUP_CONCAT(tanda_terima_lcl_kontainer_pivot.nomor_kontainer SEPARATOR ", ") as no_kontainer'),
+                DB::raw('GROUP_CONCAT(DISTINCT tanda_terima_lcl_kontainer_pivot.nomor_kontainer SEPARATOR ", ") as no_kontainer'),
+                DB::raw('(SELECT GROUP_CONCAT(nama_barang SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as nama_barang'),
+                DB::raw('(SELECT SUM(jumlah) FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as kuantitas'),
+                DB::raw('(SELECT GROUP_CONCAT(DISTINCT satuan SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as satuan'),
                 'tanda_terimas_lcl.created_at', 
                 'tanda_terimas_lcl.deleted_at'
             )
