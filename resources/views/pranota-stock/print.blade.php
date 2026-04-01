@@ -79,7 +79,7 @@
         <thead>
             <tr>
                 <th style="width: 3%;">NO</th>
-                <th style="width: 10%;">TANGGAL BELI</th>
+                <th style="width: 10%;">TANGGAL</th>
                 <th style="width: 18%;">KAPAL/ALAT/MOBIL/BUNTUT/LAIN</th>
                 <th style="width: 9%;">TYPE</th>
                 <th style="width: 15%;">NAMA BARANG</th>
