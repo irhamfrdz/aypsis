@@ -107,7 +107,7 @@
                                 Tanggal
                             </th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Referensi
+                                No. Accurate
                             </th>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Keterangan
@@ -139,8 +139,14 @@
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                     {{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->format('d/m/Y') }}
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-blue-600">
-                                    {{ $trx->nomor_referensi ?? '-' }}
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                    @if($trx->nomor_accurate)
+                                        <span class="text-blue-600">{{ $trx->nomor_accurate }}</span>
+                                    @elseif($trx->nomor_referensi && $trx->nomor_referensi !== '-')
+                                        <span class="text-gray-400 text-xs italic">{{ $trx->nomor_referensi }}</span>
+                                    @else
+                                        <span class="text-gray-300">-</span>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-700">
                                     {{ $trx->keterangan ?? '-' }}

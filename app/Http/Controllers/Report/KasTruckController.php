@@ -72,7 +72,65 @@ class KasTruckController extends Controller
                 // if no date, original saldo should be from actual account?
                 // actually if no start date, we just accumulate from the very first record.
             }
-            
+
+            // -------------------------------------------------------
+            // Batch lookup nomor_accurate dari semua tabel transaksi
+            // -------------------------------------------------------
+            $referensiList = $transactions->pluck('nomor_referensi')->filter()->unique()->values()->toArray();
+            $nomorAccurateMap = [];
+
+            if (!empty($referensiList)) {
+                // Tabel yang menggunakan kolom 'nomor' sebagai primary key referensi
+                $tablesWithNomor = [
+                    'pembayaran_aktivitas_lains',
+                    'pembayaran_invoice_aktivitas_lain',
+                ];
+                foreach ($tablesWithNomor as $tbl) {
+                    try {
+                        $rows = DB::table($tbl)
+                            ->whereIn('nomor', $referensiList)
+                            ->whereNotNull('nomor_accurate')
+                            ->where('nomor_accurate', '!=', '')
+                            ->pluck('nomor_accurate', 'nomor');
+                        foreach ($rows as $key => $accurate) {
+                            if (!isset($nomorAccurateMap[$key])) {
+                                $nomorAccurateMap[$key] = $accurate;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Skip jika tabel/kolom tidak ada
+                    }
+                }
+
+                // Tabel yang menggunakan kolom 'nomor_pembayaran' sebagai primary key referensi
+                $tablesWithNomorPembayaran = [
+                    'pembayaran_pranota_uang_jalans',
+                    'pembayaran_pranota_uang_jalan_batams',
+                    'pembayaran_pranota_obs',
+                    'pembayaran_obs',
+                    'pembayaran_pranota_kontainer',
+                    'pembayaran_pranota_vendor_supirs',
+                    'pembayaran_dp_obs',
+                ];
+                foreach ($tablesWithNomorPembayaran as $tbl) {
+                    try {
+                        $rows = DB::table($tbl)
+                            ->whereIn('nomor_pembayaran', $referensiList)
+                            ->whereNotNull('nomor_accurate')
+                            ->where('nomor_accurate', '!=', '')
+                            ->pluck('nomor_accurate', 'nomor_pembayaran');
+                        foreach ($rows as $key => $accurate) {
+                            if (!isset($nomorAccurateMap[$key])) {
+                                $nomorAccurateMap[$key] = $accurate;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Skip jika tabel/kolom tidak ada
+                    }
+                }
+            }
+            // -------------------------------------------------------
+
             // Calculate running balances
             $runningBalance = $saldoAwal;
             
@@ -85,6 +143,9 @@ class KasTruckController extends Controller
                 
                 // Add virtual attribute for view rendering
                 $t->running_balance = $runningBalance;
+
+                // Attach nomor_accurate dari tabel sumber transaksi
+                $t->nomor_accurate = $nomorAccurateMap[$t->nomor_referensi] ?? null;
             }
             
             $saldoAkhir = $runningBalance;

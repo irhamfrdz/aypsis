@@ -167,7 +167,37 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <!-- Akun Biaya Field -->
+                            <div>
+                                <label for="akun_coa_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Pilih Akun Biaya <span class="text-red-500">*</span>
+                                </label>
+                                <select name="akun_coa_id" id="akun_coa_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                    <option value="">-- Pilih Akun Biaya --</option>
+                                    @foreach($akunBiayaList as $akun)
+                                        <option value="{{ $akun->id }}" data-nama="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor }}" {{ old('akun_coa_id', $pembayaran->akun_coa_id) == $akun->id ? 'selected' : '' }}>
+                                            {{ $akun->kode_nomor }} - {{ $akun->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('akun_coa_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Dynamic Journal Preview -->
+                            <div>
+                                <div id="journal_preview" class="p-4 bg-gray-50 border border-gray-200 rounded-md text-sm hidden h-full">
+                                    <p class="font-bold text-gray-800 mb-2 border-b border-gray-200 pb-1">📋 Preview Jurnal Double Book:</p>
+                                    <div id="journal_content" class="text-gray-700">
+                                        <!-- Content will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                             <!-- Kegiatan Field -->
                             <div>
                                 <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -514,6 +544,102 @@ document.addEventListener('DOMContentLoaded', function() {
     if (kegiatanValue) {
         loadNomorVoyage();
     }
+    
+    updateJournalPreview();
+});
+
+// Function to calculate total payment across all supirs
+function getTotalPayment() {
+    const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
+    let totalAmount = 0;
+    hiddenInputs.forEach(function(input) {
+        const amount = parseInt(input.value) || 0;
+        totalAmount += amount;
+    });
+    return totalAmount;
+}
+
+// Function to update Journal Preview
+function updateJournalPreview() {
+    const jenisTransaksiSelect = document.getElementById('jenis_transaksi');
+    const akunBiayaSelect = document.getElementById('akun_coa_id');
+    const akunBankSelect = document.getElementById('kas_bank');
+    const journalPreview = document.getElementById('journal_preview');
+    const journalContent = document.getElementById('journal_content');
+    
+    if (!jenisTransaksiSelect || !akunBiayaSelect || !akunBankSelect || !journalPreview || !journalContent) return;
+
+    const jenisTransaksi = jenisTransaksiSelect.value;
+    const akunBiaya = akunBiayaSelect.selectedOptions[0];
+    const akunBank = akunBankSelect.selectedOptions[0];
+    const jumlah = getTotalPayment();
+    
+    if (!jenisTransaksi || !akunBiaya || !akunBiaya.value || !akunBank || !akunBank.value || jumlah <= 0) {
+        journalPreview.classList.add('hidden');
+        return;
+    }
+    
+    const akunBiayaNama = akunBiaya.dataset.nama ? `${akunBiaya.dataset.kode} - ${akunBiaya.dataset.nama}` : akunBiaya.textContent;
+    const cleanBankNama = akunBank.textContent.replace(/\(Saldo:.*\)/, '').trim();
+
+    const jumlahFormatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(jumlah);
+    
+    let journalHtml = '';
+    
+    if (jenisTransaksi === 'kredit') {
+        journalHtml = `
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-100 p-2 rounded border border-blue-300">
+                    <p class="font-medium text-blue-800">DEBIT (+)</p>
+                    <p class="text-xs text-blue-700">${akunBiayaNama}</p>
+                    <p class="font-bold text-blue-900">${jumlahFormatted}</p>
+                </div>
+                <div class="bg-gray-200 p-2 rounded border border-gray-300">
+                    <p class="font-medium text-gray-700">KREDIT (-)</p>
+                    <p class="text-xs text-gray-600">${cleanBankNama}</p>
+                    <p class="font-bold text-gray-800">${jumlahFormatted}</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mt-2">💡 <strong>Efek:</strong> ${akunBiayaNama} bertambah, ${cleanBankNama} berkurang</p>
+        `;
+    } else {
+        journalHtml = `
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-100 p-2 rounded border border-blue-300">
+                    <p class="font-medium text-blue-800">DEBIT (+)</p>
+                    <p class="text-xs text-blue-700">${cleanBankNama}</p>
+                    <p class="font-bold text-blue-900">${jumlahFormatted}</p>
+                </div>
+                <div class="bg-gray-200 p-2 rounded border border-gray-300">
+                    <p class="font-medium text-gray-700">KREDIT (-)</p>
+                    <p class="text-xs text-gray-600">${akunBiayaNama}</p>
+                    <p class="font-bold text-gray-800">${jumlahFormatted}</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mt-2">💡 <strong>Efek:</strong> ${cleanBankNama} bertambah, ${akunBiayaNama} berkurang</p>
+        `;
+    }
+    
+    journalContent.innerHTML = journalHtml;
+    journalPreview.classList.remove('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const bindings = ['jenis_transaksi', 'kas_bank', 'akun_coa_id'];
+    bindings.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', updateJournalPreview);
+    });
+
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.name && e.target.name.includes('jumlah_display')) {
+            updateJournalPreview();
+        }
+    });
 });
 </script>
 

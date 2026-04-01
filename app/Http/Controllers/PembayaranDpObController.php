@@ -10,6 +10,7 @@ use App\Models\Karyawan;
 use App\Models\Coa;
 use App\Models\PembayaranDpOb;
 use App\Models\NomorTerakhir;
+use App\Models\CoaTransaction;
 
 class PembayaranDpObController extends Controller
 {
@@ -74,10 +75,14 @@ class PembayaranDpObController extends Controller
                           ->orderBy('nomor_akun')
                           ->get();
 
+        // Ambil semua akun COA untuk pilihan Akun Biaya
+        $akunBiayaList = Coa::orderBy('kode_nomor')->get();
+
         return view('pembayaran-dp-ob.create', [
             'title' => 'Create Pembayaran DP OB',
             'supirList' => $supirList,
-            'kasBankList' => $kasBankList
+            'kasBankList' => $kasBankList,
+            'akunBiayaList' => $akunBiayaList
         ]);
     }
 
@@ -160,9 +165,10 @@ class PembayaranDpObController extends Controller
 
         // Validasi input
         $validated = $request->validate([
-            'nomor_pembayaran' => 'required|string|max:255|unique:pembayaran_dp_obs,nomor_pembayaran',
+            'nomor_pembayaran' => 'required|string|max:255|unique:pembayaran_obs,nomor_pembayaran',
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:debit,kredit',
             'supir' => 'required|array|min:1',
             'supir.*' => 'required|exists:karyawans,id',
@@ -197,6 +203,7 @@ class PembayaranDpObController extends Controller
                 'nomor_pembayaran' => $validated['nomor_pembayaran'],
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'kas_bank_id' => $validated['kas_bank'],
+                'akun_coa_id' => $validated['akun_coa_id'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
                 'supir_ids' => $validated['supir'], // JSON array
                 'jumlah_per_supir' => $jumlahPerSupirData, // JSON object dengan supir_id => jumlah
@@ -207,6 +214,9 @@ class PembayaranDpObController extends Controller
                 'disetujui_oleh' => Auth::id() ?? 1,
                 'tanggal_persetujuan' => now(),
             ]);
+
+            // Implement Double Book Accounting
+            $this->createDoubleBookJournal($pembayaran, $validated, $totalPembayaran);
 
             DB::commit();
 
@@ -263,11 +273,15 @@ class PembayaranDpObController extends Controller
                           ->orderBy('nomor_akun')
                           ->get();
 
+        // Ambil semua akun COA untuk pilihan Akun Biaya
+        $akunBiayaList = Coa::orderBy('kode_nomor')->get();
+
         return view('pembayaran-dp-ob.edit', [
             'title' => 'Edit Pembayaran DP OB',
             'id' => $id,
             'supirList' => $supirList,
-            'kasBankList' => $kasBankList
+            'kasBankList' => $kasBankList,
+            'akunBiayaList' => $akunBiayaList
         ]);
     }
 
@@ -281,6 +295,7 @@ class PembayaranDpObController extends Controller
             'nomor_pembayaran' => 'required|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:debit,kredit',
             'supir' => 'required|array|min:1',
             'supir.*' => 'required|exists:karyawans,id',
@@ -436,15 +451,101 @@ class PembayaranDpObController extends Controller
             'reject_reason' => 'required|string|max:500'
         ]);
 
-        // Reject pembayaran (nanti akan menggunakan model)
-        // $pembayaran = PembayaranDpOb::findOrFail($id);
-        // $pembayaran->update([
-        //     'status' => 'rejected',
-        //     'rejected_by' => auth()->id(),
-        //     'reject_reason' => $request->reject_reason
-        // ]);
-
         return redirect()->back()
                         ->with('success', 'Pembayaran DP OB berhasil ditolak.');
+    }
+
+    /**
+     * Create individual COA transaction entry
+     */
+    private function createCoaTransaction($data)
+    {
+        return CoaTransaction::create($data);
+    }
+
+    /**
+     * Create Double Book Accounting Journal Entries
+     */
+    private function createDoubleBookJournal($pembayaran, $validated, $totalPembayaran)
+    {
+        // Get account information
+        $akunCoa = Coa::find($validated['akun_coa_id']);
+        $akunBank = Coa::find($validated['kas_bank']);
+        
+        $tanggal = $validated['tanggal_pembayaran'];
+        $jumlah = $totalPembayaran;
+        $jenisTransaksi = $validated['jenis_transaksi'];
+        $nomorReferensi = $pembayaran->nomor_pembayaran;
+        $keterangan = "Pembayaran DP OB - " . ($validated['keterangan'] ?? 'Tanpa Keterangan');
+        $jenisTransaksiDesc = 'Pembayaran DP OB';
+
+        // Create journal entries based on debit/credit selection
+        if ($jenisTransaksi === 'kredit') {
+            // KREDIT: Increase expense/cost account, decrease bank account
+            // Dr. Expense Account (+)
+            $this->createCoaTransaction([
+                'coa_id' => $akunCoa->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan,
+                'debit' => $jumlah,
+                'kredit' => 0,
+                'saldo' => $akunCoa->saldo + $jumlah,
+                'created_by' => Auth::id() ?? 1,
+            ]);
+
+            // Update account balance
+            $akunCoa->update(['saldo' => $akunCoa->saldo + $jumlah]);
+
+            // Cr. Bank Account (-)
+            $this->createCoaTransaction([
+                'coa_id' => $akunBank->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan,
+                'debit' => 0,
+                'kredit' => $jumlah,
+                'saldo' => $akunBank->saldo - $jumlah,
+                'created_by' => Auth::id() ?? 1,
+            ]);
+
+            // Update account balance
+            $akunBank->update(['saldo' => $akunBank->saldo - $jumlah]);
+        } else {
+            // DEBIT: Increase bank account, decrease expense/cost account
+            // Dr. Bank Account (+)
+            $this->createCoaTransaction([
+                'coa_id' => $akunBank->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan,
+                'debit' => $jumlah,
+                'kredit' => 0,
+                'saldo' => $akunBank->saldo + $jumlah,
+                'created_by' => Auth::id() ?? 1,
+            ]);
+
+            // Update account balance
+            $akunBank->update(['saldo' => $akunBank->saldo + $jumlah]);
+
+            // Cr. Expense Account (-)
+            $this->createCoaTransaction([
+                'coa_id' => $akunCoa->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan,
+                'debit' => 0,
+                'kredit' => $jumlah,
+                'saldo' => $akunCoa->saldo - $jumlah,
+                'created_by' => Auth::id() ?? 1,
+            ]);
+
+            // Update account balance
+            $akunCoa->update(['saldo' => $akunCoa->saldo - $jumlah]);
+        }
     }
 }

@@ -12,13 +12,14 @@ class PembayaranDpOb extends Model
     use HasFactory;
 
     use Auditable;
-    protected $table = 'pembayaran_dp_obs';
+    protected $table = 'pembayaran_obs';
 
     protected $fillable = [
         'nomor_pembayaran',
         'nomor_accurate',
         'tanggal_pembayaran',
         'kas_bank_id',
+        'akun_coa_id',
         'jenis_transaksi',
         'supir_ids',
         'jumlah_per_supir',

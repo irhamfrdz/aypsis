@@ -19,6 +19,7 @@ class PembayaranOb extends Model
         'nomor_accurate',
         'tanggal_pembayaran',
         'kas_bank_id',
+        'akun_coa_id',
         'jenis_transaksi',
         'kegiatan',
         'nomor_voyage',

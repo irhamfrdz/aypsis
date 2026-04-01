@@ -201,6 +201,42 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Akun Biaya Field -->
+                            <div>
+                                <label for="akun_coa_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Pilih Akun Biaya <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="akun_biaya_search" placeholder="-- Cari Akun Biaya --" autocomplete="off"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                    <div id="akun_biaya_dropdown" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto text-sm"></div>
+
+                                    <select name="akun_coa_id" id="akun_coa_id" required class="hidden">
+                                        <option value="">-- Pilih Akun Biaya --</option>
+                                        @foreach($akunBiayaList as $akun)
+                                            <option value="{{ $akun->id }}" data-nama="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor }}" {{ old('akun_coa_id') == $akun->id ? 'selected' : '' }}>
+                                                {{ $akun->kode_nomor }} - {{ $akun->nama_akun }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                @error('akun_coa_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Dynamic Journal Preview -->
+                            <div>
+                                <div id="journal_preview" class="p-4 bg-gray-50 border border-gray-200 rounded-md text-sm hidden h-full">
+                                    <p class="font-bold text-gray-800 mb-2 border-b border-gray-200 pb-1">📋 Preview Jurnal Double Book:</p>
+                                    <div id="journal_content" class="text-gray-700">
+                                        <!-- Content will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                             <!-- Kegiatan Field -->
                             <div>
                                 <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -788,6 +824,195 @@ function initKasSearch() {
         if (opt) input.value = opt.textContent.trim();
     }
 }
+
+// Initialize Akun Biaya searchable dropdown (vanilla JS)
+function initAkunBiayaSearch() {
+    const select = document.getElementById('akun_coa_id');
+    const input = document.getElementById('akun_biaya_search');
+    const dropdown = document.getElementById('akun_biaya_dropdown');
+    if (!select || !input || !dropdown) return;
+
+    function buildList() {
+        dropdown.innerHTML = '';
+        let any = false;
+        Array.from(select.options).forEach(opt => {
+            if (!opt.value) return;
+            const item = document.createElement('div');
+            item.className = 'px-3 py-2 cursor-pointer hover:bg-gray-100 text-gray-800';
+            item.textContent = opt.textContent.trim();
+            item.dataset.value = opt.value;
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                select.value = this.dataset.value;
+                input.value = this.textContent;
+                dropdown.classList.add('hidden');
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            dropdown.appendChild(item);
+            any = true;
+        });
+        if (!any) dropdown.innerHTML = '<div class="px-3 py-2 text-gray-500">Tidak ada akun</div>';
+    }
+
+    buildList();
+
+    // Filter on input
+    input.addEventListener('input', function() {
+        const term = this.value.toLowerCase();
+        Array.from(dropdown.children).forEach(child => {
+            if (child.textContent.toLowerCase().includes(term)) {
+                child.style.display = 'block';
+            } else {
+                child.style.display = 'none';
+            }
+        });
+        dropdown.classList.remove('hidden');
+    });
+
+    // Toggle dropdown on click
+    input.addEventListener('click', function(e) {
+        e.stopPropagation();
+        buildList();
+        dropdown.classList.toggle('hidden');
+        if (!dropdown.classList.contains('hidden')) input.focus();
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#akun_biaya_dropdown') && !e.target.closest('#akun_biaya_search')) {
+            dropdown.classList.add('hidden');
+        }
+    });
+
+    // Keyboard navigation
+    let idx = -1;
+    input.addEventListener('keydown', function(e) {
+        const items = Array.from(dropdown.children).filter(ch => ch.style.display !== 'none');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            idx = Math.min(idx + 1, items.length - 1);
+            items.forEach((it,i)=> it.classList.toggle('bg-blue-50', i===idx));
+            if (items[idx]) items[idx].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            idx = Math.max(idx - 1, 0);
+            items.forEach((it,i)=> it.classList.toggle('bg-blue-50', i===idx));
+            if (items[idx]) items[idx].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (items[idx]) items[idx].click();
+        }
+    });
+
+    // Initialize display from old value if exists
+    if (select.value) {
+        const opt = select.options[select.selectedIndex];
+        if (opt) input.value = opt.textContent.trim();
+    }
+}
+
+// Function to calculate total payment across all supirs
+function getTotalPayment() {
+    const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
+    let totalAmount = 0;
+    hiddenInputs.forEach(function(input) {
+        const amount = parseInt(input.value) || 0;
+        totalAmount += amount;
+    });
+    return totalAmount;
+}
+
+// Function to update Journal Preview
+function updateJournalPreview() {
+    const jenisTransaksiSelect = document.getElementById('jenis_transaksi');
+    const akunBiayaSelect = document.getElementById('akun_coa_id');
+    const akunBankSelect = document.getElementById('kas_bank');
+    const journalPreview = document.getElementById('journal_preview');
+    const journalContent = document.getElementById('journal_content');
+    
+    if (!jenisTransaksiSelect || !akunBiayaSelect || !akunBankSelect || !journalPreview || !journalContent) return;
+
+    const jenisTransaksi = jenisTransaksiSelect.value;
+    const akunBiaya = akunBiayaSelect.selectedOptions[0];
+    const akunBank = akunBankSelect.selectedOptions[0];
+    const jumlah = getTotalPayment();
+    
+    if (!jenisTransaksi || !akunBiaya || !akunBiaya.value || !akunBank || !akunBank.value || jumlah <= 0) {
+        journalPreview.classList.add('hidden');
+        return;
+    }
+    
+    const akunBiayaNama = akunBiaya.dataset.nama ? `${akunBiaya.dataset.kode} - ${akunBiaya.dataset.nama}` : akunBiaya.textContent;
+    const akunBankNama = akunBank.textContent; // kas_bank option contains nominal and formatting already, let's keep it simple or parse it
+    
+    // clean up Bank Name for display
+    const cleanBankNama = akunBankNama.replace(/\\(Saldo:.*\\)/, '').trim();
+
+    const jumlahFormatted = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(jumlah);
+    
+    let journalHtml = '';
+    
+    if (jenisTransaksi === 'kredit') {
+        journalHtml = `
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-100 p-2 rounded border border-blue-300">
+                    <p class="font-medium text-blue-800">DEBIT (+)</p>
+                    <p class="text-xs text-blue-700">${akunBiayaNama}</p>
+                    <p class="font-bold text-blue-900">${jumlahFormatted}</p>
+                </div>
+                <div class="bg-gray-200 p-2 rounded border border-gray-300">
+                    <p class="font-medium text-gray-700">KREDIT (-)</p>
+                    <p class="text-xs text-gray-600">${cleanBankNama}</p>
+                    <p class="font-bold text-gray-800">${jumlahFormatted}</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mt-2">💡 <strong>Efek:</strong> ${akunBiayaNama} bertambah, ${cleanBankNama} berkurang</p>
+        `;
+    } else {
+        journalHtml = `
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-100 p-2 rounded border border-blue-300">
+                    <p class="font-medium text-blue-800">DEBIT (+)</p>
+                    <p class="text-xs text-blue-700">${cleanBankNama}</p>
+                    <p class="font-bold text-blue-900">${jumlahFormatted}</p>
+                </div>
+                <div class="bg-gray-200 p-2 rounded border border-gray-300">
+                    <p class="font-medium text-gray-700">KREDIT (-)</p>
+                    <p class="text-xs text-gray-600">${akunBiayaNama}</p>
+                    <p class="font-bold text-gray-800">${jumlahFormatted}</p>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mt-2">💡 <strong>Efek:</strong> ${cleanBankNama} bertambah, ${akunBiayaNama} berkurang</p>
+        `;
+    }
+    
+    journalContent.innerHTML = journalHtml;
+    journalPreview.classList.remove('hidden');
+}
+
+// Add event listeners for Journal Preview
+document.addEventListener('DOMContentLoaded', function() {
+    initKasSearch();
+    initAkunBiayaSearch();
+    updateJournalPreview();
+
+    const bindings = ['jenis_transaksi', 'kas_bank', 'akun_coa_id'];
+    bindings.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', updateJournalPreview);
+    });
+
+    // Bind to dynamically added input logic (by delegating to document)
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.name && e.target.name.includes('jumlah_display')) {
+            updateJournalPreview();
+        }
+    });
+});
 
 // Handle paste event untuk input jumlah
 document.addEventListener('paste', function(e) {
