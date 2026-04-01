@@ -102,7 +102,7 @@
                 @endphp
                 <tr>
                     <td class="text-center">{{ $i++ }}</td>
-                    <td class="text-center">{{ $item['tanggal'] ?? '-' }}</td>
+                    <td class="text-center">{{ isset($item['tanggal']) ? \Carbon\Carbon::parse($item['tanggal'])->format('d/M/Y') : '-' }}</td>
                     <td class="text-center">{{ $item['reference'] ?? '-' }}</td>
                     <td class="text-center">{{ $item['type'] ?? '-' }}</td>
                     <td><span class="font-bold">{{ $item['nama_barang'] ?? ($item['nama'] ?? '-') }}</span></td>
