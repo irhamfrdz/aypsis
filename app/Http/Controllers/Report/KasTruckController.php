@@ -58,20 +58,14 @@ class KasTruckController extends Controller
 
             $transactions = $query->orderBy('tanggal_transaksi', 'asc')->orderBy('id', 'asc')->get();
 
-            // Calculate initial balance (before start date) if start date is provided
+            // Calculate initial balance (before start date) - DISABLED as per user request to start fresh from chosen period
+            $saldoAwal = 0;
+            
+            /*
             if ($startDate) {
-                $pastTransactions = CoaTransaction::where('coa_id', $akunCoa->id)
-                    ->whereDate('tanggal_transaksi', '<', $startDate)
-                    ->get();
-                    
-                foreach ($pastTransactions as $pt) {
-                    $saldoAwal += $pt->debit;
-                    $saldoAwal -= $pt->kredit;
-                }
-            } else {
-                // if no date, original saldo should be from actual account?
-                // actually if no start date, we just accumulate from the very first record.
+                ...
             }
+            */
             
             // Calculate running balances
             $runningBalance = $saldoAwal;

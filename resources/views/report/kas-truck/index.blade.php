@@ -127,13 +127,6 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <!-- Initial Balance Row -->
-                        <tr class="bg-gray-50">
-                            <td class="px-4 py-3 text-sm font-medium text-gray-600" colspan="5">Saldo Sebelum Periode (Mulai)</td>
-                            <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">Rp {{ number_format($saldoAwal, 0, ',', '.') }}</td>
-                            <td class="px-4 py-3"></td>
-                        </tr>
-
                         @forelse($transactions as $trx)
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
