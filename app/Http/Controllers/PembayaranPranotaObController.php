@@ -247,7 +247,7 @@ class PembayaranPranotaObController extends Controller
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
-                'pranota_ob_ids' => json_encode($pranotaIds),
+                'pranota_ob_ids' => $pranotaIds,
                 'pembayaran_ob_id' => $dpId,
                 'kapal' => $request->kapal,
                 'voyage' => $request->voyage,
@@ -371,7 +371,7 @@ class PembayaranPranotaObController extends Controller
                 'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
                 'alasan_penyesuaian' => $validated['alasan_penyesuaian'],
                 'keterangan' => $validated['keterangan'],
-                'breakdown_supir' => !empty($breakdownSupir) ? json_encode($breakdownSupir) : null,
+                'breakdown_supir' => !empty($breakdownSupir) ? $breakdownSupir : null,
                 'updated_by' => Auth::id(),
             ];
 
@@ -408,7 +408,14 @@ class PembayaranPranotaObController extends Controller
             $pembayaran = PembayaranPranotaOb::findOrFail($id);
 
             // Get associated pranota IDs (model has 'pranota_ob_ids' => 'array' cast)
-            $pranotaIds = $pembayaran->pranota_ob_ids ?? [];
+            $pranotaIds = $pembayaran->pranota_ob_ids;
+            
+            // Handle double encoded JSON if necessary (workaround for existing data)
+            if (is_string($pranotaIds)) {
+                $pranotaIds = json_decode($pranotaIds, true) ?? [];
+            }
+            
+            $pranotaIds = is_array($pranotaIds) ? $pranotaIds : [];
 
             // Restore pranota status to unpaid
             if (!empty($pranotaIds)) {
