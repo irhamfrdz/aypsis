@@ -173,8 +173,12 @@ class StockAmprahanController extends Controller
     {
         $item = StockAmprahan::findOrFail($id);
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
-        $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
-        return view('stock-amprahan.edit', compact('item', 'masterItems', 'gudangItems'));
+        $karyawans = Karyawan::orderBy('nama_lengkap')->get();
+        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
+        $alatBerats = AlatBerat::orderBy('kode_alat')->get();
+
+        return view('stock-amprahan.edit', compact('item', 'masterItems', 'gudangItems', 'karyawans', 'mobils', 'kapals', 'alatBerats'));
     }
 
     public function update(Request $request, $id)
@@ -193,13 +197,71 @@ class StockAmprahanController extends Controller
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
+
+            // Langsung Pakai Fields
+            'is_langsung_pakai' => 'nullable',
+            'penerima_id' => 'nullable|required_if:is_langsung_pakai,1|exists:karyawans,id',
+            'mobil_id' => 'nullable|exists:mobils,id',
+            'buntut_id' => 'nullable|exists:mobils,id',
+            'kapal_id' => 'nullable|exists:master_kapals,id',
+            'alat_berat_id' => 'nullable|exists:alat_berats,id',
+            'lain_lain' => 'nullable|string|max:255',
+            'tanggal_pengambilan' => 'nullable|required_if:is_langsung_pakai,1|date',
+            'jumlah_pakai' => 'nullable|required_if:is_langsung_pakai,1|numeric|min:0',
+            'keterangan_pakai' => 'nullable|required_if:is_langsung_pakai,1|string',
+            'kilometer' => 'nullable|numeric|min:0',
         ]);
 
         $data['updated_by'] = Auth::id();
 
-        $item->update($data);
+        // Manual validation for jumlah_pakai if is_langsung_pakai
+        if ($request->is_langsung_pakai == '1') {
+            if ($request->jumlah_pakai > $data['jumlah']) {
+                return redirect()->back()->withErrors(['jumlah_pakai' => 'Jumlah pakai tidak boleh lebih besar dari jumlah stock.'])->withInput();
+            }
+        }
 
-        return redirect()->route('stock-amprahan.index')->with('success', 'Stock amprahan berhasil diperbarui');
+        $stockData = [
+            'nomor_bukti' => $data['nomor_bukti'],
+            'tanggal_beli' => $data['tanggal_beli'],
+            'type_amprahan' => $data['type_amprahan'],
+            'nama_barang' => $data['nama_barang'],
+            'master_nama_barang_amprahan_id' => $data['master_nama_barang_amprahan_id'],
+            'harga_satuan' => $data['harga_satuan'],
+            'adjustment' => $data['adjustment'] ?? 0,
+            'jumlah' => $data['jumlah'],
+            'satuan' => $data['satuan'],
+            'lokasi' => $data['lokasi'],
+            'keterangan' => $data['keterangan'],
+            'updated_by' => $data['updated_by'],
+        ];
+
+        // If langsung pakai, deduct from initial stock immediately
+        if ($request->is_langsung_pakai == '1') {
+            $stockData['jumlah'] -= $request->jumlah_pakai;
+        }
+
+        $item->update($stockData);
+
+        // Record usage if applicable
+        if ($request->is_langsung_pakai == '1') {
+            StockAmprahanUsage::create([
+                'stock_amprahan_id' => $item->id,
+                'penerima_id' => $request->penerima_id,
+                'mobil_id' => $request->mobil_id,
+                'buntut_id' => $request->buntut_id,
+                'kapal_id' => $request->kapal_id,
+                'alat_berat_id' => $request->alat_berat_id,
+                'lain_lain' => $request->lain_lain,
+                'jumlah' => $request->jumlah_pakai,
+                'tanggal_pengambilan' => $request->tanggal_pengambilan,
+                'keterangan' => $request->keterangan_pakai,
+                'kilometer' => $request->kilometer,
+                'created_by' => Auth::id(),
+            ]);
+        }
+
+        return redirect()->route('stock-amprahan.index')->with('success', 'Stock amprahan berhasil diperbarui' . ($request->is_langsung_pakai == '1' ? ' dan langsung diproses pemakaiannya.' : '.'));
     }
 
     public function destroy($id)
