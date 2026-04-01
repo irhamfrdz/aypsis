@@ -58,14 +58,8 @@ class KasTruckController extends Controller
 
             $transactions = $query->orderBy('tanggal_transaksi', 'asc')->orderBy('id', 'asc')->get();
 
-            // Calculate initial balance (before start date) - DISABLED as per user request to start fresh from chosen period
+            // Mulai dari saldo 0 untuk periode ini agar laporan bersih dari data testing lama
             $saldoAwal = 0;
-            
-            /*
-            if ($startDate) {
-                ...
-            }
-            */
             
             // Calculate running balances
             $runningBalance = $saldoAwal;
