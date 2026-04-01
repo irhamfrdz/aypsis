@@ -247,14 +247,14 @@
         <thead>
             <tr>
                 <th style="width: 3%;">No</th>
-                <th style="width: 13%;">No SJ</th>
-                <th style="width: 10%;">Tgl SJ</th>
-                <th style="width: 15%;">No Kontainer</th>
-                <th style="width: 12%;">Voyage</th>
-                <th style="width: 7%;">Size</th>
+                <th style="width: 11%;">No SJ</th>
+                <th style="width: 9%;">Tgl SJ</th>
+                <th style="width: 12%;">No Kontainer</th>
+                <th style="width: 10%;">Voyage</th>
+                <th style="width: 5%;">Size</th>
                 <th>Rute (Dari -> Ke)</th>
-                <th style="width: 10%; text-align: right;">Nominal SJ</th>
-                <th style="width: 10%; text-align: right;">Uang Muat</th>
+                <th style="width: 14%; text-align: right;">Nominal SJ</th>
+                <th style="width: 14%; text-align: right;">Uang Muat</th>
             </tr>
         </thead>
         <tbody>
@@ -268,9 +268,9 @@
                     <td class="text-center">{{ $tagihan->suratJalan->no_kontainer ?? '-' }}</td>
                     <td class="text-center">{{ optional($tagihan->suratJalan->prospeks->first())->no_voyage ?? '-' }}</td>
                     <td class="text-center">{{ $tagihan->jenis_kontainer ?? ($tagihan->suratJalan->size ?? '-') }}</td>
-                    <td>{{ $tagihan->dari ?? ($tagihan->suratJalan->dari ?? '-') }} -> {{ $tagihan->ke ?? ($tagihan->suratJalan->ke ?? '-') }}</td>
-                    <td class="text-right">Rp {{ number_format($tagihan->nominal, 0, ',', '.') }}</td>
-                    <td class="text-right font-bold text-indigo-700">Rp {{ number_format($tagihan->uang_muat ?? 0, 0, ',', '.') }}</td>
+                    <td style="font-size: 9px;">{{ $tagihan->dari ?? ($tagihan->suratJalan->dari ?? '-') }} -> {{ $tagihan->ke ?? ($tagihan->suratJalan->ke ?? '-') }}</td>
+                    <td class="text-right" style="white-space: nowrap;">Rp {{ number_format($tagihan->nominal, 0, ',', '.') }}</td>
+                    <td class="text-right font-bold" style="white-space: nowrap;">Rp {{ number_format($tagihan->uang_muat ?? 0, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
             @endforeach
