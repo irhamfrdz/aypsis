@@ -8,7 +8,7 @@
             <p class="text-sm text-gray-500">Gabungkan berbagai invoice tagihan supir vendor menjadi satu pranota</p>
         </div>
         @if(auth()->user()->can('pranota-invoice-vendor-supir-create'))
-        <a href="{{ route('pranota-invoice-vendor-supir.create') }}" class="bg-rose-600 hover:bg-rose-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors flex items-center shadow-sm">
+        <a href="{{ route('pranota-invoice-vendor-supir.create') }}" class="bg-rose-600 hover:bg-rose-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors flex items-center shadow-sm" style="background-color: #e11d48; box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.3);">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
             Buat Pranota Baru
         </a>
@@ -95,8 +95,18 @@
                         <td class="px-6 py-4">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</td>
                         <td class="px-6 py-4">
                             <div class="font-bold text-gray-900">Rp {{ number_format($pranota->grand_total > 0 ? $pranota->grand_total : $pranota->total_nominal, 0, ',', '.') }}</div>
+                            @php
+                                $originalSubtotal = $pranota->total_nominal;
+                                if ($pranota->pph > 0) {
+                                    $originalSubtotal += $pranota->pph;
+                                }
+                            @endphp
+                            <div class="text-[10px] text-gray-500 mt-0.5">Subtotal: Rp {{ number_format($originalSubtotal, 0, ',', '.') }}</div>
                             @if($pranota->pph > 0)
-                                <div class="text-[10px] text-gray-500 mt-0.5">Subtotal: Rp {{ number_format($pranota->total_nominal + $pranota->pph, 0, ',', '.') }}</div>
+                                <div class="text-[10px] text-red-500 mt-0.5 italic">- PPH 2%: Rp {{ number_format($pranota->pph, 0, ',', '.') }}</div>
+                            @endif
+                            @if($pranota->total_uang_muat > 0)
+                                <div class="text-[10px] text-indigo-600 mt-0.5 italic">+ Uang Muat: Rp {{ number_format($pranota->total_uang_muat, 0, ',', '.') }}</div>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-center">
@@ -139,6 +149,12 @@
                                 <form id="add-pph-form-{{ $pranota->id }}" action="{{ route('pranota-invoice-vendor-supir.add-pph', $pranota->id) }}" method="POST" class="hidden">
                                     @csrf
                                 </form>
+                                @endif
+
+                                @if(auth()->user()->can('pranota-invoice-vendor-supir-update'))
+                                <button type="button" onclick="openUangMuatModal('{{ $pranota->id }}')" class="text-indigo-500 hover:text-indigo-700 transition-colors" title="Kelola Uang Muat">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
                                 @endif
 
                                 <form id="delete-form-{{ $pranota->id }}" action="{{ route('pranota-invoice-vendor-supir.destroy', $pranota->id) }}" method="POST" class="hidden">
@@ -184,5 +200,158 @@
             document.getElementById('add-pph-form-' + id).submit();
         }
     }
+
+    function toggleModal(id) {
+        const modal = document.getElementById(id);
+        if (modal.classList.contains('hidden')) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        } else {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    function openUangMuatModal(id) {
+        const container = document.getElementById('sj-list-container');
+        container.innerHTML = '<tr><td colspan="2" class="px-4 py-8 text-center text-gray-500">Memuat data Surat Jalan...</td></tr>';
+        
+        const form = document.getElementById('form-uang-muat');
+        form.action = `/pranota-invoice-vendor-supir/${id}/add-uang-muat`;
+        
+        toggleModal('modal-uang-muat');
+        
+        fetch(`/pranota-invoice-vendor-supir/${id}/get-surat-jalans`)
+            .then(response => response.json())
+            .then(data => {
+                container.innerHTML = '';
+                if (data.error) throw new Error(data.error);
+                if (data.length === 0) {
+                    container.innerHTML = '<tr><td colspan="2" class="px-4 py-8 text-center text-gray-500">Tidak ada Surat Jalan dalam Pranota ini.</td></tr>';
+                    return;
+                }
+                
+                data.forEach(sj => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 transition-colors';
+                    row.innerHTML = `
+                        <td class="px-4 py-3 font-medium text-gray-700">${sj.no_surat_jalan}</td>
+                        <td class="px-4 py-3">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">Rp</span>
+                                <input type="text" name="uang_muat[${sj.id}]" value="${formatNumber(sj.uang_muat)}" 
+                                    class="w-full pl-10 pr-4 py-2 text-sm border-gray-300 rounded-lg focus:ring-rose-500 focus:border-rose-500 transition-all"
+                                    onkeyup="autoFormatNumber(this)">
+                            </div>
+                        </td>
+                    `;
+                    container.appendChild(row);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                container.innerHTML = `<tr><td colspan="2" class="px-4 py-8 text-center text-red-500 font-medium italic">Gagal memuat data: ${err.message}</td></tr>`;
+            });
+    }
+
+    function formatNumber(n) {
+        return n.toString().replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function autoFormatNumber(input) {
+        let selectionStart = input.selectionStart;
+        let originalLength = input.value.length;
+        
+        let value = input.value.replace(/[^0-9]/g, '');
+        if (value === "") {
+            input.value = "";
+        } else {
+            input.value = formatNumber(value);
+        }
+        
+        // Adjust cursor position
+        let newLength = input.value.length;
+        selectionStart = selectionStart + (newLength - originalLength);
+        input.setSelectionRange(selectionStart, selectionStart);
+    }
 </script>
+
+<!-- Modal Uang Muat -->
+<div id="modal-uang-muat" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm shadow-2xl" onclick="toggleModal('modal-uang-muat')"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
+            <div class="absolute top-0 right-0 pt-4 pr-4">
+                <button type="button" onclick="toggleModal('modal-uang-muat')" class="text-gray-400 hover:text-gray-500 focus:outline-none transition-colors">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <form id="form-uang-muat" method="POST">
+                @csrf
+                <div class="bg-white px-6 pt-6 pb-6 w-full">
+                    <div class="flex items-center mb-6">
+                        <div class="flex-shrink-0 bg-indigo-100 p-3 rounded-xl mr-4">
+                            <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Kelola Uang Muat</h3>
+                            <p class="text-sm text-gray-500">Input nominal uang muat per surat jalan dalam pranota ini.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 border border-gray-100 rounded-xl overflow-hidden shadow-sm">
+                        <div class="max-h-[50vh] overflow-y-auto custom-scrollbar">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-4 py-3 font-semibold text-gray-700 border-b">No Surat Jalan</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-700 border-b">Uang Muat</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sj-list-container" class="divide-y divide-gray-50 bg-white">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-xl">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-xs text-amber-800 leading-relaxed font-medium">
+                                    Nominal uang muat yang ditambahkan tidak akan dikenakan pemotongan PPH 2% pada total tagihan.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-4 flex flex-col sm:flex-row-reverse gap-3">
+                    <button type="submit" class="inline-flex justify-center items-center px-6 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-lg shadow-indigo-200 transition-all duration-200 transform hover:-translate-y-0.5 focus:ring-4 focus:ring-indigo-100 focus:outline-none">
+                        Simpan Uang Muat
+                        <svg class="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button type="button" onclick="toggleModal('modal-uang-muat')" class="inline-flex justify-center items-center px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl shadow-sm transition-all duration-200 focus:outline-none">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f9fafb; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+</style>
 @endsection

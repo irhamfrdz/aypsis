@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\PranotaInvoiceVendorSupir;
 use App\Models\InvoiceTagihanVendor;
 use App\Models\VendorSupir;
+use App\Models\TagihanSupirVendor;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -181,17 +182,74 @@ class PranotaInvoiceVendorSupirController extends Controller
             
             // Calculate 2% of total_nominal (yang pada saat belum di PPH adalah subtotal utuh)
             $pph = $pranota->total_nominal * 0.02;
-            $grandTotal = $pranota->total_nominal - $pph;
+            $netNominal = $pranota->total_nominal - $pph;
+            $grandTotal = $netNominal + $pranota->total_uang_muat;
             
             $pranota->update([
                 'pph' => $pph,
-                'total_nominal' => $grandTotal, // Simpan total_nominal baru yang sudah dipotong PPH
+                'total_nominal' => $netNominal, // Simpan total_nominal baru yang sudah dipotong PPH
                 'grand_total' => $grandTotal,
                 'updated_by' => Auth::id()
             ]);
             
             DB::commit();
             return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'PPH 2% berhasil ditambahkan ke Pranota.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    public function getSuratJalans($id)
+    {
+        try {
+            $pranota = PranotaInvoiceVendorSupir::with('invoiceTagihanVendors.tagihanSupirVendors.suratJalan')->findOrFail($id);
+            
+            $suratJalans = [];
+            foreach ($pranota->invoiceTagihanVendors as $invoice) {
+                foreach ($invoice->tagihanSupirVendors as $tagihan) {
+                    $suratJalans[] = [
+                        'id' => $tagihan->id,
+                        'no_surat_jalan' => $tagihan->suratJalan->no_surat_jalan ?? '-',
+                        'uang_muat' => $tagihan->uang_muat ?? 0
+                    ];
+                }
+            }
+            
+            return response()->json($suratJalans);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function addUangMuat(Request $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+            $pranota = PranotaInvoiceVendorSupir::findOrFail($id);
+            $uangMuatInputs = $request->input('uang_muat', []); // ['tagihan_id' => 'amount']
+            
+            $totalNominalUangMuat = 0;
+            foreach ($uangMuatInputs as $tagihanId => $amount) {
+                // Remove formatting (strip thousand separators)
+                $cleanAmount = preg_replace('/[^0-9]/', '', $amount);
+                $cleanAmount = empty($cleanAmount) ? 0 : (float) $cleanAmount;
+                
+                $tagihan = TagihanSupirVendor::findOrFail($tagihanId);
+                $tagihan->update(['uang_muat' => $cleanAmount]);
+                $totalNominalUangMuat += $cleanAmount;
+            }
+            
+            $grandTotal = $pranota->total_nominal + $totalNominalUangMuat;
+            
+            $pranota->update([
+                'total_uang_muat' => $totalNominalUangMuat,
+                'grand_total' => $grandTotal,
+                'updated_by' => Auth::id()
+            ]);
+            
+            DB::commit();
+            return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'Uang Muat berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());

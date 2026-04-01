@@ -223,6 +223,18 @@
                 <td class="text-right font-bold">- Rp {{ number_format($pranota->pph, 0, ',', '.') }}</td>
             </tr>
             @endif
+            @if($pranota->total_uang_muat > 0)
+            <tr>
+                @php
+                    $totalSJ = 0;
+                    foreach($pranota->invoiceTagihanVendors as $invoice) {
+                        $totalSJ += $invoice->tagihanSupirVendors->count();
+                    }
+                @endphp
+                <td colspan="3" class="text-right font-bold text-indigo-700">TOTAL UANG MUAT ({{ $totalSJ }} SJ)</td>
+                <td class="text-right font-bold text-indigo-700">+ Rp {{ number_format($pranota->total_uang_muat, 0, ',', '.') }}</td>
+            </tr>
+            @endif
             <tr class="total-row">
                 <td colspan="3" class="text-right">GRAND TOTAL KESELURUHAN</td>
                 <td class="text-right" style="font-size: 11px;">Rp {{ number_format($pranota->grand_total > 0 ? $pranota->grand_total : $pranota->total_nominal, 0, ',', '.') }}</td>
@@ -241,7 +253,8 @@
                 <th style="width: 12%;">Voyage</th>
                 <th style="width: 7%;">Size</th>
                 <th>Rute (Dari -> Ke)</th>
-                <th style="width: 15%; text-align: right;">Nominal</th>
+                <th style="width: 10%; text-align: right;">Nominal SJ</th>
+                <th style="width: 10%; text-align: right;">Uang Muat</th>
             </tr>
         </thead>
         <tbody>
@@ -257,6 +270,7 @@
                     <td class="text-center">{{ $tagihan->jenis_kontainer ?? ($tagihan->suratJalan->size ?? '-') }}</td>
                     <td>{{ $tagihan->dari ?? ($tagihan->suratJalan->dari ?? '-') }} -> {{ $tagihan->ke ?? ($tagihan->suratJalan->ke ?? '-') }}</td>
                     <td class="text-right">Rp {{ number_format($tagihan->nominal, 0, ',', '.') }}</td>
+                    <td class="text-right font-bold text-indigo-700">Rp {{ number_format($tagihan->uang_muat ?? 0, 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
             @endforeach
