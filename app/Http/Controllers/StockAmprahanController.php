@@ -173,6 +173,7 @@ class StockAmprahanController extends Controller
     {
         $item = StockAmprahan::findOrFail($id);
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
+        $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
