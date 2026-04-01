@@ -343,8 +343,8 @@
                                 <select name="debit_kredit" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                                     <option value="">-- Pilih --</option>
-                                    <option value="debit">Debit</option>
-                                    <option value="kredit">Kredit</option>
+                                    <option value="debit" {{ old('debit_kredit') == 'debit' ? 'selected' : '' }}>DEBIT (Bank bertambah, Biaya/Beban berkurang)</option>
+                                    <option value="kredit" {{ old('debit_kredit') == 'kredit' ? 'selected' : '' }}>KREDIT (Biaya/Beban bertambah, Bank berkurang)</option>
                                 </select>
                             </div>
                         </div>

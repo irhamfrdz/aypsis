@@ -459,8 +459,8 @@ class PembayaranAktivitasLainController extends Controller
         $jenisTransaksiDesc = 'Pembayaran Invoice Aktivitas Lain';
 
         // Create journal entries based on debit/credit selection
-        if ($jenisTransaksi === 'debit') {
-            // DEBIT: Increase expense/cost account, decrease bank account
+        if ($jenisTransaksi === 'kredit') {
+            // KREDIT: Increase expense/cost account, decrease bank account
             // Dr. Expense Account (+)
             $this->createCoaTransaction([
                 'coa_id' => $akunCoa->id,
@@ -493,7 +493,7 @@ class PembayaranAktivitasLainController extends Controller
             // Update account balance
             $akunBank->update(['saldo' => $akunBank->saldo - $jumlah]);
         } else {
-            // KREDIT: Increase bank account, decrease expense/cost account
+            // DEBIT: Increase bank account, decrease expense/cost account
             // Dr. Bank Account (+)
             $this->createCoaTransaction([
                 'coa_id' => $akunBank->id,
@@ -545,8 +545,8 @@ class PembayaranAktivitasLainController extends Controller
         $jenisTransaksiDesc = 'Pembayaran Aktivitas Lain';
 
         // Create journal entries based on debit/credit selection
-        if ($jenisTransaksi === 'debit') {
-            // DEBIT: Increase expense/cost account, decrease bank account
+        if ($jenisTransaksi === 'kredit') {
+            // KREDIT: Increase expense/cost account, decrease bank account
             // Dr. Expense Account (+)
             $this->createCoaTransaction([
                 'coa_id' => $akunCoa->id,
@@ -579,7 +579,7 @@ class PembayaranAktivitasLainController extends Controller
             // Update account balance
             $akunBank->update(['saldo' => $akunBank->saldo - $jumlah]);
         } else {
-            // KREDIT: Increase bank account, decrease expense/cost account
+            // DEBIT: Increase bank account, decrease expense/cost account
             // Dr. Bank Account (+)
             $this->createCoaTransaction([
                 'coa_id' => $akunBank->id,
@@ -734,12 +734,12 @@ class PembayaranAktivitasLainController extends Controller
      */
     private function createDoubleBookJournalFromInvoice($pembayaran, $validated)
     {
-        // Debit: Account (COA)
+        // Account (COA)
         CoaTransaction::create([
             'coa_id' => $validated['akun_coa_id'],
             'tanggal_transaksi' => $validated['tanggal'],
-            'debit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
-            'kredit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
+            'debit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
+            'kredit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
             'saldo' => 0, // Will be calculated by observer
             'keterangan' => $validated['keterangan'] ?? 'Pembayaran invoice: ' . $pembayaran->nomor,
             'nomor_referensi' => $pembayaran->nomor,
@@ -751,8 +751,8 @@ class PembayaranAktivitasLainController extends Controller
         CoaTransaction::create([
             'coa_id' => $validated['akun_bank_id'],
             'tanggal_transaksi' => $validated['tanggal'],
-            'debit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
-            'kredit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
+            'debit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
+            'kredit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
             'saldo' => 0, // Will be calculated by observer
             'keterangan' => $validated['keterangan'] ?? 'Pembayaran invoice: ' . $pembayaran->nomor,
             'nomor_referensi' => $pembayaran->nomor,

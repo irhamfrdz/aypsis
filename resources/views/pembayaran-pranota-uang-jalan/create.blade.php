@@ -176,8 +176,8 @@
                                 <label for="jenis_transaksi" class="{{ $labelClasses }}">Jenis Transaksi</label>
                                 <select name="jenis_transaksi" id="jenis_transaksi" class="{{ $inputClasses }}" required>
                                     <option value="">-- Pilih Jenis --</option>
-                                    <option value="Debit" {{ old('jenis_transaksi') == 'Debit' ? 'selected' : '' }}>Debit (Bank +, Biaya -)</option>
-                                    <option value="Kredit" {{ old('jenis_transaksi', 'Kredit') == 'Kredit' ? 'selected' : '' }}>Kredit (Biaya +, Bank -)</option>
+                                    <option value="Debit" {{ old('jenis_transaksi') == 'Debit' ? 'selected' : '' }}>Debit (Bank bertambah, Biaya berkurang)</option>
+                                    <option value="Kredit" {{ old('jenis_transaksi', 'Kredit') == 'Kredit' ? 'selected' : '' }}>Kredit (Biaya bertambah, Bank berkurang)</option>
                                 </select>
                             </div>
                         </div>

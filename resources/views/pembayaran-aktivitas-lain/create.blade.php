@@ -87,12 +87,12 @@
                             <p><strong>Otomatis Jurnal Akuntansi:</strong></p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                                 <div class="bg-white p-3 rounded border border-blue-200">
-                                    <p class="font-medium text-green-700">✅ Jika pilih DEBIT:</p>
+                                    <p class="font-medium text-green-700">✅ Jika pilih KREDIT:</p>
                                     <p class="text-xs mt-1">• <strong>Dr.</strong> Akun yang dipilih (Biaya/Beban) <span class="text-green-600">+</span></p>
                                     <p class="text-xs">• <strong>Cr.</strong> Akun Bank yang dipilih <span class="text-red-600">-</span></p>
                                 </div>
                                 <div class="bg-white p-3 rounded border border-blue-200">
-                                    <p class="font-medium text-blue-700">✅ Jika pilih KREDIT:</p>
+                                    <p class="font-medium text-blue-700">✅ Jika pilih DEBIT:</p>
                                     <p class="text-xs mt-1">• <strong>Dr.</strong> Akun Bank yang dipilih <span class="text-green-600">+</span></p>
                                     <p class="text-xs">• <strong>Cr.</strong> Akun yang dipilih (Biaya/Beban) <span class="text-red-600">-</span></p>
                                 </div>
@@ -275,8 +275,8 @@
                     </label>
                     <select name="debit_kredit" id="debit_kredit" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('debit_kredit') border-red-500 @enderror">
                         <option value="">Pilih Jenis Transaksi</option>
-                        <option value="debit" {{ old('debit_kredit') == 'debit' ? 'selected' : '' }}>DEBIT (Biaya/Beban bertambah, Bank berkurang)</option>
-                        <option value="kredit" {{ old('debit_kredit') == 'kredit' ? 'selected' : '' }}>KREDIT (Bank bertambah, Biaya/Beban berkurang)</option>
+                        <option value="debit" {{ old('debit_kredit') == 'debit' ? 'selected' : '' }}>DEBIT (Bank bertambah, Biaya/Beban berkurang)</option>
+                        <option value="kredit" {{ old('debit_kredit') == 'kredit' ? 'selected' : '' }}>KREDIT (Biaya/Beban bertambah, Bank berkurang)</option>
                     </select>
                     @error('debit_kredit')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -1137,7 +1137,7 @@ function initializeSelect2() {
         
         let journalHtml = '';
         
-        if (jenisTransaksi === 'debit') {
+        if (jenisTransaksi === 'kredit') {
             journalHtml = `
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-green-50 p-2 rounded border border-green-200">

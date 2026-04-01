@@ -187,10 +187,10 @@
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jenis_transaksi') border-red-300 @enderror">
                                     <option value="">-- Pilih Jenis Transaksi --</option>
                                     <option value="debit" {{ old('jenis_transaksi') == 'debit' ? 'selected' : '' }}>
-                                        <i class="fas fa-plus-circle"></i> Debit (Menambah Saldo)
+                                        <i class="fas fa-plus-circle"></i> Debit (Bank bertambah, Biaya berkurang)
                                     </option>
                                     <option value="kredit" {{ old('jenis_transaksi', 'kredit') == 'kredit' ? 'selected' : '' }}>
-                                        <i class="fas fa-minus-circle"></i> Kredit (Mengurangi Saldo)
+                                        <i class="fas fa-minus-circle"></i> Kredit (Biaya bertambah, Bank berkurang)
                                     </option>
                                 </select>
                                 @error('jenis_transaksi')
@@ -683,10 +683,10 @@ document.getElementById('jenis_transaksi').addEventListener('change', function(e
 
     if (helpText) {
         if (jenisTransaksi === 'debit') {
-            helpText.textContent = 'Debit: Uang masuk ke akun kas/bank (menambah saldo)';
+            helpText.textContent = 'Debit: Bank bertambah, Biaya berkurang';
             helpText.className = 'mt-1 text-sm text-green-600';
         } else if (jenisTransaksi === 'kredit') {
-            helpText.textContent = 'Kredit: Uang keluar dari akun kas/bank (mengurangi saldo)';
+            helpText.textContent = 'Kredit: Biaya bertambah, Bank berkurang';
             helpText.className = 'mt-1 text-sm text-red-600';
         } else {
             helpText.textContent = 'Untuk pembayaran Uang Muka biasanya kredit (uang keluar)';
