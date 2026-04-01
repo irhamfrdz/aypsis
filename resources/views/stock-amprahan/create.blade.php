@@ -406,15 +406,20 @@
                                 {{-- Lain-lain --}}
                                 <div class="group">
                                     <label for="lain_lain" class="block text-sm font-bold text-gray-700 mb-2">Lain-lain</label>
-                                    <select name="lain_lain" id="lain_lain" 
-                                            class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
-                                        <option value="">-- Pilih --</option>
-                                        <option value="Montir Garasi" {{ old('lain_lain') == 'Montir Garasi' ? 'selected' : '' }}>Montir Garasi</option>
-                                        <option value="Montir Pelabuhan" {{ old('lain_lain') == 'Montir Pelabuhan' ? 'selected' : '' }}>Montir Pelabuhan</option>
-                                        <option value="Tukang Las Garasi" {{ old('lain_lain') == 'Tukang Las Garasi' ? 'selected' : '' }}>Tukang Las Garasi</option>
-                                        <option value="Tukang Tambal Ban Garasi" {{ old('lain_lain') == 'Tukang Tambal Ban Garasi' ? 'selected' : '' }}>Tukang Tambal Ban Garasi</option>
-                                        <option value="Kenek Montir Garasi" {{ old('lain_lain') == 'Kenek Montir Garasi' ? 'selected' : '' }}>Kenek Montir Garasi</option>
-                                    </select>
+                                    <div class="relative dropdown-container-lain-lain">
+                                        <input type="text" name="lain_lain" id="lain_lain" 
+                                               value="{{ old('lain_lain') }}" 
+                                               placeholder="Ketik atau pilih..."
+                                               autocomplete="off"
+                                               class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                        <div id="dropdown_options_lain_lain" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b-xl max-h-60 overflow-y-auto hidden shadow-xl mt-1 border-t-0">
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Montir Garasi">Montir Garasi</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Montir Pelabuhan">Montir Pelabuhan</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Tukang Las Garasi">Tukang Las Garasi</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Tukang Tambal Ban Garasi">Tukang Tambal Ban Garasi</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kenek Montir Garasi">Kenek Montir Garasi</div>
+                                        </div>
+                                    </div>
                                     @error('lain_lain')
                                         <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
@@ -696,6 +701,51 @@ document.addEventListener('DOMContentLoaded', function() {
         // Calculate on page load if there are old values
         updateHargaTotal();
     }
+
+    // Logic for Lain-lain Manual Input with Suggestions
+    (function initLainLainDropdown() {
+        const input = document.getElementById('lain_lain');
+        const optionsDiv = document.getElementById('dropdown_options_lain_lain');
+        const container = optionsDiv.closest('.dropdown-container-lain-lain');
+        const options = Array.from(optionsDiv.querySelectorAll('.option-item'));
+
+        input.addEventListener('focus', () => {
+            optionsDiv.classList.remove('hidden');
+        });
+        
+        input.addEventListener('input', function() {
+            const term = this.value.toLowerCase();
+            let visibleCount = 0;
+            options.forEach(opt => {
+                const text = opt.textContent.toLowerCase();
+                if (text.includes(term)) {
+                    opt.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+            
+            if (visibleCount > 0) {
+                optionsDiv.classList.remove('hidden');
+            } else {
+                optionsDiv.classList.add('hidden');
+            }
+        });
+
+        options.forEach(opt => {
+            opt.addEventListener('click', function() {
+                input.value = this.getAttribute('data-value');
+                optionsDiv.classList.add('hidden');
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!container.contains(e.target)) {
+                optionsDiv.classList.add('hidden');
+            }
+        });
+    })();
 });
 </script>
 @endpush
