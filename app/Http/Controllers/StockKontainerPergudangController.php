@@ -102,6 +102,19 @@ class StockKontainerPergudangController extends Controller
         return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id'));
     }
 
+    public function exportDetail($id)
+    {
+        $gudang = null;
+        if ($id !== 'none' && $id != '') {
+            $gudang = Gudang::find($id);
+        }
+        
+        $namaGudangStr = $gudang ? $gudang->nama_gudang : 'Tanpa Gudang';
+        $fileName = 'Daftar_Kontainer_' . str_replace([' ', '/', '\\'], '_', $namaGudangStr) . '_' . date('Ymd_His') . '.xlsx';
+
+        return Excel::download(new \App\Exports\GudangKontainerExport($id), $fileName);
+    }
+
     public function downloadTemplate()
     {
         $headers = ['Nomor Kontainer'];

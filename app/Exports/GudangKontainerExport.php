@@ -23,10 +23,14 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
     public function collection()
     {
         // Get kontainers
-        $kontainers = Kontainer::where('gudangs_id', $this->gudangId)
-            ->orderBy('nomor_seri_gabungan')
-            ->get()
-            ->map(function($k) {
+        $queryK = Kontainer::orderBy('nomor_seri_gabungan');
+        if ($this->gudangId === null || $this->gudangId === 'none' || $this->gudangId === '') {
+            $queryK->whereNull('gudangs_id');
+        } else {
+            $queryK->where('gudangs_id', $this->gudangId);
+        }
+        
+        $kontainers = $queryK->get()->map(function($k) {
                 return [
                     $k->nomor_seri_gabungan,
                     $k->ukuran ?? '-',
@@ -35,10 +39,14 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
             });
 
         // Get stock_kontainers
-        $stockKontainers = StockKontainer::where('gudangs_id', $this->gudangId)
-            ->orderBy('nomor_seri_gabungan')
-            ->get()
-            ->map(function($s) {
+        $queryS = StockKontainer::orderBy('nomor_seri_gabungan');
+        if ($this->gudangId === null || $this->gudangId === 'none' || $this->gudangId === '') {
+            $queryS->whereNull('gudangs_id');
+        } else {
+            $queryS->where('gudangs_id', $this->gudangId);
+        }
+
+        $stockKontainers = $queryS->get()->map(function($s) {
                 return [
                     $s->nomor_seri_gabungan,
                     $s->ukuran ?? '-',

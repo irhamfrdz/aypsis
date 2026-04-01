@@ -483,6 +483,9 @@ Route::middleware([
         Route::get('kontainer/stock-pergudang/{id}', [\App\Http\Controllers\StockKontainerPergudangController::class, 'show'])
              ->name('kontainer.stock-pergudang.show')
              ->middleware('can:master-kontainer-view');
+        Route::get('kontainer/stock-pergudang/{id}/export', [\App\Http\Controllers\StockKontainerPergudangController::class, 'exportDetail'])
+             ->name('kontainer.stock-pergudang.export')
+             ->middleware('can:master-kontainer-view');
         Route::get('kontainer/stock-pergudang-export/download-template', [\App\Http\Controllers\StockKontainerPergudangController::class, 'downloadTemplate'])
              ->name('kontainer.stock-pergudang.template')
              ->middleware('can:master-kontainer-view');
