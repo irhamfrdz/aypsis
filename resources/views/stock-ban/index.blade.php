@@ -220,7 +220,7 @@
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <!-- Total Ban -->
-                    <div id="card-total" onclick="setCardFilter('total')" class="cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter active-filter ring-2 ring-blue-400">
+                    <div id="card-total" onclick="setCardFilter('total', false)" class="cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter active-filter ring-2 ring-blue-400">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-blue-600 uppercase">Total Ban</span>
                             <i class="fas fa-circle-notch text-blue-400 text-lg"></i>
@@ -233,7 +233,7 @@
                     @php
                         $banStok = $stockBans->where('status', 'Stok')->count();
                     @endphp
-                    <div id="card-stok" onclick="setCardFilter('stok')" class="cursor-pointer bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-stok" onclick="setCardFilter('stok', false)" class="cursor-pointer bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-green-600 uppercase">Stok</span>
                             <i class="fas fa-box text-green-400 text-lg"></i>
@@ -246,7 +246,7 @@
                     @php
                         $banTerpakai = $stockBans->where('status', 'Terpakai')->count();
                     @endphp
-                    <div id="card-terpakai" onclick="setCardFilter('terpakai')" class="cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-terpakai" onclick="setCardFilter('terpakai', false)" class="cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-purple-600 uppercase">Terpakai</span>
                             <i class="fas fa-check-circle text-purple-400 text-lg"></i>
@@ -259,7 +259,7 @@
                     @php
                         $banSedangDimasak = $stockBans->where('status', 'Sedang Dimasak')->count();
                     @endphp
-                    <div id="card-sedang-dimasak" onclick="setCardFilter('sedang-dimasak')" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-sedang-dimasak" onclick="setCardFilter('sedang-dimasak', false)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-orange-600 uppercase">Sedang Dimasak</span>
                             <i class="fas fa-fire text-orange-400 text-lg"></i>
@@ -272,7 +272,7 @@
                     @php
                         $banDikirim = $stockBans->where('status', 'Dikirim Ke Batam')->count();
                     @endphp
-                    <div id="card-dikirim" onclick="setCardFilter('dikirim')" class="cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-dikirim" onclick="setCardFilter('dikirim', false)" class="cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-cyan-600 uppercase">Dikirim Batam</span>
                             <i class="fas fa-map-marked-alt text-cyan-400 text-lg"></i>
@@ -285,7 +285,7 @@
                     @php
                         $banAsli = $stockBans->where('kondisi', 'asli')->count();
                     @endphp
-                    <div id="card-asli" onclick="setCardFilter('asli')" class="cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-asli" onclick="setCardFilter('asli', false)" class="cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-emerald-600 uppercase">Asli</span>
                             <i class="fas fa-star text-emerald-400 text-lg"></i>
@@ -300,7 +300,7 @@
                             return $ban->kondisi === 'kanisir' && stripos($ban->lokasi ?? '', 'Ruko 10') !== false && $ban->status === 'Stok';
                         })->count();
                     @endphp
-                    <div id="card-kanisir" onclick="setCardFilter('kanisir')" class="cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-kanisir" onclick="setCardFilter('kanisir', false)" class="cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-yellow-600 uppercase">Kanisir</span>
                             <i class="fas fa-recycle text-yellow-400 text-lg"></i>
@@ -313,7 +313,7 @@
                     @php
                         $banAfkir = $stockBans->where('kondisi', 'afkir')->count();
                     @endphp
-                    <div id="card-afkir" onclick="setCardFilter('afkir')" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-afkir" onclick="setCardFilter('afkir', false)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-red-600 uppercase">Afkir</span>
                             <i class="fas fa-times-circle text-red-400 text-lg"></i>
@@ -326,7 +326,7 @@
                     @php
                         $banDikembalikan = $stockBans->where('status', 'Dikembalikan')->count();
                     @endphp
-                    <div id="card-dikembalikan" onclick="setCardFilter('dikembalikan')" class="cursor-pointer bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-dikembalikan" onclick="setCardFilter('dikembalikan', false)" class="cursor-pointer bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-rose-600 uppercase">Dikembalikan</span>
                             <i class="fas fa-undo-alt text-rose-400 text-lg"></i>
@@ -341,7 +341,7 @@
                             return stripos($ban->lokasi, 'Garasi Pluit') !== false && $ban->status === 'Stok';
                         })->count();
                     @endphp
-                    <div id="card-garasi-pluit" onclick="setCardFilter('garasi-pluit')" class="cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-garasi-pluit" onclick="setCardFilter('garasi-pluit', false)" class="cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-indigo-600 uppercase">Garasi Pluit</span>
                             <i class="fas fa-warehouse text-indigo-400 text-lg"></i>
@@ -356,7 +356,7 @@
                             return stripos($ban->lokasi, 'Ruko 10') !== false && $ban->status === 'Stok';
                         })->count();
                     @endphp
-                    <div id="card-ruko-10" onclick="setCardFilter('ruko-10')" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-ruko-10" onclick="setCardFilter('ruko-10', false)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-orange-600 uppercase">Ruko 10</span>
                             <i class="fas fa-building text-orange-400 text-lg"></i>
@@ -369,7 +369,7 @@
                     @php
                         $banAsliStok = $stockBans->where('kondisi', 'asli')->where('status', 'Stok')->count();
                     @endphp
-                    <div id="card-asli-stok" onclick="setCardFilter('asli-stok')" class="cursor-pointer bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-asli-stok" onclick="setCardFilter('asli-stok', false)" class="cursor-pointer bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-teal-600 uppercase">Asli Stok</span>
                             <i class="fas fa-check-double text-teal-400 text-lg"></i>
@@ -382,7 +382,7 @@
                     @php
                         $banDijual = $stockBans->where('status', 'Dijual')->count();
                     @endphp
-                    <div id="card-dijual" onclick="setCardFilter('dijual')" class="cursor-pointer bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                    <div id="card-dijual" onclick="setCardFilter('dijual', false)" class="cursor-pointer bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-amber-600 uppercase">Ban Terjual</span>
                             <i class="fas fa-shopping-cart text-amber-400 text-lg"></i>
@@ -637,6 +637,157 @@
             @php
                 $banBatamList = $stockBanLuarBatams;
             @endphp
+
+            <!-- Rekap Statistik Ban Luar Batam -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-chart-line text-orange-600"></i>
+                    Rekap Ban Luar Batam
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Total Ban -->
+                    <div id="card-batam-total" onclick="setCardFilter('total', true)" class="cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-blue-600 uppercase">Total Ban</span>
+                            <i class="fas fa-circle-notch text-blue-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-blue-900">{{ $banBatamList->count() }}</div>
+                        <p class="text-xs text-blue-600 mt-1">Unit</p>
+                    </div>
+                    
+                    <!-- Ban Stok -->
+                    @php
+                        $banStokBtm = $banBatamList->where('status', 'Stok')->count();
+                    @endphp
+                    <div id="card-batam-stok" onclick="setCardFilter('stok', true)" class="cursor-pointer bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-green-600 uppercase">Stok</span>
+                            <i class="fas fa-box text-green-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-green-900">{{ $banStokBtm }}</div>
+                        <p class="text-xs text-green-600 mt-1">Tersedia</p>
+                    </div>
+                    
+                    <!-- Ban Terpakai -->
+                    @php
+                        $banTerpakaiBtm = $banBatamList->where('status', 'Terpakai')->count();
+                    @endphp
+                    <div id="card-batam-terpakai" onclick="setCardFilter('terpakai', true)" class="cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-purple-600 uppercase">Terpakai</span>
+                            <i class="fas fa-check-circle text-purple-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-purple-900">{{ $banTerpakaiBtm }}</div>
+                        <p class="text-xs text-purple-600 mt-1">Terpasang</p>
+                    </div>
+                    
+                    <!-- Ban Sedang Dimasak -->
+                    @php
+                        $banSedangDimasakBtm = $banBatamList->where('status', 'Sedang Dimasak')->count();
+                    @endphp
+                    <div id="card-batam-sedang-dimasak" onclick="setCardFilter('sedang-dimasak', true)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-orange-600 uppercase">Sedang Dimasak</span>
+                            <i class="fas fa-fire text-orange-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-orange-900">{{ $banSedangDimasakBtm }}</div>
+                        <p class="text-xs text-orange-600 mt-1">Proses</p>
+                    </div>
+
+                    <!-- Ban Asli -->
+                    @php
+                        $banAsliBtm = $banBatamList->where('kondisi', 'asli')->count();
+                    @endphp
+                    <div id="card-batam-asli" onclick="setCardFilter('asli', true)" class="cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-emerald-600 uppercase">Asli</span>
+                            <i class="fas fa-star text-emerald-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-emerald-900">{{ $banAsliBtm }}</div>
+                        <p class="text-xs text-emerald-600 mt-1">Original</p>
+                    </div>
+                    
+                    <!-- Ban Kanisir -->
+                    @php
+                        $banKanisirBtm = $banBatamList->where('kondisi', 'kanisir')->where('status', 'Stok')->count();
+                    @endphp
+                    <div id="card-batam-kanisir" onclick="setCardFilter('kanisir', true)" class="cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-yellow-600 uppercase">Kanisir</span>
+                            <i class="fas fa-recycle text-yellow-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-yellow-900">{{ $banKanisirBtm }}</div>
+                        <p class="text-xs text-yellow-600 mt-1">Remelted</p>
+                    </div>
+                    
+                    <!-- Ban Afkir -->
+                    @php
+                        $banAfkirBtm = $banBatamList->where('kondisi', 'afkir')->count();
+                    @endphp
+                    <div id="card-batam-afkir" onclick="setCardFilter('afkir', true)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-red-600 uppercase">Afkir</span>
+                            <i class="fas fa-times-circle text-red-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-red-900">{{ $banAfkirBtm }}</div>
+                        <p class="text-xs text-red-600 mt-1">Rusak</p>
+                    </div>
+
+                    <!-- Ban Dikembalikan -->
+                    @php
+                        $banDikembalikanBtm = $banBatamList->where('status', 'Dikembalikan')->count();
+                    @endphp
+                    <div id="card-batam-dikembalikan" onclick="setCardFilter('dikembalikan', true)" class="cursor-pointer bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-rose-600 uppercase">Dikembalikan</span>
+                            <i class="fas fa-undo-alt text-rose-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-rose-900">{{ $banDikembalikanBtm }}</div>
+                        <p class="text-xs text-rose-600 mt-1">Ke Toko</p>
+                    </div>
+
+                    <!-- Gudang Batam -->
+                    @php
+                        $gudangBatam = $banBatamList->filter(function($ban) {
+                            return stripos($ban->lokasi, 'Gudang Batam') !== false && $ban->status === 'Stok';
+                        })->count();
+                    @endphp
+                    <div id="card-batam-gudang" onclick="setCardFilter('gudang-batam', true)" class="cursor-pointer bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-indigo-600 uppercase">Gudang Batam</span>
+                            <i class="fas fa-warehouse text-indigo-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-indigo-900">{{ $gudangBatam }}</div>
+                        <p class="text-xs text-indigo-600 mt-1">Lokasi</p>
+                    </div>
+
+                    <!-- Ban Asli Stok -->
+                    @php
+                        $banAsliStokBtm = $banBatamList->where('kondisi', 'asli')->where('status', 'Stok')->count();
+                    @endphp
+                    <div id="card-batam-asli-stok" onclick="setCardFilter('asli-stok', true)" class="cursor-pointer bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-teal-600 uppercase">Asli Stok</span>
+                            <i class="fas fa-check-double text-teal-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-teal-900">{{ $banAsliStokBtm }}</div>
+                        <p class="text-xs text-teal-600 mt-1">Siap Pakai</p>
+                    </div>
+
+                    <!-- Ban Dijual -->
+                    @php
+                        $banDijualBtm = $banBatamList->where('status', 'Dijual')->count();
+                    @endphp
+                    <div id="card-batam-dijual" onclick="setCardFilter('dijual', true)" class="cursor-pointer bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-amber-600 uppercase">Ban Terjual</span>
+                            <i class="fas fa-shopping-cart text-amber-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-amber-900">{{ $banDijualBtm }}</div>
+                        <p class="text-xs text-amber-600 mt-1">Laku</p>
+                    </div>
+                </div>
+            </div>
 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -1995,7 +2146,7 @@
         document.getElementById('kanisir_harga').value = unitPrice;
     }
 
-    function setCardFilter(filterType) {
+    function setCardFilter(filterType, isBatam = false) {
         currentCardFilter = filterType;
         
         // Visual updates
@@ -2006,7 +2157,8 @@
             card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400', 'ring-cyan-400', 'ring-rose-400', 'ring-amber-400');
         });
 
-        const activeCard = document.getElementById('card-' + filterType);
+        const cardId = isBatam ? 'card-batam-' + filterType : 'card-' + filterType;
+        const activeCard = document.getElementById(cardId);
         if(activeCard) {
             activeCard.classList.add('active-filter', 'ring-2');
             
@@ -2024,7 +2176,8 @@
                 'asli-stok': 'ring-teal-400',
                 'dikirim': 'ring-cyan-400',
                 'dikembalikan': 'ring-rose-400',
-                'dijual': 'ring-amber-400'
+                'dijual': 'ring-amber-400',
+                'gudang-batam': 'ring-indigo-400'
             };
             activeCard.classList.add(colorMap[filterType]);
         }
@@ -2057,9 +2210,32 @@
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 contents.forEach(c => c.classList.remove('active'));
+                
+                // Clear any active card filters when switching tabs
+                currentCardFilter = 'total';
+                document.querySelectorAll('.card-filter').forEach(card => {
+                    card.classList.remove('active-filter', 'ring-2');
+                    card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400', 'ring-cyan-400', 'ring-rose-400', 'ring-amber-400');
+                });
+                
+                // Active highlighting for default "total" card in the target tab
+                const targetTabId = tab.dataset.target;
+                const isBtm = targetTabId === 'tab-ban-luar-batam';
+                const totalCardId = isBtm ? 'card-batam-total' : 'card-total';
+                const totalCard = document.getElementById(totalCardId);
+                if (totalCard) {
+                    totalCard.classList.add('active-filter', 'ring-2', 'ring-blue-400');
+                }
 
                 tab.classList.add('active');
                 document.getElementById(tab.dataset.target).classList.add('active');
+
+                // Trigger search reset
+                const searchInput = document.getElementById('search-input');
+                if(searchInput) {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                }
             });
         });
 
@@ -2294,13 +2470,19 @@
                     } else if (currentCardFilter === 'asli') {
                         filterMatch = kondisi === 'asli';
                     } else if (currentCardFilter === 'kanisir') {
-                        filterMatch = kondisi === 'kanisir' && lokasi.includes('ruko 10') && status === 'stok';
+                        if (activeTab.id === 'tab-ban-luar') {
+                            filterMatch = kondisi === 'kanisir' && lokasi.includes('ruko 10') && status === 'stok';
+                        } else {
+                            filterMatch = kondisi === 'kanisir' && status === 'stok';
+                        }
                     } else if (currentCardFilter === 'afkir') {
                         filterMatch = kondisi === 'afkir';
                     } else if (currentCardFilter === 'garasi-pluit') {
                         filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     } else if (currentCardFilter === 'ruko-10') {
                         filterMatch = lokasi.includes('ruko 10') && status === 'stok';
+                    } else if (currentCardFilter === 'gudang-batam') {
+                        filterMatch = lokasi.includes('gudang batam') && status === 'stok';
                     } else if (currentCardFilter === 'asli-stok') {
                         filterMatch = kondisi === 'asli' && status === 'stok';
                     } else if (currentCardFilter === 'dikirim') {
