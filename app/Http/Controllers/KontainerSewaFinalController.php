@@ -59,15 +59,25 @@ class KontainerSewaFinalController extends Controller
                 'stT' => $i->billing_mode, 
                 'act' => true
             ]),
-            'cart' => BtmSewaAudit::whereNull('pranota_id')->get()->map(fn($i) => [
-                'id' => $i->id,
-                'idp' => $i->transaction_id . '-' . $i->period_name,
-                'unit' => $i->unit_number,
-                'masa' => $i->period_name,
-                'aypsis' => (float)$i->aypsis_nominal,
-                'vendorBill' => (float)$i->vendor_nominal,
-                'note' => $i->note
-            ]),
+            'cart' => BtmSewaAudit::whereNull('pranota_id')->with('transaction')->get()->map(function($i) {
+                // Use transaction_key (unit+excelSerial) format to match genPeriode JS idp format
+                if ($i->transaction_key) {
+                    $idp = $i->transaction_key . '-' . $i->period_name;
+                } elseif ($i->transaction) {
+                    $idp = $i->transaction->unit_number . $this->toExcelSerial($i->transaction->date_in) . '-' . $i->period_name;
+                } else {
+                    $idp = $i->transaction_id . '-' . $i->period_name;
+                }
+                return [
+                    'id' => $i->id,
+                    'idp' => $idp,
+                    'unit' => $i->unit_number,
+                    'masa' => $i->period_name,
+                    'aypsis' => (float)$i->aypsis_nominal,
+                    'vendorBill' => (float)$i->vendor_nominal,
+                    'note' => $i->note
+                ];
+            }),
             'p' => BtmSewaPranota::with('vendor')->latest()->get()->map(fn($i) => [
                 'id' => $i->id,
                 'nomor' => $i->nomor,
@@ -280,6 +290,18 @@ class KontainerSewaFinalController extends Controller
                 ]);
 
                 foreach ($cartData as $c) {
+                    // If item has a DB id (came from initial.cart), update directly — no idp parsing needed
+                    if (!empty($c['id'])) {
+                        BtmSewaAudit::where('id', $c['id'])->update([
+                            'vendor_nominal' => $c['vendorBill'],
+                            'aypsis_nominal' => $c['aypsis'],
+                            'note' => $c['note'] ?? null,
+                            'pranota_id' => $pranota->id,
+                            'is_approved' => true,
+                        ]);
+                        continue;
+                    }
+
                     $idp = $c['idp'] ?? '';
                     $masa = $c['masa'] ?? '';
 
@@ -332,13 +354,13 @@ class KontainerSewaFinalController extends Controller
     }
     public function printPranota($id)
     {
-        $pranota = BtmSewaPranota::with(['vendor', 'audits.transaction'])->findOrFail($id);
+        $pranota = BtmSewaPranota::with(['vendor', 'audits'])->findOrFail($id);
         return view('kontainer_sewa_final.print', compact('pranota'));
     }
 
     public function showPranota($id)
     {
-        $pranota = BtmSewaPranota::with(['vendor', 'audits.transaction'])->findOrFail($id);
+        $pranota = BtmSewaPranota::with(['vendor', 'audits'])->findOrFail($id);
         return response()->json([
             'success' => true,
             'data' => [
@@ -405,6 +427,17 @@ class KontainerSewaFinalController extends Controller
             DB::rollBack();
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
+    }
+
+    public function destroyAudit($id)
+    {
+        $audit = BtmSewaAudit::findOrFail($id);
+        // Only allow deleting audits that are not linked to any pranota
+        if ($audit->pranota_id) {
+            return response()->json(['success' => false, 'message' => 'Audit sudah terkait dengan pranota, tidak bisa dihapus langsung.']);
+        }
+        $audit->delete();
+        return response()->json(['success' => true]);
     }
 
     public function destroyPranota($id)

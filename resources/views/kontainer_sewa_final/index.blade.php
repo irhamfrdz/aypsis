@@ -230,6 +230,7 @@
 
         .tab-audit-btn { 
             padding: 10px 20px; 
+            
             border: 1px solid var(--primary); 
             background: white; 
             cursor: pointer; 
@@ -283,245 +284,40 @@
 </div>
 
 <div class="main">
-    <div id="tab-vtz" style="display:none">
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
-            <div class="card">
-                <h4>Vendor</h4>
-                <div style="display:flex; gap:8px;">
-                    <input id="in-v" style="flex:1" placeholder="Nama Vendor...">
-                    <button class="btn btn-blue" onclick="addM('v','in-v')">Add</button>
-                </div>
-                <table id="tbl-v">
-                    <thead><tr><th>No</th><th>Vendor</th><th>Aksi</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <div class="card">
-                <h4>Tipe</h4>
-                <div style="display:flex; gap:8px;">
-                    <input id="in-t" style="flex:1" placeholder="Nama Tipe...">
-                    <button class="btn btn-blue" onclick="addM('t','in-t')">Add</button>
-                </div>
-                <table id="tbl-t">
-                    <thead><tr><th>No</th><th>Tipe</th><th>Aksi</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <div class="card">
-                <h4>Size</h4>
-                <div style="display:flex; gap:8px;">
-                    <input id="in-z" style="flex:1" placeholder="Nama Size...">
-                    <button class="btn btn-blue" onclick="addM('z','in-z')">Add</button>
-                </div>
-                <table id="tbl-z">
-                    <thead><tr><th>No</th><th>Size</th><th>Aksi</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="tab-tarif" style="display:none">
-        <div class="card">
-            <h4>➕ Setup Tarif</h4>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin-bottom:15px;">
-                <select id="rt-v"></select>
-                <select id="rt-t"></select>
-                <select id="rt-z"></select> 
-                <input id="rt-bln" type="number" placeholder="Per Bulan (Rp)">
-                <input id="rt-hr" type="number" placeholder="Per Hari (Rp)">
-            </div>
-            <button class="btn btn-blue" style="width:100%;" onclick="addR()">SIMPAN TARIF</button>
-        </div>
-        <div class="card">
-            <h4>📋 Daftar Tarif</h4>
-            <table id="tbl-rt">
-                <thead><tr><th>No.</th><th>Vendor</th><th>Tipe/Size</th><th>Bln</th><th>Hr</th><th>Aksi</th></tr></thead>
-                <tbody id="body-rt"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="tab-unit" style="display:none">
-        <div class="card" id="edit-unit-zone" style="display:none; background: #fffcf0; border-left: 4px solid var(--warning);">
-            <h4>✏️ Edit Master Unit</h4>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px;">
-                <input type="hidden" id="edu-idx">
-                <input type="text" id="edu-no" placeholder="No. Unit">
-                <select id="edu-v"></select>
-                <select id="edu-t"></select>
-                <select id="edu-z"></select>
-                <button class="btn btn-orange" onclick="simpanEditUnit()">SIMPAN</button>
-                <button class="btn btn-red" onclick="batalEditUnit()">BATAL</button>
-            </div>
-        </div>
-        <div class="card" id="entry-unit-zone">
-            <h4>➕ Entry Unit Baru</h4>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
-                <input type="text" id="mu-no" placeholder="No. Unit">
-                <select id="mu-v"></select>
-                <select id="mu-t"></select>
-                <select id="mu-z"></select>
-                <button class="btn btn-green" onclick="tambahUnitManual()">TAMBAH</button>
-            </div>
-        </div>
-        <div class="card">
-            <h4>🔍 Cari Unit</h4>
-            <input type="text" id="src-u" onkeyup="pgU=1;renderU()" placeholder="Masukan No Unit untuk memfilter..." style="width:100%; margin-bottom:20px; padding:12px; box-sizing: border-box;">
-            <table id="tbl-u">
-                <thead><tr><th>No.</th><th>Unit</th><th>Vendor</th><th>Tipe/Size</th><th>Aksi</th></tr></thead>
-                <tbody id="body-u"></tbody>
-            </table>
-            <div id="pg-u" class="pagination"></div>
-        </div>
-    </div>
-
-    <div id="tab-trx" style="display:none">
-        <div class="card" id="edit-trx-zone" style="display:none; background: #fffcf0; border-left: 4px solid var(--warning);">
-            <h4>✏️ Edit Transaksi</h4>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
-                <input type="hidden" id="edx-idx">
-                <select id="edx-no"></select>
-                <input type="text" id="edx-s" placeholder="Ambil (dd/mm/yyyy)">
-                <input type="text" id="edx-e" placeholder="Kembali (dd/mm/yyyy)">
-                <select id="edx-st-t">
-                    <option value="B">Bulanan (B)</option>
-                    <option value="H">Harian (H)</option>
-                </select>
-                <button class="btn btn-orange" onclick="simpanEditTrx()">SIMPAN</button>
-                <button class="btn btn-red" onclick="batalEditTrx()">BATAL</button>
-            </div>
-        </div>
-        <div class="card" id="entry-trx-zone">
-            <h4>➕ Entry Transaksi</h4>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
-                <input type="text" id="tx-no" list="list-u" placeholder="No Unit...">
-                <datalist id="list-u"></datalist>
-                <input type="text" id="tx-s" placeholder="Ambil (dd/mm/yyyy)">
-                <input type="text" id="tx-e" placeholder="Kembali (dd/mm/yyyy)">
-                <select id="tx-st-t">
-                    <option value="B">Bulanan (B)</option>
-                    <option value="H">Harian (H)</option>
-                </select>
-                <button class="btn btn-green" onclick="tambahTrx()">TAMBAH TRX</button>
-            </div>
-        </div>
-        <div class="card">
-            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h4>📊 Riwayat Transaksi</h4>
-                <button class="btn btn-orange" onclick="dlTrx()">📂 DOWNLOAD CSV</button>
-            </div>
-            <input type="text" id="src-x" onkeyup="pgX=1;renderX()" placeholder="Cari ID TRX atau No Unit..." style="width:100%; margin-bottom:20px; padding:12px; box-sizing: border-box;">
-            <table id="tbl-x">
-                <thead><tr><th>No.</th><th>ID TRX</th><th>Unit</th><th>Ambil</th><th>Kembali</th><th>St Tarif</th><th>St Unit</th><th>Biaya</th><th>Aksi</th></tr></thead>
-                <tbody id="body-x"></tbody>
-            </table>
-            <div id="pg-x" class="pagination"></div>
-        </div>
-    </div>
-
-    <div id="tab-rekon">
-        <div class="card">
-            <span class="judul-audit">📌 Audit Tagihan Vendor</span>
-            <div class="tab-audit-container">
-                <button id="btn-outstanding" class="tab-audit-btn active" onclick="switchAuditTab('outstanding')">Tab A: Outstanding</button>
-                <button id="btn-keranjang" class="tab-audit-btn" onclick="switchAuditTab('keranjang')">Tab B: Keranjang / Permohonan</button>
-            </div>
-            
-            <div id="area-outstanding">
-                <input type="text" id="src-audit" onkeyup="renderAudit()" placeholder="🔍 Cari Unit untuk di Audit..." style="width:100%; padding:14px; border:2px solid var(--primary); border-radius:10px; margin-bottom:20px; box-sizing: border-box;">
-                <div style="overflow-x: auto;">
-                    <table id="tbl-audit">
-                        <thead><tr style="background: var(--primary); color:white;"><th>ID TRX Induk</th><th>Unit</th><th>Ambil</th><th>Kembali</th><th>St Unit</th><th>Aksi</th></tr></thead>
-                        <tbody id="body-audit"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="area-keranjang" style="display:none">
-                <div style="margin-bottom:25px; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; background:#f8fafc; padding:20px; border:1px solid var(--border-color); border-radius: 12px;">
-                    <div><label style="font-weight:600; font-size: 11px;">VENDOR:</label><select id="aud-v-name" style="width:100%"></select></div>
-                    <div><label style="font-weight:600; font-size: 11px;">NO. INVOICE:</label><input type="text" id="aud-no-inv" style="width:100%" placeholder="Inv/2026/..."></div>
-                    <div><label style="font-weight:600; font-size: 11px;">TGL. INVOICE:</label><input type="text" id="aud-tgl-inv" placeholder="dd/mmm/yyyy" style="width:100%" onfocus="dtF(this)" onblur="dtB(this)"></div>
-                </div>
-                <div style="overflow-x: auto;">
-                    <table id="tbl-cart">
-                        <thead><tr style="background: var(--success); color:white;"><th>No</th><th>Unit</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Selisih</th><th>Ket.</th><th>Aksi</th></tr></thead>
-                        <tbody id="body-cart"></tbody>
-                        <tfoot id="foot-cart" style="background:#f8fafc; font-weight:bold;"></tfoot>
-                    </table>
-                </div>
-                <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
-                    <button class="btn btn-blue" style="padding: 12px 30px;" onclick="simpanPranota()"><i class="fas fa-save"></i> SIMPAN PRANOTA</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="tab-pranota" style="display:none">
-        <div class="card" id="edit-pranota-zone" style="display:none; background: #fffcf0; border-left: 4px solid var(--warning); margin-bottom: 30px;">
-            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h4>✏️ Edit Pranota: <span id="edp-nomor" style="color:var(--primary)"></span></h4>
-                <button class="btn btn-red" onclick="batalEditPranota()">TUTUP</button>
-            </div>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; background:white; padding:20px; border:1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px;">
-                <input type="hidden" id="edp-id">
-                <div><label style="font-weight:600; font-size: 11px;">VENDOR:</label><input type="text" id="edp-v" style="width:100%; background:#f1f5f9;" disabled></div>
-                <div><label style="font-weight:600; font-size: 11px;">NO. INVOICE:</label><input type="text" id="edp-no-inv" style="width:100%" placeholder="Inv/2026/..."></div>
-                <div><label style="font-weight:600; font-size: 11px;">TGL. INVOICE:</label><input type="text" id="edp-tgl-inv" placeholder="dd/mmm/yyyy" style="width:100%" onfocus="dtF(this)" onblur="dtB(this)"></div>
-                <div>
-                    <label style="font-weight:600; font-size: 11px;">STATUS:</label>
-                    <select id="edp-status" style="width:100%">
-                        <option value="PENDING">PENDING</option>
-                        <option value="APPROVED">APPROVED</option>
-                        <option value="PAID">PAID</option>
-                        <option value="CANCELLED">CANCELLED</option>
-                    </select>
-                </div>
-            </div>
-            <div style="overflow-x: auto;">
-                <table id="tbl-edp-items">
-                    <thead><tr style="background: var(--warning); color:white;"><th>No</th><th>Unit</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Selisih</th><th>Ket.</th><th>Aksi</th></tr></thead>
-                    <tbody id="body-edp-items"></tbody>
-                </table>
-            </div>
-            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
-                <button class="btn btn-blue" style="padding: 12px 30px;" onclick="simpanEditPranota()"><i class="fas fa-save"></i> UPDATE PRANOTA</button>
-            </div>
-        </div>
-        <div class="card">
-            <h4>📋 Daftar Pranota Sewa Kontainer (Final)</h4>
-            <div style="overflow-x: auto;">
-                <table id="tbl-p">
-                    <thead><tr style="background:var(--sidebar-bg); color:white;"><th>No. Pranota</th><th>Vendor</th><th>No. Invoice</th><th>Tgl. Invoice</th><th align="right">Total</th><th>Status</th><th>Aksi</th></tr></thead>
-                    <tbody id="body-p"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    @include('kontainer_sewa_final.components._vtz')
+    @include('kontainer_sewa_final.components._tarif')
+    @include('kontainer_sewa_final.components._unit')
+    @include('kontainer_sewa_final.components._trx')
+    @include('kontainer_sewa_final.components._rekon')
+    @include('kontainer_sewa_final.components._pranota')
 </div>
 
 <script>
-// Helper Date Picker
+// Helper Smart Date Formatter
 const mNames = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
-function dtF(el) { 
-    el.type = 'date'; 
-    if (el.value && el.value.includes('/')) { 
-        const [d, mS, y] = el.value.split('/');
-        let m = mNames.indexOf(mS) + 1;
-        if(m===0) m = parseInt(mS);
-        if(isNaN(m)) m = 1;
-        el.value = `${y}-${m.toString().padStart(2,'0')}-${d.padStart(2,'0')}`; 
-    } 
-}
-function dtB(el) { 
-    if (el.value && el.value.includes('-')) { 
-        const [y, m, d] = el.value.split('-'); 
-        el.type = 'text'; 
-        el.value = `${d}/${mNames[parseInt(m)-1]}/${y}`; 
-    } else { 
-        el.type = 'text'; 
-    } 
+function smartDate(v) {
+    if(!v) return "";
+    v = v.trim().replace(/[-.\s]/g, '/');
+    let d, m, y;
+    if (v.includes('/')) {
+        let p = v.split('/');
+        if (p.length >= 3) {
+            d = parseInt(p[0]);
+            let sM = p[1];
+            m = mNames.findIndex(n => n.toLowerCase() === sM.toLowerCase()) + 1;
+            if (m === 0) m = parseInt(sM);
+            y = p[2];
+        } else if (p.length === 2) {
+            d = parseInt(p[0]); m = parseInt(p[1]); y = new Date().getFullYear().toString();
+        }
+    } else if (/^\d{6,8}$/.test(v)) {
+        d = parseInt(v.substr(0, 2)); m = parseInt(v.substr(2, 2)); y = v.substr(4);
+    }
+    if (!d || !m || !y) return v;
+    if (y.length === 2) y = "20" + y;
+    let date = new Date(y, m - 1, d);
+    if (isNaN(date.getTime()) || date.getDate() !== d) return v;
+    return `${d.toString().padStart(2,'0')}/${mNames[m-1]}/${y}`;
 }
 
 let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[] };
@@ -622,6 +418,31 @@ function saveToCart(idp, safeId, unit, masa, bi) {
     updateDB();
 }
 
+function hapusFromCart(i) {
+    const item = db.cart[i];
+    if (item && item.id) {
+        // Item has a DB record — delete it from BtmSewaAudit so it doesn't reappear on refresh
+        fetch('{{ url("/kontainer-sewa-final/audit") }}/' + item.id, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                db.cart.splice(i, 1);
+                updateDB();
+            } else {
+                alert('Gagal hapus: ' + d.message);
+            }
+        })
+        .catch(e => { console.error(e); alert('Terjadi kesalahan.'); });
+    } else {
+        // Item hanya di localStorage, langsung hapus
+        db.cart.splice(i, 1);
+        updateDB();
+    }
+}
+
 function renderCart() {
     const body = document.getElementById('body-cart');
     const foot = document.getElementById('foot-cart');
@@ -633,7 +454,7 @@ function renderCart() {
     let tBill = 0;
     body.innerHTML = db.cart.map((c, i) => {
         tBill += c.vendorBill;
-        return `<tr><td>${i+1}</td><td>${c.unit}</td><td>${c.masa}</td><td>${fmtRibuan(c.aypsis)}</td><td>${fmtRibuan(c.vendorBill)}</td><td>${fmtRibuan(c.vendorBill - c.aypsis)}</td><td>${c.note||'-'}</td><td><button class="btn btn-red" style="padding: 4px 8px;" onclick="db.cart.splice(${i},1);updateDB()">Hapus</button></td></tr>`;
+        return `<tr><td>${i+1}</td><td>${c.unit}</td><td>${c.masa}</td><td>${fmtRibuan(c.aypsis)}</td><td>${fmtRibuan(c.vendorBill)}</td><td>${fmtRibuan(c.vendorBill - c.aypsis)}</td><td>${c.note||'-'}</td><td><button class="btn btn-red" style="padding: 4px 8px;" onclick="hapusFromCart(${i})">Hapus</button></td></tr>`;
     }).join('');
 
     const dpp = tBill;
@@ -658,13 +479,15 @@ function fmtTglDB(d) {
 }
 function fmtRibuan(n) { return Math.round(n).toLocaleString('id-ID'); }
 function cleanNum(s) { return parseInt(s.toString().replace(/\./g, '')) || 0; }
-function inputRibuan(el) {
-    let val = el.value.replace(/\./g, '');
-    if(!isNaN(val) && val !== "") { el.value = parseInt(val).toLocaleString('id-ID'); }
+function ensureDbFields() {
+    const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[] };
+    if (!window.db || typeof window.db !== 'object') window.db = d;
+    Object.keys(d).forEach(k => { if (!Array.isArray(db[k])) db[k] = d[k]; });
 }
 
 // --- FUNGSI UPDATE & RENDER ---
 function updateDB() {
+    ensureDbFields();
     localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
     renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP();
     const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value="${x.val||x}">${x.val||x}</option>`).join('');
@@ -871,7 +694,18 @@ function batalEditUnit() { document.getElementById('entry-unit-zone').style.disp
 function bukaEditTrx(i) { document.getElementById('entry-trx-zone').style.display='none'; document.getElementById('edit-trx-zone').style.display='block'; document.getElementById('edx-idx').value=i; document.getElementById('edx-no').value=db.x[i].no; document.getElementById('edx-s').value=db.x[i].s; document.getElementById('edx-e').value=db.x[i].e; document.getElementById('edx-st-t').value=db.x[i].stT; window.scrollTo(0,0); }
 function simpanEditTrx() { const i = document.getElementById('edx-idx').value; db.x[i].no = document.getElementById('edx-no').value; db.x[i].s = document.getElementById('edx-s').value; db.x[i].e = document.getElementById('edx-e').value; db.x[i].stT = document.getElementById('edx-st-t').value; batalEditTrx(); updateDB(); }
 function batalEditTrx() { document.getElementById('entry-trx-zone').style.display='block'; document.getElementById('edit-trx-zone').style.display='none'; }
-function showTab(e, id) { document.querySelectorAll('[id^="tab-"]').forEach(x => x.style.display='none'); document.getElementById(id).style.display='block'; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); e.currentTarget.classList.add('active'); if(id==='tab-rekon'||id==='tab-pranota') updateDB(); }
+function showTab(e, id) { 
+    localStorage.setItem('LAST_ACTIVE_TAB', id);
+    document.querySelectorAll('[id^="tab-"]').forEach(x => x.style.display='none'); 
+    document.getElementById(id).style.display='block'; 
+    document.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.remove('active');
+        if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${id}'`)) {
+            b.classList.add('active');
+        }
+    });
+    if(id==='tab-rekon'||id==='tab-pranota') updateDB(); 
+}
 function addM(k, id) { const v = document.getElementById(id).value.toUpperCase(); if(v) { db[k].push({val:v, act:true}); document.getElementById(id).value=''; updateDB(); } }
 function addR() { db.r.push({ v:document.getElementById('rt-v').value, t:document.getElementById('rt-t').value, z:document.getElementById('rt-z').value, rb:parseInt(document.getElementById('rt-bln').value)||0, rh:parseInt(document.getElementById('rt-hr').value)||0, act:true }); updateDB(); }
 function tambahUnitManual() { const no = document.getElementById('mu-no').value.toUpperCase(); if(no) { db.u.push({ no, v:document.getElementById('mu-v').value, t:document.getElementById('mu-t').value, z:document.getElementById('mu-z').value, act:true }); document.getElementById('mu-no').value=''; updateDB(); } }
@@ -881,7 +715,20 @@ function delU(i) { if(confirm("Set Off?")) { db.u[i].act = false; updateDB(); } 
 function delM(k, i) { if(confirm("Set Off?")) { if(typeof db[k][i] === 'object') db[k][i].act = false; else db[k][i] = {val:db[k][i], act:false}; updateDB(); } }
 function delR(i) { if(confirm("Set Off?")) { db.r[i].act = false; updateDB(); } }
 function delX(i) { if(confirm("Hapus Trx?")) { db.x.splice(i, 1); updateDB(); } }
-function loadFile(e) { const fr = new FileReader(); fr.onload = (x) => { db = JSON.parse(x.target.result); if(!db.cart) db.cart = []; updateDB(); }; fr.readAsText(e.target.files[0]); }
+function loadFile(e) { 
+    if (!e.target.files || e.target.files.length === 0) return;
+    const fr = new FileReader(); 
+    fr.onload = (x) => { 
+        try {
+            const data = JSON.parse(x.target.result);
+            if (data && typeof data === 'object') {
+                db = data;
+                updateDB();
+            }
+        } catch(err) { alert("File JSON tidak valid!"); }
+    }; 
+    fr.readAsText(e.target.files[0]); 
+}
 function simpanPranota() {
     const v = document.getElementById('aud-v-name').value;
     const inv = document.getElementById('aud-no-inv').value;
@@ -908,9 +755,17 @@ function simpanPranota() {
     .then(d => {
         if(d.success) {
             alert("Pranota Berhasil Disimpan: " + d.nomor);
-            db.cart = []; // Kosongkan keranjang lokal
+            
+            // 1. Kosongkan keranjang lokal
+            db.cart = []; 
             localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
-            location.reload(); // Reload untuk membersihkan status
+
+            // 2. Kosongkan input UI secara manual (agar tidak diingat browser saat reload)
+            if(document.getElementById('aud-no-inv')) document.getElementById('aud-no-inv').value = '';
+            if(document.getElementById('aud-tgl-inv')) document.getElementById('aud-tgl-inv').value = '';
+            if(document.getElementById('aud-v-name')) document.getElementById('aud-v-name').selectedIndex = 0;
+
+            location.reload(); 
         } else {
             alert("Error: " + d.message);
         }
@@ -963,19 +818,37 @@ window.onload = () => {
     }
 
     if(s) { 
-        db = JSON.parse(s); 
-        // Selalu ambil daftar pranota dan vendor terbaru dari database
+        try {
+            db = JSON.parse(s); 
+        } catch(e) { db = initial; }
+        
+        // Selalu sinkronkan data hasil audit & pranota dari server
         db.p = initial.p || [];
-        db.v = initial.v || db.v;
-        db.cart = initial.cart || db.cart; 
-        db.audits_map = initial.audits_map || [];    } else {
+        db.cart = initial.cart || []; 
+        db.audits_map = initial.audits_map || [];
+
+        // Untuk Master Data: Hanya timpa jika server memiliki data (setelah Simpan Data/Sync)
+        if (initial.v && initial.v.length > 0) db.v = initial.v;
+        if (initial.t && initial.t.length > 0) db.t = initial.t;
+        if (initial.z && initial.z.length > 0) db.z = initial.z;
+        if (initial.u && initial.u.length > 0) db.u = initial.u;
+        if (initial.r && initial.r.length > 0) db.r = initial.r;
+        if (initial.x && initial.x.length > 0) db.x = initial.x;
+    } else {
         db = initial;
     }
     
-    if(!db.cart) db.cart = []; 
-    if(!db.p) db.p = [];
-    if(!db.audits_map) db.audits_map = [];
     updateDB(); 
+
+    updateDB(); 
+    
+    // Restore Last Active Tab
+    const lastTab = localStorage.getItem('LAST_ACTIVE_TAB');
+    if (lastTab) {
+        showTab(null, lastTab);
+    } else {
+        showTab(null, 'tab-rekon');
+    }
 };
 </script>
 </body>

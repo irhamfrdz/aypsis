@@ -169,6 +169,7 @@ Route::middleware([
           Route::get('/kontainer-sewa-final/submit-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'showPranota'])->name('kontainer-sewa-final.show-pranota');
           Route::post('/kontainer-sewa-final/submit-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'updatePranota'])->name('kontainer-sewa-final.update-pranota');
           Route::delete('/kontainer-sewa-final/submit-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'destroyPranota'])->name('kontainer-sewa-final.destroy-pranota');
+          Route::delete('/kontainer-sewa-final/audit/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'destroyAudit'])->name('kontainer-sewa-final.destroy-audit');
           Route::get('/kontainer-sewa-final/print-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPranota'])->name('kontainer-sewa-final.print-pranota');
           
           Route::get('daftar-tagihan-kontainer-sewa-2/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getPricelistForDpp'])->name('daftar-tagihan-kontainer-sewa-2.get_pricelist');
