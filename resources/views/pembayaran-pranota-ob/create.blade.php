@@ -60,6 +60,25 @@
         display: none !important;
     }
 </style>
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container { width: 100% !important; }
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        padding: 5px 10px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.375rem !important;
+        background-color: #f9fafb !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: 26px !important;
+        font-size: 0.875rem !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -137,6 +156,33 @@
             </div>
         </div>
 
+        <!-- Double Book Accounting Info -->
+        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex items-start">
+                <svg class="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                <div class="flex-1">
+                    <h3 class="text-sm font-semibold text-blue-800 mb-1">📊 Sistem Double Book Accounting</h3>
+                    <div class="text-xs text-blue-700 space-y-1">
+                        <p><strong>Otomatis Jurnal Akuntansi:</strong></p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
+                            <div class="bg-white p-2 rounded border border-blue-200">
+                                <p class="font-medium text-green-700">✅ Jika pilih KREDIT:</p>
+                                <p class="mt-1">• <strong>Dr.</strong> Akun yang dipilih (Biaya/Beban) <span class="text-green-600">+</span></p>
+                                <p>• <strong>Cr.</strong> Akun Bank yang dipilih <span class="text-red-600">-</span></p>
+                            </div>
+                            <div class="bg-white p-2 rounded border border-blue-200">
+                                <p class="font-medium text-blue-700">✅ Jika pilih DEBIT:</p>
+                                <p class="mt-1">• <strong>Dr.</strong> Akun Bank yang dipilih <span class="text-green-600">+</span></p>
+                                <p>• <strong>Cr.</strong> Akun yang dipilih (Biaya/Beban) <span class="text-red-600">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         @if(session('success'))
             <div class="mb-3 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
                 {{ session('success') }}
@@ -208,59 +254,63 @@
                     </div>
                 </div>
 
-                <!-- Bank & Transaksi -->
+                <!-- Bank & Transaksi (Double Book) -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <div>
-                                <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
-                                <div class="custom-select-container" id="bank-select-container">
-                                    <input type="hidden" name="bank" id="bank" value="{{ old('bank') }}" data-kode="">
-                                    
-                                    <button type="button" id="bank-select-button" class="custom-select-button">
-                                        <span id="bank-selected-text" class="block truncate">
-                                            @if(old('bank'))
-                                                @php 
-                                                    $selectedBank = $akunCoa->firstWhere('nama_akun', old('bank')); 
-                                                @endphp
-                                                {{ $selectedBank ? $selectedBank->nomor_akun . ' - ' . $selectedBank->nama_akun : '-- Pilih Bank --' }}
-                                            @else
-                                                -- Pilih Bank --
-                                            @endif
-                                        </span>
-                                        <i class="fas fa-chevron-down text-gray-400"></i>
-                                    </button>
-
-                                    <div id="bank-select-dropdown" class="custom-select-dropdown">
-                                        <div class="custom-select-search">
-                                            <input type="text" id="bank-search-input" placeholder="Cari bank..." class="w-full px-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                                        </div>
-                                        <div class="custom-select-options max-h-60 overflow-y-auto" id="bank-options-list">
-                                            <div class="custom-select-option" data-value="" data-text="-- Pilih Bank --" data-kode="000">-- Pilih Bank --</div>
-                                            @foreach($akunCoa as $akun)
-                                                <div class="custom-select-option {{ old('bank') == $akun->nama_akun ? 'selected' : '' }}" 
-                                                        data-value="{{ $akun->nama_akun }}" 
-                                                        data-search="{{ strtolower($akun->nomor_akun . ' ' . $akun->nama_akun) }}"
-                                                        data-text="{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}"
-                                                        data-kode="{{ $akun->kode_nomor ?? '000' }}">
-                                                    {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                        <div id="no-bank-results" class="hidden p-4 text-center text-sm text-gray-500">
-                                            Bank tidak ditemukan
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="jenis_transaksi" class="{{ $labelClasses }}">Jenis Transaksi</label>
-                                <select name="jenis_transaksi" id="jenis_transaksi" class="{{ $inputClasses }}" required>
-                                    <option value="">-- Pilih Jenis --</option>
-                                    <option value="debit">Debit</option>
-                                    <option value="credit">Credit</option>
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-semibold text-gray-800">Double Book Accounting</h4>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 text-blue-800">
+                                📊 Auto Jurnal
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="md:col-span-2">
+                                <label for="debit_kredit" class="{{ $labelClasses }}">Jenis Transaksi <span class="text-red-500">*</span></label>
+                                <select name="debit_kredit" id="debit_kredit" class="{{ $inputClasses }}" required>
+                                    <option value="">-- Pilih Jenis Transaksi --</option>
+                                    <option value="kredit" {{ old('debit_kredit', 'kredit') == 'kredit' ? 'selected' : '' }}>KREDIT (Biaya/Beban bertambah, Bank berkurang)</option>
+                                    <option value="debit" {{ old('debit_kredit') == 'debit' ? 'selected' : '' }}>DEBIT (Bank bertambah, Biaya/Beban berkurang)</option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label for="akun_bank_id" class="{{ $labelClasses }}">Pilih Bank/Kas <span class="text-red-500">*</span></label>
+                                <select name="akun_bank_id" id="akun_bank_id" class="{{ $inputClasses }} coa-select" required>
+                                    <option value="">-- Pilih Bank --</option>
+                                    @foreach($akunBank as $akun)
+                                        <option value="{{ $akun->id }}" 
+                                                data-kode="{{ $akun->kode_nomor ?? '000' }}"
+                                                data-nama="{{ $akun->nama_akun }}"
+                                                {{ old('akun_bank_id') == $akun->id ? 'selected' : '' }}>
+                                            {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-500">*</span></label>
+                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }} coa-select" required>
+                                    <option value="">-- Pilih Akun Biaya --</option>
+                                    @foreach($akunBiaya as $akun)
+                                        <option value="{{ $akun->id }}" 
+                                                data-nama="{{ $akun->nama_akun }}"
+                                                {{ old('akun_coa_id') == $akun->id ? 'selected' : (str_contains(strtolower($akun->nama_akun), 'biaya ob') ? 'selected' : '') }}>
+                                            {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Dynamic Journal Preview -->
+                            <div id="journal_preview" class="md:col-span-2 mt-1 p-2 bg-white border border-blue-200 rounded text-[11px] hidden transition-all duration-300">
+                                <p class="font-bold text-gray-700 mb-1 flex items-center">
+                                    <i class="fas fa-file-invoice mr-1 text-blue-500"></i>
+                                    Preview Jurnal Akuntansi:
+                                </p>
+                                <div id="journal_content" class="text-gray-600">
+                                    <!-- Content will be populated by JavaScript -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -743,21 +793,52 @@
             });
         }
         
+        // Load Select2 JS dynamically
+        if (typeof jQuery !== 'undefined') {
+            const select2Script = document.createElement('script');
+            select2Script.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
+            select2Script.onload = function() {
+                initializeSelect2();
+            };
+            document.head.appendChild(select2Script);
+        }
+
+        function initializeSelect2() {
+            $('.coa-select').select2({
+                width: '100%',
+                placeholder: '-- Pilih --',
+                allowClear: true
+            });
+
+            $('#debit_kredit').select2({
+                width: '100%',
+                minimumResultsForSearch: Infinity
+            });
+
+            // Trigger journal preview and nomor pembayaran updates
+            $('#akun_bank_id').on('change', function() {
+                updateNomorPembayaran();
+                updateJournalPreview();
+            });
+            $('#akun_coa_id').on('change', updateJournalPreview);
+            $('#debit_kredit').on('change', updateJournalPreview);
+        }
+
         // Function to calculate grand total for a specific supir
         function calculateGrandTotal(supirSlug) {
-            const sisaElement = document.querySelector(`[data-supir="${supirSlug}"]`).closest('tr').querySelector('td:nth-child(5)');
-            const sisaText = sisaElement.textContent.replace(/Rp\s|,|\./g, '');
+            const row = document.querySelector(`.potongan-utang[data-supir="${supirSlug}"]`).closest('tr');
+            const sisaText = row.querySelector('td:nth-child(5)').textContent.replace(/Rp\s|,|\./g, '');
             const sisa = parseFloat(sisaText) || 0;
             
-            const potUtang = parseFloat(document.querySelector(`.potongan-utang[data-supir="${supirSlug}"]`).value) || 0;
-            const potTabungan = parseFloat(document.querySelector(`.potongan-tabungan[data-supir="${supirSlug}"]`).value) || 0;
-            const potBpjs = parseFloat(document.querySelector(`.potongan-bpjs[data-supir="${supirSlug}"]`).value) || 0;
+            const potUtang = parseFloat(row.querySelector('.potongan-utang').value) || 0;
+            const potTabungan = parseFloat(row.querySelector('.potongan-tabungan').value) || 0;
+            const potBpjs = parseFloat(row.querySelector('.potongan-bpjs').value) || 0;
             
             const grandTotal = sisa - potUtang - potTabungan - potBpjs;
             
             const grandTotalElement = document.querySelector(`.grand-total-${supirSlug}`);
             if (grandTotalElement) {
-                grandTotalElement.textContent = `Rp ${grandTotal.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+                grandTotalElement.textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
             }
         }
         
@@ -780,38 +861,34 @@
                 totalPotBpjs += parseFloat(input.value) || 0;
             });
             
-            // Calculate total grand total from all grand total cells
             document.querySelectorAll('[class^="grand-total-"]').forEach(cell => {
                 const value = cell.textContent.replace(/Rp\s|,|\./g, '');
                 totalGrandTotal += parseFloat(value) || 0;
             });
             
-            document.getElementById('total-pot-utang').textContent = `Rp ${totalPotUtang.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
-            document.getElementById('total-pot-tabungan').textContent = `Rp ${totalPotTabungan.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
-            document.getElementById('total-pot-bpjs').textContent = `Rp ${totalPotBpjs.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
-            document.getElementById('total-grand-total').textContent = `Rp ${totalGrandTotal.toLocaleString('id-ID', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+            document.getElementById('total-pot-utang').textContent = `Rp ${totalPotUtang.toLocaleString('id-ID')}`;
+            document.getElementById('total-pot-tabungan').textContent = `Rp ${totalPotTabungan.toLocaleString('id-ID')}`;
+            document.getElementById('total-pot-bpjs').textContent = `Rp ${totalPotBpjs.toLocaleString('id-ID')}`;
+            document.getElementById('total-grand-total').textContent = `Rp ${totalGrandTotal.toLocaleString('id-ID')}`;
             
-            // Update Total Pembayaran dengan Grand Total (setelah potongan)
             document.getElementById('total_pembayaran').value = totalGrandTotal.toLocaleString('id-ID');
             updateTotalAkhir();
         }
         
-        // Function to update breakdown data with potongan values
         function updateBreakdownData() {
             try {
                 const currentBreakdown = JSON.parse(document.getElementById('breakdown_supir_hidden').value || '[]');
                 
                 currentBreakdown.forEach(item => {
                     const supirSlug = item.nama_supir.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                    
-                    const potUtang = parseFloat(document.querySelector(`.potongan-utang[data-supir="${supirSlug}"]`)?.value) || 0;
-                    const potTabungan = parseFloat(document.querySelector(`.potongan-tabungan[data-supir="${supirSlug}"]`)?.value) || 0;
-                    const potBpjs = parseFloat(document.querySelector(`.potongan-bpjs[data-supir="${supirSlug}"]`)?.value) || 0;
-                    
-                    item.potongan_utang = potUtang;
-                    item.potongan_tabungan = potTabungan;
-                    item.potongan_bpjs = potBpjs;
-                    item.grand_total = item.sisa - potUtang - potTabungan - potBpjs;
+                    const inputRow = document.querySelector(`.potongan-utang[data-supir="${supirSlug}"]`);
+                    if (inputRow) {
+                        const row = inputRow.closest('tr');
+                        item.potongan_utang = parseFloat(row.querySelector('.potongan-utang').value) || 0;
+                        item.potongan_tabungan = parseFloat(row.querySelector('.potongan-tabungan').value) || 0;
+                        item.potongan_bpjs = parseFloat(row.querySelector('.potongan-bpjs').value) || 0;
+                        item.grand_total = item.sisa - item.potongan_utang - item.potongan_tabungan - item.potongan_bpjs;
+                    }
                 });
                 
                 document.getElementById('breakdown_supir_hidden').value = JSON.stringify(currentBreakdown);
@@ -820,172 +897,75 @@
             }
         }
 
-        // Init Bank Select
-        function initBankSelect() {
-            const selectContainer = document.getElementById('bank-select-container');
-            const selectButton = document.getElementById('bank-select-button');
-            const selectDropdown = document.getElementById('bank-select-dropdown');
-            const searchInput = document.getElementById('bank-search-input');
-            const optionsList = document.getElementById('bank-options-list');
-            const noResults = document.getElementById('no-bank-results');
-            const hiddenInput = document.getElementById('bank');
-            const selectedText = document.getElementById('bank-selected-text');
-
-            if (!selectContainer || !selectButton || !selectDropdown) return;
-
-            // Set initial data-kode if value is present
-            if (hiddenInput.value) {
-                const selectedOption = Array.from(optionsList.querySelectorAll('.custom-select-option'))
-                    .find(opt => opt.getAttribute('data-value') === hiddenInput.value);
-                if (selectedOption) {
-                    hiddenInput.setAttribute('data-kode', selectedOption.getAttribute('data-kode'));
-                    updateNomorPembayaran(); // Ensure initial number is correct
-                }
-            }
-
-            function updateSelectedState(value) {
-                const options = optionsList.querySelectorAll('.custom-select-option');
-                options.forEach(opt => {
-                    if (opt.getAttribute('data-value') === value) {
-                        opt.classList.add('selected');
-                    } else {
-                        opt.classList.remove('selected');
-                    }
-                });
-            }
-
-            function selectBank(value, text, kode) {
-                hiddenInput.value = value;
-                hiddenInput.setAttribute('data-kode', kode);
-                selectedText.textContent = text;
-                closeDropdown();
-                updateSelectedState(value);
-                updateNomorPembayaran();
-            }
-
-            let dropdownAppended = false;
-            const originalParent = selectDropdown.parentNode;
-            const placeholder = document.createComment('bank-select-dropdown-placeholder');
-
-            function openDropdown() {
-                searchInput.value = '';
-                const options = optionsList.querySelectorAll('.custom-select-option');
-                options.forEach(opt => opt.classList.remove('hidden'));
-                noResults.classList.add('hidden');
-
-                const rect = selectButton.getBoundingClientRect();
-                selectDropdown.style.display = 'block';
-                // Adjust position manually to ensure it floats above other elements
-                selectDropdown.style.position = 'absolute';
-                selectDropdown.style.zIndex = '9999';
-                selectDropdown.style.width = rect.width + 'px';
-                
-                // We'll append to body to avoid z-index clipping issues if needed,
-                // matching the stock-ban implementation.
-                if (!dropdownAppended) {
-                    // Update initial position relative to body
-                    selectDropdown.style.left = (rect.left + window.scrollX) + 'px';
-                    selectDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
-                    
-                    originalParent.replaceChild(placeholder, selectDropdown);
-                    document.body.appendChild(selectDropdown);
-                    dropdownAppended = true;
-                }
-                
-                // Focus search
-                setTimeout(() => searchInput.focus(), 10);
-                
-                window.addEventListener('scroll', repositionDropdown);
-                window.addEventListener('resize', repositionDropdown);
-            }
-
-            function closeDropdown() {
-                selectDropdown.style.display = 'none';
-                if (dropdownAppended) {
-                    document.body.removeChild(selectDropdown);
-                    originalParent.replaceChild(selectDropdown, placeholder);
-                    dropdownAppended = false;
-                }
-                window.removeEventListener('scroll', repositionDropdown);
-                window.removeEventListener('resize', repositionDropdown);
-            }
-
-            function repositionDropdown() {
-                if (!dropdownAppended) return;
-                const rect = selectButton.getBoundingClientRect();
-                selectDropdown.style.left = (rect.left + window.scrollX) + 'px';
-                selectDropdown.style.top = (rect.bottom + window.scrollY) + 'px';
-                selectDropdown.style.width = rect.width + 'px';
-            }
-
-            selectButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (selectDropdown.style.display !== 'block') {
-                    // Close other dropdowns if any
-                    document.querySelectorAll('.custom-select-dropdown').forEach(dd => {
-                        if (dd !== selectDropdown) dd.style.display = 'none';
-                    });
-                    repositionDropdown(); // Calculate position before showing
-                    openDropdown();
-                } else {
-                    closeDropdown();
-                }
-            });
-
-            searchInput.addEventListener('input', function() {
-                const term = this.value.toLowerCase().trim();
-                const options = optionsList.querySelectorAll('.custom-select-option');
-                let count = 0;
-                options.forEach(opt => {
-                    const searchData = opt.getAttribute('data-search') || '';
-                    if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
-                        opt.classList.remove('hidden');
-                        count++;
-                    } else {
-                        opt.classList.add('hidden');
-                    }
-                });
-                noResults.classList.toggle('hidden', count === 0);
-            });
-
-            optionsList.addEventListener('click', function(e) {
-                const option = e.target.closest('.custom-select-option');
-                if (option) {
-                    selectBank(
-                        option.getAttribute('data-value'), 
-                        option.getAttribute('data-text'),
-                        option.getAttribute('data-kode')
-                    );
-                }
-            });
-
-            document.addEventListener('click', function(e) {
-                if (dropdownAppended) {
-                    if (!selectDropdown.contains(e.target) && !selectButton.contains(e.target)) {
-                        closeDropdown();
-                    }
-                } else {
-                     if (!selectContainer.contains(e.target)) closeDropdown();
-                }
-            });
+        function updateJournalPreview() {
+            const debitKredit = $('#debit_kredit').val();
+            const akunBank = $('#akun_bank_id').select2('data') ? $('#akun_bank_id').select2('data')[0] : null;
+            const akunBiaya = $('#akun_coa_id').select2('data') ? $('#akun_coa_id').select2('data')[0] : null;
+            const totalSetelahPenyesuaian = document.getElementById('total_tagihan_setelah_penyesuaian').value || '0';
             
-            searchInput.addEventListener('click', e => e.stopPropagation());
-        }
+            if (!debitKredit || !akunBank || !akunBank.id || !akunBiaya || !akunBiaya.id || totalSetelahPenyesuaian === '0') {
+                journalPreview.classList.add('hidden');
+                return;
+            }
 
-        initBankSelect();
+            const bankText = akunBank.element.dataset.nama || akunBank.text.split(' - ')[1];
+            const biayaText = akunBiaya.element.dataset.nama || akunBiaya.text.split(' - ')[1];
+            const amountFormatted = 'Rp ' + totalSetelahPenyesuaian;
+
+            let html = '';
+            if (debitKredit === 'kredit') {
+                html = `
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-green-50 p-2 rounded border border-green-100">
+                            <p class="text-green-800 font-bold text-[10px]">DEBIT (+)</p>
+                            <p class="text-green-700 font-medium truncate">${biayaText}</p>
+                            <p class="text-green-800 font-bold">${amountFormatted}</p>
+                        </div>
+                        <div class="bg-red-50 p-2 rounded border border-red-100">
+                            <p class="text-red-800 font-bold text-[10px]">KREDIT (-)</p>
+                            <p class="text-red-700 font-medium truncate">${bankText}</p>
+                            <p class="text-red-800 font-bold">${amountFormatted}</p>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-[10px] text-gray-500 italic">💡 Efek: Beban bertambah, Saldo Bank berkurang</p>
+                `;
+            } else {
+                html = `
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-green-50 p-2 rounded border border-green-100">
+                            <p class="text-green-800 font-bold text-[10px]">DEBIT (+)</p>
+                            <p class="text-green-700 font-medium truncate">${bankText}</p>
+                            <p class="text-green-800 font-bold">${amountFormatted}</p>
+                        </div>
+                        <div class="bg-red-50 p-2 rounded border border-red-100">
+                            <p class="text-red-800 font-bold text-[10px]">KREDIT (-)</p>
+                            <p class="text-red-700 font-medium truncate">${biayaText}</p>
+                            <p class="text-red-800 font-bold">${amountFormatted}</p>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-[10px] text-gray-500 italic">💡 Efek: Saldo Bank bertambah, Beban berkurang</p>
+                `;
+            }
+
+            journalContent.innerHTML = html;
+            journalPreview.classList.remove('hidden');
+        }
 
         // Function to update nomor pembayaran
         function updateNomorPembayaran() {
-            const bankInput = document.getElementById('bank');
-            const kode = bankInput.getAttribute('data-kode') || '000';
+            const bankSelect = $('#akun_bank_id').select2('data') ? $('#akun_bank_id').select2('data')[0] : null;
+            if (!bankSelect || !bankSelect.id) {
+                document.getElementById('nomor_pembayaran').value = '';
+                document.getElementById('nomor_pembayaran_hidden').value = '';
+                return;
+            }
+            const kode = bankSelect.element.dataset.kode || '000';
             const counter = {{ $obPaymentCounter }};
             const now = new Date();
             const year = now.getFullYear().toString().slice(-2);
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
             const running = counter.toString().padStart(6, '0');
-            const print = '1';
-            const nomor = kode + print + year + month + running;
+            const nomor = kode + '1' + year + month + running;
             document.getElementById('nomor_pembayaran').value = nomor;
             document.getElementById('nomor_pembayaran_hidden').value = nomor;
         }
@@ -999,20 +979,16 @@
                 return false;
             }
 
-            const bankSelect = document.getElementById('bank');
-            if (!bankSelect.value) {
-                e.preventDefault();
-                alert('Pilih bank terlebih dahulu.');
-                bankSelect.focus();
-                return false;
+            if (!$('#akun_bank_id').val()) {
+                e.preventDefault(); alert('Pilih bank terlebih dahulu.'); return false;
             }
 
-            const jenisTransaksi = document.getElementById('jenis_transaksi');
-            if (!jenisTransaksi.value) {
-                e.preventDefault();
-                alert('Pilih jenis transaksi.');
-                jenisTransaksi.focus();
-                return false;
+            if (!$('#akun_coa_id').val()) {
+                e.preventDefault(); alert('Pilih akun biaya.'); return false;
+            }
+
+            if (!$('#debit_kredit').val()) {
+                e.preventDefault(); alert('Pilih jenis transaksi.'); return false;
             }
         });
 
@@ -1033,13 +1009,7 @@
         // Initial calculation
         calculateTotal();
         updateSupirList();
-        penyesuaianInput.value = '0';
-
-        // Generate initial nomor pembayaran if bank is selected
-        const bankSelect = document.getElementById('bank');
-        if (bankSelect.value) {
-            updateNomorPembayaran();
-        }
+        updateNomorPembayaran();
     });
 </script>
 

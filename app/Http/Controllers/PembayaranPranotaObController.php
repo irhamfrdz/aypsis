@@ -136,8 +136,11 @@ class PembayaranPranotaObController extends Controller
                 ->with('error', 'Tidak ada pranota OB yang sesuai dengan kriteria yang dipilih.');
         }
 
+        // Get all COA accounts for Akun Biaya
+        $akunBiaya = Coa::orderBy('kode_nomor')->get();
+
         // Get Bank/Kas accounts only, sorted by account number
-        $akunCoa = Coa::where(function($query) {
+        $akunBank = Coa::where(function($query) {
                 $query->where('tipe_akun', 'Kas/Bank')
                       ->orWhere('tipe_akun', 'Bank/Kas')
                       ->orWhere('tipe_akun', 'LIKE', '%Kas%')
@@ -146,7 +149,7 @@ class PembayaranPranotaObController extends Controller
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
-        return view('pembayaran-pranota-ob.create', compact('pranotaList', 'akunCoa', 'selectedDp', 'dpSupirData'));
+        return view('pembayaran-pranota-ob.create', compact('pranotaList', 'akunBank', 'akunBiaya', 'selectedDp', 'dpSupirData'));
     }
 
     /**
@@ -168,8 +171,9 @@ class PembayaranPranotaObController extends Controller
             $request->validate([
                 'nomor_pembayaran' => 'required|string',
                 'nomor_accurate' => 'nullable|string|max:255',
-                'bank' => 'required|string|max:255',
-                'jenis_transaksi' => 'required|in:debit,credit',
+                'debit_kredit' => 'required|in:debit,kredit',
+                'akun_coa_id' => 'required|exists:akun_coa,id',
+                'akun_bank_id' => 'required|exists:akun_coa,id',
                 'tanggal_kas' => 'required|date',
                 'pranota_ids' => 'required|array|min:1',
                 'pranota_ids.*' => 'exists:pranota_obs,id',
@@ -233,13 +237,17 @@ class PembayaranPranotaObController extends Controller
                 $breakdownSupir = json_decode($request->input('breakdown_supir'), true);
             }
 
+            // Get account names for journaling
+            $akunBiaya = \App\Models\Coa::findOrFail($request->akun_coa_id);
+            $akunBank = \App\Models\Coa::findOrFail($request->akun_bank_id);
+
             // Create pembayaran record
             $pembayaran = PembayaranPranotaOb::create([
                 'nomor_pembayaran' => $request->nomor_pembayaran,
                 'nomor_accurate' => $request->nomor_accurate,
                 'nomor_cetakan' => 1,
-                'bank' => $request->bank,
-                'jenis_transaksi' => $request->jenis_transaksi,
+                'bank' => $akunBank->nama_akun,
+                'jenis_transaksi' => $request->debit_kredit,
                 'tanggal_kas' => $request->tanggal_kas,
                 'total_pembayaran' => $totalPembayaran,
                 'penyesuaian' => $penyesuaian,
@@ -253,7 +261,9 @@ class PembayaranPranotaObController extends Controller
                 'voyage' => $request->voyage,
                 'dp_amount' => $dpAmount,
                 'total_biaya_pranota' => $totalBiayaPranota,
-                'breakdown_supir' => $breakdownSupir
+                'breakdown_supir' => $breakdownSupir,
+                'akun_coa_id' => $request->akun_coa_id,
+                'akun_bank_id' => $request->akun_bank_id
             ]);
             Log::info('Pembayaran record created', ['id' => $pembayaran->id]);
 
@@ -275,15 +285,28 @@ class PembayaranPranotaObController extends Controller
                 $keterangan .= " | Penyesuaian: " . $request->alasan_penyesuaian;
             }
 
-            // Catat transaksi double-entry: Biaya OB (Debit) dan Bank (Kredit)
-            $this->coaTransactionService->recordDoubleEntry(
-                ['nama_akun' => 'Biaya OB', 'jumlah' => $totalSetelahPenyesuaian],
-                ['nama_akun' => $request->bank, 'jumlah' => $totalSetelahPenyesuaian],
-                $tanggalTransaksi,
-                $request->nomor_pembayaran,
-                'Pembayaran Pranota OB',
-                $keterangan
-            );
+            // Catat transaksi double-entry berdasarkan pilihan Debit/Kredit
+            if ($request->debit_kredit === 'kredit') {
+                // KREDIT: Biaya OB (Debit) dan Bank (Kredit)
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => $akunBiaya->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
+                    ['nama_akun' => $akunBank->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
+                    $tanggalTransaksi,
+                    $request->nomor_pembayaran,
+                    'Pembayaran Pranota OB',
+                    $keterangan
+                );
+            } else {
+                // DEBIT: Bank (Debit) dan Biaya OB (Kredit)
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => $akunBank->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
+                    ['nama_akun' => $akunBiaya->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
+                    $tanggalTransaksi,
+                    $request->nomor_pembayaran,
+                    'Pembayaran Pranota OB',
+                    $keterangan
+                );
+            }
 
             DB::commit();
             Log::info('Transaction committed successfully');
@@ -315,8 +338,21 @@ class PembayaranPranotaObController extends Controller
     public function edit($id)
     {
         $pembayaran = PembayaranPranotaOb::with('pembayaranOb')->findOrFail($id);
-        
-        return view('pembayaran-pranota-ob.edit', compact('pembayaran'));
+
+        // Get all COA accounts for Akun Biaya
+        $akunBiaya = Coa::orderBy('kode_nomor')->get();
+
+        // Get Bank/Kas accounts only, sorted by account number
+        $akunBank = Coa::where(function($query) {
+                $query->where('tipe_akun', 'Kas/Bank')
+                      ->orWhere('tipe_akun', 'Bank/Kas')
+                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+            })
+            ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
+            ->get();
+
+        return view('pembayaran-pranota-ob.edit', compact('pembayaran', 'akunBank', 'akunBiaya'));
     }
 
     public function update(Request $request, $id)
@@ -324,8 +360,11 @@ class PembayaranPranotaObController extends Controller
         $validated = $request->validate([
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_kas' => 'required|date',
-            'bank' => 'required|string|max:255',
-            'jenis_transaksi' => 'required|in:debit,credit',
+            'bank' => 'nullable|string|max:255',
+            'jenis_transaksi' => 'nullable|string',
+            'debit_kredit' => 'required|in:debit,kredit',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_bank_id' => 'required|exists:akun_coa,id',
             'penyesuaian' => 'nullable|string',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
@@ -364,14 +403,16 @@ class PembayaranPranotaObController extends Controller
             $updateData = [
                 'nomor_accurate' => $validated['nomor_accurate'],
                 'tanggal_kas' => $validated['tanggal_kas'],
-                'bank' => $validated['bank'],
-                'jenis_transaksi' => $validated['jenis_transaksi'],
+                'bank' => \App\Models\Coa::find($request->akun_bank_id)?->nama_akun ?? $validated['bank'],
+                'jenis_transaksi' => $request->input('debit_kredit', $validated['jenis_transaksi']),
                 'total_pembayaran' => $totalPembayaran,
                 'penyesuaian' => $penyesuaian,
                 'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
                 'alasan_penyesuaian' => $validated['alasan_penyesuaian'],
                 'keterangan' => $validated['keterangan'],
                 'breakdown_supir' => !empty($breakdownSupir) ? $breakdownSupir : null,
+                'akun_coa_id' => $request->akun_coa_id,
+                'akun_bank_id' => $request->akun_bank_id,
                 'updated_by' => Auth::id(),
             ];
 

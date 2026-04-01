@@ -32,6 +32,8 @@ class PembayaranPranotaOb extends Model
         'dp_amount',
         'total_biaya_pranota',
         'breakdown_supir',
+        'akun_coa_id',
+        'akun_bank_id',
         'created_by',
         'updated_by'
     ];
