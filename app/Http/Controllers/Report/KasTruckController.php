@@ -178,6 +178,13 @@ class KasTruckController extends Controller
             }
             
             $saldoAkhir = $runningBalance;
+
+            // Urutkan berdasarkan nomor_accurate (null ke bawah, fallback ke nomor_referensi)
+            $transactions = $transactions->sortBy(function ($t) {
+                $key = $t->nomor_accurate ?? $t->nomor_referensi ?? '';
+                // Pastikan null/kosong muncul di paling bawah
+                return $key === '' ? 'ZZZZZZZZZZ' : $key;
+            })->values();
         }
 
         return view('report.kas-truck.index', compact(
