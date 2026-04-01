@@ -160,7 +160,28 @@ class KasTruckController extends Controller
             }
             // -------------------------------------------------------
 
-            // Calculate running balances
+            // -------------------------------------------------------
+            // Attach nomor_accurate dan Sortir
+            // -------------------------------------------------------
+            foreach ($transactions as $t) {
+                $t->nomor_accurate = $nomorAccurateMap[$t->nomor_referensi] ?? null;
+            }
+
+            // Urutkan: TOP UP SALDO AWAL paling atas, sisanya by nomor_accurate
+            $transactions = $transactions->sortBy(function ($t) {
+                // Prioritas 1: Top Up Saldo Awal (selalu paling atas)
+                if (str_contains(strtoupper($t->keterangan ?? ''), 'TOP UP SALDO AWAL')) {
+                    return '0000000000';
+                }
+                
+                $key = $t->nomor_accurate ?? $t->nomor_referensi ?? '';
+                // Pastikan null/kosong muncul di paling bawah (setelah transaksi yang punya nomor)
+                return $key === '' ? 'ZZZZZZZZZZ' : $key;
+            })->values();
+
+            // -------------------------------------------------------
+            // Hitung Running Balances (berdasarkan urutan yang sudah disortir)
+            // -------------------------------------------------------
             $runningBalance = $saldoAwal;
             
             foreach ($transactions as $t) {
@@ -172,19 +193,9 @@ class KasTruckController extends Controller
                 
                 // Add virtual attribute for view rendering
                 $t->running_balance = $runningBalance;
-
-                // Attach nomor_accurate dari tabel sumber transaksi
-                $t->nomor_accurate = $nomorAccurateMap[$t->nomor_referensi] ?? null;
             }
             
             $saldoAkhir = $runningBalance;
-
-            // Urutkan berdasarkan nomor_accurate (null ke bawah, fallback ke nomor_referensi)
-            $transactions = $transactions->sortBy(function ($t) {
-                $key = $t->nomor_accurate ?? $t->nomor_referensi ?? '';
-                // Pastikan null/kosong muncul di paling bawah
-                return $key === '' ? 'ZZZZZZZZZZ' : $key;
-            })->values();
         }
 
         return view('report.kas-truck.index', compact(
