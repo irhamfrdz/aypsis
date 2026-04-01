@@ -784,7 +784,7 @@ class PembayaranObController extends Controller
                 $amount, 
                 0, 
                 $keterangan, 
-                $pembayaran->id
+                $pembayaran->nomor_pembayaran
             );
         }
 
@@ -796,7 +796,7 @@ class PembayaranObController extends Controller
                 0, 
                 $amount, 
                 $keterangan, 
-                $pembayaran->id
+                $pembayaran->nomor_pembayaran
             );
         }
     }

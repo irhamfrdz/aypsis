@@ -129,6 +129,35 @@ class KasTruckController extends Controller
                     }
                 }
             }
+
+            // Fallback: data lama dimana nomor_referensi berupa ID integer
+            // (bug lama di PembayaranObController yang mengirim $pembayaran->id bukan nomor_pembayaran)
+            if (!empty($referensiList)) {
+                $numericReferensiList = collect($referensiList)
+                    ->filter(fn($ref) => ctype_digit((string)$ref))
+                    ->map(fn($ref) => (int)$ref)
+                    ->values()
+                    ->toArray();
+
+                if (!empty($numericReferensiList)) {
+                    try {
+                        $rows = DB::table('pembayaran_obs')
+                            ->whereIn('id', $numericReferensiList)
+                            ->whereNotNull('nomor_accurate')
+                            ->where('nomor_accurate', '!=', '')
+                            ->select('id', 'nomor_accurate')
+                            ->get();
+                        foreach ($rows as $row) {
+                            $idKey = (string) $row->id;
+                            if (!isset($nomorAccurateMap[$idKey])) {
+                                $nomorAccurateMap[$idKey] = $row->nomor_accurate;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Skip
+                    }
+                }
+            }
             // -------------------------------------------------------
 
             // Calculate running balances
