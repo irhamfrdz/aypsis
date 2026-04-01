@@ -14,7 +14,7 @@
                 <p class="text-sm text-gray-500 mt-1">Menampilkan data gabungan dari Kontainer Sewa dan Stock Kontainer</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('master.kontainer.stock-pergudang.export', $id) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm">
+                <a href="{{ route('master.kontainer.stock-pergudang.export', ['id' => $id, 'type' => $type]) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
@@ -101,10 +101,27 @@
         </div>
         @endif
 
+        <!-- Filter -->
+        <div class="mb-6 flex flex-wrap gap-2 items-center bg-white p-3 rounded-xl shadow-sm border border-gray-100">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest ml-2 mr-3">Filter Tipe:</span>
+            <a href="{{ route('master.kontainer.stock-pergudang.show', ['id' => $id, 'type' => 'all']) }}" 
+               class="px-4 py-2 text-xs font-bold rounded-lg transition-all {{ $type === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100' }}">
+                GABUNGAN (ALL)
+            </a>
+            <a href="{{ route('master.kontainer.stock-pergudang.show', ['id' => $id, 'type' => 'stock']) }}" 
+               class="px-4 py-2 text-xs font-bold rounded-lg transition-all {{ $type === 'stock' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100' }}">
+                STOCK KONTEN (MILIK SENDIRI)
+            </a>
+            <a href="{{ route('master.kontainer.stock-pergudang.show', ['id' => $id, 'type' => 'sewa']) }}" 
+               class="px-4 py-2 text-xs font-bold rounded-lg transition-all {{ $type === 'sewa' ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100' }}">
+                KONTEN SEWA
+            </a>
+        </div>
+
         <!-- Warehouse Summary Card -->
         <div class="flex justify-center mb-6">
             <div style="background: linear-gradient(135deg, #16A34A 0%, #14532D 100%)" class="px-8 py-5 rounded-2xl shadow-md text-white min-w-[240px] text-center">
-                <h3 class="text-xs font-bold uppercase tracking-wider opacity-80">Total Kontainer di Gudang</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider opacity-80">Total Kontainer ({{ strtoupper($type == 'all' ? 'Gabungan' : ($type == 'stock' ? 'Milik Sendiri' : 'Sewa')) }})</h3>
                 <p class="text-3xl font-black mt-1">{{ $allContainers->count() }}</p>
                 <div class="mt-2 h-1 w-12 bg-white/30 rounded mx-auto"></div>
             </div>

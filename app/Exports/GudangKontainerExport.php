@@ -14,45 +14,53 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
 {
     protected $gudangId;
+    protected $type;
 
-    public function __construct($gudangId)
+    public function __construct($gudangId, $type = 'all')
     {
         $this->gudangId = $gudangId;
+        $this->type = $type;
     }
 
     public function collection()
     {
-        // Get kontainers
-        $queryK = Kontainer::orderBy('nomor_seri_gabungan');
-        if ($this->gudangId === null || $this->gudangId === 'none' || $this->gudangId === '') {
-            $queryK->whereNull('gudangs_id');
-        } else {
-            $queryK->where('gudangs_id', $this->gudangId);
-        }
-        
-        $kontainers = $queryK->get()->map(function($k) {
-                return [
-                    $k->nomor_seri_gabungan,
-                    $k->ukuran ?? '-',
-                    $k->tipe_kontainer ?? '-',
-                ];
-            });
-
-        // Get stock_kontainers
-        $queryS = StockKontainer::orderBy('nomor_seri_gabungan');
-        if ($this->gudangId === null || $this->gudangId === 'none' || $this->gudangId === '') {
-            $queryS->whereNull('gudangs_id');
-        } else {
-            $queryS->where('gudangs_id', $this->gudangId);
+        $kontainers = collect([]);
+        if ($this->type === 'all' || $this->type === 'sewa') {
+            // Get kontainers
+            $queryK = Kontainer::orderBy('nomor_seri_gabungan');
+            if ($this->gudangId === null || $this->gudangId === 'none' || $this->gudangId === '') {
+                $queryK->whereNull('gudangs_id');
+            } else {
+                $queryK->where('gudangs_id', $this->gudangId);
+            }
+            
+            $kontainers = $queryK->get()->map(function($k) {
+                    return [
+                        $k->nomor_seri_gabungan,
+                        $k->ukuran ?? '-',
+                        $k->tipe_kontainer ?? '-',
+                    ];
+                });
         }
 
-        $stockKontainers = $queryS->get()->map(function($s) {
-                return [
-                    $s->nomor_seri_gabungan,
-                    $s->ukuran ?? '-',
-                    $s->tipe_kontainer ?? '-',
-                ];
-            });
+        $stockKontainers = collect([]);
+        if ($this->type === 'all' || $this->type === 'stock') {
+            // Get stock_kontainers
+            $queryS = StockKontainer::orderBy('nomor_seri_gabungan');
+            if ($this->gudangId === null || $this->gudangId === 'none' || $this->gudangId === '') {
+                $queryS->whereNull('gudangs_id');
+            } else {
+                $queryS->where('gudangs_id', $this->gudangId);
+            }
+
+            $stockKontainers = $queryS->get()->map(function($s) {
+                    return [
+                        $s->nomor_seri_gabungan,
+                        $s->ukuran ?? '-',
+                        $s->tipe_kontainer ?? '-',
+                    ];
+                });
+        }
 
         return $kontainers->concat($stockKontainers);
     }

@@ -60,8 +60,9 @@ class StockKontainerPergudangController extends Controller
         return view('master-kontainer.stock-pergudang', compact('data'));
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
+        $type = $request->get('type', 'all');
         $gudang = null;
         if ($id !== 'none' && $id != '') {
             $gudang = Gudang::find($id);
@@ -72,38 +73,45 @@ class StockKontainerPergudangController extends Controller
 
         $namaGudang = $gudang ? $gudang->nama_gudang : 'Tanpa Gudang / Belum Ditentukan';
 
-        // 1. Ambil dari Kontainer (Sewa)
-        $querySewa = \App\Models\Kontainer::where('status', '!=', 'inactive');
-        if ($id === 'none' || $id == '') {
-            $querySewa->whereNull('gudangs_id');
-        } else {
-            $querySewa->where('gudangs_id', $id);
+        $sewas = collect([]);
+        if ($type === 'all' || $type === 'sewa') {
+            // 1. Ambil dari Kontainer (Sewa)
+            $querySewa = \App\Models\Kontainer::where('status', '!=', 'inactive');
+            if ($id === 'none' || $id == '') {
+                $querySewa->whereNull('gudangs_id');
+            } else {
+                $querySewa->where('gudangs_id', $id);
+            }
+            $sewas = $querySewa->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function($i) {
+                $i->tipe_sumber = 'Sewa';
+                return $i;
+            });
         }
-        $sewas = $querySewa->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function($i) {
-            $i->tipe_sumber = 'Sewa';
-            return $i;
-        });
 
-        // 2. Ambil dari StockKontainer (Milik Sendiri)
-        $queryStock = \App\Models\StockKontainer::where('status', '!=', 'inactive');
-        if ($id === 'none' || $id == '') {
-            $queryStock->whereNull('gudangs_id');
-        } else {
-            $queryStock->where('gudangs_id', $id);
+        $stocks = collect([]);
+        if ($type === 'all' || $type === 'stock') {
+            // 2. Ambil dari StockKontainer (Milik Sendiri)
+            $queryStock = \App\Models\StockKontainer::where('status', '!=', 'inactive');
+            if ($id === 'none' || $id == '') {
+                $queryStock->whereNull('gudangs_id');
+            } else {
+                $queryStock->where('gudangs_id', $id);
+            }
+            $stocks = $queryStock->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function($i) {
+                $i->tipe_sumber = 'Stock';
+                return $i;
+            });
         }
-        $stocks = $queryStock->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function($i) {
-            $i->tipe_sumber = 'Stock';
-            return $i;
-        });
 
         // Merge lists together
         $allContainers = $sewas->concat($stocks);
 
-        return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id'));
+        return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id', 'type'));
     }
 
-    public function exportDetail($id)
+    public function exportDetail(Request $request, $id)
     {
+        $type = $request->get('type', 'all');
         $gudang = null;
         if ($id !== 'none' && $id != '') {
             $gudang = Gudang::find($id);
@@ -112,7 +120,7 @@ class StockKontainerPergudangController extends Controller
         $namaGudangStr = $gudang ? $gudang->nama_gudang : 'Tanpa Gudang';
         $fileName = 'Daftar_Kontainer_' . str_replace([' ', '/', '\\'], '_', $namaGudangStr) . '_' . date('Ymd_His') . '.xlsx';
 
-        return Excel::download(new \App\Exports\GudangKontainerExport($id), $fileName);
+        return Excel::download(new \App\Exports\GudangKontainerExport($id, $type), $fileName);
     }
 
     public function downloadTemplate()
