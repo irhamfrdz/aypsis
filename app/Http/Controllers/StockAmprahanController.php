@@ -171,7 +171,7 @@ class StockAmprahanController extends Controller
 
     public function edit($id)
     {
-        $item = StockAmprahan::findOrFail($id);
+        $item = StockAmprahan::with(['usages' => fn($q) => $q->latest()])->findOrFail($id);
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
         $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
