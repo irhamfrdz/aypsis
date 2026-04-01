@@ -129,4 +129,25 @@ class KasTruckController extends Controller
 
         return redirect()->back()->with('success', 'Top-Up Saldo berhasil direkam ke riwayat Kas Trucking!');
     }
+
+    public function swap($id)
+    {
+        $trx = CoaTransaction::findOrFail($id);
+        
+        // Swap values
+        $tempDebit = $trx->debit;
+        $trx->debit = $trx->kredit;
+        $trx->kredit = $tempDebit;
+        
+        // Update jenis_transaksi if needed
+        if ($trx->debit > 0) {
+            $trx->jenis_transaksi = 'Debit';
+        } elseif ($trx->kredit > 0) {
+            $trx->jenis_transaksi = 'Kredit';
+        }
+        
+        $trx->save();
+        
+        return redirect()->back()->with('success', 'Berhasil menukar posisi Pemasukan/Pengeluaran!');
+    }
 }

@@ -121,6 +121,9 @@
                             <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Saldo
                             </th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Aksi
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -128,6 +131,7 @@
                         <tr class="bg-gray-50">
                             <td class="px-4 py-3 text-sm font-medium text-gray-600" colspan="5">Saldo Sebelum Periode (Mulai)</td>
                             <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">Rp {{ number_format($saldoAwal, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3"></td>
                         </tr>
 
                         @forelse($transactions as $trx)
@@ -158,10 +162,20 @@
                                 <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
                                     Rp {{ number_format($trx->running_balance, 0, ',', '.') }}
                                 </td>
+                                <td class="px-4 py-3 text-sm text-center">
+                                    <form action="{{ route('report.kas-truck.swap', $trx->id) }}" method="POST" onsubmit="return confirm('Tukar posisi Pemasukan/Pengeluaran transaksi ini?')">
+                                        @csrf
+                                        <button type="submit" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-50 transition-colors duration-200" title="Tukar Pemasukan/Pengeluaran">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-4 py-8 whitespace-nowrap text-sm text-gray-500 text-center">
+                                <td colspan="7" class="px-4 py-8 whitespace-nowrap text-sm text-gray-500 text-center">
                                     Tidak ada transaksi kas pada periode yang dipilih.
                                 </td>
                             </tr>
