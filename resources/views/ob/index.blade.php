@@ -391,6 +391,10 @@
                             </div>
                         @endif
                         <div class="flex justify-between">
+                            <span class="text-gray-600">Vol/Ton:</span>
+                            <span class="font-medium text-gray-900">{{ number_format($bl->volume ?? 0, 2) }} / {{ number_format($bl->tonnage ?? 0, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between">
                             <span class="text-gray-600">Created:</span>
                             <span class="text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/y') : '-' }}</span>
                         </div>
@@ -511,6 +515,10 @@
                             </div>
                         @endif
                         <div class="flex justify-between">
+                            <span class="text-gray-600">Vol/Ton:</span>
+                            <span class="font-medium text-gray-900">{{ number_format($naikKapal->total_volume ?? 0, 2) }} / {{ number_format($naikKapal->total_tonase ?? 0, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between">
                             <span class="text-gray-600">Tgl Muat:</span>
                             <span class="text-gray-900">{{ $naikKapal->created_at ? $naikKapal->created_at->format('d/m/y') : '-' }}</span>
                         </div>
@@ -580,7 +588,8 @@
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tipe</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Size</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Created</th>
-                        {{-- Volume and Tonase columns removed per request --}}
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Vol (m3)</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ton (kg)</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status OB</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Aksi</th>
                     </tr>
@@ -688,7 +697,8 @@
                         </td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->size_kontainer ? $bl->size_kontainer : '-' }}</td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/y') : '-' }}</td>
-                        {{-- Volume and Tonase cells removed per request --}}
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ number_format($bl->volume ?? 0, 2) }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ number_format($bl->tonnage ?? 0, 2) }}</td>
                         <td class="px-1 py-1 text-xs text-gray-900">
                             @if($bl->sudah_ob)
                                 <div class="flex flex-col space-y-0.5">
@@ -801,7 +811,8 @@
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tipe</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Size</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tgl Muat</th>
-                        {{-- Volume and Tonase columns removed per request --}}
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Vol (m3)</th>
+                        <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Ton (kg)</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status OB</th>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Aksi</th>
                     </tr>
@@ -928,7 +939,8 @@
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
                                 {{ $naikKapal->tanggal_muat ? $naikKapal->tanggal_muat->format('d/m/y') : '-' }}
                             </td>
-                            {{-- Volume and Tonase cells removed per request --}}
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ number_format($naikKapal->total_volume ?? 0, 2) }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ number_format($naikKapal->total_tonase ?? 0, 2) }}</td>
                             <td class="px-1 py-1 text-xs text-gray-900">
                                 @if($naikKapal->sudah_ob)
                                     <div class="flex flex-col space-y-1">

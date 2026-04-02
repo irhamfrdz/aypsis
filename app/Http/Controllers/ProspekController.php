@@ -546,8 +546,8 @@ class ProspekController extends Controller
                     'pelabuhan_asal' => $request->pelabuhan_asal,
                     'pelabuhan_tujuan' => $tujuanData['nama'],
                     'tanggal_muat' => $request->tanggal,
-                    'total_volume' => $prospek->volume_m3,
-                    'total_tonase' => $prospek->tonase,
+                    'total_volume' => $prospek->total_volume,
+                    'total_tonase' => $prospek->total_ton,
                     'kuantitas' => $prospek->kuantitas,
                     'created_by' => $user->id,
                     'updated_by' => $user->id

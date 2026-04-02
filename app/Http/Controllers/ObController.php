@@ -2811,6 +2811,9 @@ class ObController extends Controller
                 $bl->pelabuhan_tujuan = $naikKapal->pelabuhan_tujuan;
                 $bl->asal_kontainer = $naikKapal->asal_kontainer ?? null;
                 $bl->ke = $naikKapal->ke ?? null;
+                $bl->tonnage = $naikKapal->total_tonase;
+                $bl->volume = $naikKapal->total_volume;
+                $bl->kuantitas = $naikKapal->kuantitas;
                 
                 // Link BL back to Prospek (if naik_kapal has prospek_id)
                 if ($naikKapal->prospek_id) {
