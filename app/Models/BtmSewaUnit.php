@@ -14,4 +14,19 @@ class BtmSewaUnit extends Model
         'type_id',
         'size_id',
     ];
+
+    public function vendor()
+    {
+        return $this->belongsTo(BtmSewaVendor::class, 'vendor_id');
+    }
+
+    public function type()
+    {
+        return $this->belongsTo(BtmSewaType::class, 'type_id');
+    }
+
+    public function size()
+    {
+        return $this->belongsTo(BtmSewaSize::class, 'size_id');
+    }
 }

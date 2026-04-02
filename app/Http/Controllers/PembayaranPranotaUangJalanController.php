@@ -451,6 +451,9 @@ class PembayaranPranotaUangJalanController extends Controller
                 'status_pembayaran' => 'unpaid'
             ]);
 
+            // Delete associated COA transactions by reference
+            $this->coaTransactionService->deleteTransactionByReference($pembayaranPranotaUangJalan->nomor_pembayaran);
+
             // Delete file if exists
             if ($pembayaranPranotaUangJalan->bukti_pembayaran) {
                 Storage::disk('public')->delete($pembayaranPranotaUangJalan->bukti_pembayaran);
