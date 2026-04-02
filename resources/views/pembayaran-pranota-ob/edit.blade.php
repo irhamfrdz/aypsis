@@ -135,7 +135,7 @@
                                 <label for="debit_kredit" class="{{ $labelClasses }}">Jenis Transaksi <span class="text-red-500">*</span></label>
                                 <select name="debit_kredit" id="debit_kredit" class="{{ $inputClasses }}" required>
                                     <option value="">-- Pilih Jenis Transaksi --</option>
-                                    <option value="kredit" {{ old('debit_kredit', $pembayaran->jenis_transaksi) == 'kredit' ? 'selected' : '' }}>KREDIT (Biaya/Beban bertambah, Bank berkurang)</option>
+                                    <option value="credit" {{ old('debit_kredit', $pembayaran->jenis_transaksi) == 'credit' ? 'selected' : ($pembayaran->jenis_transaksi == 'kredit' ? 'selected' : '') }}>KREDIT (Biaya/Beban bertambah, Bank berkurang)</option>
                                     <option value="debit" {{ old('debit_kredit', $pembayaran->jenis_transaksi) == 'debit' ? 'selected' : '' }}>DEBIT (Bank bertambah, Biaya/Beban berkurang)</option>
                                 </select>
                             </div>
@@ -382,7 +382,7 @@
             const amountFormatted = 'Rp ' + totalText;
 
             let html = '';
-            if (debitKredit === 'kredit') {
+            if (debitKredit === 'credit') {
                 html = `
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-green-50 p-2 rounded border border-green-100">
@@ -528,6 +528,9 @@
             this.value = num.toLocaleString('id-ID');
             updateTotalAkhir();
         });
+
+        // Initial calls to synchronize totals and preview
+        updateFooterTotals();
     });
 </script>
 @endsection

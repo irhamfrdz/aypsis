@@ -171,7 +171,7 @@ class PembayaranPranotaObController extends Controller
             $request->validate([
                 'nomor_pembayaran' => 'required|string',
                 'nomor_accurate' => 'nullable|string|max:255',
-                'debit_kredit' => 'required|in:debit,kredit',
+                'debit_kredit' => 'required|in:debit,credit',
                 'akun_coa_id' => 'required|exists:akun_coa,id',
                 'akun_bank_id' => 'required|exists:akun_coa,id',
                 'tanggal_kas' => 'required|date',
@@ -200,7 +200,10 @@ class PembayaranPranotaObController extends Controller
             }
 
             // Calculate total biaya pranota (total sebelum dikurangi DP)
-            $totalBiayaPranota = $pranotas->sum('total_amount');
+            $totalBiayaPranota = 0;
+            foreach ($pranotas as $pranota) {
+                $totalBiayaPranota += $pranota->calculateTotalAmount();
+            }
             Log::info('Calculated total biaya pranota', ['total' => $totalBiayaPranota]);
 
             // Get DP data
@@ -285,8 +288,8 @@ class PembayaranPranotaObController extends Controller
                 $keterangan .= " | Penyesuaian: " . $request->alasan_penyesuaian;
             }
 
-            // Catat transaksi double-entry berdasarkan pilihan Debit/Kredit
-            if ($request->debit_kredit === 'kredit') {
+            // Catat transaksi double-entry berdasarkan pilihan Debit/Credit
+            if ($request->debit_kredit === 'credit') {
                 // KREDIT: Biaya OB (Debit) dan Bank (Kredit)
                 $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => $akunBiaya->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
@@ -362,7 +365,7 @@ class PembayaranPranotaObController extends Controller
             'tanggal_kas' => 'required|date',
             'bank' => 'nullable|string|max:255',
             'jenis_transaksi' => 'nullable|string',
-            'debit_kredit' => 'required|in:debit,kredit',
+            'debit_kredit' => 'required|in:debit,credit',
             'akun_coa_id' => 'required|exists:akun_coa,id',
             'akun_bank_id' => 'required|exists:akun_coa,id',
             'penyesuaian' => 'nullable|string',

@@ -168,7 +168,7 @@
                         <p><strong>Otomatis Jurnal Akuntansi:</strong></p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
                             <div class="bg-white p-2 rounded border border-blue-200">
-                                <p class="font-medium text-green-700">✅ Jika pilih KREDIT:</p>
+                                <p class="font-medium text-green-700">✅ Jika pilih CREDIT:</p>
                                 <p class="mt-1">• <strong>Dr.</strong> Akun yang dipilih (Biaya/Beban) <span class="text-green-600">+</span></p>
                                 <p>• <strong>Cr.</strong> Akun Bank yang dipilih <span class="text-red-600">-</span></p>
                             </div>
@@ -215,7 +215,7 @@
             @csrf
 
             {{-- Hidden inputs for additional data --}}
-            <input type="hidden" name="nomor_pembayaran" id="nomor_pembayaran_hidden" value="">
+            <input type="hidden" name="nomor_pembayaran" id="nomor_pembayaran_hidden" value="{{ old('nomor_pembayaran') }}">
             <input type="hidden" name="kapal" value="{{ request('kapal') }}">
             <input type="hidden" name="voyage" value="{{ request('voyage') }}">
             <input type="hidden" name="dp_id" value="{{ request('dp') }}">
@@ -230,9 +230,9 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div class="flex items-end gap-1">
                                 <div class="flex-1">
-                                    <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
-                                    <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
-                                        value=""
+                                    <label for="nomor_pembayaran_display" class="{{ $labelClasses }}">Nomor Pembayaran</label>
+                                    <input type="text" id="nomor_pembayaran_display"
+                                        value="{{ old('nomor_pembayaran') }}"
                                         placeholder="Pilih bank terlebih dahulu"
                                         class="{{ $readonlyInputClasses }}" readonly>
                                 </div>
@@ -268,7 +268,7 @@
                                 <label for="debit_kredit" class="{{ $labelClasses }}">Jenis Transaksi <span class="text-red-500">*</span></label>
                                 <select name="debit_kredit" id="debit_kredit" class="{{ $inputClasses }}" required>
                                     <option value="">-- Pilih Jenis Transaksi --</option>
-                                    <option value="kredit" {{ old('debit_kredit', 'kredit') == 'kredit' ? 'selected' : '' }}>KREDIT (Biaya/Beban bertambah, Bank berkurang)</option>
+                                    <option value="credit" {{ old('debit_kredit', 'credit') == 'credit' ? 'selected' : '' }}>KREDIT (Biaya/Beban bertambah, Bank berkurang)</option>
                                     <option value="debit" {{ old('debit_kredit') == 'debit' ? 'selected' : '' }}>DEBIT (Bank bertambah, Biaya/Beban berkurang)</option>
                                 </select>
                             </div>
@@ -822,6 +822,10 @@
             });
             $('#akun_coa_id').on('change', updateJournalPreview);
             $('#debit_kredit').on('change', updateJournalPreview);
+
+            // Initial call after initialization
+            updateNomorPembayaran();
+            updateJournalPreview();
         }
 
         // Function to calculate grand total for a specific supir
@@ -898,12 +902,17 @@
         }
 
         function updateJournalPreview() {
+            const journalPreview = document.getElementById('journal_preview');
+            const journalContent = document.getElementById('journal_content');
+            
+            if (!journalPreview || !journalContent) return;
+
             const debitKredit = $('#debit_kredit').val();
             const akunBank = $('#akun_bank_id').select2('data') ? $('#akun_bank_id').select2('data')[0] : null;
             const akunBiaya = $('#akun_coa_id').select2('data') ? $('#akun_coa_id').select2('data')[0] : null;
             const totalSetelahPenyesuaian = document.getElementById('total_tagihan_setelah_penyesuaian').value || '0';
             
-            if (!debitKredit || !akunBank || !akunBank.id || !akunBiaya || !akunBiaya.id || totalSetelahPenyesuaian === '0') {
+            if (!debitKredit || !akunBank || !akunBank.id || !akunBiaya || !akunBiaya.id || totalSetelahPenyesuaian === '0' || totalSetelahPenyesuaian === '0,00') {
                 journalPreview.classList.add('hidden');
                 return;
             }
@@ -913,7 +922,7 @@
             const amountFormatted = 'Rp ' + totalSetelahPenyesuaian;
 
             let html = '';
-            if (debitKredit === 'kredit') {
+            if (debitKredit === 'credit') {
                 html = `
                     <div class="grid grid-cols-2 gap-2">
                         <div class="bg-green-50 p-2 rounded border border-green-100">
@@ -953,21 +962,25 @@
 
         // Function to update nomor pembayaran
         function updateNomorPembayaran() {
-            const bankSelect = $('#akun_bank_id').select2('data') ? $('#akun_bank_id').select2('data')[0] : null;
-            if (!bankSelect || !bankSelect.id) {
-                document.getElementById('nomor_pembayaran').value = '';
-                document.getElementById('nomor_pembayaran_hidden').value = '';
+            const bankSelect = $('#akun_bank_id');
+            const selectedOption = bankSelect.find('option:selected');
+            
+            if (!bankSelect.val()) {
+                if (document.getElementById('nomor_pembayaran_display')) document.getElementById('nomor_pembayaran_display').value = '';
+                if (document.getElementById('nomor_pembayaran_hidden')) document.getElementById('nomor_pembayaran_hidden').value = '';
                 return;
             }
-            const kode = bankSelect.element.dataset.kode || '000';
+
+            const kode = selectedOption.data('kode') || '000';
             const counter = {{ $obPaymentCounter }};
             const now = new Date();
             const year = now.getFullYear().toString().slice(-2);
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
             const running = counter.toString().padStart(6, '0');
             const nomor = kode + '1' + year + month + running;
-            document.getElementById('nomor_pembayaran').value = nomor;
-            document.getElementById('nomor_pembayaran_hidden').value = nomor;
+
+            if (document.getElementById('nomor_pembayaran_display')) document.getElementById('nomor_pembayaran_display').value = nomor;
+            if (document.getElementById('nomor_pembayaran_hidden')) document.getElementById('nomor_pembayaran_hidden').value = nomor;
         }
 
         // Form validation before submission
@@ -1006,10 +1019,8 @@
             updateTotalAkhir();
         });
 
-        // Initial calculation
         calculateTotal();
         updateSupirList();
-        updateNomorPembayaran();
     });
 </script>
 
