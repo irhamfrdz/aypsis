@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Bl;
 use App\Models\Prospek;
+use App\Models\TandaTerimaLcl;
+use App\Models\TandaTerimaTanpaSuratJalan;
 use Carbon\Carbon;
 use App\Models\MasterKapal;
 use App\Models\StockKontainer;
@@ -1755,7 +1757,7 @@ class BlController extends Controller
         }
 
         // Get data
-        $bls = $query->with(['createdBy', 'updatedBy', 'supir'])->orderBy('created_at', 'desc')->get();
+        $bls = $query->with(['createdBy', 'updatedBy', 'supir', 'prospek.tandaTerima'])->orderBy('created_at', 'desc')->get();
 
         // Define all available columns
         $availableColumns = [
@@ -1780,6 +1782,7 @@ class BlController extends Controller
             'pengirim' => 'Pengirim',
             'penerima' => 'Penerima',
             'no_surat_jalan' => 'No. Surat Jalan',
+            'no_tanda_terima' => 'No. Tanda Terima',
             'alamat_pengiriman' => 'Alamat Pengiriman',
             'contact_person' => 'Contact Person',
             'asal_kontainer' => 'Asal Kontainer',
@@ -1892,6 +1895,9 @@ class BlController extends Controller
                     case 'no_surat_jalan':
                         $value = ($bl->prospek && $bl->prospek->suratJalan) ? $bl->prospek->suratJalan->no_surat_jalan : '';
                         break;
+                    case 'no_tanda_terima':
+                        $value = $this->resolveTandaTerima($bl);
+                        break;
                     case 'created_by':
                         $value = $bl->createdBy ? $bl->createdBy->name : ($bl->created_by ?? '');
                         break;
@@ -1939,6 +1945,59 @@ class BlController extends Controller
             'Content-Disposition' => 'attachment;filename="' . $filename . '"',
             'Cache-Control' => 'max-age=0',
         ]);
+    }
+
+    /**
+     * Resolve tanda terima number for a BL from multiple sources
+     */
+    private function resolveTandaTerima($bl)
+    {
+        $sources = [];
+
+        // 1. Tanda Terima (FCL) via Prospek
+        if ($bl->prospek && $bl->prospek->tandaTerima) {
+            $tt = $bl->prospek->tandaTerima;
+            $sources[] = '[TT] ' . ($tt->no_surat_jalan ?? 'ID:' . $tt->id);
+        }
+
+        // 2. Tanda Terima LCL via nomor kontainer
+        if ($bl->nomor_kontainer) {
+            $containers = array_filter(array_map('trim', explode(',', $bl->nomor_kontainer)));
+            if (!empty($containers)) {
+                $ttLcls = TandaTerimaLcl::whereHas('kontainerPivot', function ($q) use ($containers) {
+                    $q->whereIn('nomor_kontainer', $containers);
+                })->get();
+
+                foreach ($ttLcls as $ttLcl) {
+                    $sources[] = '[LCL] ' . ($ttLcl->nomor_tanda_terima ?? 'ID:' . $ttLcl->id);
+                }
+            }
+        }
+
+        // 3. Tanda Terima Tanpa Surat Jalan via keterangan prospek
+        if ($bl->prospek && $bl->prospek->keterangan) {
+            if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $bl->prospek->keterangan, $matches)) {
+                $noTttsj = trim($matches[1]);
+                $tttsj = TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
+                if ($tttsj) {
+                    $sources[] = '[TTTSJ] ' . $tttsj->no_tanda_terima;
+                }
+            }
+        }
+
+        // 4. Fallback CARGO tanpa surat jalan
+        if (empty($sources) && $bl->prospek && strtoupper($bl->prospek->tipe ?? '') === 'CARGO' && !($bl->prospek->tanda_terima_id ?? null)) {
+            $tttsj = TandaTerimaTanpaSuratJalan::where('pengirim', $bl->prospek->pt_pengirim)
+                ->where('supir', $bl->prospek->nama_supir)
+                ->where('tujuan_pengiriman', $bl->prospek->tujuan_pengiriman)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            if ($tttsj) {
+                $sources[] = '[TTTSJ] ' . $tttsj->no_tanda_terima;
+            }
+        }
+
+        return implode(', ', array_unique($sources));
     }
 
     /**
