@@ -903,9 +903,9 @@ class ObController extends Controller
                 $bl->ke = mb_substr($naikKapal->ke ?? '', 0, 255);
                 $bl->pelabuhan_asal = mb_substr($naikKapal->pelabuhan_asal ?? '', 0, 255);
                 $bl->pelabuhan_tujuan = mb_substr($naikKapal->pelabuhan_tujuan ?? '', 0, 255);
-                $bl->tonnage = $naikKapal->total_tonase ?: ($naikKapal->prospek->total_ton ?? 0);
-                $bl->volume = $naikKapal->total_volume ?: ($naikKapal->prospek->total_volume ?? 0);
-                $bl->kuantitas = $naikKapal->kuantitas ?: ($naikKapal->prospek->kuantitas ?? 1);
+                $bl->tonnage = (float)$naikKapal->total_tonase != 0 ? $naikKapal->total_tonase : ($naikKapal->prospek->total_ton ?? 0);
+                $bl->volume = (float)$naikKapal->total_volume != 0 ? $naikKapal->total_volume : ($naikKapal->prospek->total_volume ?? 0);
+                $bl->kuantitas = (int)$naikKapal->kuantitas != 0 ? $naikKapal->kuantitas : ($naikKapal->prospek->kuantitas ?? 1);
                 
                 // Set prospek_id jika ada dan ambil data tambahan dari prospek
                 if ($naikKapal->prospek_id && $naikKapal->prospek) {
@@ -2811,9 +2811,9 @@ class ObController extends Controller
                 $bl->pelabuhan_tujuan = $naikKapal->pelabuhan_tujuan;
                 $bl->asal_kontainer = $naikKapal->asal_kontainer ?? null;
                 $bl->ke = $naikKapal->ke ?? null;
-                $bl->tonnage = $naikKapal->total_tonase ?: ($naikKapal->prospek->total_ton ?? 0);
-                $bl->volume = $naikKapal->total_volume ?: ($naikKapal->prospek->total_volume ?? 0);
-                $bl->kuantitas = $naikKapal->kuantitas ?: ($naikKapal->prospek->kuantitas ?? 1);
+                $bl->tonnage = (float)$naikKapal->total_tonase != 0 ? $naikKapal->total_tonase : ($naikKapal->prospek->total_ton ?? 0);
+                $bl->volume = (float)$naikKapal->total_volume != 0 ? $naikKapal->total_volume : ($naikKapal->prospek->total_volume ?? 0);
+                $bl->kuantitas = (int)$naikKapal->kuantitas != 0 ? $naikKapal->kuantitas : ($naikKapal->prospek->kuantitas ?? 1);
                 
                 // Link BL back to Prospek (if naik_kapal has prospek_id)
                 if ($naikKapal->prospek_id) {

@@ -618,9 +618,9 @@ class NaikKapalController extends Controller
                 'pelabuhan_asal' => $naikKapal->pelabuhan_asal,
                 'pelabuhan_tujuan' => $naikKapal->pelabuhan_tujuan,
                 'nama_barang' => $naikKapal->jenis_barang,
-                'tonnage' => $naikKapal->total_tonase ?: ($prospek ? $prospek->total_ton : null),
-                'volume' => $naikKapal->total_volume ?: ($prospek ? $prospek->total_volume : null),
-                'kuantitas' => $naikKapal->kuantitas ?: ($prospek ? $prospek->kuantitas : null),
+                'tonnage' => (float)$naikKapal->total_tonase != 0 ? $naikKapal->total_tonase : ($prospek ? $prospek->total_ton : null),
+                'volume' => (float)$naikKapal->total_volume != 0 ? $naikKapal->total_volume : ($prospek ? $prospek->total_volume : null),
+                'kuantitas' => (int)$naikKapal->kuantitas != 0 ? $naikKapal->kuantitas : ($prospek ? $prospek->kuantitas : null),
                 'term' => null, // Will be set from tanda terima if available
                 'status_bongkar' => 'Belum Bongkar',
                 'sudah_ob' => false,
