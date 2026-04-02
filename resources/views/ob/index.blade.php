@@ -697,8 +697,18 @@
                         </td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->size_kontainer ? $bl->size_kontainer : '-' }}</td>
                         <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ $bl->created_at ? $bl->created_at->format('d/m/y') : '-' }}</td>
-                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ number_format($bl->volume ?? 0, 2) }}</td>
-                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ number_format($bl->tonnage ?? 0, 2) }}</td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
+                            @php
+                                $volDisplay = (float)($bl->volume ?? 0) != 0 ? $bl->volume : ($bl->prospek->total_volume ?? 0);
+                            @endphp
+                            {{ number_format($volDisplay, 2) }}
+                        </td>
+                        <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
+                            @php
+                                $tonDisplay = (float)($bl->tonnage ?? 0) != 0 ? $bl->tonnage : ($bl->prospek->total_ton ?? 0);
+                            @endphp
+                            {{ number_format($tonDisplay, 2) }}
+                        </td>
                         <td class="px-1 py-1 text-xs text-gray-900">
                             @if($bl->sudah_ob)
                                 <div class="flex flex-col space-y-0.5">
@@ -820,12 +830,10 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($naikKapals as $key => $naikKapal)
                         @php
-                            // Perkuat pengecekan TL dengan berbagai kemungkinan nilai
-                            // NaikKapal uses field `is_tl` (boolean) while BL uses `sudah_tl`.
                             $isTL = ($naikKapal->is_tl === true || $naikKapal->is_tl === 1 || $naikKapal->is_tl === '1');
                             $isOB = ($naikKapal->sudah_ob === true || $naikKapal->sudah_ob === 1 || $naikKapal->sudah_ob === '1');
                             $isCARGO = ($naikKapal->tipe_kontainer == 'CARGO');
-                            $shouldDisable = $isCARGO || !$isOB; // TL containers can now be selected
+                            $shouldDisable = $isCARGO || !$isOB;
                         @endphp
                         <tr class="hover:bg-gray-50 transition duration-150 {{ $isCARGO ? 'bg-gray-100' : '' }}">
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
@@ -939,8 +947,18 @@
                             <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
                                 {{ $naikKapal->tanggal_muat ? $naikKapal->tanggal_muat->format('d/m/y') : '-' }}
                             </td>
-                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ number_format($naikKapal->total_volume ?? 0, 2) }}</td>
-                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">{{ number_format($naikKapal->total_tonase ?? 0, 2) }}</td>
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
+                                @php
+                                    $volNkDisplay = (float)($naikKapal->total_volume ?? 0) != 0 ? $naikKapal->total_volume : ($naikKapal->prospek->total_volume ?? 0);
+                                @endphp
+                                {{ number_format($volNkDisplay, 2) }}
+                            </td>
+                            <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900">
+                                @php
+                                    $tonNkDisplay = (float)($naikKapal->total_tonase ?? 0) != 0 ? $naikKapal->total_tonase : ($naikKapal->prospek->total_ton ?? 0);
+                                @endphp
+                                {{ number_format($tonNkDisplay, 2) }}
+                            </td>
                             <td class="px-1 py-1 text-xs text-gray-900">
                                 @if($naikKapal->sudah_ob)
                                     <div class="flex flex-col space-y-1">
