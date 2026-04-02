@@ -295,7 +295,7 @@
                                     @foreach($akunBiaya as $akun)
                                         <option value="{{ $akun->id }}" 
                                                 data-nama="{{ $akun->nama_akun }}"
-                                                {{ old('akun_coa_id') == $akun->id ? 'selected' : (str_contains(strtolower($akun->nama_akun), 'biaya ob') ? 'selected' : '') }}>
+                                                {{ old('akun_coa_id') == $akun->id ? 'selected' : '' }}>
                                             {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
                                         </option>
                                     @endforeach
