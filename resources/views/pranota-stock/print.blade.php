@@ -144,21 +144,44 @@
 
     <div style="width: 250px; margin-left: auto; margin-right: 20px; margin-top: 20px; margin-bottom: 30px;">
         @php
-            $displayTypes = ['Perlengkapan', 'Transport', 'Pemakaian', 'Perbaikan'];
-            $typeTotals = array_fill_keys($displayTypes, 0);
+            $displayTypes = [
+                'Perlengkapan' => 'Perlengkapan',
+                'Transport' => 'Transportasi',
+                'Pemakaian' => 'Pemakaian',
+                'Perbaikan' => 'Perbaikan'
+            ];
+            $typeTotals = array_fill_keys(array_values($displayTypes), 0);
+            
+            // Track sub-details for EACH category
+            $categoryDetails = [];
+            foreach ($displayTypes as $label) {
+                $categoryDetails[$label] = [
+                    'Mobil' => 0,
+                    'Kapal' => 0,
+                    'Alat Berat' => 0,
+                    'Buntut' => 0,
+                    'Lain-lain' => 0
+                ];
+            }
+
             $otherTotal = 0;
             $summaryGrandTotal = 0;
 
             if (is_array($pranota->items)) {
                 foreach ($pranota->items as $item) {
                     $itemType = $item['type'] ?? '';
+                    $refType = $item['reference_type'] ?? '';
                     $itemNominal = (floatval($item['harga'] ?? 0) * floatval($item['jumlah'] ?? 0)) + floatval($item['adjustment'] ?? 0);
                     
                     $matched = false;
-                    foreach ($displayTypes as $dt) {
-                        if (stripos($itemType, $dt) !== false) {
-                            $typeTotals[$dt] += $itemNominal;
+                    foreach ($displayTypes as $search => $label) {
+                        if (stripos($itemType, $search) !== false) {
+                            $typeTotals[$label] += $itemNominal;
                             $matched = true;
+                            
+                            if ($refType && isset($categoryDetails[$label][$refType])) {
+                                $categoryDetails[$label][$refType] += $itemNominal;
+                            }
                             break;
                         }
                     }
@@ -171,20 +194,30 @@
         @endphp
         <table style="width: 100%; border-collapse: collapse; font-size: 10pt; font-family: 'Arial', sans-serif;">
             @foreach($typeTotals as $label => $val)
-            <tr>
-                <td style="padding: 2px 0; width: 60%;">{{ $label }}</td>
-                <td style="text-align: right; padding: 2px 0;">{{ $val > 0 ? number_format($val, 0, ',', '.') : '-' }}</td>
+            <tr style="border-bottom: 1px solid #f0f0f0;">
+                <td style="padding: 4px 0; width: 60%; font-weight: 500;">{{ $label }}</td>
+                <td style="text-align: right; padding: 4px 0;">{{ $val > 0 ? number_format($val, 0, ',', '.') : '-' }}</td>
             </tr>
+            @foreach($categoryDetails[$label] as $subLabel => $subVal)
+                @if($subVal > 0)
+                <tr>
+                    <td style="padding: 1px 0 1px 20px; font-size: 8.5pt; color: #888; font-style: italic;">{{ $subLabel }}</td>
+                    <td style="text-align: right; padding: 1px 0; font-size: 8.5pt; color: #888;">{{ number_format($subVal, 0, ',', '.') }}</td>
+                </tr>
+                @endif
             @endforeach
+            @endforeach
+            
             @if($otherTotal > 0)
-            <tr>
-                <td style="padding: 2px 0;">Lain-lain</td>
-                <td style="text-align: right; padding: 2px 0;">{{ number_format($otherTotal, 0, ',', '.') }}</td>
+            <tr style="border-bottom: 1px solid #f0f0f0;">
+                <td style="padding: 4px 0; font-weight: 500;">Lain-lain</td>
+                <td style="text-align: right; padding: 4px 0;">{{ number_format($otherTotal, 0, ',', '.') }}</td>
             </tr>
             @endif
-            <tr style="border-top: 1px solid #000; font-weight: bold;">
-                <td style="padding: 5px 0;">Total</td>
-                <td style="text-align: right; padding: 5px 0;">{{ number_format($summaryGrandTotal, 0, ',', '.') }}</td>
+            
+            <tr style="border-top: 1.5px solid #000; font-weight: bold; font-size: 11pt;">
+                <td style="padding: 8px 0;">Total Biaya</td>
+                <td style="text-align: right; padding: 8px 0;">{{ number_format($summaryGrandTotal, 0, ',', '.') }}</td>
             </tr>
         </table>
     </div>

@@ -765,13 +765,29 @@ class StockAmprahanController extends Controller
                     
                     // Compute Reference from usages
                     $refItems = [];
+                    $refType = null;
                     $firstUsage = $item->usages->first();
                     if ($firstUsage) {
-                        if ($firstUsage->kapal) $refItems[] = $firstUsage->kapal->nama_kapal;
-                        if ($firstUsage->alatBerat) $refItems[] = $firstUsage->alatBerat->nama;
-                        if ($firstUsage->mobil) $refItems[] = $firstUsage->mobil->nomor_polisi;
-                        if ($firstUsage->buntut) $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
-                        if ($firstUsage->lain_lain) $refItems[] = $firstUsage->lain_lain;
+                        if ($firstUsage->kapal) {
+                            $refItems[] = $firstUsage->kapal->nama_kapal;
+                            $refType = 'Kapal';
+                        }
+                        if ($firstUsage->alatBerat) {
+                            $refItems[] = $firstUsage->alatBerat->nama;
+                            if (!$refType) $refType = 'Alat Berat';
+                        }
+                        if ($firstUsage->mobil) {
+                            $refItems[] = $firstUsage->mobil->nomor_polisi;
+                            if (!$refType) $refType = 'Mobil';
+                        }
+                        if ($firstUsage->buntut) {
+                            $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
+                            if (!$refType) $refType = 'Buntut';
+                        }
+                        if ($firstUsage->lain_lain) {
+                            $refItems[] = $firstUsage->lain_lain;
+                            if (!$refType) $refType = 'Lain-lain';
+                        }
                     }
                     $reference = count($refItems) > 0 ? implode(' / ', $refItems) : '-';
                     
@@ -779,6 +795,7 @@ class StockAmprahanController extends Controller
                         'tanggal' => $item->tanggal_beli ? $item->tanggal_beli->format('Y-m-d') : ($item->created_at ? $item->created_at->format('Y-m-d') : '-'),
                         'type' => $item->type_amprahan ?? '-',
                         'reference' => $reference,
+                        'reference_type' => $refType,
                         'keterangan' => $item->keterangan ?? '-',
                         'nama_barang' => $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? ($it['nama_barang'] ?? '-')),
                         'harga' => $item->harga_satuan ?? ($it['harga'] ?? 0),
