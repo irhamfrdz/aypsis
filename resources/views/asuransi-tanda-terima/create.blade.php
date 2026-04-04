@@ -23,7 +23,7 @@
                     <div class="md:col-span-2">
                         <label for="vendor_asuransi_id" class="block text-sm font-medium text-gray-700 mb-2">Vendor Asuransi <span class="text-red-500">*</span></label>
                         <select id="vendor_asuransi_id" name="vendor_asuransi_id" required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden">
                             <option value="">-- Pilih Vendor --</option>
                             @foreach($vendors as $vendor)
                                 <option value="{{ $vendor->id }}" data-tarif="{{ $vendor->tarif }}" {{ old('vendor_asuransi_id') == $vendor->id ? 'selected' : '' }}>
@@ -55,7 +55,7 @@
                         <label for="receipt_id" class="block text-sm font-medium text-gray-700 mb-2">Pilih Data <span class="text-red-500">*</span></label>
                         
                         <div id="wrapper_tt" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'tt' ? '' : 'hidden' }}">
-                            <select name="receipt_id_tt" id="receipt_id_tt" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select" {{ isset($selectedReceipt) && $selectedType != 'tt' ? 'disabled' : '' }}>
+                            <select name="receipt_id_tt" id="receipt_id_tt" class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden" {{ isset($selectedReceipt) && $selectedType != 'tt' ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima --</option>
                                 @if(isset($selectedReceipt) && $selectedType == 'tt')
                                     <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->no_surat_jalan }}] - {{ $selectedReceipt->penerima }}</option>
@@ -69,7 +69,7 @@
                         </div>
 
                         <div id="wrapper_tttsj" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'tttsj' ? '' : 'hidden' }}">
-                            <select name="receipt_id_tttsj" id="receipt_id_tttsj" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select" {{ isset($selectedReceipt) && $selectedType != 'tttsj' ? 'disabled' : '' }}>
+                            <select name="receipt_id_tttsj" id="receipt_id_tttsj" class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden" {{ isset($selectedReceipt) && $selectedType != 'tttsj' ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima Tanpa SJ --</option>
                                 @if(isset($selectedReceipt) && $selectedType == 'tttsj')
                                     <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->no_tanda_terima }}] - {{ $selectedReceipt->penerima }}</option>
@@ -83,7 +83,7 @@
                         </div>
 
                         <div id="wrapper_lcl" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'lcl' ? '' : 'hidden' }}">
-                            <select name="receipt_id_lcl" id="receipt_id_lcl" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select" {{ isset($selectedReceipt) && $selectedType != 'lcl' ? 'disabled' : '' }}>
+                            <select name="receipt_id_lcl" id="receipt_id_lcl" class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden" {{ isset($selectedReceipt) && $selectedType != 'lcl' ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima LCL --</option>
                                 @if(isset($selectedReceipt) && $selectedType == 'lcl')
                                     <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->nomor_tanda_terima }}] - {{ $selectedReceipt->nama_penerima }}</option>
@@ -242,7 +242,7 @@
                     <div>
                         <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Nama Kapal</label>
                         <select id="nama_kapal" name="nama_kapal" 
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden">
                             <option value="">-- Pilih Kapal --</option>
                             @foreach($masterKapals as $kapal)
                                 <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
@@ -287,41 +287,158 @@
 
 @push('scripts')
 <script>
-    // Searchable Select Component in Vanilla JS
-    function initVanillaSelect(select) {
-        if (!select) return;
+    // Custom Searchable Dropdown Class (Vanilla JS)
+    class VanillaSearchableSelect {
+        constructor(select) {
+            this.select = select;
+            this.options = [];
+            this.active = false;
+            this.init();
+        }
         
-        // Create wrapper
-        const wrapper = document.createElement('div');
-        wrapper.className = 'relative vanilla-select-container mt-1';
-        select.parentNode.insertBefore(wrapper, select);
-        
-        // Create search input
-        const searchInput = document.createElement('input');
-        searchInput.type = 'text';
-        searchInput.placeholder = 'Cari baris ini...';
-        searchInput.className = 'w-full mb-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all';
-        
-        // Handle search
-        searchInput.addEventListener('input', function() {
-            const term = this.value.toLowerCase();
-            const options = select.options;
-            let firstVisible = -1;
+        init() {
+            // Parse options
+            this.syncOptions();
             
-            for (let i = 0; i < options.length; i++) {
-                const text = options[i].text.toLowerCase();
-                const isMatch = text.includes(term) || options[i].value === "";
-                options[i].style.display = isMatch ? '' : 'none';
-                
-                if (isMatch && firstVisible === -1 && options[i].value !== "") {
-                    firstVisible = i;
-                }
-            }
-        });
+            // Create UI wrapper
+            this.container = document.createElement('div');
+            this.container.className = 'relative vanilla-select-host w-full mt-1';
+            
+            // Trigger button (looks like a select)
+            this.trigger = document.createElement('div');
+            this.trigger.className = 'w-full border border-gray-300 rounded-lg px-3 py-2.5 cursor-pointer bg-white flex justify-between items-center text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200';
+            this.trigger.tabIndex = 0;
+            this.trigger.innerHTML = `<span class="current-value truncate mr-1">-- Pilih --</span><svg class="w-4 h-4 text-gray-400 transform transition-transform duration-200 dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>`;
+            
+            // Dropdown menu
+            this.dropdown = document.createElement('div');
+            this.dropdown.className = 'absolute z-[999] w-full mt-1.5 bg-white border border-gray-200 rounded-lg shadow-xl hidden overflow-hidden scale-95 opacity-0 transition-all duration-200 transform origin-top';
+            
+            // Search input inside dropdown
+            const searchWrapper = document.createElement('div');
+            searchWrapper.className = 'p-2 border-b border-gray-100 bg-gray-50 sticky top-0';
+            this.search = document.createElement('input');
+            this.search.type = 'text';
+            this.search.placeholder = 'Cari...';
+            this.search.className = 'w-full px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none';
+            searchWrapper.appendChild(this.search);
+            
+            // List of items
+            this.list = document.createElement('div');
+            this.list.className = 'max-h-64 overflow-y-auto custom-scrollbar';
+            
+            this.dropdown.appendChild(searchWrapper);
+            this.dropdown.appendChild(this.list);
+            this.container.appendChild(this.trigger);
+            this.container.appendChild(this.dropdown);
+            
+            this.select.parentNode.insertBefore(this.container, this.select);
+            
+            // Initial render
+            this.updateTriggerText();
+            this.renderList();
+            
+            // Events
+            this.trigger.onclick = (e) => { e.stopPropagation(); this.toggle(); };
+            this.search.onclick = (e) => e.stopPropagation();
+            this.search.oninput = (e) => this.renderList(e.target.value.toLowerCase());
+            
+            document.addEventListener('click', (e) => {
+                if (!this.container.contains(e.target)) this.close();
+            });
 
-        // Add to wrapper
-        wrapper.appendChild(searchInput);
-        wrapper.appendChild(select);
+            // Listen for external changes to underlying select
+            this.select.addEventListener('change', () => this.updateTriggerText());
+        }
+        
+        syncOptions() {
+            this.options = Array.from(this.select.options).map(o => ({
+                text: o.text,
+                value: o.value,
+                selected: o.selected
+            }));
+        }
+        
+        renderList(term = '') {
+            this.list.innerHTML = '';
+            let hasResults = false;
+            
+            this.options.forEach(opt => {
+                if (opt.text.toLowerCase().includes(term) || opt.value === "") {
+                    const item = document.createElement('div');
+                    item.className = 'px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm transition-colors duration-150 ' + (opt.selected && opt.value !== "" ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700');
+                    item.textContent = opt.text;
+                    
+                    if (opt.value === "") {
+                        item.className += ' text-gray-400 italic';
+                    }
+
+                    item.onclick = (e) => {
+                        e.stopPropagation();
+                        this.select.value = opt.value;
+                        this.select.dispatchEvent(new Event('change'));
+                        this.close();
+                    };
+                    
+                    this.list.appendChild(item);
+                    hasResults = true;
+                }
+            });
+            
+            if (!hasResults) {
+                const empty = document.createElement('div');
+                empty.className = 'px-4 py-3 text-sm text-gray-400 italic text-center';
+                empty.textContent = 'Tidak ditemukan';
+                this.list.appendChild(empty);
+            }
+        }
+        
+        updateTriggerText() {
+            const selected = this.select.options[this.select.selectedIndex];
+            const textEl = this.trigger.querySelector('.current-value');
+            if (selected) {
+                textEl.textContent = selected.text;
+                textEl.classList.remove('text-gray-400');
+                if (selected.value === "") textEl.classList.add('text-gray-400');
+            }
+            this.syncOptions(); // Keep state updated
+        }
+        
+        toggle() {
+            if (this.dropdown.classList.contains('hidden')) this.open();
+            else this.close();
+        }
+        
+        open() {
+            // Close all other instances first
+            document.querySelectorAll('.vanilla-select-host div.hidden').forEach(d => {
+                if (!this.dropdown.isSameNode(d)) d.classList.add('hidden');
+            });
+
+            this.dropdown.classList.remove('hidden');
+            this.trigger.classList.add('ring-2', 'ring-blue-500', 'border-blue-500');
+            this.trigger.querySelector('.dropdown-arrow').classList.add('rotate-180');
+            
+            // Animation
+            setTimeout(() => {
+                this.dropdown.classList.remove('scale-95', 'opacity-0');
+                this.dropdown.classList.add('scale-100', 'opacity-100');
+                this.search.focus();
+                this.renderList(); // Refresh list on open
+            }, 10);
+        }
+        
+        close() {
+            this.dropdown.classList.add('scale-95', 'opacity-0');
+            this.dropdown.classList.remove('scale-100', 'opacity-100');
+            this.trigger.classList.remove('ring-2', 'ring-blue-500', 'border-blue-500');
+            this.trigger.querySelector('.dropdown-arrow').classList.remove('rotate-180');
+            
+            setTimeout(() => {
+                this.dropdown.classList.add('hidden');
+                this.search.value = '';
+            }, 200);
+        }
     }
 
     function toggleReceiptList() {
@@ -453,8 +570,10 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Searchable selects
-        document.querySelectorAll('.vanilla-select').forEach(initVanillaSelect);
+        // Initialize custom searchable dropdowns
+        document.querySelectorAll('.vanilla-searchable').forEach(el => {
+            new VanillaSearchableSelect(el);
+        });
 
         toggleReceiptList();
         syncReceiptId();
