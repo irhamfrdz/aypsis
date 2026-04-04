@@ -248,6 +248,7 @@ class BiayaKapalController extends Controller
                 if (isset($section['total_nominal'])) $section['total_nominal'] = str_replace(',', '.', str_replace('.', '', $section['total_nominal']));
                 if (isset($section['dp'])) $section['dp'] = str_replace(',', '.', str_replace('.', '', $section['dp']));
                 if (isset($section['sisa_pembayaran'])) $section['sisa_pembayaran'] = str_replace(',', '.', str_replace('.', '', $section['sisa_pembayaran']));
+                if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 
                 if (isset($section['barang']) && is_array($section['barang'])) {
                     foreach ($section['barang'] as &$barang) {
@@ -454,6 +455,8 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'kapal_sections.*.dp' => 'nullable|numeric|min:0',
             'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
+            'kapal_sections.*.adjustment' => 'nullable|numeric',
+            'kapal_sections.*.notes_adjustment' => 'nullable|string',
             // Biaya Air sections structure
             'air' => 'nullable|array',
             'air.*.kapal' => 'nullable|string|max:255',
@@ -1030,6 +1033,8 @@ class BiayaKapalController extends Controller
                     $sectionTotalNominal = $section['total_nominal'] ?? 0;
                     $sectionDp = $section['dp'] ?? 0;
                     $sectionSisa = $section['sisa_pembayaran'] ?? 0;
+                    $sectionAdjustment = $section['adjustment'] ?? 0;
+                    $sectionNotesAdjustment = $section['notes_adjustment'] ?? null;
                     
                     Log::info("Processing kapal section $sectionIndex", [
                         'kapal' => $kapalName,
@@ -1083,6 +1088,8 @@ class BiayaKapalController extends Controller
                                 'total_nominal' => $sectionTotalNominal,
                                 'dp' => $sectionDp,
                                 'sisa_pembayaran' => $sectionSisa,
+                                'adjustment' => $sectionAdjustment,
+                                'notes_adjustment' => $sectionNotesAdjustment,
                             ]);
                             
                             $sectionHasData = true; // Mark that section has saved data
@@ -1119,6 +1126,8 @@ class BiayaKapalController extends Controller
                             'total_nominal' => $sectionTotalNominal,
                             'dp' => $sectionDp,
                             'sisa_pembayaran' => $sectionSisa,
+                            'adjustment' => $sectionAdjustment,
+                            'notes_adjustment' => $sectionNotesAdjustment,
                         ]);
                     }
                 }
@@ -2207,6 +2216,17 @@ class BiayaKapalController extends Controller
             }
             unset($section);
         }
+
+        // Kapal Sections (Buruh)
+        if (isset($data['kapal_sections']) && is_array($data['kapal_sections'])) {
+            foreach ($data['kapal_sections'] as &$section) {
+                if (isset($section['total_nominal'])) $section['total_nominal'] = str_replace(',', '.', str_replace('.', '', $section['total_nominal']));
+                if (isset($section['dp'])) $section['dp'] = str_replace(',', '.', str_replace('.', '', $section['dp']));
+                if (isset($section['sisa_pembayaran'])) $section['sisa_pembayaran'] = str_replace(',', '.', str_replace('.', '', $section['sisa_pembayaran']));
+                if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
+            }
+            unset($section);
+        }
         
         // Air Sections Cleaning
         if (isset($data['air']) && is_array($data['air'])) {
@@ -2331,11 +2351,17 @@ class BiayaKapalController extends Controller
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
             
-            // Operasional sections validation
-            'operasional_sections' => 'nullable|array',
-            'operasional_sections.*.kapal' => 'nullable|string|max:255',
-            'operasional_sections.*.voyage' => 'nullable|string|max:255',
             'operasional_sections.*.nominal' => 'nullable|numeric|min:0',
+            
+            // Buruh sections validation
+            'kapal_sections' => 'nullable|array',
+            'kapal_sections.*.kapal' => 'nullable|string|max:255',
+            'kapal_sections.*.voyage' => 'nullable|string|max:255',
+            'kapal_sections.*.total_nominal' => 'nullable|numeric|min:0',
+            'kapal_sections.*.dp' => 'nullable|numeric|min:0',
+            'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
+            'kapal_sections.*.adjustment' => 'nullable|numeric',
+            'kapal_sections.*.notes_adjustment' => 'nullable|string',
             
             // Air sections validation
             'air' => 'nullable|array',
@@ -3033,6 +3059,71 @@ class BiayaKapalController extends Controller
                 }
                 if ($totalPerijinan > 0) {
                     $biayaKapal->update(['nominal' => $totalPerijinan]);
+                }
+            }
+
+            // BURUH UPDATE
+            if ($request->has('kapal_sections')) {
+                BiayaKapalBarang::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                if (!empty($request->kapal_sections)) {
+                    foreach ($request->kapal_sections as $sectionIndex => $section) {
+                        $kapalName = $section['kapal'] ?? null;
+                        $voyageName = $section['voyage'] ?? null;
+                        
+                        $sectionTotalNominal = $section['total_nominal'] ?? 0;
+                        $sectionDp = $section['dp'] ?? 0;
+                        $sectionSisa = $section['sisa_pembayaran'] ?? 0;
+                        $sectionAdjustment = $section['adjustment'] ?? 0;
+                        $sectionNotesAdjustment = $section['notes_adjustment'] ?? null;
+
+                        $sectionHasData = false;
+                        if (isset($section['barang']) && is_array($section['barang'])) {
+                            foreach ($section['barang'] as $item) {
+                                $barangId = $item['barang_id'] ?? null;
+                                $jumlahRaw = ($item['jumlah'] ?? '0');
+                                $jumlah = is_string($jumlahRaw) ? floatval(str_replace(',', '.', str_replace('.', '', $jumlahRaw))) : floatval($jumlahRaw);
+                                
+                                if ($barangId && $jumlah > 0) {
+                                    $barang = PricelistBuruh::find($barangId);
+                                    if ($barang) {
+                                        $subtotal = $barang->tarif * $jumlah;
+                                        BiayaKapalBarang::create([
+                                            'biaya_kapal_id' => $biayaKapal->id,
+                                            'pricelist_buruh_id' => $barang->id,
+                                            'kapal' => $kapalName,
+                                            'voyage' => $voyageName,
+                                            'jumlah' => $jumlah,
+                                            'tarif' => $barang->tarif,
+                                            'subtotal' => $subtotal,
+                                            'total_nominal' => $sectionTotalNominal,
+                                            'dp' => $sectionDp,
+                                            'sisa_pembayaran' => $sectionSisa,
+                                            'adjustment' => $sectionAdjustment,
+                                            'notes_adjustment' => $sectionNotesAdjustment,
+                                        ]);
+                                        $sectionHasData = true;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (!$sectionHasData && !empty($kapalName) && !empty($voyageName)) {
+                            BiayaKapalBarang::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'pricelist_buruh_id' => null,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'jumlah' => 0,
+                                'tarif' => 0,
+                                'subtotal' => 0,
+                                'total_nominal' => $sectionTotalNominal,
+                                'dp' => $sectionDp,
+                                'sisa_pembayaran' => $sectionSisa,
+                                'adjustment' => $sectionAdjustment,
+                                'notes_adjustment' => $sectionNotesAdjustment,
+                            ]);
+                        }
+                    }
                 }
             }
 

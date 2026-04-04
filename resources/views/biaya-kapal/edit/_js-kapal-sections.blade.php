@@ -96,6 +96,25 @@
                     <i class="fas fa-plus mr-1"></i> Tambah Barang
                 </button>
             </div>
+
+            <!-- Nominal Per Kapal Display -->
+            <div class="mt-3 p-3 bg-white border border-blue-300 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Adjustment</label>
+                        <input type="text" name="kapal_sections[${sectionIndex}][adjustment]" class="adjustment-input w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Catatan Adjustment</label>
+                        <input type="text" name="kapal_sections[${sectionIndex}][notes_adjustment]" class="w-full px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Keterangan adjustment">
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-t border-blue-100 pt-2">
+                    <span class="text-sm font-semibold text-gray-700">Nominal Kapal ${sectionIndex}:</span>
+                    <span class="section-nominal-display text-lg font-bold text-blue-600">Rp 0</span>
+                    <input type="hidden" name="kapal_sections[${sectionIndex}][total_nominal]" class="section-total-hidden">
+                </div>
+            </div>
         `;
         
         kapalSectionsContainer.appendChild(section);
@@ -130,6 +149,16 @@
         // Setup manual voyage toggle
         const voyageInput = section.querySelector('.voyage-input');
         const voyageManualBtn = section.querySelector('.voyage-manual-btn');
+        const adjustmentInput = section.querySelector('.adjustment-input');
+
+        adjustmentInput.addEventListener('input', function() {
+            // Apply currency formatting
+            let val = this.value.replace(/\./g, '');
+            if (!isNaN(val) && val !== '') {
+                this.value = Math.round(val).toLocaleString('id-ID');
+            }
+            calculateTotalFromAllSections();
+        });
 
         if (voyageManualBtn) {
             voyageManualBtn.addEventListener('click', function() {
@@ -411,15 +440,39 @@
         document.querySelectorAll('.kapal-section').forEach(section => {
             const barangSelects = section.querySelectorAll('.barang-select-item');
             const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
+            const adjustmentInput = section.querySelector('.adjustment-input');
+            const nominalDisplay = section.querySelector('.section-nominal-display');
+            const sectionTotalHidden = section.querySelector('.section-total-hidden');
+            
+            let sectionTotal = 0;
             
             barangSelects.forEach((select, index) => {
                 const selectedOption = select.options[select.selectedIndex];
                 const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
                 // Convert comma to period for proper decimal parsing (Indonesian format)
-                const jumlahRaw = jumlahInputs[index].value.replace(',', '.');
+                const jumlahRaw = (jumlahInputs[index].value || '0').replace(',', '.');
                 const jumlah = parseFloat(jumlahRaw) || 0;
-                grandTotal += tarif * jumlah;
+                sectionTotal += tarif * jumlah;
             });
+
+            // Add adjustment
+            if (adjustmentInput) {
+                const adjustmentRaw = (adjustmentInput.value || '0').replace(/\./g, '').replace(',', '.');
+                const adjustment = parseFloat(adjustmentRaw) || 0;
+                sectionTotal += adjustment;
+            }
+            
+            // Update section nominal display
+            if (nominalDisplay) {
+                nominalDisplay.textContent = sectionTotal > 0 ? `Rp ${Math.round(sectionTotal).toLocaleString('id-ID')}` : 'Rp 0';
+            }
+
+            // Update hidden input for section total
+            if (sectionTotalHidden) {
+                sectionTotalHidden.value = Math.round(sectionTotal);
+            }
+            
+            grandTotal += sectionTotal;
         });
         
         if (grandTotal > 0) {

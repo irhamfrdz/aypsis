@@ -10,16 +10,19 @@
             $grouped = $biayaKapal->barangDetails->groupBy(function($item) {
                 return $item->kapal . '|||' . $item->voyage;
             });
-            foreach($grouped as $key => $items) {
-                 $parts = explode('|||', $key);
-                 if(count($parts) == 2) {
-                     $editKapalSections[] = [
-                         'kapal' => $parts[0],
-                         'voyage' => $parts[1],
-                         'barang' => $items->map(function($i){ return ['barang_id' => $i->barang_id, 'jumlah' => $i->jumlah]; })
-                     ];
-                 }
-            }
+             foreach($grouped as $key => $items) {
+                  $parts = explode('|||', $key);
+                  if(count($parts) == 2) {
+                      $firstItem = $items->first();
+                      $editKapalSections[] = [
+                          'kapal' => $parts[0],
+                          'voyage' => $parts[1],
+                          'adjustment' => $firstItem->adjustment ?? 0,
+                          'notes_adjustment' => $firstItem->notes_adjustment ?? '',
+                          'barang' => $items->map(function($i){ return ['barang_id' => $i->barang_id, 'jumlah' => $i->jumlah]; })
+                      ];
+                  }
+             }
         }
 
         // Map Air
@@ -242,6 +245,18 @@
                         myData.barang.forEach(b => {
                             addBarangToSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
                         });
+                        
+                        // Set adjustment values
+                        const adjInput = section.querySelector('.adjustment-input');
+                        const notesInput = section.querySelector('input[name="kapal_sections['+sectionIndex+'][notes_adjustment]"]');
+                        
+                        if(adjInput && myData.adjustment) {
+                            adjInput.value = Math.round(myData.adjustment).toLocaleString('id-ID');
+                        }
+                        if(notesInput && myData.notes_adjustment) {
+                            notesInput.value = myData.notes_adjustment;
+                        }
+                        
                         calculateTotalFromAllSections();
                     }
                 })();

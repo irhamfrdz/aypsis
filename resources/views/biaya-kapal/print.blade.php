@@ -325,8 +325,12 @@
                         @foreach($groupedDetails as $groupKey => $details)
                             @php
                                 $rowNumber++;
-                                list($groupKapal, $groupVoyage) = explode('|', $groupKey);
-                                $groupSubtotal = $details->sum('subtotal');
+                                $parts = explode('|', $groupKey);
+                                $groupKapal = $parts[0] ?? '-';
+                                $groupVoyage = $parts[1] ?? '-';
+                                // total_nominal already includes adjustment from our controller logic
+                                $firstDetail = $details->first();
+                                $groupSubtotal = ($firstDetail && $firstDetail->total_nominal > 0) ? $firstDetail->total_nominal : $details->sum('subtotal');
                             @endphp
                             <!-- DEBUG: Group {{ $rowNumber }} - Key: {{ $groupKey }}, Items: {{ $details->count() }}, Subtotal: {{ $groupSubtotal }} -->
                             <tr>
@@ -383,7 +387,18 @@
                                 'item_count' => $items->count(),
                             ];
                         })->values();
-                    $overallTotal = $combinedBarang->sum('subtotal');
+
+                    // Sum unique adjustments from all groups
+                    $totalAdjustments = $biayaKapal->barangDetails
+                        ->groupBy(function($item) {
+                            return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                        })
+                        ->map(function($group) {
+                            return $group->first()->adjustment ?? 0;
+                        })
+                        ->sum();
+                        
+                    $overallTotal = $combinedBarang->sum('subtotal') + $totalAdjustments;
                 @endphp
 
                 <div style="margin-top:2px; margin-bottom:2px; font-size:{{ $currentPaper['tableFont'] }};">
@@ -410,6 +425,17 @@
                             <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                         </tr>
                         @endforeach
+                        
+                        @if(isset($totalAdjustments) && $totalAdjustments != 0)
+                        <tr>
+                            <td class="text-center">{{ $combinedBarang->count() + 1 }}</td>
+                            <td>Adjustment</td>
+                            <td class="text-center">-</td>
+                            <td class="text-right">-</td>
+                            <td class="text-right">Rp {{ number_format($totalAdjustments, 0, ',', '.') }}</td>
+                        </tr>
+                        @endif
+
                         <tr class="total-row">
                             <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
                             <td class="text-right"><strong>Rp {{ number_format($overallTotal, 0, ',', '.') }}</strong></td>

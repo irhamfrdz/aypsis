@@ -19,6 +19,8 @@ class BiayaKapalBarang extends Model
         'total_nominal',
         'dp',
         'sisa_pembayaran',
+        'adjustment',
+        'notes_adjustment',
     ];
 
     protected $casts = [
@@ -27,6 +29,7 @@ class BiayaKapalBarang extends Model
         'total_nominal' => 'decimal:2',
         'dp' => 'decimal:2',
         'sisa_pembayaran' => 'decimal:2',
+        'adjustment' => 'decimal:2',
     ];
 
     // Relationship to BiayaKapal
