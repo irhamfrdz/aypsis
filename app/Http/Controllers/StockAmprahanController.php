@@ -770,7 +770,7 @@ class StockAmprahanController extends Controller
         // Hydrate items with fresh data from DB to ensure no empty columns
         if (is_array($pranota->items)) {
             $itemIds = collect($pranota->items)->pluck('id')->filter()->toArray();
-            $stockItems = \App\Models\StockAmprahan::with(['usages.kendaraan', 'usages.buntut', 'usages.kapal', 'usages.alatBerat', 'masterNamaBarangAmprahan'])
+            $stockItems = \App\Models\StockAmprahan::with(['usages.kendaraan', 'usages.truck', 'usages.buntut', 'usages.kapal', 'usages.alatBerat', 'masterNamaBarangAmprahan'])
                 ->whereIn('id', $itemIds)
                 ->get()
                 ->keyBy('id');
@@ -796,6 +796,10 @@ class StockAmprahanController extends Controller
                         if ($firstUsage->kendaraan) {
                             $refItems[] = $firstUsage->kendaraan->nomor_polisi;
                             if (!$refType) $refType = 'Kendaraan';
+                        }
+                        if ($firstUsage->truck) {
+                            $refItems[] = 'Truck: ' . $firstUsage->truck->nomor_polisi;
+                            if (!$refType) $refType = 'Truck';
                         }
                         if ($firstUsage->buntut) {
                             $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);

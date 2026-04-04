@@ -156,14 +156,14 @@
             $categoryDetails = [];
             foreach ($displayTypes as $label) {
                 $categoryDetails[$label] = [
-                    'Mobil' => 0,
+                    'Kendaraan' => 0,
+                    'Truck' => 0,
                     'Kapal' => 0,
                     'Alat Berat' => 0,
                     'Buntut' => 0,
                     'Lain-lain' => 0
                 ];
             }
-
             $otherTotal = 0;
             $summaryGrandTotal = 0;
 
