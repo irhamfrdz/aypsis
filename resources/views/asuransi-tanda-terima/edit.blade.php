@@ -30,7 +30,7 @@
                     <div class="md:col-span-2">
                         <label for="vendor_asuransi_id" class="block text-sm font-medium text-gray-700 mb-2">Vendor Asuransi <span class="text-red-500">*</span></label>
                         <select id="vendor_asuransi_id" name="vendor_asuransi_id" required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select">
                             @foreach($vendors as $vendor)
                                 <option value="{{ $vendor->id }}" data-tarif="{{ $vendor->tarif }}" {{ old('vendor_asuransi_id', $asuransiTandaTerima->vendor_asuransi_id) == $vendor->id ? 'selected' : '' }}>
                                     {{ $vendor->nama_asuransi }} (Tarif: {{ $vendor->tarif }}%)
@@ -125,7 +125,7 @@
                     <div>
                         <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Nama Kapal</label>
                         <select id="nama_kapal" name="nama_kapal" 
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select">
                             <option value="">-- Pilih Kapal --</option>
                             @foreach($masterKapals as $kapal)
                                 <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal', $asuransiTandaTerima->nama_kapal) == $kapal->nama_kapal ? 'selected' : '' }}>
@@ -169,6 +169,33 @@
 </div>
 @push('scripts')
 <script>
+    // Searchable Select Component in Vanilla JS
+    function initVanillaSelect(select) {
+        if (!select) return;
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative vanilla-select-container mt-1';
+        select.parentNode.insertBefore(wrapper, select);
+        
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = 'Cari baris ini...';
+        searchInput.className = 'w-full mb-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all';
+        
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase();
+            const options = select.options;
+            for (let i = 0; i < options.length; i++) {
+                const text = options[i].text.toLowerCase();
+                const isMatch = text.includes(term) || options[i].value === "";
+                options[i].style.display = isMatch ? '' : 'none';
+            }
+        });
+
+        wrapper.appendChild(searchInput);
+        wrapper.appendChild(select);
+    }
+
     function calculateGrandTotal() {
         const select = document.getElementById('vendor_asuransi_id');
         const nilaiInput = document.getElementById('nilai_barang');
@@ -211,15 +238,15 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Searchable selects
+        document.querySelectorAll('.vanilla-select').forEach(initVanillaSelect);
+
         const vendorSelect = document.getElementById('vendor_asuransi_id');
         const nilaiInput = document.getElementById('nilai_barang');
         const rateInput = document.getElementById('asuransi_rate');
 
         if (vendorSelect) {
             vendorSelect.addEventListener('change', onVendorChange);
-            if (typeof $ !== 'undefined') {
-                $(vendorSelect).on('change', onVendorChange);
-            }
         }
         if (nilaiInput) {
             nilaiInput.addEventListener('input', calculateGrandTotal);
@@ -228,33 +255,6 @@
             rateInput.addEventListener('input', calculateGrandTotal);
         }
 
-        var initSelect2 = function() {
-            var $el = $('.select2');
-            if ($el.length > 0) {
-                if (typeof $.fn.select2 !== 'undefined') {
-                    $el.select2({
-                        placeholder: "-- Pilih --",
-                        allowClear: true,
-                        width: '100%',
-                        minimumResultsForSearch: 0
-                    });
-                } else if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-                    jQuery('.select2').select2({
-                        placeholder: "-- Pilih --",
-                        allowClear: true,
-                        width: '100%',
-                        minimumResultsForSearch: 0
-                    });
-                }
-            }
-        };
-
-        if (typeof $ !== 'undefined') {
-            $(document).ready(initSelect2);
-        } else if (typeof jQuery !== 'undefined') {
-            jQuery(document).ready(initSelect2);
-        }
-        
         calculateGrandTotal();
     });
 </script>

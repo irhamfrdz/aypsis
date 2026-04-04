@@ -23,7 +23,7 @@
                     <div class="md:col-span-2">
                         <label for="vendor_asuransi_id" class="block text-sm font-medium text-gray-700 mb-2">Vendor Asuransi <span class="text-red-500">*</span></label>
                         <select id="vendor_asuransi_id" name="vendor_asuransi_id" required
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select">
                             <option value="">-- Pilih Vendor --</option>
                             @foreach($vendors as $vendor)
                                 <option value="{{ $vendor->id }}" data-tarif="{{ $vendor->tarif }}" {{ old('vendor_asuransi_id') == $vendor->id ? 'selected' : '' }}>
@@ -55,7 +55,7 @@
                         <label for="receipt_id" class="block text-sm font-medium text-gray-700 mb-2">Pilih Data <span class="text-red-500">*</span></label>
                         
                         <div id="wrapper_tt" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'tt' ? '' : 'hidden' }}">
-                            <select name="receipt_id_tt" id="receipt_id_tt" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" {{ isset($selectedReceipt) && $selectedType != 'tt' ? 'disabled' : '' }}>
+                            <select name="receipt_id_tt" id="receipt_id_tt" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select" {{ isset($selectedReceipt) && $selectedType != 'tt' ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima --</option>
                                 @if(isset($selectedReceipt) && $selectedType == 'tt')
                                     <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->no_surat_jalan }}] - {{ $selectedReceipt->penerima }}</option>
@@ -69,7 +69,7 @@
                         </div>
 
                         <div id="wrapper_tttsj" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'tttsj' ? '' : 'hidden' }}">
-                            <select name="receipt_id_tttsj" id="receipt_id_tttsj" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" {{ isset($selectedReceipt) && $selectedType != 'tttsj' ? 'disabled' : '' }}>
+                            <select name="receipt_id_tttsj" id="receipt_id_tttsj" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select" {{ isset($selectedReceipt) && $selectedType != 'tttsj' ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima Tanpa SJ --</option>
                                 @if(isset($selectedReceipt) && $selectedType == 'tttsj')
                                     <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->no_tanda_terima }}] - {{ $selectedReceipt->penerima }}</option>
@@ -83,7 +83,7 @@
                         </div>
 
                         <div id="wrapper_lcl" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'lcl' ? '' : 'hidden' }}">
-                            <select name="receipt_id_lcl" id="receipt_id_lcl" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" {{ isset($selectedReceipt) && $selectedType != 'lcl' ? 'disabled' : '' }}>
+                            <select name="receipt_id_lcl" id="receipt_id_lcl" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select" {{ isset($selectedReceipt) && $selectedType != 'lcl' ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima LCL --</option>
                                 @if(isset($selectedReceipt) && $selectedType == 'lcl')
                                     <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->nomor_tanda_terima }}] - {{ $selectedReceipt->nama_penerima }}</option>
@@ -242,7 +242,7 @@
                     <div>
                         <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Nama Kapal</label>
                         <select id="nama_kapal" name="nama_kapal" 
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent vanilla-select">
                             <option value="">-- Pilih Kapal --</option>
                             @foreach($masterKapals as $kapal)
                                 <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
@@ -287,12 +287,50 @@
 
 @push('scripts')
 <script>
+    // Searchable Select Component in Vanilla JS
+    function initVanillaSelect(select) {
+        if (!select) return;
+        
+        // Create wrapper
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative vanilla-select-container mt-1';
+        select.parentNode.insertBefore(wrapper, select);
+        
+        // Create search input
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = 'Cari baris ini...';
+        searchInput.className = 'w-full mb-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all';
+        
+        // Handle search
+        searchInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase();
+            const options = select.options;
+            let firstVisible = -1;
+            
+            for (let i = 0; i < options.length; i++) {
+                const text = options[i].text.toLowerCase();
+                const isMatch = text.includes(term) || options[i].value === "";
+                options[i].style.display = isMatch ? '' : 'none';
+                
+                if (isMatch && firstVisible === -1 && options[i].value !== "") {
+                    firstVisible = i;
+                }
+            }
+        });
+
+        // Add to wrapper
+        wrapper.appendChild(searchInput);
+        wrapper.appendChild(select);
+    }
+
     function toggleReceiptList() {
         const type = document.getElementById('receipt_type').value;
         const wrappers = document.querySelectorAll('.receipt-select-wrapper');
         
         wrappers.forEach(w => w.classList.add('hidden'));
-        document.getElementById('wrapper_' + type).classList.remove('hidden');
+        const activeWrapper = document.getElementById('wrapper_' + type);
+        if (activeWrapper) activeWrapper.classList.remove('hidden');
     }
 
     function syncReceiptId() {
@@ -345,99 +383,89 @@
     }
 
     function updateReceiptInfo() {
-        const type = document.getElementById('receipt_type').value;
-        const id = document.getElementById('receipt_id_' + type).value;
+        const typeSelect = document.getElementById('receipt_type');
+        if (!typeSelect) return;
+        const type = typeSelect.value;
+        const selectEl = document.getElementById('receipt_id_' + type);
+        if (!selectEl) return;
+        const id = selectEl.value;
         
-        const infoNoKontainer = document.getElementById('info_no_kontainer');
-        const infoNoSuratJalan = document.getElementById('info_no_surat_jalan');
-        const infoNamaBarang = document.getElementById('info_nama_barang');
-        const infoJumlahBarang = document.getElementById('info_jumlah_barang');
-        const infoSatuan = document.getElementById('info_satuan');
-        const inputNomorUrut = document.getElementById('nomor_urut');
-        const inputNamaKapal = document.getElementById('nama_kapal');
-        const inputNomorVoyage = document.getElementById('nomor_voyage');
+        const infoFields = {
+            no_kontainer: document.getElementById('info_no_kontainer'),
+            no_surat_jalan: document.getElementById('info_no_surat_jalan'),
+            nama_barang: document.getElementById('info_nama_barang'),
+            jumlah_barang: document.getElementById('info_jumlah_barang'),
+            satuan: document.getElementById('info_satuan')
+        };
+
+        const inputs = {
+            nomor_urut: document.getElementById('nomor_urut'),
+            nama_kapal: document.getElementById('nama_kapal'),
+            nomor_voyage: document.getElementById('nomor_voyage')
+        };
+
         const viewWrapper = document.getElementById('view_receipt_wrapper');
         const viewBtn = document.getElementById('btn_view_receipt');
 
         if (!id) {
-            infoNoKontainer.textContent = '-';
-            infoNoSuratJalan.textContent = '-';
-            infoNamaBarang.textContent = '-';
-            infoJumlahBarang.textContent = '-';
-            infoSatuan.textContent = '-';
-            viewWrapper.classList.add('hidden');
+            Object.values(infoFields).forEach(f => f.textContent = '-');
+            if (viewWrapper) viewWrapper.classList.add('hidden');
             return;
         }
 
-        // Show loading
-        infoNoKontainer.textContent = '...';
-        infoNoSuratJalan.textContent = '...';
-        infoNamaBarang.textContent = '...';
-        infoJumlahBarang.textContent = '...';
-        infoSatuan.textContent = '...';
+        Object.values(infoFields).forEach(f => f.textContent = '...');
 
         fetch(`/asuransi-tanda-terima/get-receipt-details/${type}/${id}`)
             .then(response => response.json())
             .then(data => {
-                infoNoKontainer.textContent = data.no_kontainer || '-';
-                infoNoSuratJalan.textContent = data.no_surat_jalan || '-';
-                infoNamaBarang.textContent = data.nama_barang || '-';
-                infoNamaBarang.title = data.nama_barang || '-';
-                infoJumlahBarang.textContent = data.jumlah_barang || '-';
-                infoSatuan.textContent = data.satuan || '-';
+                infoFields.no_kontainer.textContent = data.no_kontainer || '-';
+                infoFields.no_surat_jalan.textContent = data.no_surat_jalan || '-';
+                infoFields.nama_barang.textContent = data.nama_barang || '-';
+                infoFields.nama_barang.title = data.nama_barang || '-';
+                infoFields.jumlah_barang.textContent = data.jumlah_barang || '-';
+                infoFields.satuan.textContent = data.satuan || '-';
                 
-                // Set input values
-                if (inputNomorUrut) inputNomorUrut.value = data.nomor_urut !== '-' ? data.nomor_urut : '';
-                if (inputNamaKapal) {
-                    if (data.nama_kapal !== '-') {
-                        $(inputNamaKapal).val(data.nama_kapal).trigger('change');
-                    } else {
-                        $(inputNamaKapal).val('').trigger('change');
-                    }
+                if (inputs.nomor_urut) inputs.nomor_urut.value = data.nomor_urut !== '-' ? data.nomor_urut : '';
+                if (inputs.nama_kapal) {
+                    inputs.nama_kapal.value = data.nama_kapal !== '-' ? data.nama_kapal : '';
+                    inputs.nama_kapal.dispatchEvent(new Event('change'));
                 }
-                if (inputNomorVoyage) inputNomorVoyage.value = data.nomor_voyage !== '-' ? data.nomor_voyage : '';
+                if (inputs.nomor_voyage) inputs.nomor_voyage.value = data.nomor_voyage !== '-' ? data.nomor_voyage : '';
                 
-                // Update Button
                 let baseUrl = '';
                 if (type === 'tt') baseUrl = '/tanda-terima/';
                 else if (type === 'tttsj') baseUrl = '/tanda-terima-tanpa-surat-jalan/';
                 else if (type === 'lcl') baseUrl = '/tanda-terima-lcl/';
                 
-                if (baseUrl) {
+                if (baseUrl && viewBtn && viewWrapper) {
                     viewBtn.href = baseUrl + id;
                     viewWrapper.classList.remove('hidden');
-                } else {
+                } else if (viewWrapper) {
                     viewWrapper.classList.add('hidden');
                 }
             })
             .catch(error => {
                 console.error('Error fetching receipt details:', error);
-                infoNoKontainer.textContent = 'Error';
-                infoNoSuratJalan.textContent = 'Error';
-                infoNamaBarang.textContent = 'Error';
-                infoJumlahBarang.textContent = 'Error';
-                infoSatuan.textContent = 'Error';
-                viewWrapper.classList.add('hidden');
+                Object.values(infoFields).forEach(f => f.textContent = 'Error');
+                if (viewWrapper) viewWrapper.classList.add('hidden');
             });
     }
 
-    // Initialize list toggle
+    // Initialize
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Searchable selects
+        document.querySelectorAll('.vanilla-select').forEach(initVanillaSelect);
+
         toggleReceiptList();
         syncReceiptId();
         
-        // Add event listeners for grand total
         const vendorSelect = document.getElementById('vendor_asuransi_id');
         const nilaiInput = document.getElementById('nilai_barang');
         const rateInput = document.getElementById('asuransi_rate');
         const typeSelect = document.getElementById('receipt_type');
-        const ttSelect = document.getElementById('receipt_id_tt');
-        const tttsjSelect = document.getElementById('receipt_id_tttsj');
-        const lclSelect = document.getElementById('receipt_id_lcl');
-
+        
         if (vendorSelect) {
             vendorSelect.addEventListener('change', onVendorChange);
-            if (typeof $ !== 'undefined') { $(vendorSelect).on('change', onVendorChange); }
         }
         if (nilaiInput) {
             nilaiInput.addEventListener('input', calculateGrandTotal);
@@ -445,7 +473,6 @@
         if (rateInput) {
             rateInput.addEventListener('input', calculateGrandTotal);
         }
-
         if (typeSelect) {
             typeSelect.addEventListener('change', () => {
                 toggleReceiptList();
@@ -453,48 +480,17 @@
             });
         }
 
-        [ttSelect, tttsjSelect, lclSelect].forEach(select => {
+        ['tt', 'tttsj', 'lcl'].forEach(key => {
+            const select = document.getElementById('receipt_id_' + key);
             if (select) {
                 select.addEventListener('change', updateReceiptInfo);
-                if (typeof $ !== 'undefined') { $(select).on('change', updateReceiptInfo); }
             }
         });
 
-        // Initial calculation
         calculateGrandTotal();
         
-        // Initialize Select2 with search enabled (with safety check)
-        var initSelect2 = function() {
-            var $el = $('.select2');
-            if ($el.length > 0) {
-                if (typeof $.fn.select2 !== 'undefined') {
-                    $el.select2({
-                        placeholder: "-- Pilih --",
-                        allowClear: true,
-                        width: '100%',
-                        minimumResultsForSearch: 0
-                    });
-                } else if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-                    jQuery('.select2').select2({
-                        placeholder: "-- Pilih --",
-                        allowClear: true,
-                        width: '100%',
-                        minimumResultsForSearch: 0
-                    });
-                } else {
-                    console.error("Select2 library not found. Please ensure CDN is reachable and loaded.");
-                }
-            }
-        };
-
-        if (typeof $ !== 'undefined') {
-            $(document).ready(initSelect2);
-        } else if (typeof jQuery !== 'undefined') {
-            jQuery(document).ready(initSelect2);
-        }
-        
-        // If editing or pre-selected, update info
-        if (document.getElementById('final_receipt_id').value) {
+        const finalIdInput = document.getElementById('final_receipt_id');
+        if (finalIdInput && finalIdInput.value) {
             updateReceiptInfo();
         }
     });
