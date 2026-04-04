@@ -566,45 +566,75 @@ class PranotaUangRitController extends Controller
 
             // Hitung total uang supir per supir
             foreach ($selectedData as $suratJalanId => $data) {
-                $supirNama = $data['supir_nama'];
+                $supirInput = $data['supir_nama'];
+                
+                // Normalisasi identitas supir berdasarkan NIK jika ada
+                $karyawan = \App\Models\Karyawan::where('nama_panggilan', $supirInput)
+                    ->orWhere('nama_lengkap', $supirInput)
+                    ->first();
+                
+                $supirKey = $karyawan ? ($karyawan->nik ?? $supirInput) : $supirInput;
+                $supirDisplayName = $karyawan ? strtoupper($karyawan->nama_lengkap) : strtoupper($supirInput);
+                
                 $uangSupir = floatval($data['uang_rit_supir'] ?? 0); // Ensure it's a number
                 
-                Log::info("Processing Regular Supir: {$supirNama}, Uang Supir: {$uangSupir}");
+                Log::info("Processing Regular Supir: {$supirInput} -> Key: {$supirKey}, Uang Supir: {$uangSupir}");
                 
-                if (!isset($supirTotals[$supirNama])) {
-                    $supirTotals[$supirNama] = [
+                if (!isset($supirTotals[$supirKey])) {
+                    $supirTotals[$supirKey] = [
+                        'supir_nama' => $supirDisplayName,
                         'total_uang_supir' => 0.0,
                         'jumlah_rit' => 0,
                         'hutang' => 0.0,
                         'tabungan' => 0.0,
                         'bpjs' => 0.0,
+                        'original_names' => [strtoupper($supirInput)],
                     ];
+                } else {
+                    if (!in_array(strtoupper($supirInput), $supirTotals[$supirKey]['original_names'])) {
+                        $supirTotals[$supirKey]['original_names'][] = strtoupper($supirInput);
+                    }
                 }
                 
-                $supirTotals[$supirNama]['total_uang_supir'] += $uangSupir;
-                $supirTotals[$supirNama]['jumlah_rit'] += 1;
+                $supirTotals[$supirKey]['total_uang_supir'] += $uangSupir;
+                $supirTotals[$supirKey]['jumlah_rit'] += 1;
                 $totalUangSupirKeseluruhan += $uangSupir;
             }
 
             // Hitung total uang supir per supir untuk bongkaran
             foreach ($selectedBongkaranData as $suratJalanBongkaranId => $data) {
-                $supirNama = $data['supir_nama'];
+                $supirInput = $data['supir_nama'];
+                
+                // Normalisasi identitas supir berdasarkan NIK jika ada
+                $karyawan = \App\Models\Karyawan::where('nama_panggilan', $supirInput)
+                    ->orWhere('nama_lengkap', $supirInput)
+                    ->first();
+                
+                $supirKey = $karyawan ? ($karyawan->nik ?? $supirInput) : $supirInput;
+                $supirDisplayName = $karyawan ? strtoupper($karyawan->nama_lengkap) : strtoupper($supirInput);
+                
                 $uangSupir = floatval($data['uang_rit_supir'] ?? 0);
                 
-                Log::info("Processing Bongkaran Supir: {$supirNama}, Uang Supir: {$uangSupir}");
+                Log::info("Processing Bongkaran Supir: {$supirInput} -> Key: {$supirKey}, Uang Supir: {$uangSupir}");
                 
-                if (!isset($supirTotals[$supirNama])) {
-                    $supirTotals[$supirNama] = [
+                if (!isset($supirTotals[$supirKey])) {
+                    $supirTotals[$supirKey] = [
+                        'supir_nama' => $supirDisplayName,
                         'total_uang_supir' => 0.0,
                         'jumlah_rit' => 0,
                         'hutang' => 0.0,
                         'tabungan' => 0.0,
                         'bpjs' => 0.0,
+                        'original_names' => [strtoupper($supirInput)],
                     ];
+                } else {
+                    if (!in_array(strtoupper($supirInput), $supirTotals[$supirKey]['original_names'])) {
+                        $supirTotals[$supirKey]['original_names'][] = strtoupper($supirInput);
+                    }
                 }
                 
-                $supirTotals[$supirNama]['total_uang_supir'] += $uangSupir;
-                $supirTotals[$supirNama]['jumlah_rit'] += 1;
+                $supirTotals[$supirKey]['total_uang_supir'] += $uangSupir;
+                $supirTotals[$supirKey]['jumlah_rit'] += 1;
                 $totalUangSupirKeseluruhan += $uangSupir;
             }
 
@@ -614,15 +644,28 @@ class PranotaUangRitController extends Controller
             $supirDetails = $request->input('supir_details', []);
             Log::info('Supir Details from request:', $supirDetails);
             
-            foreach ($supirDetails as $supirNama => $details) {
-                if (isset($supirTotals[$supirNama])) {
-                    $supirTotals[$supirNama]['hutang'] = floatval($details['hutang'] ?? 0);
-                    $supirTotals[$supirNama]['tabungan'] = floatval($details['tabungan'] ?? 0);
-                    $supirTotals[$supirNama]['bpjs'] = floatval($details['bpjs'] ?? 0);
+            foreach ($supirDetails as $supirKeyFromInput => $details) {
+                // Determine if supirKeyFromInput is a name or a NIK that maps to our supirTotals
+                $targetKey = $supirKeyFromInput;
+                
+                if (!isset($supirTotals[$targetKey])) {
+                    // Try to find if this name maps to a NIK in our totals
+                    foreach ($supirTotals as $key => $val) {
+                        if (isset($val['original_names']) && in_array(strtoupper($supirKeyFromInput), $val['original_names'])) {
+                            $targetKey = $key;
+                            break;
+                        }
+                    }
+                }
+
+                if (isset($supirTotals[$targetKey])) {
+                    $supirTotals[$targetKey]['hutang'] = floatval($details['hutang'] ?? 0);
+                    $supirTotals[$targetKey]['tabungan'] = floatval($details['tabungan'] ?? 0);
+                    $supirTotals[$targetKey]['bpjs'] = floatval($details['bpjs'] ?? 0);
                     
-                    $totalHutangKeseluruhan += $supirTotals[$supirNama]['hutang'];
-                    $totalTabunganKeseluruhan += $supirTotals[$supirNama]['tabungan'];
-                    $totalBpjsKeseluruhan += $supirTotals[$supirNama]['bpjs'];
+                    $totalHutangKeseluruhan += $supirTotals[$targetKey]['hutang'];
+                    $totalTabunganKeseluruhan += $supirTotals[$targetKey]['tabungan'];
+                    $totalBpjsKeseluruhan += $supirTotals[$targetKey]['bpjs'];
                 }
             }
 
@@ -716,10 +759,10 @@ class PranotaUangRitController extends Controller
             }
 
             // Simpan detail per supir
-            foreach ($supirTotals as $supirNama => $totals) {
+            foreach ($supirTotals as $supirKey => $totals) {
                 PranotaUangRitSupirDetail::create([
                     'no_pranota' => $nomorPranota,
-                    'supir_nama' => $supirNama,
+                    'supir_nama' => $totals['supir_nama'],
                     'jumlah_rit' => intval($totals['jumlah_rit']),
                     'total_uang_supir' => floatval($totals['total_uang_supir']),
                     'hutang' => floatval($totals['hutang']),
@@ -1140,9 +1183,46 @@ class PranotaUangRitController extends Controller
         }
             
         // Get supir details for this pranota
-        $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
-            ->orderBy('supir_nama')
+        $supirDetailsRaw = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
             ->get();
+            
+        // Group supir details by NIK (or name if NIK not found) to consolidate duplicates
+        $consolidatedDetails = [];
+        foreach ($supirDetailsRaw as $detail) {
+            $karyawan = \App\Models\Karyawan::where('nama_panggilan', $detail->supir_nama)
+                ->orWhere('nama_lengkap', $detail->supir_nama)
+                ->first();
+            
+            $key = $karyawan ? $karyawan->nik : $detail->supir_nama;
+            
+            if (!isset($consolidatedDetails[$key])) {
+                $consolidatedDetails[$key] = [
+                    'supir_nama' => $karyawan ? $karyawan->nama_lengkap : $detail->supir_nama,
+                    'nik' => $karyawan ? $karyawan->nik : null,
+                    'jumlah_rit' => 0,
+                    'total_uang_supir' => 0,
+                    'hutang' => 0,
+                    'tabungan' => 0,
+                    'bpjs' => 0,
+                    'grand_total' => 0
+                ];
+            }
+            
+            $consolidatedDetails[$key]['jumlah_rit'] += $detail->jumlah_rit;
+            $consolidatedDetails[$key]['total_uang_supir'] += $detail->total_uang_supir;
+            $consolidatedDetails[$key]['hutang'] += $detail->hutang;
+            $consolidatedDetails[$key]['tabungan'] += $detail->tabungan;
+            $consolidatedDetails[$key]['bpjs'] += $detail->bpjs;
+            $consolidatedDetails[$key]['grand_total'] += $detail->grand_total;
+        }
+
+        // Convert back to collection of objects for the view
+        $supirDetails = collect();
+        foreach ($consolidatedDetails as $detail) {
+            $supirDetails->push((object)$detail);
+        }
+        
+        $supirDetails = $supirDetails->sortBy('supir_nama');
             
         return view('pranota-uang-rit.print', compact('pranotaUangRit', 'groupedPranota', 'supirDetails'));
     }
@@ -1156,17 +1236,40 @@ class PranotaUangRitController extends Controller
         $pranotaUangRit->load(['suratJalan', 'creator', 'updater', 'approver']);
         
         // Get supir details for this pranota with karyawan data
-        $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
-            ->orderBy('supir_nama')
+        $supirDetailsRaw = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
             ->get();
 
-        // Get NIK from karyawans table for each supir
-        foreach ($supirDetails as $detail) {
-            $karyawan = \App\Models\Karyawan::where('nama_lengkap', $detail->supir_nama)
-                ->orWhere('nama_panggilan', $detail->supir_nama)
+        // Group supir details by NIK (or name if NIK not found) to consolidate duplicates for export
+        $consolidatedDetails = [];
+        foreach ($supirDetailsRaw as $detail) {
+            $karyawan = \App\Models\Karyawan::where('nama_panggilan', $detail->supir_nama)
+                ->orWhere('nama_lengkap', $detail->supir_nama)
                 ->first();
-            $detail->nik = $karyawan ? $karyawan->nik : '-';
+            
+            $key = $karyawan ? $karyawan->nik : $detail->supir_nama;
+            
+            if (!isset($consolidatedDetails[$key])) {
+                $consolidatedDetails[$key] = (object)[
+                    'supir_nama' => $karyawan ? $karyawan->nama_lengkap : $detail->supir_nama,
+                    'nik' => $karyawan ? $karyawan->nik : '-',
+                    'jumlah_rit' => 0,
+                    'total_uang_supir' => 0,
+                    'hutang' => 0,
+                    'tabungan' => 0,
+                    'bpjs' => 0,
+                    'grand_total' => 0
+                ];
+            }
+            
+            $consolidatedDetails[$key]->jumlah_rit += $detail->jumlah_rit;
+            $consolidatedDetails[$key]->total_uang_supir += $detail->total_uang_supir;
+            $consolidatedDetails[$key]->hutang += $detail->hutang;
+            $consolidatedDetails[$key]->tabungan += $detail->tabungan;
+            $consolidatedDetails[$key]->bpjs += $detail->bpjs;
+            $consolidatedDetails[$key]->grand_total += $detail->grand_total;
         }
+
+        $supirDetails = collect($consolidatedDetails)->sortBy('supir_nama');
 
         // Create Excel file using PhpSpreadsheet
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();

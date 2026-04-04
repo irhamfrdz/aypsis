@@ -12,11 +12,20 @@ use App\Models\TujuanKegiatanUtama;
 use App\Models\Permohonan;
 use App\Models\MasterKegiatan;
 use App\Models\MasterTujuanKirim;
+use App\Models\StockKontainer;
+use App\Models\Kontainer;
+use App\Models\MasterPricelistVendorSupir;
+use App\Models\TagihanSupirVendor;
+use App\Models\SuratJalanApproval;
+use App\Models\Pengirim;
+use App\Models\JenisBarang;
+use App\Models\TandaTerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use PDF;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SuratJalanExport;
@@ -117,7 +126,7 @@ class SuratJalanController extends Controller
             $suratJalan->save();
 
             // Log change
-            \Log::info('Supir updated via lightweight endpoint', [
+            Log::info('Supir updated via lightweight endpoint', [
                 'surat_jalan_id' => $suratJalan->id,
                 'supir' => $suratJalan->supir,
                 'updated_by' => auth()->id()
@@ -125,7 +134,7 @@ class SuratJalanController extends Controller
 
             return response()->json(['success' => true, 'supir' => $suratJalan->supir]);
         } catch (\Exception $e) {
-            \Log::error('Error updating supir: ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
+            Log::error('Error updating supir: ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
             return response()->json(['success' => false, 'message' => 'Server error while updating supir'], 500);
         }
     }
@@ -411,7 +420,7 @@ class SuratJalanController extends Controller
             if ($request->filled('is_supir_vendor') && $request->is_supir_vendor == 1) {
                 try {
                     $nominal = 0;
-                    $pricelist = \App\Models\MasterPricelistVendorSupir::where('ke', $suratJalan->tujuan_pengambilan)
+                    $pricelist = MasterPricelistVendorSupir::where('ke', $suratJalan->tujuan_pengambilan)
                         ->where('jenis_kontainer', $suratJalan->size)
                         ->where('status', 'aktif')
                         ->first();
@@ -420,7 +429,7 @@ class SuratJalanController extends Controller
                         $nominal = $pricelist->nominal;
                     }
 
-                    \App\Models\TagihanSupirVendor::create([
+                    TagihanSupirVendor::create([
                         'surat_jalan_id' => $suratJalan->id,
                         'nama_supir' => $suratJalan->supir,
                         'dari' => $suratJalan->tujuan_pengambilan,
@@ -439,7 +448,7 @@ class SuratJalanController extends Controller
             }
 
             // Langsung buat approval record untuk surat jalan
-            \App\Models\SuratJalanApproval::create([
+            SuratJalanApproval::create([
                 'surat_jalan_id' => $suratJalan->id,
                 'approval_level' => 'approval',
                 'status' => 'pending',
