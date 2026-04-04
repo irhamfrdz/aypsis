@@ -399,6 +399,14 @@
                         ->sum();
                         
                     $overallTotal = $combinedBarang->sum('subtotal') + $totalAdjustments;
+
+                    // Collect all adjustment notes
+                    $adjNotes = $biayaKapal->barangDetails
+                        ->filter(fn($i) => !empty($i->notes_adjustment))
+                        ->groupBy(fn($i) => ($i->kapal ?? '-') . '|' . ($i->voyage ?? '-'))
+                        ->map(fn($g) => $g->first()->notes_adjustment)
+                        ->values()
+                        ->toArray();
                 @endphp
 
                 <div style="margin-top:2px; margin-bottom:2px; font-size:{{ $currentPaper['tableFont'] }};">
@@ -429,7 +437,12 @@
                         @if(isset($totalAdjustments) && $totalAdjustments != 0)
                         <tr>
                             <td class="text-center">{{ $combinedBarang->count() + 1 }}</td>
-                            <td>Adjustment</td>
+                            <td>
+                                Adjustment 
+                                @if(!empty($adjNotes))
+                                    <br><small>({{ implode(', ', $adjNotes) }})</small>
+                                @endif
+                            </td>
                             <td class="text-center">-</td>
                             <td class="text-right">-</td>
                             <td class="text-right">Rp {{ number_format($totalAdjustments, 0, ',', '.') }}</td>
@@ -545,6 +558,7 @@
         <!-- Keterangan -->
         <div style="margin-bottom: 5px; border: 2px solid #333; padding: 4px; min-height: 25px;">
             <strong style="font-size: 9px;">Keterangan:</strong><br>
+            <span style="font-size: 9px;">{{ $biayaKapal->keterangan }}</span>
         </div>
 
         <!-- Signature Section -->
