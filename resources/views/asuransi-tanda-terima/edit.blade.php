@@ -228,11 +228,14 @@
             rateInput.addEventListener('input', calculateGrandTotal);
         }
 
-        if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
-            $('.select2').select2({
-                placeholder: "-- Pilih --",
-                allowClear: true,
-                width: '100%'
+        if (typeof $ !== 'undefined') {
+            $(document).ready(function() {
+                $('.select2').select2({
+                    placeholder: "-- Pilih --",
+                    allowClear: true,
+                    width: '100%',
+                    minimumResultsForSearch: 0
+                });
             });
         }
         

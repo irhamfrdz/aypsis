@@ -463,12 +463,15 @@
         // Initial calculation
         calculateGrandTotal();
         
-        // Initialize Select2
-        if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
-            $('.select2').select2({
-                placeholder: "-- Pilih --",
-                allowClear: true,
-                width: '100%'
+        // Initialize Select2 with search enabled
+        if (typeof $ !== 'undefined') {
+            $(document).ready(function() {
+                $('.select2').select2({
+                    placeholder: "-- Pilih --",
+                    allowClear: true,
+                    width: '100%',
+                    minimumResultsForSearch: 0 // Always show search bar
+                });
             });
         }
         
