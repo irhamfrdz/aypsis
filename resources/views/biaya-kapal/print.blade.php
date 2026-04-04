@@ -439,9 +439,6 @@
                             <td class="text-center">{{ $combinedBarang->count() + 1 }}</td>
                             <td>
                                 Adjustment 
-                                @if(!empty($adjNotes))
-                                    <br><small>({{ implode(', ', $adjNotes) }})</small>
-                                @endif
                             </td>
                             <td class="text-center">-</td>
                             <td class="text-right">-</td>
