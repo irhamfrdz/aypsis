@@ -34,11 +34,20 @@ class AsuransiTandaTerimaController extends Controller
                 'created_at', 
                 DB::raw('NULL as deleted_at')
             )
+            ->whereNotExists(function($q) {
+                $q->select(DB::raw(1))
+                    ->from('prospek')
+                    ->join('naik_kapal', 'prospek.id', '=', 'naik_kapal.prospek_id')
+                    ->whereColumn('prospek.tanda_terima_id', 'tanda_terimas.id')
+                    ->where('naik_kapal.sudah_ob', true);
+            })
             ->when($search, function($q) use ($search) {
-                $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('penerima', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+                $q->where(function($sub) use ($search) {
+                    $sub->where('no_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('pengirim', 'like', "%{$search}%")
+                        ->orWhere('penerima', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%");
+                });
             });
 
         // Tanda Terima Tanpa SJ
@@ -57,11 +66,19 @@ class AsuransiTandaTerimaController extends Controller
                 'created_at', 
                 DB::raw('NULL as deleted_at')
             )
+            ->whereNotExists(function($q) {
+                $q->select(DB::raw(1))
+                    ->from('naik_kapal')
+                    ->whereColumn('naik_kapal.nomor_kontainer', 'tanda_terima_tanpa_surat_jalan.no_kontainer')
+                    ->where('naik_kapal.sudah_ob', true);
+            })
             ->when($search, function($q) use ($search) {
-                $q->where('no_tanda_terima', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('penerima', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+                $q->where(function($sub) use ($search) {
+                    $sub->where('no_tanda_terima', 'like', "%{$search}%")
+                        ->orWhere('pengirim', 'like', "%{$search}%")
+                        ->orWhere('penerima', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%");
+                });
             });
 
         // Tanda Terima LCL
@@ -82,6 +99,13 @@ class AsuransiTandaTerimaController extends Controller
                 'tanda_terimas_lcl.deleted_at'
             )
             ->whereNull('tanda_terimas_lcl.deleted_at')
+            ->whereNotExists(function($q) {
+                $q->select(DB::raw(1))
+                    ->from('tanda_terima_lcl_kontainer_pivot')
+                    ->join('naik_kapal', 'tanda_terima_lcl_kontainer_pivot.nomor_kontainer', '=', 'naik_kapal.nomor_kontainer')
+                    ->whereColumn('tanda_terima_lcl_kontainer_pivot.tanda_terima_lcl_id', 'tanda_terimas_lcl.id')
+                    ->where('naik_kapal.sudah_ob', true);
+            })
             ->groupBy('tanda_terimas_lcl.id', 'type', 'number', 'date', 'pengirim', 'penerima', 'tanda_terimas_lcl.created_at', 'tanda_terimas_lcl.deleted_at')
             ->when($search, function($q) use ($search) {
                 $q->where(function($sub) use ($search) {
