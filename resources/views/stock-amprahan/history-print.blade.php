@@ -86,7 +86,7 @@
                 @endif
                 <th class="text-center">Jumlah</th>
                 <th>Penerima</th>
-                <th>Mobil/Kapal/Alat</th>
+                <th>Kendaraan/Kapal/Alat</th>
                 <th>KM</th>
                 <th>Keterangan</th>
                 <th>Dicatat Oleh</th>
@@ -113,7 +113,7 @@
                 <td>{{ $usage->penerima->nama_lengkap ?? '-' }}</td>
                 <td>
                     @php $parts = []; @endphp
-                    @if($usage->mobil) @php $parts[] = $usage->mobil->nomor_polisi; @endphp @endif
+                    @if($usage->kendaraan) @php $parts[] = $usage->kendaraan->nomor_polisi; @endphp @endif
                     @if($usage->buntut) @php $parts[] = ($usage->buntut->no_kir ?? $usage->buntut->nomor_polisi) . ' (Buntut)'; @endphp @endif
                     @if($usage->kapal) @php $parts[] = $usage->kapal->nama_kapal; @endphp @endif
                     @if($usage->alatBerat) @php $parts[] = $usage->alatBerat->kode_alat; @endphp @endif

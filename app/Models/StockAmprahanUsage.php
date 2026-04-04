@@ -15,7 +15,8 @@ class StockAmprahanUsage extends Model
     protected $fillable = [
         'stock_amprahan_id',
         'penerima_id',
-        'mobil_id',
+        'kendaraan_id',
+        'truck_id',
         'buntut_id',
         'kapal_id',
         'alat_berat_id',
@@ -41,9 +42,14 @@ class StockAmprahanUsage extends Model
         return $this->belongsTo(Karyawan::class, 'penerima_id');
     }
 
-    public function mobil()
+    public function kendaraan()
     {
-        return $this->belongsTo(Mobil::class, 'mobil_id');
+        return $this->belongsTo(Mobil::class, 'kendaraan_id');
+    }
+
+    public function truck()
+    {
+        return $this->belongsTo(Mobil::class, 'truck_id');
     }
 
     public function buntut()

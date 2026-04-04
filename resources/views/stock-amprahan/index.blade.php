@@ -204,7 +204,7 @@
                                 if ($firstUsage) {
                                     if ($firstUsage->kapal) $refItems[] = $firstUsage->kapal->nama_kapal;
                                     if ($firstUsage->alatBerat) $refItems[] = $firstUsage->alatBerat->nama;
-                                    if ($firstUsage->mobil) $refItems[] = $firstUsage->mobil->nomor_polisi;
+                                    if ($firstUsage->kendaraan) $refItems[] = $firstUsage->kendaraan->nomor_polisi;
                                     if ($firstUsage->buntut) $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
                                     if ($firstUsage->lain_lain) $refItems[] = $firstUsage->lain_lain;
                                 }
@@ -406,31 +406,60 @@
                                         </div>
 
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Mobil (Opsional)</label>
-                                            <div class="relative" id="mobil_dropdown">
-                                                <input type="hidden" name="mobil_id" id="mobil_id_hidden">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Kendaraan (Opsional)</label>
+                                            <div class="relative" id="kendaraan_dropdown">
+                                                <input type="hidden" name="kendaraan_id" id="kendaraan_id_hidden">
                                                 
                                                 <div class="relative">
-                                                    <input type="text" id="mobil_search_input" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white" placeholder="Pilih Mobil..." autocomplete="off">
-                                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="toggleMobilDropdown()">
-                                                        <svg class="h-5 w-5 transition-transform duration-200" id="mobil_dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <input type="text" id="kendaraan_search_input" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white" placeholder="Pilih Kendaraan..." autocomplete="off">
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="toggleKendaraanDropdown()">
+                                                        <svg class="h-5 w-5 transition-transform duration-200" id="kendaraan_dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div id="kendaraan_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
+                                                    @if($kendaraans->count() > 0)
+                                                        @foreach($kendaraans as $mobil)
+                                                            <div class="kendaraan-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                                 data-value="{{ $mobil->id }}" 
+                                                                 data-name="{{ $mobil->nomor_polisi }} {{ $mobil->merek }}"
+                                                                 onclick="selectKendaraan('{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} - {{ str_replace("'", "\\'", $mobil->merek) }}')">
+                                                                <span class="block truncate font-medium">{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                    <div id="kendaraan_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada kendaraan yang cocok</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Truck (Opsional)</label>
+                                            <div class="relative" id="truck_dropdown">
+                                                <input type="hidden" name="truck_id" id="truck_id_hidden">
+                                                
+                                                <div class="relative">
+                                                    <input type="text" id="truck_search_input" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white" placeholder="Pilih Truck..." autocomplete="off">
+                                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="toggleTruckDropdown()">
+                                                        <svg class="h-5 w-5 transition-transform duration-200" id="truck_dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                         </svg>
                                                     </div>
                                                 </div>
 
-                                                <div id="mobil_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
-                                                    @if($mobils->count() > 0)
-                                                        @foreach($mobils as $mobil)
-                                                            <div class="mobil-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
-                                                                 data-value="{{ $mobil->id }}" 
-                                                                 data-name="{{ $mobil->nomor_polisi }} {{ $mobil->merek }}"
-                                                                 onclick="selectMobil('{{ $mobil->id }}', '{{ $mobil->nomor_polisi }} - {{ str_replace("'", "\\'", $mobil->merek) }}')">
-                                                                <span class="block truncate font-medium">{{ $mobil->nomor_polisi }} - {{ $mobil->merek }}</span>
+                                                <div id="truck_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
+                                                    @if($kendaraans->count() > 0)
+                                                        @foreach($kendaraans as $truck)
+                                                            <div class="truck-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                                 data-value="{{ $truck->id }}" 
+                                                                 data-name="{{ $truck->nomor_polisi }} {{ $truck->merek }}"
+                                                                 onclick="selectTruck('{{ $truck->id }}', '{{ $truck->nomor_polisi }} - {{ str_replace("'", "\\'", $truck->merek) }}')">
+                                                                <span class="block truncate font-medium">{{ $truck->nomor_polisi }} - {{ $truck->merek }}</span>
                                                             </div>
                                                         @endforeach
                                                     @endif
-                                                    <div id="mobil_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada mobil yang cocok</div>
+                                                    <div id="truck_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada truck yang cocok</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -450,8 +479,8 @@
                                                 </div>
 
                                                 <div id="buntut_options_list" class="absolute z-50 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
-                                                    @if($mobils->count() > 0)
-                                                        @foreach($mobils as $buntut)
+                                                    @if($kendaraans->count() > 0)
+                                                        @foreach($kendaraans as $buntut)
                                                             <div class="buntut-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
                                                                  data-value="{{ $buntut->id }}" 
                                                                  data-name="{{ $buntut->no_kir }} {{ $buntut->nomor_polisi }}"
@@ -619,7 +648,8 @@
                                                 <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Truck</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buntut</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
                                                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alat Berat</th>
@@ -884,7 +914,8 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${item.type === 'Masuk' ? 'text-green-600' : 'text-orange-600'}">${item.type === 'Masuk' ? '+' : '-'}${item.jumlah}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.penerima}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.mobil || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kendaraan || '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.truck || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.buntut || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.kapal || '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.alat_berat || '-'}</td>
@@ -996,11 +1027,17 @@
         filterOptions('');
         closeDropdown();
 
-        // Reset mobil dropdown state
-        mobilHidden.value = '';
-        mobilInput.value = '';
-        filterMobilOptions('');
-        closeMobilDropdown();
+        // Reset kendaraan dropdown state
+        kendaraanHidden.value = '';
+        kendaraanInput.value = '';
+        filterKendaraanOptions('');
+        closeKendaraanDropdown();
+
+        // Reset truck dropdown state
+        document.getElementById('truck_id_hidden').value = '';
+        document.getElementById('truck_search_input').value = '';
+        filterTruckOptions('');
+        closeTruckDropdown();
 
         // Reset buntut dropdown state
         buntutHidden.value = '';
@@ -1026,61 +1063,70 @@
         closeLainLainDropdown();
     };
 
-    // SEARCHABLE DROPDOWN MOBIL LOGIC
-    const mobilInput = document.getElementById('mobil_search_input');
-    const mobilList = document.getElementById('mobil_options_list');
-    const mobilHidden = document.getElementById('mobil_id_hidden');
-    const mobilDropdownArrow = document.getElementById('mobil_dropdown_arrow');
-    const mobilOptions = document.querySelectorAll('.mobil-option');
-    const mobilNoResults = document.getElementById('mobil_no_results');
+    // SEARCHABLE DROPDOWN KENDARAAN LOGIC
+    const kendaraanInput = document.getElementById('kendaraan_search_input');
+    const kendaraanList = document.getElementById('kendaraan_options_list');
+    const kendaraanHidden = document.getElementById('kendaraan_id_hidden');
+    const kendaraanDropdownArrow = document.getElementById('kendaraan_dropdown_arrow');
+    const kendaraanOptions = document.querySelectorAll('.kendaraan-option');
+    const kendaraanNoResults = document.getElementById('kendaraan_no_results');
 
-    function toggleMobilDropdown() {
-        const isHidden = mobilList.classList.contains('hidden');
+    function toggleKendaraanDropdown() {
+        const isHidden = kendaraanList.classList.contains('hidden');
         if (isHidden) {
-            openMobilDropdown();
+            openKendaraanDropdown();
         } else {
-            closeMobilDropdown();
+            closeKendaraanDropdown();
         }
     }
 
-    function openMobilDropdown() {
-        mobilList.classList.remove('hidden');
-        mobilDropdownArrow.style.transform = 'rotate(180deg)';
-        mobilInput.focus();
+    function openKendaraanDropdown() {
+        kendaraanList.classList.remove('hidden');
+        kendaraanDropdownArrow.style.transform = 'rotate(180deg)';
+        kendaraanInput.focus();
     }
 
-    function closeMobilDropdown() {
-        mobilList.classList.add('hidden');
-        mobilDropdownArrow.style.transform = 'rotate(0deg)';
+    function closeKendaraanDropdown() {
+        kendaraanList.classList.add('hidden');
+        kendaraanDropdownArrow.style.transform = 'rotate(0deg)';
     }
 
-    function selectMobil(id, name) {
-        mobilHidden.value = id;
-        mobilInput.value = name;
+    // SEARCHABLE DROPDOWN KENDARAAN LOGIC
+
+    function closeKendaraanDropdown() {
+        kendaraanList.classList.add('hidden');
+        kendaraanDropdownArrow.style.transform = 'rotate(0deg)';
+    }
+
+    function selectKendaraan(id, name) {
+        kendaraanHidden.value = id;
+        kendaraanInput.value = name;
         // Clear alat berat selection
+        const alatBeratInput = document.getElementById('alat_berat_search_input');
+        const alatBeratHidden = document.getElementById('alat_berat_id_hidden');
         alatBeratHidden.value = '';
         alatBeratInput.value = '';
-        closeMobilDropdown();
+        closeKendaraanDropdown();
     }
 
-    mobilInput.addEventListener('focus', function() {
-        openMobilDropdown();
+    kendaraanInput.addEventListener('focus', function() {
+        openKendaraanDropdown();
     });
 
-    mobilInput.addEventListener('input', function() {
+    kendaraanInput.addEventListener('input', function() {
         const value = this.value.toLowerCase();
-        filterMobilOptions(value);
-        openMobilDropdown();
+        filterKendaraanOptions(value);
+        openKendaraanDropdown();
     });
 
     // Add click event for dropdown arrow
-    document.getElementById('mobil_dropdown_arrow').addEventListener('click', function() {
-        toggleMobilDropdown();
+    document.getElementById('kendaraan_dropdown_arrow').addEventListener('click', function() {
+        toggleKendaraanDropdown();
     });
 
-    function filterMobilOptions(value) {
+    function filterKendaraanOptions(value) {
         let hasVisible = false;
-        mobilOptions.forEach(option => {
+        kendaraanOptions.forEach(option => {
             const name = option.getAttribute('data-name').toLowerCase();
             if (name.includes(value)) {
                 option.classList.remove('hidden');
@@ -1091,9 +1137,9 @@
         });
 
         if (!hasVisible) {
-            mobilNoResults.classList.remove('hidden');
+            kendaraanNoResults.classList.remove('hidden');
         } else {
-            mobilNoResults.classList.add('hidden');
+            kendaraanNoResults.classList.add('hidden');
         }
     }
 
@@ -1108,12 +1154,21 @@
             }
         }
 
-        // Mobil Dropdown
-        const mobilDropdown = document.getElementById('mobil_dropdown');
-        if (mobilDropdown && !mobilDropdown.contains(e.target)) {
-            closeMobilDropdown();
-            if (mobilInput.value === '') {
-                mobilHidden.value = '';
+        // Kendaraan Dropdown
+        const kendaraanDropdown = document.getElementById('kendaraan_dropdown');
+        if (kendaraanDropdown && !kendaraanDropdown.contains(e.target)) {
+            closeKendaraanDropdown();
+            if (kendaraanInput.value === '') {
+                kendaraanHidden.value = '';
+            }
+        }
+
+        // Truck Dropdown
+        const truckDropdown = document.getElementById('truck_dropdown');
+        if (truckDropdown && !truckDropdown.contains(e.target)) {
+            closeTruckDropdown();
+            if (document.getElementById('truck_search_input').value === '') {
+                document.getElementById('truck_id_hidden').value = '';
             }
         }
 
@@ -1144,6 +1199,73 @@
             }
         }
     });
+
+    // SEARCHABLE DROPDOWN TRUCK LOGIC
+    const truckInput = document.getElementById('truck_search_input');
+    const truckList = document.getElementById('truck_options_list');
+    const truckHidden = document.getElementById('truck_id_hidden');
+    const truckDropdownArrow = document.getElementById('truck_dropdown_arrow');
+    const truckOptions = document.querySelectorAll('.truck-option');
+    const truckNoResults = document.getElementById('truck_no_results');
+
+    function toggleTruckDropdown() {
+        const isHidden = truckList.classList.contains('hidden');
+        if (isHidden) {
+            openTruckDropdown();
+        } else {
+            closeTruckDropdown();
+        }
+    }
+
+    function openTruckDropdown() {
+        truckList.classList.remove('hidden');
+        truckDropdownArrow.style.transform = 'rotate(180deg)';
+        truckInput.focus();
+    }
+
+    function closeTruckDropdown() {
+        truckList.classList.add('hidden');
+        truckDropdownArrow.style.transform = 'rotate(0deg)';
+    }
+
+    function selectTruck(id, name) {
+        truckHidden.value = id;
+        truckInput.value = name;
+        closeTruckDropdown();
+    }
+
+    truckInput.addEventListener('focus', function() {
+        openTruckDropdown();
+    });
+
+    truckInput.addEventListener('input', function() {
+        const value = this.value.toLowerCase();
+        filterTruckOptions(value);
+        openTruckDropdown();
+    });
+
+    document.getElementById('truck_dropdown_arrow').addEventListener('click', function() {
+        toggleTruckDropdown();
+    });
+
+    function filterTruckOptions(value) {
+        let hasVisible = false;
+        truckOptions.forEach(option => {
+            const name = option.getAttribute('data-name').toLowerCase();
+            if (name.includes(value)) {
+                option.classList.remove('hidden');
+                hasVisible = true;
+            } else {
+                option.classList.add('hidden');
+            }
+        });
+
+        if (!hasVisible) {
+            truckNoResults.classList.remove('hidden');
+        } else {
+            truckNoResults.classList.add('hidden');
+        }
+    }
 
     // SEARCHABLE DROPDOWN BUNTUT LOGIC
     const buntutInput = document.getElementById('buntut_search_input');
@@ -1322,9 +1444,9 @@
     function selectAlatBerat(id, name) {
         alatBeratHidden.value = id;
         alatBeratInput.value = name;
-        // Clear mobil selection
-        mobilHidden.value = '';
-        mobilInput.value = '';
+        // Clear kendaraan selection
+        kendaraanHidden.value = '';
+        kendaraanInput.value = '';
         closeAlatBeratDropdown();
     }
 

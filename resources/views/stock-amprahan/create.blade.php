@@ -325,22 +325,41 @@
                                 @enderror
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                                {{-- Mobil --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {{-- Kendaraan --}}
                                 <div class="group">
-                                    <label class="block text-sm font-bold text-gray-700 mb-2">Mobil</label>
-                                    <div class="dropdown-container-mobil relative">
-                                        <input type="text" id="search_mobil" placeholder="Cari mobil..." autocomplete="off"
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Kendaraan</label>
+                                    <div class="dropdown-container-kendaraan relative">
+                                        <input type="text" id="search_kendaraan" placeholder="Cari kendaraan..." autocomplete="off"
                                                class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
-                                        <select name="mobil_id" id="mobil_id" class="hidden">
-                                            <option value="">-- Pilih Mobil --</option>
+                                        <select name="kendaraan_id" id="kendaraan_id" class="hidden">
+                                            <option value="">-- Pilih Kendaraan --</option>
                                             @foreach($mobils as $m)
-                                                <option value="{{ $m->id }}" {{ old('mobil_id') == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
+                                                <option value="{{ $m->id }}" {{ old('kendaraan_id') == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
                                             @endforeach
                                         </select>
-                                        <div id="dropdown_options_mobil" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
+                                        <div id="dropdown_options_kendaraan" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
                                     </div>
-                                    @error('mobil_id')
+                                    @error('kendaraan_id')
+                                        <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- Truck --}}
+                                <div class="group">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Truck</label>
+                                    <div class="dropdown-container-truck relative">
+                                        <input type="text" id="search_truck" placeholder="Cari truck..." autocomplete="off"
+                                               class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                        <select name="truck_id" id="truck_id" class="hidden">
+                                            <option value="">-- Pilih Truck --</option>
+                                            @foreach($kendaraans as $m)
+                                                <option value="{{ $m->id }}" {{ old('truck_id') == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
+                                            @endforeach
+                                        </select>
+                                        <div id="dropdown_options_truck" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
+                                    </div>
+                                    @error('truck_id')
                                         <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -353,7 +372,7 @@
                                                class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
                                         <select name="buntut_id" id="buntut_id" class="hidden">
                                             <option value="">-- Pilih Buntut --</option>
-                                            @foreach($mobils as $m)
+                                            @foreach($kendaraans as $m)
                                                 <option value="{{ $m->id }}" {{ old('buntut_id') == $m->id ? 'selected' : '' }}>
                                                     {{ $m->no_kir ?: ($m->nomor_polisi ?: 'No KIR: -') }}
                                                 </option>
@@ -570,10 +589,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     createSearchableDropdown({
-        selectId: 'mobil_id',
-        searchId: 'search_mobil',
-        dropdownId: 'dropdown_options_mobil',
-        containerClass: 'dropdown-container-mobil'
+        selectId: 'kendaraan_id',
+        searchId: 'search_kendaraan',
+        dropdownId: 'dropdown_options_kendaraan',
+        containerClass: 'dropdown-container-kendaraan'
+    });
+
+    createSearchableDropdown({
+        selectId: 'truck_id',
+        searchId: 'search_truck',
+        dropdownId: 'dropdown_options_truck',
+        containerClass: 'dropdown-container-truck'
     });
  
     createSearchableDropdown({

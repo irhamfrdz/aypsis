@@ -116,7 +116,8 @@
                         @endif
                         <th class="px-6 py-4 text-center">Jumlah</th>
                         <th class="px-6 py-4 text-left">Penerima</th>
-                        <th class="px-6 py-4 text-left">Mobil</th>
+                        <th class="px-6 py-4 text-left">Kendaraan</th>
+                        <th class="px-6 py-4 text-left">Truck</th>
                         <th class="px-6 py-4 text-left">Buntut</th>
                         <th class="px-6 py-4 text-left">Kapal</th>
                         <th class="px-6 py-4 text-left">Alat Berat</th>
@@ -181,7 +182,10 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $usage->mobil ? ($usage->mobil->nomor_polisi . ' - ' . $usage->mobil->merek) : '-' }}
+                            {{ $usage->kendaraan ? ($usage->kendaraan->nomor_polisi . ' - ' . $usage->kendaraan->merek) : '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ $usage->truck ? ($usage->truck->nomor_polisi . ' - ' . $usage->truck->merek) : '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $usage->buntut ? ($usage->buntut->no_kir ?? $usage->buntut->nomor_polisi) : '-' }}

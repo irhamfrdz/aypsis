@@ -21,7 +21,7 @@ class StockAmprahanController extends Controller
     {
         $search = $request->get('search');
         
-        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'updatedBy', 'usages.mobil', 'usages.buntut', 'usages.kapal', 'usages.alatBerat'])
+        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'updatedBy', 'usages.kendaraan', 'usages.truck', 'usages.buntut', 'usages.kapal', 'usages.alatBerat'])
             ->withSum('usages', 'jumlah')
             ->latest();
             
@@ -50,7 +50,7 @@ class StockAmprahanController extends Controller
         $items = $query->paginate(20)->withQueryString();
             
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
-        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        $kendaraans = Mobil::orderBy('nomor_polisi')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
@@ -66,7 +66,7 @@ class StockAmprahanController extends Controller
             })->sum('jumlah'),
         ];
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'mobils', 'alatBerats', 'kapals', 'search', 'stats'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats'));
     }
 
     public function create()
@@ -75,11 +75,11 @@ class StockAmprahanController extends Controller
         $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
         
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
-        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        $kendaraans = Mobil::orderBy('nomor_polisi')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
 
-        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'mobils', 'kapals', 'alatBerats'));
+        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats'));
     }
 
     public function store(Request $request)
@@ -100,7 +100,8 @@ class StockAmprahanController extends Controller
             // Langsung Pakai Fields
             'is_langsung_pakai' => 'nullable',
             'penerima_id' => 'nullable|required_if:is_langsung_pakai,1|exists:karyawans,id',
-            'mobil_id' => 'nullable|exists:mobils,id',
+            'kendaraan_id' => 'nullable|exists:mobils,id',
+            'truck_id' => 'nullable|exists:mobils,id',
             'buntut_id' => 'nullable|exists:mobils,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
@@ -147,7 +148,8 @@ class StockAmprahanController extends Controller
             StockAmprahanUsage::create([
                 'stock_amprahan_id' => $stock->id,
                 'penerima_id' => $request->penerima_id,
-                'mobil_id' => $request->mobil_id,
+                'kendaraan_id' => $request->kendaraan_id,
+                'truck_id' => $request->truck_id,
                 'buntut_id' => $request->buntut_id,
                 'kapal_id' => $request->kapal_id,
                 'alat_berat_id' => $request->alat_berat_id,
@@ -175,11 +177,11 @@ class StockAmprahanController extends Controller
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
         $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
-        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        $kendaraans = Mobil::orderBy('nomor_polisi')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
 
-        return view('stock-amprahan.edit', compact('item', 'masterItems', 'gudangItems', 'karyawans', 'mobils', 'kapals', 'alatBerats'));
+        return view('stock-amprahan.edit', compact('item', 'masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats'));
     }
 
     public function update(Request $request, $id)
@@ -198,11 +200,10 @@ class StockAmprahanController extends Controller
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
-
-            // Langsung Pakai Fields
             'is_langsung_pakai' => 'nullable',
             'penerima_id' => 'nullable|required_if:is_langsung_pakai,1|exists:karyawans,id',
-            'mobil_id' => 'nullable|exists:mobils,id',
+            'kendaraan_id' => 'nullable|exists:mobils,id',
+            'truck_id' => 'nullable|exists:mobils,id',
             'buntut_id' => 'nullable|exists:mobils,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
@@ -249,7 +250,8 @@ class StockAmprahanController extends Controller
             StockAmprahanUsage::create([
                 'stock_amprahan_id' => $item->id,
                 'penerima_id' => $request->penerima_id,
-                'mobil_id' => $request->mobil_id,
+                'kendaraan_id' => $request->kendaraan_id,
+                'truck_id' => $request->truck_id,
                 'buntut_id' => $request->buntut_id,
                 'kapal_id' => $request->kapal_id,
                 'alat_berat_id' => $request->alat_berat_id,
@@ -281,7 +283,8 @@ class StockAmprahanController extends Controller
             'tanggal' => 'required|date',
             'keterangan' => 'required|string',
             'penerima_id' => 'required|exists:karyawans,id',
-            'mobil_id' => 'nullable|exists:mobils,id',
+            'kendaraan_id' => 'nullable|exists:mobils,id',
+            'truck_id' => 'nullable|exists:mobils,id',
             'buntut_id' => 'nullable|exists:mobils,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
@@ -290,12 +293,19 @@ class StockAmprahanController extends Controller
         ]);
 
         $validator->after(function ($validator) use ($request) {
-            $mobilId = $request->mobil_id;
+            $kendaraanId = $request->kendaraan_id;
             $alatBeratId = $request->alat_berat_id;
 
-            if (!empty($mobilId) && !empty($alatBeratId)) {
-                $validator->errors()->add('mobil_id', 'Pilih salah satu: mobil atau alat berat.');
-                $validator->errors()->add('alat_berat_id', 'Pilih salah satu: mobil atau alat berat.');
+            if (!empty($kendaraanId) && !empty($alatBeratId)) {
+                $validator->errors()->add('kendaraan_id', 'Pilih salah satu: kendaraan/truck atau alat berat.');
+                $validator->errors()->add('alat_berat_id', 'Pilih salah satu: kendaraan/truck atau alat berat.');
+            }
+            
+            if (!empty($request->truck_id) && !empty($request->alat_berat_id)) {
+                if (!$validator->errors()->has('alat_berat_id')) {
+                    $validator->errors()->add('truck_id', 'Pilih salah satu: truck atau alat berat.');
+                    $validator->errors()->add('alat_berat_id', 'Pilih salah satu: truck atau alat berat.');
+                }
             }
         });
 
@@ -317,7 +327,8 @@ class StockAmprahanController extends Controller
         StockAmprahanUsage::create([
             'stock_amprahan_id' => $item->id,
             'penerima_id' => $request->penerima_id,
-            'mobil_id' => $request->mobil_id,
+            'kendaraan_id' => $request->kendaraan_id,
+            'truck_id' => $request->truck_id,
             'buntut_id' => $request->buntut_id,
             'kapal_id' => $request->kapal_id,
             'alat_berat_id' => $request->alat_berat_id,
@@ -355,7 +366,8 @@ class StockAmprahanController extends Controller
             'jumlah' => $initialStock,
             'keterangan' => 'Stock Masuk: ' . ($item->nomor_bukti ? 'Bukti #' . $item->nomor_bukti : 'Awal'),
             'penerima' => (object)['nama_lengkap' => '-'],
-            'mobil' => null,
+            'kendaraan' => null,
+            'truck' => null,
             'buntut' => null,
             'kapal' => null,
             'alatBerat' => null,
@@ -365,7 +377,7 @@ class StockAmprahanController extends Controller
         ];
 
         // Usage records query
-        $usagesQuery = $item->usages()->with(['penerima', 'mobil', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
+        $usagesQuery = $item->usages()->with(['penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
         
         // Filter by date if provided
         if ($request->filled('from_date')) {
@@ -403,7 +415,8 @@ class StockAmprahanController extends Controller
 
         if ($request->ajax()) {
             $formatted = $combined->map(function ($entry) {
-                $mobilInfo = $entry->mobil ? ($entry->mobil->nomor_polisi . ' - ' . $entry->mobil->merek) : '-';
+                $kendaraanInfo = $entry->kendaraan ? ($entry->kendaraan->nomor_polisi . ' - ' . $entry->kendaraan->merek) : '-';
+                $truckInfo = $entry->truck ? ($entry->truck->nomor_polisi . ' - ' . $entry->truck->merek) : '-';
                 $buntutInfo = $entry->buntut ? ($entry->buntut->nomor_polisi . ' - ' . $entry->buntut->merek) : '-';
                 $kapalInfo = $entry->kapal ? $entry->kapal->nama_kapal : '-';
                 $alatBeratInfo = $entry->alatBerat ? ($entry->alatBerat->kode_alat . ' - ' . $entry->alatBerat->nama . ($entry->alatBerat->merk ? ' - ' . $entry->alatBerat->merk : '')) : '-';
@@ -415,7 +428,8 @@ class StockAmprahanController extends Controller
                     'tanggal' => date('d-m-Y', strtotime($entry->tanggal_raw)),
                     'jumlah' => $entry->jumlah,
                     'penerima' => $entry->penerima->nama_lengkap ?? '-',
-                    'mobil' => $mobilInfo,
+                    'kendaraan' => $kendaraanInfo,
+                    'truck' => $truckInfo,
                     'buntut' => $buntutInfo,
                     'kapal' => $kapalInfo,
                     'alat_berat' => $alatBeratInfo,
@@ -473,7 +487,8 @@ class StockAmprahanController extends Controller
                 'jumlah' => $initialStock,
                 'keterangan' => 'Stock Masuk: ' . ($item->nomor_bukti ? 'Bukti #' . $item->nomor_bukti : 'Awal'),
                 'penerima' => (object)['nama_lengkap' => '-'],
-                'mobil' => null,
+                'kendaraan' => null,
+                'truck' => null,
                 'buntut' => null,
                 'kapal' => null,
                 'alatBerat' => null,
@@ -484,7 +499,7 @@ class StockAmprahanController extends Controller
         });
 
         // Usages query
-        $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'mobil', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
+        $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
         
         if ($request->filled('from_date')) {
             $usagesQuery->whereDate('tanggal_pengambilan', '>=', $request->from_date);
@@ -547,7 +562,8 @@ class StockAmprahanController extends Controller
                 'jumlah' => $initialStock,
                 'keterangan' => 'Stock Masuk: ' . ($item->nomor_bukti ? 'Bukti #' . $item->nomor_bukti : 'Awal'),
                 'penerima' => (object)['nama_lengkap' => '-'],
-                'mobil' => null,
+                'kendaraan' => null,
+                'truck' => null,
                 'buntut' => null,
                 'kapal' => null,
                 'alatBerat' => null,
@@ -556,7 +572,7 @@ class StockAmprahanController extends Controller
                 'stockAmprahan' => $item
             ];
 
-            $usagesQuery = $item->usages()->with(['penerima', 'mobil', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
+            $usagesQuery = $item->usages()->with(['penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
         } else {
             // All History Logic
             $additionsQuery = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'usages']);
@@ -590,7 +606,8 @@ class StockAmprahanController extends Controller
                     'jumlah' => $initialStock,
                     'keterangan' => 'Stock Masuk: ' . ($item->nomor_bukti ? 'Bukti #' . $item->nomor_bukti : 'Awal'),
                     'penerima' => (object)['nama_lengkap' => '-'],
-                    'mobil' => null,
+                    'kendaraan' => null,
+                    'truck' => null,
                     'buntut' => null,
                     'kapal' => null,
                     'alatBerat' => null,
@@ -600,7 +617,7 @@ class StockAmprahanController extends Controller
                 ];
             });
 
-            $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'mobil', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
+            $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
         }
 
         if ($request->filled('from_date')) {
@@ -753,7 +770,7 @@ class StockAmprahanController extends Controller
         // Hydrate items with fresh data from DB to ensure no empty columns
         if (is_array($pranota->items)) {
             $itemIds = collect($pranota->items)->pluck('id')->filter()->toArray();
-            $stockItems = \App\Models\StockAmprahan::with(['usages.mobil', 'usages.buntut', 'usages.kapal', 'usages.alatBerat', 'masterNamaBarangAmprahan'])
+            $stockItems = \App\Models\StockAmprahan::with(['usages.kendaraan', 'usages.buntut', 'usages.kapal', 'usages.alatBerat', 'masterNamaBarangAmprahan'])
                 ->whereIn('id', $itemIds)
                 ->get()
                 ->keyBy('id');
@@ -776,9 +793,9 @@ class StockAmprahanController extends Controller
                             $refItems[] = $firstUsage->alatBerat->nama;
                             if (!$refType) $refType = 'Alat Berat';
                         }
-                        if ($firstUsage->mobil) {
-                            $refItems[] = $firstUsage->mobil->nomor_polisi;
-                            if (!$refType) $refType = 'Mobil';
+                        if ($firstUsage->kendaraan) {
+                            $refItems[] = $firstUsage->kendaraan->nomor_polisi;
+                            if (!$refType) $refType = 'Kendaraan';
                         }
                         if ($firstUsage->buntut) {
                             $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
