@@ -84,7 +84,8 @@
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Data Kontainer</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Tipe</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Kegiatan</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Gudang / Lokasi</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dari</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ke</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Detail Keterangan</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Oleh</th>
                     </tr>
@@ -129,21 +130,29 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 mr-3">
+                                    <div class="flex-shrink-0 h-8 w-8 bg-orange-50 rounded-lg flex items-center justify-center text-orange-500 mr-3">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
                                         </svg>
                                     </div>
-                                     <div>
+                                    <div>
+                                        <div class="text-sm font-semibold text-gray-900">{{ $history->asal_gudang_nama ?? '-' }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8 bg-green-50 rounded-lg flex items-center justify-center text-green-500 mr-3">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
                                         <div class="text-sm font-semibold text-gray-900">{{ $history->gudang->nama_gudang ?? '-' }}</div>
-                                        @if($history->asal_gudang_nama && $history->asal_gudang_nama !== ($history->gudang->nama_gudang ?? ''))
-                                            <div class="text-[10px] text-orange-600 font-extrabold uppercase tracking-wide mt-0.5">Asal: {{ $history->asal_gudang_nama }}</div>
-                                        @endif
                                         @if($history->gudang && $history->gudang->lokasi)
                                             <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mt-0.5">{{ $history->gudang->lokasi }}</div>
                                         @endif
                                     </div>
-
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -162,7 +171,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
+                            <td colspan="8" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
