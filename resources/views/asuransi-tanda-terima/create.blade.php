@@ -230,6 +230,31 @@
                         @error('asuransi_file') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
+                    <!-- Ship & Voyage Info -->
+                    <div>
+                        <label for="nomor_urut" class="block text-sm font-medium text-gray-700 mb-2">Nomor Urut</label>
+                        <input type="text" id="nomor_urut" name="nomor_urut" value="{{ old('nomor_urut') }}" 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Contoh: 001">
+                        @error('nomor_urut') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Nama Kapal</label>
+                        <input type="text" id="nama_kapal" name="nama_kapal" value="{{ old('nama_kapal') }}" 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Contoh: MV. SEA STAR">
+                        @error('nama_kapal') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="nomor_voyage" class="block text-sm font-medium text-gray-700 mb-2">Nomor Voyage</label>
+                        <input type="text" id="nomor_voyage" name="nomor_voyage" value="{{ old('nomor_voyage') }}" 
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Contoh: V.012">
+                        @error('nomor_voyage') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
                     <!-- Keterangan -->
                     <div class="md:col-span-2">
                         <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
@@ -322,6 +347,9 @@
         const infoNamaBarang = document.getElementById('info_nama_barang');
         const infoJumlahBarang = document.getElementById('info_jumlah_barang');
         const infoSatuan = document.getElementById('info_satuan');
+        const inputNomorUrut = document.getElementById('nomor_urut');
+        const inputNamaKapal = document.getElementById('nama_kapal');
+        const inputNomorVoyage = document.getElementById('nomor_voyage');
         const viewWrapper = document.getElementById('view_receipt_wrapper');
         const viewBtn = document.getElementById('btn_view_receipt');
 
@@ -351,6 +379,11 @@
                 infoNamaBarang.title = data.nama_barang || '-';
                 infoJumlahBarang.textContent = data.jumlah_barang || '-';
                 infoSatuan.textContent = data.satuan || '-';
+                
+                // Set input values
+                if (inputNomorUrut) inputNomorUrut.value = data.nomor_urut !== '-' ? data.nomor_urut : '';
+                if (inputNamaKapal) inputNamaKapal.value = data.nama_kapal !== '-' ? data.nama_kapal : '';
+                if (inputNomorVoyage) inputNomorVoyage.value = data.nomor_voyage !== '-' ? data.nomor_voyage : '';
                 
                 // Update Button
                 let baseUrl = '';

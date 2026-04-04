@@ -47,6 +47,23 @@
                             <span class="block text-sm text-gray-500 uppercase font-medium">Tanggal Polis</span>
                             <span class="text-gray-900 font-medium">{{ $asuransiTandaTerima->tanggal_polis ? $asuransiTandaTerima->tanggal_polis->format('d F Y') : '-' }}</span>
                         </div>
+                        <div class="pt-2 mt-2 border-t border-gray-100">
+                            <span class="block text-xs text-gray-400 uppercase font-bold mb-1">Informasi Kapal</span>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <span class="block text-sm text-gray-500">Nomor Urut:</span>
+                                    <span class="text-gray-900 font-medium">{{ $asuransiTandaTerima->nomor_urut ?? '-' }}</span>
+                                </div>
+                                <div>
+                                    <span class="block text-sm text-gray-500">Voyage:</span>
+                                    <span class="text-gray-900 font-medium">{{ $asuransiTandaTerima->nomor_voyage ?? '-' }}</span>
+                                </div>
+                                <div class="col-span-2">
+                                    <span class="block text-sm text-gray-500">Nama Kapal:</span>
+                                    <span class="text-gray-900 font-medium">{{ $asuransiTandaTerima->nama_kapal ?? '-' }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

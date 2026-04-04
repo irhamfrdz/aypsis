@@ -184,7 +184,8 @@ class AsuransiTandaTerimaController extends Controller
         ]);
 
         $data = $request->only([
-            'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 'keterangan'
+            'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 'keterangan',
+            'nomor_urut', 'nama_kapal', 'nomor_voyage'
         ]);
         
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
@@ -241,7 +242,8 @@ class AsuransiTandaTerimaController extends Controller
         ]);
 
         $data = $request->only([
-            'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 'keterangan'
+            'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 'keterangan',
+            'nomor_urut', 'nama_kapal', 'nomor_voyage'
         ]);
 
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
@@ -285,6 +287,9 @@ class AsuransiTandaTerimaController extends Controller
             'nama_barang' => '-',
             'jumlah_barang' => '-',
             'satuan' => '-',
+            'nomor_urut' => '-',
+            'nama_kapal' => '-',
+            'nomor_voyage' => '-',
         ];
 
         if ($type == 'tt') {
@@ -295,6 +300,16 @@ class AsuransiTandaTerimaController extends Controller
                 $details['nama_barang'] = is_array($tt->nama_barang) ? implode(', ', $tt->nama_barang) : ($tt->nama_barang ?? '-');
                 $details['jumlah_barang'] = (string)($tt->jumlah ?? '-');
                 $details['satuan'] = $tt->satuan ?? '-';
+                
+                // Get ship info from Tanda Terima or related Prospek
+                $details['nama_kapal'] = $tt->estimasi_nama_kapal ?? '-';
+                $prospek = $tt->prospeks()->first();
+                if ($prospek) {
+                    $details['nomor_voyage'] = $prospek->nomor_voyage ?? $prospek->voyage ?? '-';
+                    if ($details['nama_kapal'] == '-') {
+                        $details['nama_kapal'] = $prospek->nama_kapal ?? '-';
+                    }
+                }
             }
         } elseif ($type == 'tttsj') {
             $tttsj = TandaTerimaTanpaSuratJalan::find($id);

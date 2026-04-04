@@ -88,6 +88,20 @@
                             <td class="px-6 py-4">
                                 <span class="block text-sm font-medium text-gray-900">{{ $item->number }}</span>
                                 <span class="block text-xs text-gray-500">{{ \Carbon\Carbon::parse($item->date)->format('d/m/Y') }}</span>
+                                @if($item->insurance && ($item->insurance->nama_kapal || $item->insurance->nomor_voyage))
+                                    <div class="mt-1 flex flex-wrap gap-1">
+                                        @if($item->insurance->nama_kapal)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                                🚢 {{ $item->insurance->nama_kapal }}
+                                            </span>
+                                        @endif
+                                        @if($item->insurance->nomor_voyage)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                                V: {{ $item->insurance->nomor_voyage }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 <span class="text-sm text-gray-900 font-mono">{{ $item->no_kontainer ?: '-' }}</span>

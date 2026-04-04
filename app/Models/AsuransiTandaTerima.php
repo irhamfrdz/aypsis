@@ -25,6 +25,9 @@ class AsuransiTandaTerima extends Model
         'asuransi_path',
         'keterangan',
         'status',
+        'nomor_urut',
+        'nama_kapal',
+        'nomor_voyage',
         'created_by',
         'updated_by'
     ];
