@@ -463,16 +463,34 @@
         // Initial calculation
         calculateGrandTotal();
         
-        // Initialize Select2 with search enabled
+        // Initialize Select2 with search enabled (with safety check)
+        var initSelect2 = function() {
+            var $el = $('.select2');
+            if ($el.length > 0) {
+                if (typeof $.fn.select2 !== 'undefined') {
+                    $el.select2({
+                        placeholder: "-- Pilih --",
+                        allowClear: true,
+                        width: '100%',
+                        minimumResultsForSearch: 0
+                    });
+                } else if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+                    jQuery('.select2').select2({
+                        placeholder: "-- Pilih --",
+                        allowClear: true,
+                        width: '100%',
+                        minimumResultsForSearch: 0
+                    });
+                } else {
+                    console.error("Select2 library not found. Please ensure CDN is reachable and loaded.");
+                }
+            }
+        };
+
         if (typeof $ !== 'undefined') {
-            $(document).ready(function() {
-                $('.select2').select2({
-                    placeholder: "-- Pilih --",
-                    allowClear: true,
-                    width: '100%',
-                    minimumResultsForSearch: 0 // Always show search bar
-                });
-            });
+            $(document).ready(initSelect2);
+        } else if (typeof jQuery !== 'undefined') {
+            jQuery(document).ready(initSelect2);
         }
         
         // If editing or pre-selected, update info

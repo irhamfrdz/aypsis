@@ -228,15 +228,31 @@
             rateInput.addEventListener('input', calculateGrandTotal);
         }
 
+        var initSelect2 = function() {
+            var $el = $('.select2');
+            if ($el.length > 0) {
+                if (typeof $.fn.select2 !== 'undefined') {
+                    $el.select2({
+                        placeholder: "-- Pilih --",
+                        allowClear: true,
+                        width: '100%',
+                        minimumResultsForSearch: 0
+                    });
+                } else if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+                    jQuery('.select2').select2({
+                        placeholder: "-- Pilih --",
+                        allowClear: true,
+                        width: '100%',
+                        minimumResultsForSearch: 0
+                    });
+                }
+            }
+        };
+
         if (typeof $ !== 'undefined') {
-            $(document).ready(function() {
-                $('.select2').select2({
-                    placeholder: "-- Pilih --",
-                    allowClear: true,
-                    width: '100%',
-                    minimumResultsForSearch: 0
-                });
-            });
+            $(document).ready(initSelect2);
+        } else if (typeof jQuery !== 'undefined') {
+            jQuery(document).ready(initSelect2);
         }
         
         calculateGrandTotal();
