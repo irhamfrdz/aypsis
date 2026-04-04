@@ -124,9 +124,15 @@
 
                     <div>
                         <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Nama Kapal</label>
-                        <input type="text" id="nama_kapal" name="nama_kapal" value="{{ old('nama_kapal', $asuransiTandaTerima->nama_kapal) }}" 
-                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Contoh: MV. SEA STAR">
+                        <select id="nama_kapal" name="nama_kapal" 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                            <option value="">-- Pilih Kapal --</option>
+                            @foreach($masterKapals as $kapal)
+                                <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal', $asuransiTandaTerima->nama_kapal) == $kapal->nama_kapal ? 'selected' : '' }}>
+                                    {{ $kapal->nama_kapal }}
+                                </option>
+                            @endforeach
+                        </select>
                         @error('nama_kapal') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -222,6 +228,14 @@
             rateInput.addEventListener('input', calculateGrandTotal);
         }
 
+        if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+            $('.select2').select2({
+                placeholder: "-- Pilih --",
+                allowClear: true,
+                width: '100%'
+            });
+        }
+        
         calculateGrandTotal();
     });
 </script>

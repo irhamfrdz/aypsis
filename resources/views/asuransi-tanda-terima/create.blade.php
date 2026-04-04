@@ -241,9 +241,15 @@
 
                     <div>
                         <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Nama Kapal</label>
-                        <input type="text" id="nama_kapal" name="nama_kapal" value="{{ old('nama_kapal') }}" 
-                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Contoh: MV. SEA STAR">
+                        <select id="nama_kapal" name="nama_kapal" 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                            <option value="">-- Pilih Kapal --</option>
+                            @foreach($masterKapals as $kapal)
+                                <option value="{{ $kapal->nama_kapal }}" {{ old('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
+                                    {{ $kapal->nama_kapal }}
+                                </option>
+                            @endforeach
+                        </select>
                         @error('nama_kapal') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -382,7 +388,13 @@
                 
                 // Set input values
                 if (inputNomorUrut) inputNomorUrut.value = data.nomor_urut !== '-' ? data.nomor_urut : '';
-                if (inputNamaKapal) inputNamaKapal.value = data.nama_kapal !== '-' ? data.nama_kapal : '';
+                if (inputNamaKapal) {
+                    if (data.nama_kapal !== '-') {
+                        $(inputNamaKapal).val(data.nama_kapal).trigger('change');
+                    } else {
+                        $(inputNamaKapal).val('').trigger('change');
+                    }
+                }
                 if (inputNomorVoyage) inputNomorVoyage.value = data.nomor_voyage !== '-' ? data.nomor_voyage : '';
                 
                 // Update Button
@@ -450,6 +462,15 @@
 
         // Initial calculation
         calculateGrandTotal();
+        
+        // Initialize Select2
+        if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+            $('.select2').select2({
+                placeholder: "-- Pilih --",
+                allowClear: true,
+                width: '100%'
+            });
+        }
         
         // If editing or pre-selected, update info
         if (document.getElementById('final_receipt_id').value) {

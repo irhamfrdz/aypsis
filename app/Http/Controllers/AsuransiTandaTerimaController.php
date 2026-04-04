@@ -7,6 +7,7 @@ use App\Models\VendorAsuransi;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaTanpaSuratJalan;
 use App\Models\TandaTerimaLcl;
+use App\Models\MasterKapal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -166,8 +167,9 @@ class AsuransiTandaTerimaController extends Controller
         $tandaTerimas = TandaTerima::latest()->limit(20)->get();
         $tandaTerimaTanpaSjs = TandaTerimaTanpaSuratJalan::latest()->limit(20)->get();
         $tandaTerimaLcls = TandaTerimaLcl::latest()->limit(20)->get();
+        $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
 
-        return view('asuransi-tanda-terima.create', compact('vendors', 'tandaTerimas', 'tandaTerimaTanpaSjs', 'tandaTerimaLcls', 'selectedType', 'selectedId', 'selectedReceipt'));
+        return view('asuransi-tanda-terima.create', compact('vendors', 'tandaTerimas', 'tandaTerimaTanpaSjs', 'tandaTerimaLcls', 'selectedType', 'selectedId', 'selectedReceipt', 'masterKapals'));
     }
 
     public function store(Request $request)
@@ -227,7 +229,8 @@ class AsuransiTandaTerimaController extends Controller
     public function edit(AsuransiTandaTerima $asuransiTandaTerima)
     {
         $vendors = VendorAsuransi::orderBy('nama_asuransi')->get();
-        return view('asuransi-tanda-terima.edit', compact('asuransiTandaTerima', 'vendors'));
+        $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
+        return view('asuransi-tanda-terima.edit', compact('asuransiTandaTerima', 'vendors', 'masterKapals'));
     }
 
     public function update(Request $request, AsuransiTandaTerima $asuransiTandaTerima)
