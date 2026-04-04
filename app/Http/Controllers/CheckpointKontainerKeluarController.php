@@ -383,13 +383,11 @@ class CheckpointKontainerKeluarController extends Controller
                 $suratJalan = SuratJalan::where('no_surat_jalan', $request->nomor_surat_jalan)->first();
                 if ($suratJalan) {
                     $suratJalanId = $suratJalan->id;
-                    
                     // Update surat jalan dengan nomor kontainer, ukuran, dan waktu keluar
                     $suratJalan->update([
                         'no_kontainer' => $kontainerData['no_kontainer'],
                         'ukuran' => $kontainerData['ukuran'],
                         'waktu_keluar' => Carbon::parse($request->tanggal_kirim),
-                        'tujuan_pengiriman' => $request->tujuan,
                     ]);
                 }
             }
