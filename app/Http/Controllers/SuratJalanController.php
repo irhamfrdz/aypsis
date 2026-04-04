@@ -41,6 +41,7 @@ class SuratJalanController extends Controller
                   ->orWhere('tipe_kontainer', 'like', "%{$search}%")
                   ->orWhere('no_kontainer', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%");
             });
         }

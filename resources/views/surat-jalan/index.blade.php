@@ -54,7 +54,7 @@ use Illuminate\Support\Str;
                             Pencarian
                         </label>
                         <input type="text" name="search" id="search" value="{{ request('search') }}"
-                               placeholder="No. Surat Jalan, Pengirim, No. Kontainer, Tujuan..."
+                               placeholder="No. Surat Jalan, Pengirim, Kontainer, Tujuan Kirim..."
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
 
