@@ -40,7 +40,10 @@ class AsuransiTandaTerimaController extends Controller
                     ->from('prospek')
                     ->leftJoin('naik_kapal', 'prospek.id', '=', 'naik_kapal.prospek_id')
                     ->leftJoin('bls', 'prospek.id', '=', 'bls.prospek_id')
-                    ->whereColumn('prospek.tanda_terima_id', 'tanda_terimas.id')
+                    ->where(function($q_link) {
+                        $q_link->whereColumn('prospek.tanda_terima_id', 'tanda_terimas.id')
+                            ->orWhereColumn('prospek.no_surat_jalan', 'tanda_terimas.no_surat_jalan');
+                    })
                     ->where(function($sub) {
                         $sub->where('naik_kapal.sudah_ob', true)
                             ->orWhere('prospek.status', 'sudah_muat')
