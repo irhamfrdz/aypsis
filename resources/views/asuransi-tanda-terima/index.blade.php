@@ -12,7 +12,6 @@
                 <p class="text-gray-600 mt-1">Kelola data asuransi untuk tanda terima</p>
             </div>
             <div class="flex space-x-2">
-            <div class="flex space-x-2">
                 <form id="bulkExportForm" action="{{ route('asuransi-tanda-terima.export-request') }}" method="POST" target="_blank">
                     @csrf
                     <input type="hidden" name="selected_ids" id="selectedIdsInput">
@@ -43,7 +42,6 @@
                 @endcan
             </div>
         </div>
-
         <!-- Notification -->
         @if (session('success'))
             <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
