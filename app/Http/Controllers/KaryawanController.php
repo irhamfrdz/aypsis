@@ -12,11 +12,14 @@ use App\Models\Pekerjaan;
 use App\Models\Pajak;
 use App\Models\Bank;
 use App\Models\Cabang;
+use App\Models\KaryawanApprovalRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 // ...existing code...
 
@@ -1137,6 +1140,39 @@ class KaryawanController extends Controller
             if ($value !== null && $key !== 'email') {
                 $validated[$key] = strtoupper($value);
             }
+        }
+
+        // Approval logic for specific catatan_pekerjaan
+        $restrictedCatatan = ['NOT RECOMENDED FOR REHIRE', 'NOT COMPLETED CONTRACT (SICK REASON)'];
+        $dateFields = ['tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'];
+        $needsApproval = false;
+
+        if (in_array(strtoupper($karyawan->catatan_pekerjaan), $restrictedCatatan)) {
+            foreach ($dateFields as $field) {
+                $currentValue = $karyawan->$field ? ($karyawan->$field instanceof Carbon ? $karyawan->$field->format('Y-m-d') : $karyawan->$field) : null;
+                $newValue = $validated[$field] ?? null;
+
+                if ($newValue !== $currentValue) {
+                    $needsApproval = true;
+                    break;
+                }
+            }
+        }
+
+        if ($needsApproval) {
+            KaryawanApprovalRequest::create([
+                'karyawan_id' => $karyawan->id,
+                'user_id' => Auth::id(),
+                'data_before' => $karyawan->toArray(),
+                'data_after' => [
+                    'validated' => $validated,
+                    'family_members' => $familyMembers
+                ],
+                'status' => 'pending'
+            ]);
+
+            return redirect()->route('master.karyawan.index')
+                ->with('success', 'Perubahan data karyawan ini memerlukan persetujuan (approval) karena alasan catatan pekerjaan khusus. Pengajuan telah dikirim.');
         }
 
         // Use database transaction to ensure data integrity

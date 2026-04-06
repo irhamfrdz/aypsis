@@ -560,7 +560,7 @@
 
                         {{-- Master Karyawan Sub-Dropdown --}}
                             @php
-                                $isUserRoute = Request::routeIs('master.user.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('karyawan-tidak-tetap.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.permission.*');
+                                $isUserRoute = Request::routeIs('master.user.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('karyawan-tidak-tetap.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.permission.*') || Request::routeIs('master.karyawan.approval.*');
                                 $hasUserPermissions = $user && ($user->can('master-user-view') || $user->can('master-karyawan-view') || $user->can('karyawan-tidak-tetap-view') || $user->can('master-divisi-view') || $user->can('master-pekerjaan-view') || $user->can('master-pajak-view') || $user->can('master-bank-view') || $user->can('master-permission-view'));
                                 $hasUserApprovalAccess = $isAdmin ||
                                     auth()->user()->can('master-user') ||
@@ -598,6 +598,17 @@
                                             <span class="text-xs text-blue-600 font-bold">Data Karyawan (ABK)</span>
                                         </a>
                                     @endif
+                                @endif
+                                @if($user && $user->can('master-karyawan-approval'))
+                                    @php
+                                        $pendingApprovalCount = \App\Models\KaryawanApprovalRequest::where('status', 'pending')->count();
+                                    @endphp
+                                    <a href="{{ route('master.karyawan.approval.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.approval.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs font-bold uppercase italic text-amber-600">Persetujuan Edit Karyawan</span>
+                                        @if($pendingApprovalCount > 0)
+                                            <span class="ml-auto bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1">{{ $pendingApprovalCount }}</span>
+                                        @endif
+                                    </a>
                                 @endif
                                 @if($user && $user->can('karyawan-tidak-tetap-view'))
                                     <!-- Karyawan Tidak Tetap -->

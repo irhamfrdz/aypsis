@@ -355,6 +355,17 @@ Route::middleware([
              ->name('karyawan.abk-index')
              ->middleware('can:master-karyawan-abk-view');
 
+        // Karyawan Approval Routes
+        Route::get('karyawan-approval', [\App\Http\Controllers\KaryawanApprovalController::class, 'index'])
+             ->name('karyawan.approval.index')
+             ->middleware('can:master-karyawan-approval');
+        Route::post('karyawan-approval/{approval}/approve', [\App\Http\Controllers\KaryawanApprovalController::class, 'approve'])
+             ->name('karyawan.approval.approve')
+             ->middleware('can:master-karyawan-approval');
+        Route::post('karyawan-approval/{approval}/reject', [\App\Http\Controllers\KaryawanApprovalController::class, 'reject'])
+             ->name('karyawan.approval.reject')
+             ->middleware('can:master-karyawan-approval');
+
         // Print all karyawan (print-friendly)
         Route::get('karyawan/print', [KaryawanController::class, 'print'])
              ->name('karyawan.print')
