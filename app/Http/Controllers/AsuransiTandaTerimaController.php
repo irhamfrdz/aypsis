@@ -38,9 +38,14 @@ class AsuransiTandaTerimaController extends Controller
             ->whereNotExists(function($q) {
                 $q->select(DB::raw(1))
                     ->from('prospek')
-                    ->join('naik_kapal', 'prospek.id', '=', 'naik_kapal.prospek_id')
+                    ->leftJoin('naik_kapal', 'prospek.id', '=', 'naik_kapal.prospek_id')
+                    ->leftJoin('bls', 'prospek.id', '=', 'bls.prospek_id')
                     ->whereColumn('prospek.tanda_terima_id', 'tanda_terimas.id')
-                    ->where('naik_kapal.sudah_ob', true);
+                    ->where(function($sub) {
+                        $sub->where('naik_kapal.sudah_ob', true)
+                            ->orWhere('prospek.status', 'sudah_muat')
+                            ->orWhereNotNull('bls.id');
+                    });
             })
             ->when($search, function($q) use ($search) {
                 $q->where(function($sub) use ($search) {
@@ -72,6 +77,11 @@ class AsuransiTandaTerimaController extends Controller
                     ->from('naik_kapal')
                     ->whereColumn('naik_kapal.nomor_kontainer', 'tanda_terima_tanpa_surat_jalan.no_kontainer')
                     ->where('naik_kapal.sudah_ob', true);
+            })
+            ->whereNotExists(function($q) {
+                $q->select(DB::raw(1))
+                    ->from('bls')
+                    ->whereColumn('bls.nomor_kontainer', 'tanda_terima_tanpa_surat_jalan.no_kontainer');
             })
             ->when($search, function($q) use ($search) {
                 $q->where(function($sub) use ($search) {
@@ -106,6 +116,12 @@ class AsuransiTandaTerimaController extends Controller
                     ->join('naik_kapal', 'tanda_terima_lcl_kontainer_pivot.nomor_kontainer', '=', 'naik_kapal.nomor_kontainer')
                     ->whereColumn('tanda_terima_lcl_kontainer_pivot.tanda_terima_lcl_id', 'tanda_terimas_lcl.id')
                     ->where('naik_kapal.sudah_ob', true);
+            })
+            ->whereNotExists(function($q) {
+                $q->select(DB::raw(1))
+                    ->from('tanda_terima_lcl_kontainer_pivot')
+                    ->join('bls', 'tanda_terima_lcl_kontainer_pivot.nomor_kontainer', '=', 'bls.nomor_kontainer')
+                    ->whereColumn('tanda_terima_lcl_kontainer_pivot.tanda_terima_lcl_id', 'tanda_terimas_lcl.id');
             })
             ->groupBy('tanda_terimas_lcl.id', 'type', 'number', 'date', 'pengirim', 'penerima', 'tanda_terimas_lcl.created_at', 'tanda_terimas_lcl.deleted_at')
             ->when($search, function($q) use ($search) {
