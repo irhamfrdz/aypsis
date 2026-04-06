@@ -38,7 +38,7 @@
                     <div>
                         <label for="receipt_type" class="block text-sm font-medium text-gray-700 mb-2">Jenis Tanda Terima <span class="text-red-500">*</span></label>
                         <select id="receipt_type" name="receipt_type" required onchange="toggleReceiptList()"
-                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent opacity-60 bg-gray-50 cursor-not-allowed"
                                 {{ isset($selectedReceipt) ? 'disabled' : '' }}>
                             <option value="tt" {{ (old('receipt_type', $selectedType) == 'tt') ? 'selected' : '' }}>Tanda Terima (Regular)</option>
                             <option value="tttsj" {{ (old('receipt_type', $selectedType) == 'tttsj') ? 'selected' : '' }}>Tanda Terima Tanpa SJ</option>
@@ -55,7 +55,7 @@
                         <label for="receipt_id" class="block text-sm font-medium text-gray-700 mb-2">Pilih Data <span class="text-red-500">*</span></label>
                         
                         <div id="wrapper_tt" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'tt' ? '' : 'hidden' }}">
-                            <select name="receipt_id_tt" id="receipt_id_tt" class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden" {{ isset($selectedReceipt) && $selectedType != 'tt' ? 'disabled' : '' }}>
+                            <select name="receipt_id_tt" id="receipt_id_tt" class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden" {{ isset($selectedReceipt) ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima --</option>
                                 @if(isset($selectedReceipt) && $selectedType == 'tt')
                                     <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->no_surat_jalan }}] - {{ $selectedReceipt->penerima }}</option>
@@ -69,7 +69,7 @@
                         </div>
 
                         <div id="wrapper_tttsj" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'tttsj' ? '' : 'hidden' }}">
-                            <select name="receipt_id_tttsj" id="receipt_id_tttsj" class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden" {{ isset($selectedReceipt) && $selectedType != 'tttsj' ? 'disabled' : '' }}>
+                            <select name="receipt_id_tttsj" id="receipt_id_tttsj" class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden" {{ isset($selectedReceipt) ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima Tanpa SJ --</option>
                                 @if(isset($selectedReceipt) && $selectedType == 'tttsj')
                                     <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->no_tanda_terima }}] - {{ $selectedReceipt->penerima }}</option>
@@ -83,7 +83,7 @@
                         </div>
 
                         <div id="wrapper_lcl" class="receipt-select-wrapper {{ old('receipt_type', $selectedType) == 'lcl' ? '' : 'hidden' }}">
-                            <select name="receipt_id_lcl" id="receipt_id_lcl" class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden" {{ isset($selectedReceipt) && $selectedType != 'lcl' ? 'disabled' : '' }}>
+                            <select name="receipt_id_lcl" id="receipt_id_lcl" class="w-full border border-gray-300 rounded-lg px-3 py-2 vanilla-searchable invisible h-0 overflow-hidden" {{ isset($selectedReceipt) ? 'disabled' : '' }}>
                                 <option value="">-- Pilih Tanda Terima LCL --</option>
                                 @if(isset($selectedReceipt) && $selectedType == 'lcl')
                                     <option value="{{ $selectedReceipt->id }}" selected>[{{ $selectedReceipt->nomor_tanda_terima }}] - {{ $selectedReceipt->nama_penerima }}</option>
@@ -101,7 +101,7 @@
                     </div>
 
                     <!-- Additional Info (Read-only display) -->
-                    <div class="md:col-span-2 bg-blue-50 border border-blue-200 rounded-lg p-4 grid grid-cols-2 md:grid-cols-5 gap-4" id="receipt_info_section">
+                    <div class="md:col-span-2 bg-blue-50 border border-blue-200 rounded-lg p-4 grid grid-cols-2 md:grid-cols-6 gap-4" id="receipt_info_section">
                         <div>
                             <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">No. Kontainer</p>
                             <p class="text-sm font-bold text-gray-800" id="info_no_kontainer">{{ $selectedReceipt ? ($selectedReceipt->no_kontainer ?? $selectedReceipt->nomor_kontainer ?? '-') : '-' }}</p>
@@ -158,9 +158,22 @@
                                 @endif
                             </p>
                         </div>
+                        <div>
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Size</p>
+                            <p class="text-sm font-bold text-gray-800" id="info_size_kontainer">
+                                @if($selectedReceipt)
+                                    @if($selectedType == 'tt') {{ $selectedReceipt->suratJalan->size ?? '-' }}
+                                    @elseif($selectedType == 'tttsj') {{ $selectedReceipt->size_kontainer ?? '-' }}
+                                    @elseif($selectedType == 'lcl') {{ $selectedReceipt->kontainerPivot->pluck('size_kontainer')->filter()->unique()->implode(', ') ?: '-' }}
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </p>
+                        </div>
 
                         <!-- View Button -->
-                        <div class="md:col-span-5 flex justify-end mt-2 pt-2 border-t border-blue-100 {{ $selectedReceipt ? '' : 'hidden' }}" id="view_receipt_wrapper">
+                        <div class="md:col-span-6 flex justify-end mt-2 pt-2 border-t border-blue-100 {{ $selectedReceipt ? '' : 'hidden' }}" id="view_receipt_wrapper">
                              <a id="btn_view_receipt" href="{{ $selectedReceipt ? (
                                 $selectedType == 'tt' ? route('tanda-terima.show', $selectedReceipt->id) : (
                                     $selectedType == 'tttsj' ? route('tanda-terima-tanpa-surat-jalan.show', $selectedReceipt->id) : (
@@ -306,8 +319,9 @@
             
             // Trigger button (looks like a select)
             this.trigger = document.createElement('div');
-            this.trigger.className = 'w-full border border-gray-300 rounded-lg px-3 py-2.5 cursor-pointer bg-white flex justify-between items-center text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200';
-            this.trigger.tabIndex = 0;
+            const isDisabled = this.select.disabled;
+            this.trigger.className = `w-full border border-gray-300 rounded-lg px-3 py-2.5 bg-white flex justify-between items-center text-sm transition-all duration-200 ${isDisabled ? 'bg-gray-50 opacity-60 cursor-not-allowed' : 'cursor-pointer focus:ring-2 focus:ring-blue-500 focus:outline-none'}`;
+            this.trigger.tabIndex = isDisabled ? -1 : 0;
             this.trigger.innerHTML = `<span class="current-value truncate mr-1">-- Pilih --</span><svg class="w-4 h-4 text-gray-400 transform transition-transform duration-200 dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>`;
             
             // Dropdown menu
@@ -339,7 +353,11 @@
             this.renderList();
             
             // Events
-            this.trigger.onclick = (e) => { e.stopPropagation(); this.toggle(); };
+            this.trigger.onclick = (e) => { 
+                if (this.select.disabled) return;
+                e.stopPropagation(); 
+                this.toggle(); 
+            };
             this.search.onclick = (e) => e.stopPropagation();
             this.search.oninput = (e) => this.renderList(e.target.value.toLowerCase());
             
@@ -512,7 +530,8 @@
             no_surat_jalan: document.getElementById('info_no_surat_jalan'),
             nama_barang: document.getElementById('info_nama_barang'),
             jumlah_barang: document.getElementById('info_jumlah_barang'),
-            satuan: document.getElementById('info_satuan')
+            satuan: document.getElementById('info_satuan'),
+            size_kontainer: document.getElementById('info_size_kontainer')
         };
 
         const inputs = {
@@ -541,6 +560,7 @@
                 infoFields.nama_barang.title = data.nama_barang || '-';
                 infoFields.jumlah_barang.textContent = data.jumlah_barang || '-';
                 infoFields.satuan.textContent = data.satuan || '-';
+                infoFields.size_kontainer.textContent = data.size_kontainer || '-';
                 
                 if (inputs.nomor_urut) inputs.nomor_urut.value = data.nomor_urut !== '-' ? data.nomor_urut : '';
                 if (inputs.nama_kapal) {

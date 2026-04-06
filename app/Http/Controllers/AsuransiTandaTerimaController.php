@@ -460,6 +460,7 @@ class AsuransiTandaTerimaController extends Controller
             'nama_barang' => '-',
             'jumlah_barang' => '-',
             'satuan' => '-',
+            'size_kontainer' => '-',
             'nomor_urut' => '-',
             'nama_kapal' => '-',
             'nomor_voyage' => '-',
@@ -475,6 +476,8 @@ class AsuransiTandaTerimaController extends Controller
                 $details['nama_barang'] = is_array($tt->nama_barang) ? implode(', ', $tt->nama_barang) : ($tt->nama_barang ?? ($tt->suratJalan->jenis_barang ?? '-'));
                 $details['jumlah_barang'] = (string)($tt->jumlah ?? ($tt->suratJalan->jumlah_kontainer ?? '-'));
                 $details['satuan'] = $tt->satuan ?? '-';
+                
+                $details['size_kontainer'] = $tt->suratJalan->size ?? '-';
                 
                 // Get ship info from Tanda Terima or related Prospek
                 $details['nama_kapal'] = $tt->estimasi_nama_kapal ?? '-';
@@ -494,6 +497,7 @@ class AsuransiTandaTerimaController extends Controller
                 $details['nama_barang'] = $tttsj->nama_barang ?? '-';
                 $details['jumlah_barang'] = (string)($tttsj->jumlah_barang ?? '-');
                 $details['satuan'] = $tttsj->satuan_barang ?? '-';
+                $details['size_kontainer'] = $tttsj->size_kontainer ?? '-';
             }
         } elseif ($type == 'lcl') {
             $lcl = TandaTerimaLcl::with(['items', 'kontainerPivot'])->find($id);
@@ -503,6 +507,7 @@ class AsuransiTandaTerimaController extends Controller
                 $details['nama_barang'] = $lcl->items->pluck('nama_barang')->filter()->unique()->implode(', ') ?: '-';
                 $details['jumlah_barang'] = (string)($lcl->items->sum('jumlah') ?: '-');
                 $details['satuan'] = $lcl->items->pluck('satuan')->filter()->unique()->implode(', ') ?: '-';
+                $details['size_kontainer'] = $lcl->kontainerPivot->pluck('size_kontainer')->filter()->unique()->implode(', ') ?: '-';
             }
         }
 
