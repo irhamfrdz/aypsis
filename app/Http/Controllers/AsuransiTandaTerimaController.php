@@ -28,7 +28,115 @@ class AsuransiTandaTerimaController extends Controller
         // Fetch insurance info for these receipts
         $this->attachInsurance($receipts);
 
-        return view('asuransi-tanda-terima.index', compact('receipts'));
+        $vendors = VendorAsuransi::orderBy('nama_asuransi')->get();
+
+        return view('asuransi-tanda-terima.index', compact('receipts', 'vendors'));
+    }
+
+    public function exportRequest(Request $request)
+    {
+        $selectedIds = json_decode($request->selected_ids, true);
+        if (!$selectedIds) return back()->with('error', 'Tidak ada data terpilih.');
+
+        $idsByType = [
+            'tt' => [],
+            'tttsj' => [],
+            'lcl' => []
+        ];
+
+        foreach ($selectedIds as $item) {
+            list($type, $id) = explode('_', $item);
+            $idsByType[$type][] = $id;
+        }
+
+        $receipts = collect();
+
+        // 1. Regular Tanda Terima
+        if (!empty($idsByType['tt'])) {
+            $ttItems = DB::table('tanda_terimas')
+                ->leftJoin('surat_jalans', 'tanda_terimas.surat_jalan_id', '=', 'surat_jalans.id')
+                ->leftJoin('asuransi_tanda_terimas', 'tanda_terimas.id', '=', 'asuransi_tanda_terimas.tanda_terima_id')
+                ->select(
+                    'tanda_terimas.id', 
+                    DB::raw("'tt' as type"), 
+                    'tanda_terimas.no_surat_jalan as number', 
+                    'tanda_terimas.tanggal as date', 
+                    'tanda_terimas.pengirim', 
+                    'tanda_terimas.penerima', 
+                    'tanda_terimas.no_kontainer', 
+                    DB::raw('COALESCE(tanda_terimas.nama_barang, surat_jalans.jenis_barang) as nama_barang'), 
+                    DB::raw('COALESCE(tanda_terimas.jumlah, surat_jalans.jumlah_kontainer) as kuantitas'), 
+                    'tanda_terimas.satuan',
+                    'tanda_terimas.estimasi_nama_kapal as ship_name',
+                    'asuransi_tanda_terimas.nilai_pertanggungan as amount',
+                    'asuransi_tanda_terimas.nomor_urut as numbering',
+                    'asuransi_tanda_terimas.asuransi_rate as rate'
+                )
+                ->whereIn('tanda_terimas.id', $idsByType['tt'])
+                ->get();
+            $receipts = $receipts->merge($ttItems);
+        }
+
+        // 2. Tanda Terima Tanpa Surat Jalan
+        if (!empty($idsByType['tttsj'])) {
+            $tttsjItems = DB::table('tanda_terima_tanpa_surat_jalan')
+                ->leftJoin('asuransi_tanda_terimas', 'tanda_terima_tanpa_surat_jalan.id', '=', 'asuransi_tanda_terimas.tanda_terima_tanpa_sj_id')
+                ->select(
+                    'tanda_terima_tanpa_surat_jalan.id', 
+                    DB::raw("'tttsj' as type"), 
+                    'no_tanda_terima as number', 
+                    'tanggal_tanda_terima as date', 
+                    'pengirim', 
+                    'penerima', 
+                    'no_kontainer', 
+                    DB::raw('COALESCE(nama_barang, jenis_barang) as nama_barang'), 
+                    'jumlah_barang as kuantitas', 
+                    'satuan_barang as satuan',
+                    DB::raw('NULL as ship_name'),
+                    'asuransi_tanda_terimas.nilai_pertanggungan as amount',
+                    'asuransi_tanda_terimas.nomor_urut as numbering',
+                    'asuransi_tanda_terimas.asuransi_rate as rate'
+                )
+                ->whereIn('id', $idsByType['tttsj'])
+                ->get();
+            $receipts = $receipts->merge($tttsjItems);
+        }
+
+        // 3. Tanda Terima LCL
+        if (!empty($idsByType['lcl'])) {
+            $lclItems = DB::table('tanda_terimas_lcl')
+                ->leftJoin('tanda_terima_lcl_kontainer_pivot', 'tanda_terimas_lcl.id', '=', 'tanda_terima_lcl_kontainer_pivot.tanda_terima_lcl_id')
+                ->leftJoin('asuransi_tanda_terimas', 'tanda_terimas_lcl.id', '=', 'asuransi_tanda_terimas.tanda_terima_lcl_id')
+                ->select(
+                    'tanda_terimas_lcl.id', 
+                    DB::raw("'lcl' as type"), 
+                    'nomor_tanda_terima as number', 
+                    'tanggal_tanda_terima as date', 
+                    'nama_pengirim as pengirim', 
+                    'nama_penerima as penerima', 
+                    'tanda_terima_lcl_kontainer_pivot.nomor_kontainer as no_kontainer',
+                    DB::raw('(SELECT GROUP_CONCAT(nama_barang SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as nama_barang'),
+                    DB::raw('(SELECT SUM(jumlah) FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as kuantitas'),
+                    DB::raw('(SELECT GROUP_CONCAT(DISTINCT satuan SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as satuan'),
+                    DB::raw('NULL as ship_name'),
+                    'asuransi_tanda_terimas.nilai_pertanggungan as amount',
+                    'asuransi_tanda_terimas.nomor_urut as numbering',
+                    'asuransi_tanda_terimas.asuransi_rate as rate'
+                )
+                ->whereIn('tanda_terimas_lcl.id', $idsByType['lcl'])
+                ->get();
+            $receipts = $receipts->merge($lclItems);
+        }
+
+        $vendor = null;
+        if ($request->vendor_id) {
+            $vendor = VendorAsuransi::find($request->vendor_id);
+        }
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\InsuranceRequestExport($receipts, $vendor, $request->ship_name, $request->request_date), 
+            'request-asuransi-' . date('Y-m-d') . '.xlsx'
+        );
     }
 
     public function exportExcel(Request $request)
@@ -391,3 +499,4 @@ class AsuransiTandaTerimaController extends Controller
         return response()->json($details);
     }
 }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            

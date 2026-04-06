@@ -1492,6 +1492,10 @@ Route::middleware([
          ->name('asuransi-tanda-terima.export')
          ->middleware('can:asuransi-tanda-terima-view');
 
+    Route::post('asuransi-tanda-terima/export-request', [AsuransiTandaTerimaController::class, 'exportRequest'])
+         ->name('asuransi-tanda-terima.export-request')
+         ->middleware('can:asuransi-tanda-terima-view');
+
     Route::resource('asuransi-tanda-terima', AsuransiTandaTerimaController::class)
          ->middleware([
              'index' => 'can:asuransi-tanda-terima-view',
