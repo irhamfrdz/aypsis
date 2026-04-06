@@ -140,7 +140,7 @@
     function openRejectModal(requestId) {
         const modal = document.getElementById('rejectModal');
         const form = document.getElementById('rejectForm');
-        form.action = `/master-karyawan/approval/${requestId}/reject`;
+        form.action = "{{ route('master.karyawan.approval.reject', ':id') }}".replace(':id', requestId);
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
