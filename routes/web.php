@@ -3327,6 +3327,17 @@ Route::middleware(['auth'])->group(function () {
          ->name('history-kontainer.index')
          ->middleware('can:master-kontainer-view');
 
+    // Gerak Kontainer
+    Route::get('gerak-kontainer', [\App\Http\Controllers\GerakKontainerController::class, 'index'])
+         ->name('gerak-kontainer.index')
+         ->middleware('can:gerak-kontainer-view');
+    Route::get('gerak-kontainer/search', [\App\Http\Controllers\GerakKontainerController::class, 'search'])
+         ->name('gerak-kontainer.search')
+         ->middleware('can:gerak-kontainer-view');
+    Route::post('gerak-kontainer', [\App\Http\Controllers\GerakKontainerController::class, 'store'])
+         ->name('gerak-kontainer.store')
+         ->middleware('can:gerak-kontainer-create');
+
     // ═══════════════════════════════════════════════════════════════════════
     // 📋 TANDA TERIMA TANPA SURAT JALAN MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════

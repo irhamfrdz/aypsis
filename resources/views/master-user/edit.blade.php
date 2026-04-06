@@ -1780,6 +1780,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Gerak Kontainer --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="font-bold text-blue-600 italic">Gerak Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[gerak-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gerak-kontainer']['view']) && $userMatrixPermissions['gerak-kontainer']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gerak-kontainer][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gerak-kontainer']['create']) && $userMatrixPermissions['gerak-kontainer']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gerak-kontainer][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gerak-kontainer']['update']) && $userMatrixPermissions['gerak-kontainer']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gerak-kontainer][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gerak-kontainer']['delete']) && $userMatrixPermissions['gerak-kontainer']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Kapal --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">

@@ -894,6 +894,12 @@
                     </a>
                 @endif
 
+                @if($isAdmin || ($user && $user->can('gerak-kontainer-view')))
+                    <a href="{{ route('gerak-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('gerak-kontainer.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs font-bold text-blue-600 italic">Gerak Kontainer (Baru)</span>
+                    </a>
+                @endif
+
                 @if($user && $user->can('pergerakan-kapal-view'))
                     <a href="{{ route('pergerakan-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pergerakan Kapal</span>

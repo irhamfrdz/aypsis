@@ -624,6 +624,7 @@ class UserController extends Controller
                 'invoice-aktivitas-lain' => 'invoice-aktivitas-lain',
                 'karyawan-tidak-tetap' => 'karyawan-tidak-tetap',
                 'manifest' => 'manifest',
+                'gerak-kontainer' => 'gerak-kontainer',
                 'ob-antar-gudang' => 'ob-antar-gudang',
                 'ob' => 'ob',
                 'ongkos-truck' => 'ongkos-truck',
