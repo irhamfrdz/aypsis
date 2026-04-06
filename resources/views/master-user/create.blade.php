@@ -303,6 +303,22 @@
                             <tr class="submodule-row" data-parent="user">
                                 <td class="submodule">
                                     <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-amber-600 font-bold italic">Persetujuan Edit Karyawan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-approval][view]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
                                         <span>Data Divisi</span>
                                     </div>
                                 </td>

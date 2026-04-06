@@ -310,6 +310,12 @@ class UserController extends Controller
                 continue;
             }
 
+            // Special handling for master-karyawan-approval (exact match)
+            if ($permissionName === 'master-karyawan-approval') {
+                $matrixPermissions['master-karyawan-approval']['view'] = true;
+                continue;
+            }
+
             // Priority order: dot notation first, then dash notation, then simple
 
             // Pattern 1: module.submodule.action (e.g., master.karyawan.index) - HIGHEST PRIORITY
@@ -1657,6 +1663,17 @@ class UserController extends Controller
                 }
                 // Note: if dashboard is not enabled (unchecked), it won't be added to $permissionIds
                 // This ensures sync() will remove it from user permissions
+                continue;
+            }
+
+            // Special handling for master-karyawan-approval (exact match)
+            if ($module === 'master-karyawan-approval') {
+                if (isset($actions['view']) && ($actions['view'] == '1' || $actions['view'] === true)) {
+                    $perm = Permission::where('name', 'master-karyawan-approval')->first();
+                    if ($perm) {
+                        $permissionIds[] = $perm->id;
+                    }
+                }
                 continue;
             }
 

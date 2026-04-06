@@ -731,6 +731,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Persetujuan Edit Karyawan --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-amber-600 font-bold italic">Persetujuan Edit Karyawan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-karyawan-approval][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-karyawan-approval']['view']) && $userMatrixPermissions['master-karyawan-approval']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Pengirim/Penerima --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
