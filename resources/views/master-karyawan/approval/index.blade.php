@@ -25,7 +25,6 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Karyawan</th>
-                        <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Detail Perubahan</th>
                         <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Diajukan Oleh</th>
                         <th class="px-6 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest">Aksi</th>
                     </tr>
@@ -51,37 +50,6 @@
                                             </span>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="space-y-2">
-                                    @php
-                                        $after = $req->data_after['validated'] ?? [];
-                                        $before = $req->data_before;
-                                        $dateFields = ['tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'];
-                                    @endphp
-                                    
-                                    @foreach($dateFields as $field)
-                                        @php
-                                            $valBefore = data_get($before, $field);
-                                            $valAfter = data_get($after, $field);
-                                            
-                                            // Handle dates format for comparison
-                                            $formattedBefore = $valBefore ? (\Carbon\Carbon::parse($valBefore)->format('d/M/Y')) : '-';
-                                            $formattedAfter = $valAfter ? (\Carbon\Carbon::parse($valAfter)->format('d/M/Y')) : '-';
-                                        @endphp
-                                        
-                                        @if($valBefore != $valAfter)
-                                            <div class="flex items-start text-[11px]">
-                                                <div class="w-32 font-semibold text-gray-600 uppercase">{{ str_replace('_', ' ', $field) }}:</div>
-                                                <div class="flex items-center">
-                                                    <span class="text-red-500 line-through bg-red-50 px-1">{{ $formattedBefore }}</span>
-                                                    <svg class="h-3 w-3 mx-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                                                    <span class="text-green-600 font-bold bg-green-50 px-1">{{ $formattedAfter }}</span>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    @endforeach
                                 </div>
                             </td>
                             <td class="px-6 py-4">
