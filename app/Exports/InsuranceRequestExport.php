@@ -35,10 +35,11 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
 
     public function view(): View
     {
-        // Group receipts by some logic? 
-        // For now, let's just pass them as a collection.
-        // We might want to group by 'number' if they share the same manifest.
-        $grouped = $this->receipts->groupBy('number');
+        // Group receipts by 'numbering' (user-input sequence) if available.
+        // If no numbering is set, use a unique key to keep them as separate individual entries.
+        $grouped = $this->receipts->groupBy(function ($item) {
+            return $item->numbering ?: 'unassigned_' . $item->type . '_' . $item->id;
+        });
 
         return view('exports.insurance_request', [
             'grouped' => $grouped,

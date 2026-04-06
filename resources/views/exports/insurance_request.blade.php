@@ -16,12 +16,12 @@
     </thead>
     <tbody>
         @php $itemCount = 1; $grandTotal = 0; @endphp
-        @foreach($grouped as $manifestNo => $items)
+        @foreach($grouped as $key => $items)
             @php $first = $items->first(); @endphp
             <tr>
                 <td align="left">@if($first->numbering){{ str_pad($first->numbering, 2, '0', STR_PAD_LEFT) }}.@else{{ str_pad($itemCount++, 2, '0', STR_PAD_LEFT) }}.@endif</td>
                 <td align="left"><b>{{ $first->no_kontainer ?: $first->number }}</b></td>
-                <td align="left"><b>{{ $items->count() }} {{ $first->satuan ?: 'UNIT/PALET' }}</b> {{ strtoupper($first->nama_barang) }}</td>
+                <td align="left"><b>1 {{ $first->satuan ?: 'UNIT/PALET' }}</b> {{ strtoupper($first->nama_barang) }}</td>
                 <td></td><td></td><td></td>
                 <td align="left">Rp</td>
                 <td align="right"><b>{{ number_format($items->sum('amount') ?: 0, 0, ',', '.') }}</b></td>
