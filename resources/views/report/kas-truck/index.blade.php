@@ -121,9 +121,11 @@
                             <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Saldo
                             </th>
+                            @if(Auth::user()->username == 'kiky')
                             <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Aksi
                             </th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -131,7 +133,9 @@
                         <tr class="bg-gray-50">
                             <td class="px-4 py-3 text-sm font-medium text-gray-600" colspan="5">Saldo Sebelum Periode (Mulai)</td>
                             <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">Rp {{ number_format($saldoAwal, 0, ',', '.') }}</td>
+                            @if(Auth::user()->username == 'kiky')
                             <td class="px-4 py-3"></td>
+                            @endif
                         </tr>
 
                         @forelse($transactions as $trx)
@@ -168,6 +172,7 @@
                                 <td class="px-4 py-3 text-sm text-right font-semibold text-gray-900">
                                     Rp {{ number_format($trx->running_balance, 0, ',', '.') }}
                                 </td>
+                                @if(Auth::user()->username == 'kiky')
                                 <td class="px-4 py-3 text-sm text-center">
                                     <form action="{{ route('report.kas-truck.swap', $trx->id) }}" method="POST" onsubmit="return confirm('Tukar posisi Pemasukan/Pengeluaran transaksi ini?')">
                                         @csrf
@@ -178,10 +183,11 @@
                                         </button>
                                     </form>
                                 </td>
+                                @endif
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-8 whitespace-nowrap text-sm text-gray-500 text-center">
+                                <td colspan="{{ Auth::user()->username == 'kiky' ? 7 : 6 }}" class="px-4 py-8 whitespace-nowrap text-sm text-gray-500 text-center">
                                     Tidak ada transaksi kas pada periode yang dipilih.
                                 </td>
                             </tr>
