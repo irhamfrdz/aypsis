@@ -466,12 +466,14 @@ class AsuransiTandaTerimaController extends Controller
         ];
 
         if ($type == 'tt') {
-            $tt = TandaTerima::find($id);
+            $tt = TandaTerima::with('suratJalan')->find($id);
             if ($tt) {
-                $details['no_kontainer'] = $tt->no_kontainer ?? '-';
+                $details['no_kontainer'] = $tt->no_kontainer ?? ($tt->suratJalan->no_kontainer ?? '-');
                 $details['no_surat_jalan'] = $tt->no_surat_jalan ?? '-';
-                $details['nama_barang'] = is_array($tt->nama_barang) ? implode(', ', $tt->nama_barang) : ($tt->nama_barang ?? '-');
-                $details['jumlah_barang'] = (string)($tt->jumlah ?? '-');
+                
+                // Fallback for nama_barang, jumlah, and satuan from SJ
+                $details['nama_barang'] = is_array($tt->nama_barang) ? implode(', ', $tt->nama_barang) : ($tt->nama_barang ?? ($tt->suratJalan->jenis_barang ?? '-'));
+                $details['jumlah_barang'] = (string)($tt->jumlah ?? ($tt->suratJalan->jumlah_kontainer ?? '-'));
                 $details['satuan'] = $tt->satuan ?? '-';
                 
                 // Get ship info from Tanda Terima or related Prospek
