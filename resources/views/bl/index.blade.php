@@ -72,6 +72,23 @@
                                 <div class="font-bold">{{ $bls->total() }} Data</div>
                             </div>
                         </div>
+                        
+                        <div class="flex items-center ml-2 border-l border-purple-400 pl-4">
+                            <div class="flex items-center mr-4">
+                                <i class="fas fa-box mr-2 text-xl text-purple-200"></i>
+                                <div>
+                                    <div class="text-xs text-purple-100">20ft</div>
+                                    <div class="font-bold">{{ $sizeCounts['20ft'] ?? 0 }}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-boxes mr-2 text-xl text-purple-200"></i>
+                                <div>
+                                    <div class="text-xs text-purple-100">40ft</div>
+                                    <div class="font-bold">{{ $sizeCounts['40ft'] ?? 0 }}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex gap-2">
                         @can('bl-edit')

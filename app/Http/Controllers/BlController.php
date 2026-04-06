@@ -127,11 +127,29 @@ class BlController extends Controller
         $bindings = $query->getBindings();
         \Log::info("BL Query SQL: {$sql}", ['bindings' => $bindings]);
 
+        // Calculate unique container sizes for the current filter
+        $sizeCounts = [
+            '20ft' => 0,
+            '40ft' => 0
+        ];
+        
+        if ($request->filled('nama_kapal') || $request->filled('no_voyage') || $request->filled('kapal') || $request->filled('voyage')) {
+            $cloneQuery = clone $query;
+            $uniqueContainers = $cloneQuery->select('nomor_kontainer', 'size_kontainer')
+                ->whereNotNull('nomor_kontainer')
+                ->where('nomor_kontainer', '!=', '')
+                ->groupBy('nomor_kontainer', 'size_kontainer')
+                ->get();
+                
+            $sizeCounts['20ft'] = $uniqueContainers->where('size_kontainer', '20')->count();
+            $sizeCounts['40ft'] = $uniqueContainers->where('size_kontainer', '40')->count();
+        }
+
         $bls = $query->paginate(15)->withQueryString();
         
         \Log::info("BL Query Results: {$bls->count()} records found, Total: {$bls->total()}");
 
-        return view('bl.index', compact('bls'));
+        return view('bl.index', compact('bls', 'sizeCounts'));
     }
 
     /**
