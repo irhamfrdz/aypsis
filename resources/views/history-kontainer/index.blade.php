@@ -82,8 +82,6 @@
                     <tr class="bg-gray-50/50">
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Waktu</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Data Kontainer</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Tipe</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Kegiatan</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dari</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ke</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Detail Keterangan</th>
@@ -100,32 +98,6 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-bold text-blue-600 group-hover:text-blue-700 tracking-wider">
                                     {{ $history->nomor_kontainer }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                @php
-                                    $tipeClass = match($history->tipe_kontainer) {
-                                        'kontainer' => 'bg-blue-50 text-blue-600 border-blue-100',
-                                        'stock' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                        'lcl' => 'bg-purple-50 text-purple-600 border-purple-100',
-                                        default => 'bg-gray-50 text-gray-500 border-gray-100',
-                                    };
-                                @endphp
-                                <span class="inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border {{ $tipeClass }}">
-                                    {{ ucfirst($history->tipe_kontainer ?? 'N/A') }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                @php
-                                    $kegiatanClass = match($history->jenis_kegiatan) {
-                                        'Masuk' => 'bg-green-100 text-green-700',
-                                        'Keluar' => 'bg-rose-100 text-rose-700',
-                                        default => 'bg-gray-100 text-gray-600',
-                                    };
-                                @endphp
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold {{ $kegiatanClass }}">
-                                    <span class="w-1.5 h-1.5 rounded-full mr-2 {{ $history->jenis_kegiatan == 'Masuk' ? 'bg-green-500' : 'bg-rose-500' }}"></span>
-                                    {{ $history->jenis_kegiatan }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -171,7 +143,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center">
+                            <td colspan="6" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />

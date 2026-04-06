@@ -716,27 +716,65 @@ class TandaTerimaController extends Controller
                 }
 
                 if (!empty($containersToUpdate)) {
-                    // Update StockKontainer (deprecated but sometimes used) and Kontainer
-                    \App\Models\StockKontainer::whereIn('nomor_seri_gabungan', $containersToUpdate)->update(['gudangs_id' => $gudangId]);
-                    
-                    // Update Kontainer (Active ones preferable)
+                    // Track which containers already logged history (to avoid duplicates)
+                    $loggedContainers = [];
+
+                    // Helper: get real origin gudang_id for a container
+                    // Priority: container table gudangs_id → last history gudang_id
+                    $getAsalGudangId = function($nomorKontainer, $gudangsIdFromTable) {
+                        if (!empty($gudangsIdFromTable)) {
+                            return $gudangsIdFromTable;
+                        }
+                        // Fallback: get gudang_id from last history record
+                        $lastHistory = \App\Models\HistoryKontainer::where('nomor_kontainer', $nomorKontainer)
+                            ->whereNotNull('gudang_id')
+                            ->orderBy('id', 'desc')
+                            ->first();
+                        return $lastHistory ? $lastHistory->gudang_id : null;
+                    };
+
+                    // 1. Process Kontainer FIRST (master/authoritative source for location)
                     $affectedContainers = \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $containersToUpdate)
-                        ->where('status', 'tersedia') // Or 'active'
+                        ->where('status', '!=', 'inactive')
                         ->get();
 
                     foreach ($affectedContainers as $kontainer) {
-                         $kontainer->update(['gudangs_id' => $gudangId]);
+                        $asalGudangId = $getAsalGudangId($kontainer->nomor_seri_gabungan, $kontainer->gudangs_id);
+                        $kontainer->update(['gudangs_id' => $gudangId]);
                          
-                         // Log History Masuk
-                         \App\Models\HistoryKontainer::create([
+                        // Log History dari tabel master (kontainers)
+                        \App\Models\HistoryKontainer::create([
                             'nomor_kontainer' => $kontainer->nomor_seri_gabungan,
-                            'tipe_kontainer' => 'kontainer', // Assuming 'kontainer' source
+                            'tipe_kontainer' => $kontainer->tipe_kontainer ?? 'kontainer',
                             'jenis_kegiatan' => 'Masuk',
-                            'tanggal_kegiatan' => now(), // Or use TandaTerima date if preferred
+                            'tanggal_kegiatan' => $request->tanggal ?? now(),
+                            'asal_gudang_id' => $asalGudangId,
                             'gudang_id' => $gudangId,
-                            'keterangan' => 'Masuk via Tanda Terima: ' . $tandaTerima->no_surat_jalan,
+                            'keterangan' => 'Masuk via Tanda Terima: ' . ($tandaTerima->no_surat_jalan ?? $suratJalan->no_surat_jalan),
                             'created_by' => Auth::id(),
                         ]);
+                        $loggedContainers[] = $kontainer->nomor_seri_gabungan;
+                    }
+                    
+                    // 2. Process StockKontainer (secondary sync)
+                    $stockContainers = \App\Models\StockKontainer::whereIn('nomor_seri_gabungan', $containersToUpdate)->get();
+                    foreach ($stockContainers as $stockKontainer) {
+                        $asalGudangId = $getAsalGudangId($stockKontainer->nomor_seri_gabungan, $stockKontainer->gudangs_id);
+                        $stockKontainer->update(['gudangs_id' => $gudangId]);
+                        
+                        // Log History hanya jika belum tercatat dari tabel master (kontainers)
+                        if (!in_array($stockKontainer->nomor_seri_gabungan, $loggedContainers)) {
+                            \App\Models\HistoryKontainer::create([
+                                'nomor_kontainer' => $stockKontainer->nomor_seri_gabungan,
+                                'tipe_kontainer' => $stockKontainer->tipe_kontainer ?? 'stock',
+                                'jenis_kegiatan' => 'Masuk',
+                                'tanggal_kegiatan' => $request->tanggal ?? now(),
+                                'asal_gudang_id' => $asalGudangId,
+                                'gudang_id' => $gudangId,
+                                'keterangan' => 'Masuk via Tanda Terima: ' . ($tandaTerima->no_surat_jalan ?? $suratJalan->no_surat_jalan),
+                                'created_by' => Auth::id(),
+                            ]);
+                        }
                     }
                         
                     // Log update (optional but good for tracking)
