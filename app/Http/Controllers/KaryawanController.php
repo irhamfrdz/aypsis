@@ -1157,7 +1157,8 @@ class KaryawanController extends Controller
             str_contains($status, 'BAD ATTITUDE') ||
             str_contains($status, 'BAD PERFORM') ||
             str_contains($status, 'NOT COMPLETED CONTRACT') ||
-            str_contains($status, 'COMPLETEF CONTRACT') // Handle user's specific typo
+            str_contains($status, 'COMPLETEF CONTRACT') || // Handle user's specific typo
+            str_contains($status, 'MANAGEMENT DECISION REQUEST BY')
         ) {
             $isRestricted = true;
         }
