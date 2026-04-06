@@ -68,6 +68,7 @@ class AsuransiTandaTerimaController extends Controller
                     DB::raw('COALESCE(tanda_terimas.jumlah, surat_jalans.jumlah_kontainer) as kuantitas'), 
                     'tanda_terimas.satuan',
                     'tanda_terimas.estimasi_nama_kapal as ship_name',
+                    'asuransi_tanda_terimas.nama_kapal as insurance_ship',
                     'asuransi_tanda_terimas.nilai_pertanggungan as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
                     'asuransi_tanda_terimas.asuransi_rate as rate'
@@ -93,6 +94,7 @@ class AsuransiTandaTerimaController extends Controller
                     'jumlah_barang as kuantitas', 
                     'satuan_barang as satuan',
                     DB::raw('NULL as ship_name'),
+                    'asuransi_tanda_terimas.nama_kapal as insurance_ship',
                     'asuransi_tanda_terimas.nilai_pertanggungan as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
                     'asuransi_tanda_terimas.asuransi_rate as rate'
@@ -119,6 +121,7 @@ class AsuransiTandaTerimaController extends Controller
                     DB::raw('(SELECT SUM(jumlah) FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as kuantitas'),
                     DB::raw('(SELECT GROUP_CONCAT(DISTINCT satuan SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as satuan'),
                     DB::raw('NULL as ship_name'),
+                    'asuransi_tanda_terimas.nama_kapal as insurance_ship',
                     'asuransi_tanda_terimas.nilai_pertanggungan as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
                     'asuransi_tanda_terimas.asuransi_rate as rate'

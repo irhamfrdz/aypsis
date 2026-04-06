@@ -11,7 +11,7 @@
         <tr><th></th></tr>
         <tr><th colspan="8" align="left">Dengan Hormat,</th></tr>
         <tr><th></th></tr>
-        <tr><th colspan="8" align="left">Mohon dibuat polis asuransi <b>{{ $shipName }}</b>, tanggal <b>{{ $requestDate }}</b> sbb :</th></tr>
+        <tr><th colspan="8" align="left">Mohon dibuat polis asuransi&nbsp;<b>{{ $shipName }}</b>,&nbsp;tanggal&nbsp;<b>{{ $requestDate }}</b>&nbsp;sbb :</th></tr>
         <tr><th></th></tr>
     </thead>
     <tbody>

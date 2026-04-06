@@ -20,8 +20,16 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
     public function __construct($receipts, $vendor = null, $shipName = null, $requestDate = null)
     {
         $this->receipts = $receipts;
+        
+        // Prioritize ship name from insurance records if possible
+        $first = $receipts->first();
+        if ($first && isset($first->insurance_ship) && $first->insurance_ship) {
+            $this->shipName = $first->insurance_ship;
+        } else {
+            $this->shipName = $shipName ?: 'KM. ALKEN PESONA';
+        }
+        
         $this->vendor = $vendor;
-        $this->shipName = $shipName ?: 'KM. ALKEN PESONA';
         $this->requestDate = $requestDate ? \Carbon\Carbon::parse($requestDate)->translatedFormat('d F Y') : date('d F Y');
     }
 
