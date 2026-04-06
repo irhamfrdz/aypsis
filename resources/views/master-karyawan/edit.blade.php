@@ -211,12 +211,22 @@
                 </div>
 
                 <div>
-                    <label for="tanggal_masuk_sebelumnya" class="{{ $labelClasses }}">Tanggal Masuk (Sebelumnya)</label>
+                    <label for="tanggal_masuk_sebelumnya" class="{{ $labelClasses }} flex justify-between items-center">
+                        <span>Tanggal Masuk (Sebelumnya)</span>
+                        <button type="button" onclick="copyDateValue('tanggal_masuk', 'tanggal_masuk_sebelumnya')" class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100 hover:bg-blue-100 transition-colors">
+                            <i class="fas fa-copy mr-1"></i>Salin dari Tgl Masuk
+                        </button>
+                    </label>
                     <input type="date" name="tanggal_masuk_sebelumnya" id="tanggal_masuk_sebelumnya" class="{{ $inputClasses }}" value="{{ old('tanggal_masuk_sebelumnya', $karyawan->tanggal_masuk_sebelumnya ? (\is_object($karyawan->tanggal_masuk_sebelumnya) ? $karyawan->tanggal_masuk_sebelumnya->format('Y-m-d') : $karyawan->tanggal_masuk_sebelumnya) : '') }}">
                 </div>
 
                 <div>
-                    <label for="tanggal_berhenti_sebelumnya" class="{{ $labelClasses }}">Tanggal Berhenti (Sebelumnya)</label>
+                    <label for="tanggal_berhenti_sebelumnya" class="{{ $labelClasses }} flex justify-between items-center">
+                        <span>Tanggal Berhenti (Sebelumnya)</span>
+                        <button type="button" onclick="copyDateValue('tanggal_berhenti', 'tanggal_berhenti_sebelumnya')" class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100 hover:bg-blue-100 transition-colors">
+                            <i class="fas fa-copy mr-1"></i>Salin dari Tgl Berhenti
+                        </button>
+                    </label>
                     <input type="date" name="tanggal_berhenti_sebelumnya" id="tanggal_berhenti_sebelumnya" class="{{ $inputClasses }}" value="{{ old('tanggal_berhenti_sebelumnya', $karyawan->tanggal_berhenti_sebelumnya ? (\is_object($karyawan->tanggal_berhenti_sebelumnya) ? $karyawan->tanggal_berhenti_sebelumnya->format('Y-m-d') : $karyawan->tanggal_berhenti_sebelumnya) : '') }}">
                 </div>
 
@@ -636,6 +646,22 @@
                 altInput: true,
                 altFormat: "d/M/Y",
                 dateFormat: "Y-m-d",
+                allowInput: true, // Biarkan user bisa ngetik/paste manual
+            };
+
+            // Helper function to copy date one to another (for flatpickr)
+            window.copyDateValue = function(sourceId, targetId) {
+                const sourceInput = document.getElementById(sourceId);
+                const targetInput = document.getElementById(targetId);
+                
+                if (sourceInput && targetInput && sourceInput._flatpickr && targetInput._flatpickr) {
+                    const value = sourceInput._flatpickr.currentSelectedDateObj;
+                    if (value) {
+                        targetInput._flatpickr.setDate(value);
+                    } else if (sourceInput.value) {
+                        targetInput._flatpickr.setDate(sourceInput.value);
+                    }
+                }
             };
 
             flatpickr("#tanggal_lahir", dateConfig);

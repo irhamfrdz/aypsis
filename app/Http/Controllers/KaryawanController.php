@@ -1142,12 +1142,30 @@ class KaryawanController extends Controller
             }
         }
 
-        // Approval logic for specific catatan_pekerjaan
-        $restrictedCatatan = ['NOT RECOMENDED FOR REHIRE', 'NOT COMPLETED CONTRACT (SICK REASON)'];
+        // Approval logic for specific catatan_pekerjaan (Restrict sensitive edits for specific statuses)
+        $status = strtoupper((string)$karyawan->catatan_pekerjaan);
+        $isRestricted = false;
+
+        // Check for specific keywords and phrases requested by USER (including "and similar" variations)
+        if (
+            str_contains($status, 'NOT TO REHIRE') ||
+            str_contains($status, 'NOT RECOMENDED') ||
+            str_contains($status, 'NOT RECOMMENDED') ||
+            str_contains($status, 'REHIRE') && (str_contains($status, 'NOT') || str_contains($status, 'BAD')) ||
+            str_contains($status, 'JUMP SHIP') ||
+            str_contains($status, 'JUMP SHIFT') ||
+            str_contains($status, 'BAD ATTITUDE') ||
+            str_contains($status, 'BAD PERFORM') ||
+            str_contains($status, 'NOT COMPLETED CONTRACT') ||
+            str_contains($status, 'COMPLETEF CONTRACT') // Handle user's specific typo
+        ) {
+            $isRestricted = true;
+        }
+
         $dateFields = ['tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'];
         $needsApproval = false;
 
-        if (in_array(strtoupper($karyawan->catatan_pekerjaan), $restrictedCatatan)) {
+        if ($isRestricted) {
             foreach ($dateFields as $field) {
                 $currentValue = $karyawan->$field ? ($karyawan->$field instanceof Carbon ? $karyawan->$field->format('Y-m-d') : $karyawan->$field) : null;
                 $newValue = $validated[$field] ?? null;
