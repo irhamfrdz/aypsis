@@ -18,7 +18,67 @@ class AsuransiTandaTerimaController extends Controller
     public function index(Request $request)
     {
         $search = $request->search;
+        $unionQuery = $this->getReceiptsQuery($search);
+        
+        $receipts = DB::table(DB::raw("({$unionQuery->toSql()}) as combined_receipts"))
+            ->mergeBindings($unionQuery)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
+        // Fetch insurance info for these receipts
+        $this->attachInsurance($receipts);
+
+        return view('asuransi-tanda-terima.index', compact('receipts'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $search = $request->search;
+        $unionQuery = $this->getReceiptsQuery($search);
+        
+        $receipts = DB::table(DB::raw("({$unionQuery->toSql()}) as combined_receipts"))
+            ->mergeBindings($unionQuery)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Fetch insurance info
+        $this->attachInsurance($receipts);
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\AsuransiTandaTerimaExport($receipts), 
+            'asuransi-tanda-terima-' . date('Y-m-d') . '.xlsx'
+        );
+    }
+
+    private function attachInsurance($receipts)
+    {
+        $items = $receipts instanceof \Illuminate\Pagination\LengthAwarePaginator ? $receipts->items() : $receipts;
+        
+        $ids = [
+            'tt' => collect($items)->where('type', 'tt')->pluck('id')->toArray(),
+            'tttsj' => collect($items)->where('type', 'tttsj')->pluck('id')->toArray(),
+            'lcl' => collect($items)->where('type', 'lcl')->pluck('id')->toArray(),
+        ];
+
+        $insurances = AsuransiTandaTerima::whereIn('tanda_terima_id', $ids['tt'])
+            ->orWhereIn('tanda_terima_tanpa_sj_id', $ids['tttsj'])
+            ->orWhereIn('tanda_terima_lcl_id', $ids['lcl'])
+            ->with('vendorAsuransi')
+            ->get()
+            ->groupBy(function($item) {
+                if ($item->tanda_terima_id) return "tt_{$item->tanda_terima_id}";
+                if ($item->tanda_terima_tanpa_sj_id) return "tttsj_{$item->tanda_terima_tanpa_sj_id}";
+                if ($item->tanda_terima_lcl_id) return "lcl_{$item->tanda_terima_lcl_id}";
+            });
+
+        foreach ($receipts as $receipt) {
+            $key = "{$receipt->type}_{$receipt->id}";
+            $receipt->insurance = isset($insurances[$key]) ? $insurances[$key]->first() : null;
+        }
+    }
+
+    private function getReceiptsQuery($search)
+    {
         // Tanda Terima Regular
         $tt = DB::table('tanda_terimas')
             ->leftJoin('surat_jalans', 'tanda_terimas.surat_jalan_id', '=', 'surat_jalans.id')
@@ -141,37 +201,7 @@ class AsuransiTandaTerimaController extends Controller
                 });
             });
 
-        $unionQuery = $tt->union($tttsj)->union($lcl);
-        
-        $receipts = DB::table(DB::raw("({$unionQuery->toSql()}) as combined_receipts"))
-            ->mergeBindings($unionQuery)
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-
-        // Fetch insurance info for these receipts
-        $ids = [
-            'tt' => collect($receipts->items())->where('type', 'tt')->pluck('id')->toArray(),
-            'tttsj' => collect($receipts->items())->where('type', 'tttsj')->pluck('id')->toArray(),
-            'lcl' => collect($receipts->items())->where('type', 'lcl')->pluck('id')->toArray(),
-        ];
-
-        $insurances = AsuransiTandaTerima::whereIn('tanda_terima_id', $ids['tt'])
-            ->orWhereIn('tanda_terima_tanpa_sj_id', $ids['tttsj'])
-            ->orWhereIn('tanda_terima_lcl_id', $ids['lcl'])
-            ->with('vendorAsuransi')
-            ->get()
-            ->groupBy(function($item) {
-                if ($item->tanda_terima_id) return "tt_{$item->tanda_terima_id}";
-                if ($item->tanda_terima_tanpa_sj_id) return "tttsj_{$item->tanda_terima_tanpa_sj_id}";
-                if ($item->tanda_terima_lcl_id) return "lcl_{$item->tanda_terima_lcl_id}";
-            });
-
-        foreach ($receipts as $receipt) {
-            $key = "{$receipt->type}_{$receipt->id}";
-            $receipt->insurance = isset($insurances[$key]) ? $insurances[$key]->first() : null;
-        }
-
-        return view('asuransi-tanda-terima.index', compact('receipts'));
+        return $tt->union($tttsj)->union($lcl);
     }
 
     public function create(Request $request)

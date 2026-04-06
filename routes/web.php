@@ -1488,6 +1488,10 @@ Route::middleware([
          ->name('asuransi-tanda-terima.get-receipt-details')
          ->middleware('can:asuransi-tanda-terima-view');
 
+    Route::get('asuransi-tanda-terima/export', [AsuransiTandaTerimaController::class, 'exportExcel'])
+         ->name('asuransi-tanda-terima.export')
+         ->middleware('can:asuransi-tanda-terima-view');
+
     Route::resource('asuransi-tanda-terima', AsuransiTandaTerimaController::class)
          ->middleware([
              'index' => 'can:asuransi-tanda-terima-view',
