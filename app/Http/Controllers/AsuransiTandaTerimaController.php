@@ -71,7 +71,8 @@ class AsuransiTandaTerimaController extends Controller
                     'asuransi_tanda_terimas.nama_kapal as insurance_ship',
                     'asuransi_tanda_terimas.nilai_pertanggungan as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
-                    'asuransi_tanda_terimas.asuransi_rate as rate'
+                    'asuransi_tanda_terimas.asuransi_rate as rate',
+                    'asuransi_tanda_terimas.vendor_asuransi_id'
                 )
                 ->whereIn('tanda_terimas.id', $idsByType['tt'])
                 ->get();
@@ -97,7 +98,8 @@ class AsuransiTandaTerimaController extends Controller
                     'asuransi_tanda_terimas.nama_kapal as insurance_ship',
                     'asuransi_tanda_terimas.nilai_pertanggungan as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
-                    'asuransi_tanda_terimas.asuransi_rate as rate'
+                    'asuransi_tanda_terimas.asuransi_rate as rate',
+                    'asuransi_tanda_terimas.vendor_asuransi_id'
                 )
                 ->whereIn('id', $idsByType['tttsj'])
                 ->get();
@@ -124,7 +126,8 @@ class AsuransiTandaTerimaController extends Controller
                     'asuransi_tanda_terimas.nama_kapal as insurance_ship',
                     'asuransi_tanda_terimas.nilai_pertanggungan as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
-                    'asuransi_tanda_terimas.asuransi_rate as rate'
+                    'asuransi_tanda_terimas.asuransi_rate as rate',
+                    'asuransi_tanda_terimas.vendor_asuransi_id'
                 )
                 ->whereIn('tanda_terimas_lcl.id', $idsByType['lcl'])
                 ->get();
@@ -134,6 +137,8 @@ class AsuransiTandaTerimaController extends Controller
         $vendor = null;
         if ($request->vendor_id) {
             $vendor = VendorAsuransi::find($request->vendor_id);
+        } elseif ($receipts->count() > 0 && $receipts->first()->vendor_asuransi_id) {
+            $vendor = VendorAsuransi::find($receipts->first()->vendor_asuransi_id);
         }
 
         return \Maatwebsite\Excel\Facades\Excel::download(

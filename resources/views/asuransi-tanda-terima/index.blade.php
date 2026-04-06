@@ -12,10 +12,11 @@
                 <p class="text-gray-600 mt-1">Kelola data asuransi untuk tanda terima</p>
             </div>
             <div class="flex space-x-2">
+            <div class="flex space-x-2">
                 <form id="bulkExportForm" action="{{ route('asuransi-tanda-terima.export-request') }}" method="POST" target="_blank">
                     @csrf
                     <input type="hidden" name="selected_ids" id="selectedIdsInput">
-                    <button type="button" onclick="showExportModal()"
+                    <button type="button" onclick="performBulkExportDirect()"
                             class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 text-sm rounded-lg font-medium transition duration-200 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -223,94 +224,21 @@
         </div>
     </div>
 </div>
-<!-- Export Configuration Modal -->
-<div id="exportModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="hideExportModal()"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div class="sm:flex sm:items-start">
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Konfigurasi Export Layout Request</h3>
-                        <div class="mt-4 space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Vendor Asuransi</label>
-                                <select id="export_vendor_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                    <option value="">-- Pilih Vendor --</option>
-                                    @foreach($vendors as $v)
-                                        <option value="{{ $v->id }}">{{ $v->nama_asuransi }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">KM. Kapal (Header)</label>
-                                <input type="text" id="export_ship_name" placeholder="Contoh: KM. ALKEN PESONA" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Tanggal Request</label>
-                                <input type="date" id="export_request_date" value="{{ date('Y-m-d') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button type="button" onclick="performBulkExport()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
-                    Generate Export
-                </button>
-                <button type="button" onclick="hideExportModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                    Batal
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Hidden modal removed as requested -->
 
 <script>
     document.getElementById('selectAllCheckboxes').addEventListener('change', function() {
         document.querySelectorAll('.receipt-checkbox').forEach(cb => cb.checked = this.checked);
     });
 
-    function showExportModal() {
+    function performBulkExportDirect() {
         const selected = Array.from(document.querySelectorAll('.receipt-checkbox:checked')).map(cb => cb.value);
         if (selected.length === 0) {
             alert('Silakan pilih minimal satu data tanda terima.');
             return;
         }
         document.getElementById('selectedIdsInput').value = JSON.stringify(selected);
-        document.getElementById('exportModal').classList.remove('hidden');
-    }
-
-    function hideExportModal() {
-        document.getElementById('exportModal').classList.add('hidden');
-    }
-
-    function performBulkExport() {
-        const form = document.getElementById('bulkExportForm');
-        
-        // Add dynamic hidden inputs for modal data
-        const vendorId = document.getElementById('export_vendor_id').value;
-        const shipName = document.getElementById('export_ship_name').value;
-        const reqDate = document.getElementById('export_request_date').value;
-
-        // Cleanup old dynamics if any
-        form.querySelectorAll('.dynamic-input').forEach(el => el.remove());
-
-        const vInput = document.createElement('input');
-        vInput.type = 'hidden'; vInput.name = 'vendor_id'; vInput.value = vendorId; vInput.className = 'dynamic-input';
-        form.appendChild(vInput);
-
-        const sInput = document.createElement('input');
-        sInput.type = 'hidden'; sInput.name = 'ship_name'; sInput.value = shipName; sInput.className = 'dynamic-input';
-        form.appendChild(sInput);
-
-        const dInput = document.createElement('input');
-        dInput.type = 'hidden'; dInput.name = 'request_date'; dInput.value = reqDate; dInput.className = 'dynamic-input';
-        form.appendChild(dInput);
-
-        form.submit();
-        hideExportModal();
+        document.getElementById('bulkExportForm').submit();
     }
 </script>
 @endsection
