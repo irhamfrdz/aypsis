@@ -135,7 +135,8 @@ class BlController extends Controller
         
         if ($request->filled('nama_kapal') || $request->filled('no_voyage') || $request->filled('kapal') || $request->filled('voyage')) {
             $cloneQuery = clone $query;
-            $uniqueContainers = $cloneQuery->select('nomor_kontainer', 'size_kontainer')
+            $uniqueContainers = $cloneQuery->reorder() // Clear previous group by conflicting orderings
+                ->select('nomor_kontainer', 'size_kontainer')
                 ->whereNotNull('nomor_kontainer')
                 ->where('nomor_kontainer', '!=', '')
                 ->groupBy('nomor_kontainer', 'size_kontainer')
