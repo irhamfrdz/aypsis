@@ -348,7 +348,7 @@ class AsuransiTandaTerimaController extends Controller
             'vendor_asuransi_id' => 'required|exists:vendor_asuransi,id',
             'receipt_type' => 'required|in:tt,tttsj,lcl',
             'receipt_id' => 'required',
-            'nomor_polis' => 'required|string|max:255',
+            'nomor_polis' => 'nullable|string|max:255',
             'tanggal_polis' => 'required|date',
             'nilai_barang' => 'required|numeric|min:0',
             'asuransi_rate' => 'required|numeric|min:0',
@@ -407,7 +407,7 @@ class AsuransiTandaTerimaController extends Controller
     {
         $request->validate([
             'vendor_asuransi_id' => 'required|exists:vendor_asuransi,id',
-            'nomor_polis' => 'required|string|max:255',
+            'nomor_polis' => 'nullable|string|max:255',
             'tanggal_polis' => 'required|date',
             'nilai_barang' => 'required|numeric|min:0',
             'asuransi_rate' => 'required|numeric|min:0',

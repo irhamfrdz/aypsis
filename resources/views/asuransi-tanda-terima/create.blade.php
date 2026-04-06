@@ -188,8 +188,8 @@
 
                     <!-- Polis Number -->
                     <div>
-                        <label for="nomor_polis" class="block text-sm font-medium text-gray-700 mb-2">Nomor Polis <span class="text-red-500">*</span></label>
-                        <input type="text" id="nomor_polis" name="nomor_polis" value="{{ old('nomor_polis') }}" required
+                        <label for="nomor_polis" class="block text-sm font-medium text-gray-700 mb-2">Nomor Polis</label>
+                        <input type="text" id="nomor_polis" name="nomor_polis" value="{{ old('nomor_polis') }}" 
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                placeholder="Contoh: POL12345678">
                         @error('nomor_polis') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
