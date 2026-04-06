@@ -94,6 +94,10 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center space-x-2">
+                                    <a href="{{ route('master.karyawan.show', $req->karyawan->id) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold uppercase rounded-lg transition-all shadow-sm">
+                                        Detail
+                                    </a>
+
                                     <form action="{{ route('master.karyawan.approval.approve', $req->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menyetujui perubahan ini?')">
                                         @csrf
                                         <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-[10px] font-bold uppercase rounded-lg transition-all shadow-sm">
