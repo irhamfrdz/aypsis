@@ -104,7 +104,20 @@
                     <div class="md:col-span-2 bg-blue-50 border border-blue-200 rounded-lg p-4 grid grid-cols-2 md:grid-cols-6 gap-4" id="receipt_info_section">
                         <div>
                             <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">No. Kontainer</p>
-                            <p class="text-sm font-bold text-gray-800" id="info_no_kontainer">{{ $selectedReceipt ? ($selectedReceipt->no_kontainer ?? $selectedReceipt->nomor_kontainer ?? '-') : '-' }}</p>
+                            <p class="text-sm font-bold text-gray-800" id="info_no_kontainer">
+                                @if($selectedReceipt)
+                                    @php
+                                        $tipeKontainer = strtolower($selectedReceipt->tipe_kontainer ?? ($selectedReceipt->suratJalan->tipe_kontainer ?? ''));
+                                    @endphp
+                                    @if($tipeKontainer == 'cargo')
+                                        CARGO
+                                    @else
+                                        {{ $selectedReceipt->no_kontainer ?? $selectedReceipt->nomor_kontainer ?? '-' }}
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </p>
                         </div>
                         <div>
                             <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">No. Surat Jalan</p>
@@ -162,9 +175,16 @@
                             <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Size</p>
                             <p class="text-sm font-bold text-gray-800" id="info_size_kontainer">
                                 @if($selectedReceipt)
-                                    @if($selectedType == 'tt') {{ $selectedReceipt->suratJalan->size ?? '-' }}
-                                    @elseif($selectedType == 'tttsj') {{ $selectedReceipt->size_kontainer ?? '-' }}
-                                    @elseif($selectedType == 'lcl') {{ $selectedReceipt->kontainerPivot->pluck('size_kontainer')->filter()->unique()->implode(', ') ?: '-' }}
+                                    @php
+                                        $tipeKontainer = strtolower($selectedReceipt->tipe_kontainer ?? ($selectedReceipt->suratJalan->tipe_kontainer ?? ''));
+                                    @endphp
+                                    @if($tipeKontainer == 'cargo')
+                                        -
+                                    @else
+                                        @if($selectedType == 'tt') {{ $selectedReceipt->suratJalan->size ?? '-' }}
+                                        @elseif($selectedType == 'tttsj') {{ $selectedReceipt->size_kontainer ?? '-' }}
+                                        @elseif($selectedType == 'lcl') {{ $selectedReceipt->kontainerPivot->pluck('size_kontainer')->filter()->unique()->implode(', ') ?: '-' }}
+                                        @endif
                                     @endif
                                 @else
                                     -

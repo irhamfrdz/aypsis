@@ -472,12 +472,19 @@ class AsuransiTandaTerimaController extends Controller
                 $details['no_kontainer'] = $tt->no_kontainer ?? ($tt->suratJalan->no_kontainer ?? '-');
                 $details['no_surat_jalan'] = $tt->no_surat_jalan ?? '-';
                 
+                // Logic for Cargo type
+                $tipeKontainer = strtolower($tt->tipe_kontainer ?? ($tt->suratJalan->tipe_kontainer ?? ''));
+                if ($tipeKontainer == 'cargo') {
+                    $details['no_kontainer'] = 'CARGO';
+                    $details['size_kontainer'] = '-';
+                } else {
+                    $details['size_kontainer'] = $tt->size ?? ($tt->suratJalan->size ?? '-');
+                }
+
                 // Fallback for nama_barang, jumlah, and satuan from SJ
                 $details['nama_barang'] = is_array($tt->nama_barang) ? implode(', ', $tt->nama_barang) : ($tt->nama_barang ?? ($tt->suratJalan->jenis_barang ?? '-'));
                 $details['jumlah_barang'] = (string)($tt->jumlah ?? ($tt->suratJalan->jumlah_kontainer ?? '-'));
                 $details['satuan'] = $tt->satuan ?? '-';
-                
-                $details['size_kontainer'] = $tt->suratJalan->size ?? '-';
                 
                 // Get ship info from Tanda Terima or related Prospek
                 $details['nama_kapal'] = $tt->estimasi_nama_kapal ?? '-';
