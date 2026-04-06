@@ -319,7 +319,7 @@
             
             // Dropdown menu
             this.dropdown = document.createElement('div');
-            this.dropdown.className = 'absolute z-[999] w-full mt-1.5 bg-white border border-gray-200 rounded-lg shadow-xl hidden overflow-hidden scale-95 opacity-0 transition-all duration-200 transform origin-top';
+            this.dropdown.className = 'absolute z-[1050] w-full mt-1.5 bg-white border border-gray-200 rounded-lg shadow-2xl hidden overflow-hidden scale-95 opacity-0 transition-all duration-200 transform origin-top';
             
             // Search input inside dropdown
             const searchWrapper = document.createElement('div');
@@ -427,6 +427,7 @@
             });
 
             this.dropdown.classList.remove('hidden');
+            this.container.classList.add('z-50'); // Bring container to front
             this.trigger.classList.add('ring-2', 'ring-blue-500', 'border-blue-500');
             this.trigger.querySelector('.dropdown-arrow').classList.add('rotate-180');
             
@@ -442,6 +443,7 @@
         close() {
             this.dropdown.classList.add('scale-95', 'opacity-0');
             this.dropdown.classList.remove('scale-100', 'opacity-100');
+            this.container.classList.remove('z-50'); // Return container z-index
             this.trigger.classList.remove('ring-2', 'ring-blue-500', 'border-blue-500');
             this.trigger.querySelector('.dropdown-arrow').classList.remove('rotate-180');
             
