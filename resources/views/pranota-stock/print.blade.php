@@ -5,24 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PERMOHONAN TRANSFER - {{ $pranota->nomor_pranota }}</title>
     <style>
-        body { font-family: 'Arial', sans-serif; font-size: 8pt; margin: 20px; color: #333; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #444; padding-bottom: 10px; }
-        .header h1 { margin: 0; font-size: 14pt; color: #000; text-transform: uppercase; }
-        .header p { margin: 5px 0 0; font-size: 8pt; color: #666; }
+        body { font-family: 'Arial', sans-serif; font-size: 8pt; margin: 0px; color: #333; }
+        .header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #444; padding-bottom: 5px; }
+        .header h1 { margin: 0; font-size: 13pt; color: #000; text-transform: uppercase; }
+        .header p { margin: 2px 0 0; font-size: 8pt; color: #666; }
         
-        .info-table { width: 100%; margin-bottom: 25px; border-collapse: collapse; }
-        .info-table td { padding: 4px 0; vertical-align: top; }
+        .info-table { width: 100%; margin-bottom: 10px; border-collapse: collapse; }
+        .info-table td { padding: 2px 0; vertical-align: top; }
         .info-table .label { width: 130px; font-weight: bold; font-size: 8pt; }
         .info-table .separator { width: 15px; text-align: center; }
         .info-table td:not(.label):not(.separator) { font-size: 8pt; }
         
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: fixed; border: 1px solid #000; }
-        .items-table th { background-color: #f2f2f2; border: 1px solid #000; padding: 6px 4px; text-align: center; font-size: 8pt; text-transform: uppercase; font-weight: bold; }
-        .items-table td { border: 1px solid #000; padding: 6px 4px; font-size: 8pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; border: 1px solid #000; }
+        .items-table th { background-color: #f2f2f2; border: 1px solid #000; padding: 4px 4px; text-align: center; font-size: 8pt; text-transform: uppercase; font-weight: bold; }
+        .items-table td { border: 1px solid #000; padding: 4px 4px; font-size: 8pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
         
-        .footer { margin-top: 40px; width: 100%; }
+        .footer { margin-top: 10px; width: 100%; }
         .footer-table { width: 100%; border-collapse: collapse; }
-        .footer-table td { width: 33.33%; text-align: center; vertical-align: bottom; height: 100px; }
+        .footer-table td { width: 33.33%; text-align: center; vertical-align: bottom; height: 50px; }
         .signature-line { border-bottom: 1px solid #000; width: 160px; margin: 0 auto 5px; }
         .signature-label { font-size: 8pt; font-weight: bold; }
 
@@ -144,7 +144,7 @@
     </div>
     @endif
 
-    <div style="width: 250px; margin-left: auto; margin-right: 20px; margin-top: 20px; margin-bottom: 30px;">
+    <div style="width: 250px; margin-left: auto; margin-right: 20px; margin-top: 5px; margin-bottom: 10px;">
         @php
             $displayTypes = [
                 'Perlengkapan' => 'Perlengkapan',
