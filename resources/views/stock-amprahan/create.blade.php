@@ -432,10 +432,11 @@
                                                autocomplete="off"
                                                class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
                                         <div id="dropdown_options_kantor" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b-xl max-h-60 overflow-y-auto hidden shadow-xl mt-1 border-t-0">
-                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kantor AYP Jakarta">Kantor AYP Jakarta</div>
-                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kantor AYP Batam">Kantor AYP Batam</div>
-                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kantor Pelabuhan">Kantor Pelabuhan</div>
-                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kantor Garasi">Kantor Garasi</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="MONTIR GARASI PLUIT">MONTIR GARASI PLUIT</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="MONTIR PELABUHAN">MONTIR PELABUHAN</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="TUKANG LAS GARASI">TUKANG LAS GARASI</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="TUKANG TAMBAL BAN GARASI">TUKANG TAMBAL BAN GARASI</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="KENEK MONTIR GARASI">KENEK MONTIR GARASI</div>
                                         </div>
                                     </div>
                                     @error('kantor')
