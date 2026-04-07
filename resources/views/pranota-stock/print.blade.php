@@ -35,7 +35,11 @@
         .font-bold { font-weight: bold; }
 
         @media print {
-            body { margin: 5mm; }
+            @page {
+                size: 21.59cm 16.51cm;
+                margin: 5mm;
+            }
+            body { margin: 0; padding: 5mm; }
             .no-print { display: none; }
             .header { border-bottom-color: #000; }
             .items-table th { background-color: #eee !important; -webkit-print-color-adjust: exact; }
