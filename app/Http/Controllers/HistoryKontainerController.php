@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 use App\Models\HistoryKontainer;
 use App\Models\Gudang;
+use App\Models\Kontainer;
+use App\Models\StockKontainer;
 
 class HistoryKontainerController extends Controller
 {
@@ -50,4 +52,42 @@ class HistoryKontainerController extends Controller
 
         return view('history-kontainer.index', compact('histories'));
     }
+
+    public function destroy($id)
+    {
+        $history = HistoryKontainer::findOrFail($id);
+        $nomorKontainer = $history->nomor_kontainer;
+
+        // Cari record terakhir untuk kontainer ini
+        $latest = HistoryKontainer::where('nomor_kontainer', $nomorKontainer)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        // Jika rute ini menghapus history terakhir, kembalikan posisi kontainer
+        if ($latest && $latest->id == $history->id) {
+            // Cari record sebelumnya
+            $previous = HistoryKontainer::where('nomor_kontainer', $nomorKontainer)
+                ->where('id', '<', $history->id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            // Update posisi kontainer ke gudang sebelumnya
+            // Coba update di tabel kontainers
+            $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+            if ($kontainer) {
+                $kontainer->update(['gudangs_id' => $previous ? $previous->gudang_id : null]);
+            }
+            
+            // Juga coba update di tabel stock_kontainers jika ini adalah tipe stock
+            $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+            if ($stockKontainer) {
+                $stockKontainer->update(['gudangs_id' => $previous ? $previous->gudang_id : null]);
+            }
+        }
+
+        $history->delete();
+
+        return redirect()->back()->with('success', 'History pergerakan berhasil dihapus.');
+    }
 }
+

@@ -133,18 +133,16 @@ class BlController extends Controller
             '40ft' => 0
         ];
         
-        if ($request->filled('nama_kapal') || $request->filled('no_voyage') || $request->filled('kapal') || $request->filled('voyage')) {
-            $cloneQuery = clone $query;
-            $uniqueContainers = $cloneQuery->reorder() // Clear previous group by conflicting orderings
-                ->select('nomor_kontainer', 'size_kontainer')
-                ->whereNotNull('nomor_kontainer')
-                ->where('nomor_kontainer', '!=', '')
-                ->groupBy('nomor_kontainer', 'size_kontainer')
-                ->get();
-                
-            $sizeCounts['20ft'] = $uniqueContainers->where('size_kontainer', '20')->count();
-            $sizeCounts['40ft'] = $uniqueContainers->where('size_kontainer', '40')->count();
-        }
+        $cloneQuery = clone $query;
+        $uniqueContainers = $cloneQuery->reorder() // Clear previous group by conflicting orderings
+            ->select('nomor_kontainer', 'size_kontainer')
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->groupBy('nomor_kontainer', 'size_kontainer')
+            ->get();
+            
+        $sizeCounts['20ft'] = $uniqueContainers->where('size_kontainer', '20')->count();
+        $sizeCounts['40ft'] = $uniqueContainers->where('size_kontainer', '40')->count();
 
         $bls = $query->paginate(15)->withQueryString();
         

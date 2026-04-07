@@ -3326,6 +3326,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('history-kontainer', [\App\Http\Controllers\HistoryKontainerController::class, 'index'])
          ->name('history-kontainer.index')
          ->middleware('can:master-kontainer-view');
+    Route::delete('history-kontainer/{id}', [\App\Http\Controllers\HistoryKontainerController::class, 'destroy'])
+         ->name('history-kontainer.destroy')
+         ->middleware('can:master-kontainer-delete');
+
 
     // Gerak Kontainer
     Route::get('gerak-kontainer', [\App\Http\Controllers\GerakKontainerController::class, 'index'])

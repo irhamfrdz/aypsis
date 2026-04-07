@@ -9,6 +9,18 @@
         <p class="mt-2 text-sm text-gray-500">Pantau seluruh riwayat log pergerakan kontainer dalam satu dashboard.</p>
     </div>
 
+    @if(session('success'))
+    <div class="mb-8 flex items-center p-4 text-sm text-green-800 border border-green-300 rounded-2xl bg-green-50 shadow-sm animate-pulse" role="alert">
+        <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+        </svg>
+        <span class="sr-only">Success</span>
+        <div>
+            <span class="font-bold">Berhasil!</span> {{ session('success') }}
+        </div>
+    </div>
+    @endif
+
     <!-- Filter Section -->
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 transition-all hover:shadow-md">
         <form action="{{ route('history-kontainer.index') }}" method="GET">
@@ -86,6 +98,9 @@
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ke</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Detail Keterangan</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Oleh</th>
+                        @can('master-kontainer-delete')
+                        <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
+                        @endcan
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -140,10 +155,27 @@
                                     <span class="text-xs font-medium text-gray-500">{{ $history->creator->name ?? 'System' }}</span>
                                 </div>
                             </td>
+                            @can('master-kontainer-delete')
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <form action="{{ route('history-kontainer.destroy', $history->id) }}" method="POST" 
+                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus history ini? Jika ini adalah history terbaru, posisi kontainer akan dikembalikan ke lokasi sebelumnya.')"
+                                    class="inline-block">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" 
+                                        class="inline-flex items-center justify-center h-9 w-9 rounded-xl text-red-600 bg-red-50 hover:bg-red-100 transition-all active:scale-90 shadow-sm hover:shadow"
+                                        title="Hapus History">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </td>
+                            @endcan
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />

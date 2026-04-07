@@ -192,8 +192,10 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <!-- Table Header Actions -->
             <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                <div class="text-sm text-gray-600">
-                    Total: {{ $bls->total() }} Data
+                <div class="text-sm text-gray-600 flex items-center">
+                    <span class="mr-4">Total: <span class="font-bold">{{ $bls->total() }}</span> Data</span>
+                    <span class="mr-3 border-l border-gray-300 pl-4"><i class="fas fa-box text-gray-400 mr-1"></i> <span class="font-bold">{{ $sizeCounts['20ft'] ?? 0 }}</span> x 20ft</span>
+                    <span><i class="fas fa-boxes text-gray-400 mr-1"></i> <span class="font-bold">{{ $sizeCounts['40ft'] ?? 0 }}</span> x 40ft</span>
                 </div>
                 <!-- Selected Actions -->
                 <div id="selectedActions" class="hidden items-center p-2 bg-blue-50 border border-blue-200 rounded-lg">
