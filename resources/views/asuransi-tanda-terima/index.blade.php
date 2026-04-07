@@ -83,15 +83,15 @@
                         <th class="px-3 py-3 text-left">
                             <input type="checkbox" id="selectAllCheckboxes" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipe Dokumen</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nomor & Tanggal</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No. Kontainer</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Barang</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider text-center">Kuantitas</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider text-center">Satuan</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pengirim / Penerima</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status Asuransi</th>
-                        <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Tipe Dokumen</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Nomor & Tanggal</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">No. Kontainer</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Nama Barang</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider text-center whitespace-nowrap">Kuantitas</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider text-center whitespace-nowrap">Satuan</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Pengirim / Penerima</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Status Asuransi</th>
+                        <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider whitespace-nowrap">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -100,7 +100,7 @@
                             <td class="px-3 py-4">
                                 <input type="checkbox" name="receipt_ids[]" value="{{ $item->type }}_{{ $item->id }}" class="receipt-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->type == 'tt')
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Tanda Terima</span>
                                 @elseif($item->type == 'tttsj')
@@ -109,7 +109,7 @@
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">Tanda Terima LCL</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="block text-sm font-medium text-gray-900">{{ $item->number }}</span>
                                 <span class="block text-xs text-gray-500">{{ \Carbon\Carbon::parse($item->date)->format('d/m/Y') }}</span>
                                 @if($item->insurance && ($item->insurance->nama_kapal || $item->insurance->nomor_voyage))
@@ -127,10 +127,10 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm text-gray-900 font-mono">{{ $item->no_kontainer ?: '-' }}</span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm text-gray-900">
                                     @if($item->type == 'tt' && is_string($item->nama_barang) && (str_starts_with($item->nama_barang, '[') || str_starts_with($item->nama_barang, '{')))
                                         @php
@@ -142,13 +142,13 @@
                                     @endif
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
                                 <span class="text-sm text-gray-900 font-medium">{{ $item->kuantitas ?: '-' }}</span>
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-6 py-4 text-center whitespace-nowrap">
                                 <span class="text-sm text-gray-900">{{ $item->satuan ?: '-' }}</span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
                                     <span class="font-medium">Dari:</span> {{ $item->pengirim }}
                                 </div>
@@ -156,7 +156,7 @@
                                     <span class="font-medium">Ke:</span> {{ $item->penerima }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->insurance)
                                     <div class="flex flex-col">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 w-fit">
