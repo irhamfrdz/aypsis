@@ -281,25 +281,25 @@
                         <td>{{ $item['reference'] ?? '-' }}</td>
                         <td><span class="font-bold">{{ $item['nama_barang'] ?? ($item['nama'] ?? '-') }}</span></td>
                         <td>{{ $item['keterangan'] ?? '-' }}</td>
-                        <td class="text-right">Rp {{ number_format($totalBelanja, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($totalBelanja, 0, ',', '.') }}</td>
                         <td class="text-center">{{ number_format($jumlahItems, 0, ',', '.') }}</td>
                         <td class="text-center">{{ $item['satuan'] ?? '-' }}</td>
                     </tr>
                     @endforeach
                     <tr style="background-color: #f9f9f9; font-weight: bold;">
                         <td colspan="5" class="text-right px-4">SUBTOTAL</td>
-                        <td class="text-right">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($grandTotal, 0, ',', '.') }}</td>
                         <td colspan="2"></td>
                     </tr>
                     @if($pranota->adjustment != 0)
                     <tr style="font-weight: bold;">
                         <td colspan="5" class="text-right px-4">ADJUSTMENT</td>
-                        <td class="text-right">Rp {{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                         <td colspan="2"></td>
                     </tr>
                     <tr style="background-color: #eee; font-weight: bold; font-size: 9px;">
                         <td colspan="5" class="text-right px-4">TOTAL AKHIR</td>
-                        <td class="text-right">Rp {{ number_format($grandTotal + $pranota->adjustment, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($grandTotal + $pranota->adjustment, 0, ',', '.') }}</td>
                         <td colspan="2"></td>
                     </tr>
                     @endif
