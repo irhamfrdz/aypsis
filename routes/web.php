@@ -994,6 +994,26 @@ Route::middleware([
              ->name('pricelist-thc.destroy')
              ->middleware('can:master-pricelist-thc-delete');
 
+        // Pricelist Meratus Routes
+        Route::get('pricelist-meratus', [\App\Http\Controllers\PricelistMeratusController::class, 'index'])
+             ->name('pricelist-meratus.index')
+             ->middleware('can:master-pricelist-meratus-view');
+        Route::get('pricelist-meratus/create', [\App\Http\Controllers\PricelistMeratusController::class, 'create'])
+             ->name('pricelist-meratus.create')
+             ->middleware('can:master-pricelist-meratus-create');
+        Route::post('pricelist-meratus', [\App\Http\Controllers\PricelistMeratusController::class, 'store'])
+             ->name('pricelist-meratus.store')
+             ->middleware('can:master-pricelist-meratus-create');
+        Route::get('pricelist-meratus/{id}/edit', [\App\Http\Controllers\PricelistMeratusController::class, 'edit'])
+             ->name('pricelist-meratus.edit')
+             ->middleware('can:master-pricelist-meratus-update');
+        Route::put('pricelist-meratus/{id}', [\App\Http\Controllers\PricelistMeratusController::class, 'update'])
+             ->name('pricelist-meratus.update')
+             ->middleware('can:master-pricelist-meratus-update');
+        Route::delete('pricelist-meratus/{id}', [\App\Http\Controllers\PricelistMeratusController::class, 'destroy'])
+             ->name('pricelist-meratus.destroy')
+             ->middleware('can:master-pricelist-meratus-delete');
+
         // Master Pricelist LOLO
         Route::get('pricelist-lolo', [\App\Http\Controllers\MasterPricelistLoloController::class, 'index'])
              ->name('pricelist-lolo.index')
