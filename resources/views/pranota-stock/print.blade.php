@@ -16,9 +16,9 @@
         .info-table .separator { width: 15px; text-align: center; }
         .info-table td:not(.label):not(.separator) { font-size: 9pt; }
         
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; border: 1px solid #000; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: fixed; border: 1px solid #000; }
         .items-table th { background-color: #f2f2f2; border: 1px solid #000; padding: 6px 4px; text-align: center; font-size: 8.5pt; text-transform: uppercase; font-weight: bold; }
-        .items-table td { border: 1px solid #000; padding: 6px 4px; font-size: 8.5pt; white-space: nowrap; vertical-align: middle; }
+        .items-table td { border: 1px solid #000; padding: 6px 4px; font-size: 8.5pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
         
         .footer { margin-top: 40px; width: 100%; }
         .footer-table { width: 100%; border-collapse: collapse; }
@@ -80,9 +80,9 @@
             <tr>
                 <th style="width: 3%;">NO</th>
                 <th style="width: 10%;">TANGGAL</th>
-                <th style="width: 27%;">PEMAKAI</th>
-                <th style="width: 15%;">NAMA BARANG</th>
-                <th style="width: 12%;">KETERANGAN</th>
+                <th style="width: 15%;">PEMAKAI</th>
+                <th style="width: 25%;">NAMA BARANG</th>
+                <th style="width: 22%;">KETERANGAN</th>
                 <th style="width: 12%;">TOTAL BELANJA</th>
                 <th style="width: 5%;">QTY</th>
                 <th style="width: 8%;">SATUAN</th>
