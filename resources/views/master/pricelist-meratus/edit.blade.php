@@ -43,7 +43,11 @@
 
                     <div>
                         <label for="size" class="block text-sm font-medium text-gray-700 mb-1">Size</label>
-                        <input type="text" name="size" id="size" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('size') border-red-500 @enderror" value="{{ old('size', $pricelistMeratus->size) }}" placeholder="Contoh: 20ft, 40ft, dll">
+                        <select name="size" id="size" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('size') border-red-500 @enderror">
+                            <option value="">-- Pilih Size --</option>
+                            <option value="20ft" {{ old('size', $pricelistMeratus->size) == '20ft' ? 'selected' : '' }}>20ft</option>
+                            <option value="40ft" {{ old('size', $pricelistMeratus->size) == '40ft' ? 'selected' : '' }}>40ft</option>
+                        </select>
                         @error('size')
                             <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                         @enderror
