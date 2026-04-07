@@ -5,30 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PERMOHONAN TRANSFER - {{ $pranota->nomor_pranota }}</title>
     <style>
-        body { font-family: 'Arial', sans-serif; font-size: 10pt; margin: 20px; color: #333; }
+        body { font-family: 'Arial', sans-serif; font-size: 8pt; margin: 20px; color: #333; }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #444; padding-bottom: 10px; }
-        .header h1 { margin: 0; font-size: 16pt; color: #000; text-transform: uppercase; }
-        .header p { margin: 5px 0 0; font-size: 9pt; color: #666; }
+        .header h1 { margin: 0; font-size: 14pt; color: #000; text-transform: uppercase; }
+        .header p { margin: 5px 0 0; font-size: 8pt; color: #666; }
         
         .info-table { width: 100%; margin-bottom: 25px; border-collapse: collapse; }
         .info-table td { padding: 4px 0; vertical-align: top; }
-        .info-table .label { width: 130px; font-weight: bold; font-size: 9pt; }
+        .info-table .label { width: 130px; font-weight: bold; font-size: 8pt; }
         .info-table .separator { width: 15px; text-align: center; }
-        .info-table td:not(.label):not(.separator) { font-size: 9pt; }
+        .info-table td:not(.label):not(.separator) { font-size: 8pt; }
         
         .items-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; table-layout: fixed; border: 1px solid #000; }
-        .items-table th { background-color: #f2f2f2; border: 1px solid #000; padding: 6px 4px; text-align: center; font-size: 8.5pt; text-transform: uppercase; font-weight: bold; }
-        .items-table td { border: 1px solid #000; padding: 6px 4px; font-size: 8.5pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+        .items-table th { background-color: #f2f2f2; border: 1px solid #000; padding: 6px 4px; text-align: center; font-size: 8pt; text-transform: uppercase; font-weight: bold; }
+        .items-table td { border: 1px solid #000; padding: 6px 4px; font-size: 8pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
         
         .footer { margin-top: 40px; width: 100%; }
         .footer-table { width: 100%; border-collapse: collapse; }
         .footer-table td { width: 33.33%; text-align: center; vertical-align: bottom; height: 100px; }
         .signature-line { border-bottom: 1px solid #000; width: 160px; margin: 0 auto 5px; }
-        .signature-label { font-size: 9pt; font-weight: bold; }
+        .signature-label { font-size: 8pt; font-weight: bold; }
 
         .keterangan-section { margin-top: 15px; padding: 8px; border: 1px dashed #ccc; background-color: #fdfdfd; }
-        .keterangan-title { font-weight: bold; font-size: 9pt; margin-bottom: 4px; text-decoration: underline; }
-        .keterangan-text { font-size: 9pt; line-height: 1.3; color: #555; }
+        .keterangan-title { font-weight: bold; font-size: 8pt; margin-bottom: 4px; text-decoration: underline; }
+        .keterangan-text { font-size: 8pt; line-height: 1.3; color: #555; }
 
         .text-right { text-align: right; }
         .text-center { text-align: center; }
@@ -121,7 +121,7 @@
                     <td class="text-right">Rp {{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                     <td colspan="2"></td>
                 </tr>
-                <tr style="background-color: #eee; font-weight: bold; font-size: 10pt;">
+                <tr style="background-color: #eee; font-weight: bold; font-size: 9pt;">
                     <td colspan="5" class="text-right px-4">TOTAL AKHIR</td>
                     <td class="text-right">Rp {{ number_format($grandTotal + $pranota->adjustment, 0, ',', '.') }}</td>
                     <td colspan="2"></td>
@@ -190,7 +190,7 @@
                 }
             }
         @endphp
-        <table style="width: 100%; border-collapse: collapse; font-size: 10pt; font-family: 'Arial', sans-serif;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 8pt; font-family: 'Arial', sans-serif;">
             @foreach($typeTotals as $label => $val)
             <tr style="border-bottom: 1px solid #f0f0f0;">
                 <td style="padding: 4px 0; width: 60%; font-weight: 500;">{{ $label }}</td>
@@ -199,8 +199,8 @@
             @foreach($categoryDetails[$label] as $subLabel => $subVal)
                 @if($subVal > 0)
                 <tr>
-                    <td style="padding: 1px 0 1px 20px; font-size: 8.5pt; color: #888; font-style: italic;">{{ $subLabel }}</td>
-                    <td style="text-align: right; padding: 1px 0; font-size: 8.5pt; color: #888;">{{ number_format($subVal, 0, ',', '.') }}</td>
+                    <td style="padding: 1px 0 1px 20px; font-size: 7.5pt; color: #888; font-style: italic;">{{ $subLabel }}</td>
+                    <td style="text-align: right; padding: 1px 0; font-size: 7.5pt; color: #888;">{{ number_format($subVal, 0, ',', '.') }}</td>
                 </tr>
                 @endif
             @endforeach
@@ -213,7 +213,7 @@
             </tr>
             @endif
             
-            <tr style="border-top: 1.5px solid #000; font-weight: bold; font-size: 11pt;">
+            <tr style="border-top: 1.5px solid #000; font-weight: bold; font-size: 10pt;">
                 <td style="padding: 8px 0;">Total Biaya</td>
                 <td style="text-align: right; padding: 8px 0;">{{ number_format($summaryGrandTotal, 0, ',', '.') }}</td>
             </tr>
