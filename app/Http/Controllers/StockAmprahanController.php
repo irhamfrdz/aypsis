@@ -79,7 +79,8 @@ class StockAmprahanController extends Controller
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
 
-        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats'));
+        $mobils = $kendaraans;
+        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'mobils', 'kapals', 'alatBerats'));
     }
 
     public function store(Request $request)
