@@ -143,23 +143,31 @@
         .font-bold { font-weight: bold; }
 
         .summary-section {
-            display: flex;
-            justify-content: flex-end;
+            width: 100%;
             margin-top: 5px;
         }
 
+        .summary-columns {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 5px;
+        }
+
         .summary-table {
-            width: 250px;
+            flex: 1;
             border-collapse: collapse;
             font-size: 8px;
         }
 
         .summary-table td {
-            padding: 2px 0;
+            padding: 1px 0;
         }
 
-        .summary-table tr.total {
+        .summary-total-container {
             border-top: 1.5px solid #000;
+            padding-top: 3px;
+            display: flex;
+            justify-content: flex-end;
             font-weight: bold;
             font-size: 10px;
         }
@@ -360,35 +368,60 @@
                         $summaryGrandTotal += $itemNominal;
                     }
                 }
+                
+                // Split into two groups for two-column display
+                $typeLabels = array_keys($typeTotals);
+                $leftGroup = array_slice($typeLabels, 0, 2);
+                $rightGroup = array_slice($typeLabels, 2);
             @endphp
-            <table class="summary-table">
-                @foreach($typeTotals as $label => $val)
-                <tr style="border-bottom: 1px solid #f0f0f0;">
-                    <td style="width: 60%; font-weight: 500;">{{ $label }}</td>
-                    <td class="text-right">{{ $val > 0 ? number_format($val, 0, ',', '.') : '-' }}</td>
-                </tr>
-                @foreach($categoryDetails[$label] as $subLabel => $subVal)
-                    @if($subVal > 0)
-                    <tr>
-                        <td style="padding-left: 15px; font-size: 7px; color: #888; font-style: italic;">{{ $subLabel }}</td>
-                        <td class="text-right" style="font-size: 7px; color: #888;">{{ number_format($subVal, 0, ',', '.') }}</td>
+            
+            <div class="summary-columns">
+                <table class="summary-table">
+                    @foreach($leftGroup as $label)
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="width: 60%; font-weight: 500;">{{ $label }}</td>
+                        <td class="text-right">{{ $typeTotals[$label] > 0 ? number_format($typeTotals[$label], 0, ',', '.') : '-' }}</td>
+                    </tr>
+                    @foreach($categoryDetails[$label] as $subLabel => $subVal)
+                        @if($subVal > 0)
+                        <tr>
+                            <td style="padding-left: 15px; font-size: 7px; color: #888; font-style: italic;">{{ $subLabel }}</td>
+                            <td class="text-right" style="font-size: 7px; color: #888;">{{ number_format($subVal, 0, ',', '.') }}</td>
+                        </tr>
+                        @endif
+                    @endforeach
+                    @endforeach
+                </table>
+
+                <table class="summary-table">
+                    @foreach($rightGroup as $label)
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="width: 60%; font-weight: 500;">{{ $label }}</td>
+                        <td class="text-right">{{ $typeTotals[$label] > 0 ? number_format($typeTotals[$label], 0, ',', '.') : '-' }}</td>
+                    </tr>
+                    @foreach($categoryDetails[$label] as $subLabel => $subVal)
+                        @if($subVal > 0)
+                        <tr>
+                            <td style="padding-left: 15px; font-size: 7px; color: #888; font-style: italic;">{{ $subLabel }}</td>
+                            <td class="text-right" style="font-size: 7px; color: #888;">{{ number_format($subVal, 0, ',', '.') }}</td>
+                        </tr>
+                        @endif
+                    @endforeach
+                    @endforeach
+
+                    @if($otherTotal > 0)
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="font-weight: 500;">Lain-lain</td>
+                        <td class="text-right">{{ number_format($otherTotal, 0, ',', '.') }}</td>
                     </tr>
                     @endif
-                @endforeach
-                @endforeach
-                
-                @if($otherTotal > 0)
-                <tr style="border-bottom: 1px solid #f0f0f0;">
-                    <td style="font-weight: 500;">Lain-lain</td>
-                    <td class="text-right">{{ number_format($otherTotal, 0, ',', '.') }}</td>
-                </tr>
-                @endif
-                
-                <tr class="total">
-                    <td style="padding: 4px 0;">Total Biaya</td>
-                    <td class="text-right" style="padding: 4px 0;">{{ number_format($summaryGrandTotal, 0, ',', '.') }}</td>
-                </tr>
-            </table>
+                </table>
+            </div>
+            
+            <div class="summary-total-container">
+                <div style="width: 120px;">Total Biaya</div>
+                <div style="width: 100px; text-align: right;">{{ number_format($summaryGrandTotal, 0, ',', '.') }}</div>
+            </div>
         </div>
 
         <div class="footer-signatures">
