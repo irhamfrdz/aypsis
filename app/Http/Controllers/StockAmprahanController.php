@@ -174,7 +174,17 @@ class StockAmprahanController extends Controller
 
     public function edit($id)
     {
-        $item = StockAmprahan::with(['usages' => fn($q) => $q->latest()])->findOrFail($id);
+        $item = StockAmprahan::with(['usages' => fn($q) => $q->orderBy('id', 'asc')])->findOrFail($id);
+        
+        // Let's identify the 'Direct Usage' (usually the oldest one created)
+        $directUsage = $item->usages->first();
+        
+        // If there's a usage, the 'jumlah' in the form should show the Total quantity (Stock + that Usage)
+        // because the update logic will subtract it again.
+        if ($directUsage) {
+            $item->jumlah += $directUsage->jumlah;
+        }
+
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
         $gudangItems = MasterGudangAmprahan::where('status', 'active')->orderBy('nama_gudang')->get();
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
@@ -182,12 +192,12 @@ class StockAmprahanController extends Controller
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
 
-        return view('stock-amprahan.edit', compact('item', 'masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats'));
+        return view('stock-amprahan.edit', compact('item', 'directUsage', 'masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats'));
     }
 
     public function update(Request $request, $id)
     {
-        $item = StockAmprahan::findOrFail($id);
+        $item = StockAmprahan::with('usages')->findOrFail($id);
         
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
@@ -197,7 +207,7 @@ class StockAmprahanController extends Controller
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
             'adjustment' => 'nullable|numeric',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah' => 'required|numeric|min:0', // This is the TOTAL quantity in the form
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
@@ -217,11 +227,20 @@ class StockAmprahanController extends Controller
 
         $data['updated_by'] = Auth::id();
 
-        // Manual validation for jumlah_pakai if is_langsung_pakai
+        // Manual validation for jumlah_pakai against the entered TOTAL jumlah
         if ($request->is_langsung_pakai == '1') {
             if ($request->jumlah_pakai > $data['jumlah']) {
                 return redirect()->back()->withErrors(['jumlah_pakai' => 'Jumlah pakai tidak boleh lebih besar dari jumlah stock.'])->withInput();
             }
+        }
+
+        // Identify existing direct usage (oldest)
+        $existingDirectUsage = $item->usages()->orderBy('id', 'asc')->first();
+
+        // Handle Stock Update
+        $finalJumlah = $data['jumlah'];
+        if ($request->is_langsung_pakai == '1') {
+            $finalJumlah -= $request->jumlah_pakai;
         }
 
         $stockData = [
@@ -232,24 +251,18 @@ class StockAmprahanController extends Controller
             'master_nama_barang_amprahan_id' => $data['master_nama_barang_amprahan_id'],
             'harga_satuan' => $data['harga_satuan'],
             'adjustment' => $data['adjustment'] ?? 0,
-            'jumlah' => $data['jumlah'],
+            'jumlah' => $finalJumlah,
             'satuan' => $data['satuan'],
             'lokasi' => $data['lokasi'],
             'keterangan' => $data['keterangan'],
             'updated_by' => $data['updated_by'],
         ];
 
-        // If langsung pakai, deduct from initial stock immediately
-        if ($request->is_langsung_pakai == '1') {
-            $stockData['jumlah'] -= $request->jumlah_pakai;
-        }
-
         $item->update($stockData);
 
-        // Record usage if applicable
+        // Handle Usage Record
         if ($request->is_langsung_pakai == '1') {
-            StockAmprahanUsage::create([
-                'stock_amprahan_id' => $item->id,
+            $usageData = [
                 'penerima_id' => $request->penerima_id,
                 'kendaraan_id' => $request->kendaraan_id,
                 'truck_id' => $request->truck_id,
@@ -261,11 +274,23 @@ class StockAmprahanController extends Controller
                 'tanggal_pengambilan' => $request->tanggal_pengambilan,
                 'keterangan' => $request->keterangan_pakai,
                 'kilometer' => $request->kilometer,
-                'created_by' => Auth::id(),
-            ]);
+            ];
+
+            if ($existingDirectUsage) {
+                $existingDirectUsage->update($usageData);
+            } else {
+                $usageData['stock_amprahan_id'] = $item->id;
+                $usageData['created_by'] = Auth::id();
+                StockAmprahanUsage::create($usageData);
+            }
+        } else {
+            // If unchecked, delete the direct usage if it exists
+            if ($existingDirectUsage) {
+                $existingDirectUsage->delete();
+            }
         }
 
-        return redirect()->route('stock-amprahan.index')->with('success', 'Stock amprahan berhasil diperbarui' . ($request->is_langsung_pakai == '1' ? ' dan langsung diproses pemakaiannya.' : '.'));
+        return redirect()->route('stock-amprahan.index')->with('success', 'Stock amprahan berhasil diperbarui.');
     }
 
     public function destroy($id)

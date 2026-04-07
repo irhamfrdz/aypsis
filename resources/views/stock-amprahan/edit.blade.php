@@ -171,6 +171,7 @@
                             <div>
                                 <label for="jumlah" class="block text-sm font-semibold text-gray-700 mb-1">Jumlah <span class="text-red-500">*</span></label>
                                 <input type="number" step="0.01" name="jumlah" id="jumlah" value="{{ old('jumlah', $item->jumlah) }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200" required>
+                                <p class="mt-1 text-[10px] text-gray-500 italic">Untuk pemakaian langsung, masukkan jumlah TOTAL pembelian.</p>
                                 @error('jumlah')
                                     <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                                 @enderror
@@ -232,11 +233,10 @@
                         </div>
 
                         {{-- Langsung Pakai Checklist --}}
-                        @php $usage = $item->usages->first(); @endphp
                         <div class="pt-4">
                             <label class="flex items-center space-x-3 cursor-pointer group w-fit">
                                 <div class="relative">
-                                    <input type="checkbox" name="is_langsung_pakai" id="is_langsung_pakai" value="1" {{ (old('is_langsung_pakai') || $usage) ? 'checked' : '' }} class="peer hidden">
+                                    <input type="checkbox" name="is_langsung_pakai" id="is_langsung_pakai" value="1" {{ (old('is_langsung_pakai') || $directUsage) ? 'checked' : '' }} class="peer hidden">
                                     <div class="w-6 h-6 border-2 border-gray-300 rounded-lg group-hover:border-indigo-500 peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-all duration-200 flex items-center justify-center">
                                         <i class="fas fa-check text-white text-xs scale-0 peer-checked:scale-100 transition-transform duration-200"></i>
                                     </div>
@@ -246,7 +246,7 @@
                         </div>
 
                         {{-- Usage Fields Container --}}
-                        <div id="usage_fields_container" class="{{ (old('is_langsung_pakai') || $usage) ? '' : 'hidden' }} mt-6 p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-6">
+                        <div id="usage_fields_container" class="{{ (old('is_langsung_pakai') || $directUsage) ? '' : 'hidden' }} mt-6 p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-6">
                             <h3 class="text-sm font-bold text-indigo-800 flex items-center uppercase tracking-wider">
                                 <i class="fas fa-wrench mr-2"></i>Informasi Pemakaian Langsung
                             </h3>
@@ -257,7 +257,7 @@
                                     <label for="jumlah_pakai" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
                                         Jumlah Pakai <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="number" step="0.01" name="jumlah_pakai" id="jumlah_pakai" value="{{ old('jumlah_pakai', $usage->jumlah ?? '') }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                    <input type="number" step="0.01" name="jumlah_pakai" id="jumlah_pakai" value="{{ old('jumlah_pakai', $directUsage->jumlah ?? '') }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
                                     @error('jumlah_pakai')
                                         <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
@@ -268,7 +268,7 @@
                                     <label for="tanggal_pengambilan" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
                                         Tanggal Pakai <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="date" name="tanggal_pengambilan" id="tanggal_pengambilan" value="{{ old('tanggal_pengambilan', $usage && $usage->tanggal_pengambilan ? \Carbon\Carbon::parse($usage->tanggal_pengambilan)->format('Y-m-d') : date('Y-m-d')) }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                    <input type="date" name="tanggal_pengambilan" id="tanggal_pengambilan" value="{{ old('tanggal_pengambilan', $directUsage && $directUsage->tanggal_pengambilan ? \Carbon\Carbon::parse($directUsage->tanggal_pengambilan)->format('Y-m-d') : date('Y-m-d')) }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
                                     @error('tanggal_pengambilan')
                                         <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
@@ -287,7 +287,7 @@
                                         <select name="penerima_id" id="penerima_id" style="display: none !important;">
                                             <option value="">-- Pilih Penerima --</option>
                                             @foreach($karyawans as $k)
-                                                <option value="{{ $k->id }}" {{ old('penerima_id', $usage->penerima_id ?? '') == $k->id ? 'selected' : '' }}>{{ $k->nama_lengkap }}</option>
+                                                <option value="{{ $k->id }}" {{ old('penerima_id', $directUsage->penerima_id ?? '') == $k->id ? 'selected' : '' }}>{{ $k->nama_lengkap }}</option>
                                             @endforeach
                                         </select>
                                         <div id="dropdown_options_penerima" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
@@ -308,7 +308,7 @@
                                         <select name="kendaraan_id" id="kendaraan_id" style="display: none !important;">
                                             <option value="">-- Pilih Kendaraan --</option>
                                             @foreach($kendaraans as $m)
-                                                <option value="{{ $m->id }}" {{ (old('kendaraan_id') ?? ($item->usages->first()->kendaraan_id ?? '')) == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
+                                                <option value="{{ $m->id }}" {{ (old('kendaraan_id') ?? ($directUsage->kendaraan_id ?? '')) == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
                                             @endforeach
                                         </select>
                                         <div id="dropdown_options_kendaraan" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
@@ -327,7 +327,7 @@
                                         <select name="truck_id" id="truck_id" style="display: none !important;">
                                             <option value="">-- Pilih Truck --</option>
                                             @foreach($kendaraans as $m)
-                                                <option value="{{ $m->id }}" {{ (old('truck_id') ?? ($item->usages->first()->truck_id ?? '')) == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
+                                                <option value="{{ $m->id }}" {{ (old('truck_id') ?? ($directUsage->truck_id ?? '')) == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
                                             @endforeach
                                         </select>
                                         <div id="dropdown_options_truck" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
@@ -346,7 +346,7 @@
                                         <select name="buntut_id" id="buntut_id" style="display: none !important;">
                                             <option value="">-- Pilih Buntut --</option>
                                             @foreach($kendaraans as $m)
-                                                <option value="{{ $m->id }}" {{ old('buntut_id', $usage->buntut_id ?? '') == $m->id ? 'selected' : '' }}>
+                                                <option value="{{ $m->id }}" {{ old('buntut_id', $directUsage->buntut_id ?? '') == $m->id ? 'selected' : '' }}>
                                                     {{ $m->no_kir ?: ($m->nomor_polisi ?: 'No KIR: -') }}
                                                 </option>
                                             @endforeach
@@ -367,7 +367,7 @@
                                         <select name="kapal_id" id="kapal_id" style="display: none !important;">
                                             <option value="">-- Pilih Kapal --</option>
                                             @foreach($kapals as $k)
-                                                <option value="{{ $k->id }}" {{ old('kapal_id', $usage->kapal_id ?? '') == $k->id ? 'selected' : '' }}>{{ $k->nama_kapal }}</option>
+                                                <option value="{{ $k->id }}" {{ old('kapal_id', $directUsage->kapal_id ?? '') == $k->id ? 'selected' : '' }}>{{ $k->nama_kapal }}</option>
                                             @endforeach
                                         </select>
                                         <div id="dropdown_options_kapal" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
@@ -386,7 +386,7 @@
                                         <select name="alat_berat_id" id="alat_berat_id" style="display: none !important;">
                                             <option value="">-- Pilih Alat Berat --</option>
                                             @foreach($alatBerats as $ab)
-                                                <option value="{{ $ab->id }}" {{ old('alat_berat_id', $usage->alat_berat_id ?? '') == $ab->id ? 'selected' : '' }}>{{ $ab->kode_alat }} - {{ $ab->nama }}{{ $ab->merk ? ' - ' . $ab->merk : '' }}</option>
+                                                <option value="{{ $ab->id }}" {{ old('alat_berat_id', $directUsage->alat_berat_id ?? '') == $ab->id ? 'selected' : '' }}>{{ $ab->kode_alat }} - {{ $ab->nama }}{{ $ab->merk ? ' - ' . $ab->merk : '' }}</option>
                                             @endforeach
                                         </select>
                                         <div id="dropdown_options_alat_berat" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
@@ -400,7 +400,7 @@
                                     <label for="kantor" class="block text-sm font-bold text-gray-700 mb-2">Kantor</label>
                                     <div class="relative dropdown-container-kantor">
                                         <input type="text" name="kantor" id="kantor" 
-                                               value="{{ old('kantor', $usage->kantor ?? '') }}" 
+                                               value="{{ old('kantor', $directUsage->kantor ?? '') }}" 
                                                placeholder="Ketik atau pilih..."
                                                autocomplete="off"
                                                class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
@@ -427,7 +427,7 @@
                                     <label for="kilometer" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
                                         Kilometer (Opsional)
                                     </label>
-                                    <input type="number" step="0.01" name="kilometer" id="kilometer" value="{{ old('kilometer', $usage->kilometer ?? '') }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                    <input type="number" step="0.01" name="kilometer" id="kilometer" value="{{ old('kilometer', $directUsage->kilometer ?? '') }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
                                     @error('kilometer')
                                         <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
@@ -437,7 +437,7 @@
                             {{-- Keterangan Pakai --}}
                             <div class="group">
                                 <label for="keterangan_pakai" class="block text-sm font-bold text-gray-700 mb-2">Keterangan Pakai <span class="text-red-500">*</span></label>
-                                <textarea name="keterangan_pakai" id="keterangan_pakai" rows="2" placeholder="Tujuan pemakaian..." class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm resize-none">{{ old('keterangan_pakai', $usage->keterangan ?? '') }}</textarea>
+                                <textarea name="keterangan_pakai" id="keterangan_pakai" rows="2" placeholder="Tujuan pemakaian..." class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm resize-none">{{ old('keterangan_pakai', $directUsage->keterangan ?? '') }}</textarea>
                                 @error('keterangan_pakai')
                                     <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                 @enderror
