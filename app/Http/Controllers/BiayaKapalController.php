@@ -24,6 +24,8 @@ use App\Models\BiayaKapalStorage;
 use App\Models\MasterPricelistBiayaStorage;
 use App\Models\BiayaKapalFreight;
 use App\Models\BiayaKapalPerijinan;
+use App\Models\BiayaKapalMeratus;
+use App\Models\PricelistMeratus;
 use App\Models\MasterPricelistFreight;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaTanpaSuratJalan;
@@ -203,6 +205,9 @@ class BiayaKapalController extends Controller
         // Get pricelist perijinans
         $pricelistPerijinans = \App\Models\PricelistPerijinan::where('status', 'Aktif')->orderBy('lokasi')->get();
 
+        // Get pricelist meratus
+        $pricelistMeratus = \App\Models\PricelistMeratus::where('status', 'Aktif')->orderBy('jenis_biaya')->get();
+
         return view('biaya-kapal.create', compact(
             'kapals', 
             'klasifikasiBiayas', 
@@ -222,7 +227,8 @@ class BiayaKapalController extends Controller
             'pricelistFreights',
             'pricelistFreightVendors',
             'dokumenPerijinans',
-            'pricelistPerijinans'
+            'pricelistPerijinans',
+            'pricelistMeratus'
         ));
     }
 
@@ -409,6 +415,35 @@ class BiayaKapalController extends Controller
                             }
                         }
                     }
+                }
+            }
+            unset($section);
+        }
+
+        // Meratus Sections Cleaning
+        if (isset($data['meratus']) && is_array($data['meratus'])) {
+            foreach ($data['meratus'] as &$section) {
+                $numericMeratus = ['sub_total', 'pph', 'grand_total'];
+                foreach ($numericMeratus as $f) {
+                    if (isset($section[$f]) && is_string($section[$f])) {
+                        $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    }
+                }
+                if (isset($section['custom_prices']) && is_array($section['custom_prices'])) {
+                    foreach ($section['custom_prices'] as &$price) {
+                        if (is_string($price)) {
+                            $price = str_replace(',', '.', str_replace('.', '', $price));
+                        }
+                    }
+                    unset($price);
+                }
+                if (isset($section['quantities']) && is_array($section['quantities'])) {
+                    foreach ($section['quantities'] as &$qty) {
+                        if (is_string($qty)) {
+                            $qty = str_replace(',', '.', str_replace('.', '', $qty));
+                        }
+                    }
+                    unset($qty);
                 }
             }
             unset($section);
@@ -626,6 +661,25 @@ class BiayaKapalController extends Controller
             'labuh_tambat.*.nomor_rekening' => 'nullable|string|max:100',
             'labuh_tambat.*.nomor_referensi' => 'nullable|string|max:100',
             'labuh_tambat.*.tanggal_invoice_vendor' => 'nullable|date',
+
+            // Biaya Meratus sections validation
+            'meratus' => 'nullable|array',
+            'meratus.*.kapal' => 'nullable|string|max:255',
+            'meratus.*.voyage' => 'nullable|string|max:255',
+            'meratus.*.types' => 'nullable|array',
+            'meratus.*.manual_names' => 'nullable|array',
+            'meratus.*.custom_prices' => 'nullable|array',
+            'meratus.*.quantities' => 'nullable|array',
+            'meratus.*.lokasi_items' => 'nullable|array',
+            'meratus.*.size_items' => 'nullable|array',
+            'meratus.*.sub_total' => 'nullable|numeric|min:0',
+            'meratus.*.pph' => 'nullable|numeric|min:0',
+            'meratus.*.grand_total' => 'nullable|numeric|min:0',
+            'meratus.*.nomor_referensi' => 'nullable|string|max:100',
+            'meratus.*.penerima' => 'nullable|string|max:255',
+            'meratus.*.nomor_rekening' => 'nullable|string|max:100',
+            'meratus.*.tanggal_invoice_vendor' => 'nullable|date',
+            'meratus.*.keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -1010,6 +1064,62 @@ class BiayaKapalController extends Controller
                     'nominal' => $totalLabuh + $adjustment,
                     'adjustment' => $adjustment
                 ]);
+            }
+
+            // BIAYA MERATUS SECTIONS: Store Meratus details
+            if ($request->has('meratus') && !empty($request->meratus)) {
+                foreach ($request->meratus as $sectionIndex => $section) {
+                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                        continue;
+                    }
+
+                    if (isset($section['types']) && is_array($section['types'])) {
+                        foreach ($section['types'] as $typeIndex => $typeId) {
+                            $jenisBiaya = '';
+                            $price = floatval($section['custom_prices'][$typeIndex] ?? 0);
+                            $qty = floatval($section['quantities'][$typeIndex] ?? 0);
+                            $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
+                            $sizeItem = $section['size_items'][$typeIndex] ?? null;
+                            
+                            $pricelistId = null;
+                            if ($typeId === 'MANUAL') {
+                                $jenisBiaya = $section['manual_names'][$typeIndex] ?? 'MANUAL';
+                            } else {
+                                $masterType = \App\Models\PricelistMeratus::find($typeId);
+                                $jenisBiaya = $masterType ? $masterType->jenis_biaya : 'N/A';
+                                $pricelistId = $typeId;
+                            }
+
+                            $subTotal = $price * $qty;
+                            $pph = round($subTotal * 0.02);
+                            $grandTotal = $subTotal - $pph;
+
+                            BiayaKapalMeratus::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $section['kapal'] ?? null,
+                                'voyage' => $section['voyage'] ?? null,
+                                'pricelist_meratus_id' => $pricelistId,
+                                'jenis_biaya' => $jenisBiaya,
+                                'lokasi' => $lokasiItem,
+                                'size' => $sizeItem,
+                                'harga' => $price,
+                                'kuantitas' => $qty,
+                                'sub_total' => $subTotal,
+                                'pph' => $pph,
+                                'grand_total' => $grandTotal,
+                                'penerima' => $section['penerima'] ?? null,
+                                'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                'keterangan' => $section['keterangan'] ?? null,
+                            ]);
+                        }
+                    }
+                }
+
+                // Auto-calculate nominal for Meratus from section totals
+                $totalMeratus = BiayaKapalMeratus::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
+                $biayaKapal->update(['nominal' => $totalMeratus]);
             }
 
             // Store barang details - Handle both old and new structure

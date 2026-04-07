@@ -1,3 +1,0 @@
-﻿625:      * Relationship with Prospek
-627:     public function prospeks()
-629:         return $this->hasMany(Prospek::class, 'surat_jalan_id');

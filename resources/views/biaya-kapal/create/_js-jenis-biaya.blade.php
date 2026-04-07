@@ -189,6 +189,11 @@
     const perijinanSectionsContainer = document.getElementById('perijinan_sections_container');
     const addPerijinanSectionBtn = document.getElementById('add_perijinan_section_btn');
     const addPerijinanSectionBottomBtn = document.getElementById('add_perijinan_section_bottom_btn');
+
+    // Tagihan Meratus multi-section
+    const meratusWrapper = document.getElementById('meratus_wrapper');
+    const meratusSectionsContainer = document.getElementById('meratus_sections_container');
+    const addMeratusSectionBtn = document.getElementById('add_meratus_section_btn');
     
     // Standard field wrappers
     const nominalWrapper = document.getElementById('nominal_wrapper');

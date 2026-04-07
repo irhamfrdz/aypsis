@@ -57,6 +57,7 @@
 @include('biaya-kapal.create._section-perlengkapan')
 @include('biaya-kapal.create._section-perijinan')
 @include('biaya-kapal.create._section-freight')
+@include('biaya-kapal.create._section-meratus')
 
 {{-- ===== FORM FIELDS EXTRA ===== --}}
 @include('biaya-kapal.create._form-fields-extra')
@@ -92,6 +93,7 @@
 @include('biaya-kapal.create._js-thc')
 @include('biaya-kapal.create._js-perijinan')
 @include('biaya-kapal.create._js-freight')
+@include('biaya-kapal.create._js-meratus')
 </script>
 @endpush
 

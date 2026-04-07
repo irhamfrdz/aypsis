@@ -13,6 +13,7 @@
         if(labuhTambatWrapper) labuhTambatWrapper.classList.add('hidden');
         if(perijinanWrapper) perijinanWrapper.classList.add('hidden');
         if(freightWrapper) freightWrapper.classList.add('hidden');
+        if(meratusWrapper) meratusWrapper.classList.add('hidden');
         
         // Reset nominal input properties
         if(nominalInput) {
@@ -1123,6 +1124,73 @@
             clearAllTHCSections();
 
             // Hide Perlengkapan wrapper
+            if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
+            clearAllPerlengkapanSections();
+            if (meratusWrapper) meratusWrapper.classList.add('hidden');
+            clearAllMeratusSections();
+        }
+
+        // Show MERATUS fields if "Tagihan Meratus" is selected
+        else if (selectedText.toLowerCase().includes('meratus')) {
+            // Show Meratus multi kapal wrapper
+            if (meratusWrapper) meratusWrapper.classList.remove('hidden');
+            initializeMeratusSections();
+
+            // Hide standard kapal/voyage/bl fields
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Hide other standard fields
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+
+            // Remove required attributes
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaInput) {
+                penerimaInput.removeAttribute('required');
+                if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            }
+
+            // Hide other type-specific fields
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+
+            // Reset values
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            dpInput.value = '0';
+            sisaPembayaranInput.value = '0';
+
+            // Hide other wrappers
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+            if (loloWrapper) loloWrapper.classList.add('hidden');
+            clearAllLoloSections();
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
+            if (freightWrapper) freightWrapper.classList.add('hidden');
+            clearAllFreightSections();
             if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
             clearAllPerlengkapanSections();
         }
