@@ -80,8 +80,7 @@
             <tr>
                 <th style="width: 3%;">NO</th>
                 <th style="width: 10%;">TANGGAL</th>
-                <th style="width: 18%;">KAPAL/ALAT BERAT/KENDARAAN/BUNTUT/LAIN LAIN</th>
-                <th style="width: 9%;">TYPE</th>
+                <th style="width: 27%;">KAPAL/ALAT BERAT/KENDARAAN/BUNTUT/LAIN LAIN</th>
                 <th style="width: 15%;">NAMA BARANG</th>
                 <th style="width: 12%;">KETERANGAN</th>
                 <th style="width: 12%;">TOTAL BELANJA</th>
@@ -104,7 +103,6 @@
                     <td class="text-center">{{ $i++ }}</td>
                     <td class="text-center">{{ isset($item['tanggal']) ? \Carbon\Carbon::parse($item['tanggal'])->format('d/M/Y') : '-' }}</td>
                     <td class="text-center">{{ $item['reference'] ?? '-' }}</td>
-                    <td class="text-center">{{ $item['type'] ?? '-' }}</td>
                     <td><span class="font-bold">{{ $item['nama_barang'] ?? ($item['nama'] ?? '-') }}</span></td>
                     <td>{{ $item['keterangan'] ?? '-' }}</td>
                     <td class="text-right">Rp {{ number_format($totalBelanja, 0, ',', '.') }}</td>
@@ -113,24 +111,24 @@
                 </tr>
                 @endforeach
                 <tr style="background-color: #f9f9f9; font-weight: bold;">
-                    <td colspan="6" class="text-right px-4">SUBTOTAL</td>
+                    <td colspan="5" class="text-right px-4">SUBTOTAL</td>
                     <td class="text-right">Rp {{ number_format($grandTotal, 0, ',', '.') }}</td>
                     <td colspan="2"></td>
                 </tr>
                 @if($pranota->adjustment != 0)
                 <tr style="font-weight: bold;">
-                    <td colspan="6" class="text-right px-4">ADJUSTMENT</td>
+                    <td colspan="5" class="text-right px-4">ADJUSTMENT</td>
                     <td class="text-right">Rp {{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                     <td colspan="2"></td>
                 </tr>
                 <tr style="background-color: #eee; font-weight: bold; font-size: 10pt;">
-                    <td colspan="6" class="text-right px-4">TOTAL AKHIR</td>
+                    <td colspan="5" class="text-right px-4">TOTAL AKHIR</td>
                     <td class="text-right">Rp {{ number_format($grandTotal + $pranota->adjustment, 0, ',', '.') }}</td>
                     <td colspan="2"></td>
                 </tr>
                 @endif
             @else
-                <tr><td colspan="9" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
+                <tr><td colspan="8" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
             @endif
         </tbody>
     </table>
