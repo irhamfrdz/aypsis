@@ -79,10 +79,10 @@
         <thead>
             <tr>
                 <th style="width: 3%;">NO</th>
-                <th style="width: 10%;">TANGGAL</th>
+                <th style="width: 13%;">TANGGAL</th>
                 <th style="width: 15%;">PEMAKAI</th>
                 <th style="width: 25%;">NAMA BARANG</th>
-                <th style="width: 22%;">KETERANGAN</th>
+                <th style="width: 19%;">KETERANGAN</th>
                 <th style="width: 12%;">TOTAL BELANJA</th>
                 <th style="width: 5%;">QTY</th>
                 <th style="width: 8%;">SATUAN</th>
