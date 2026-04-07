@@ -10,6 +10,7 @@ class PricelistMeratus extends Model
 
     protected $fillable = [
         'jenis_biaya',
+        'lokasi',
         'size',
         'harga',
         'status',

@@ -15,7 +15,8 @@ class PricelistMeratusController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('jenis_biaya', 'like', "%{$search}%")
-                  ->orWhere('size', 'like', "%{$search}%");
+                  ->orWhere('size', 'like', "%{$search}%")
+                  ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
 
@@ -33,6 +34,7 @@ class PricelistMeratusController extends Controller
     {
         $request->validate([
             'jenis_biaya' => 'required|string|max:255',
+            'lokasi' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
             'harga' => 'required|numeric|min:0',
             'status' => 'required|in:Aktif,Non Aktif',
@@ -56,6 +58,7 @@ class PricelistMeratusController extends Controller
         
         $request->validate([
             'jenis_biaya' => 'required|string|max:255',
+            'lokasi' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
             'harga' => 'required|numeric|min:0',
             'status' => 'required|in:Aktif,Non Aktif',
