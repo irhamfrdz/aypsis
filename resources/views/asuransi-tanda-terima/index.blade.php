@@ -130,7 +130,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm text-gray-900 font-mono">{{ $item->no_kontainer ?: '-' }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap max-w-md truncate" title="{{ is_array(json_decode($item->nama_barang, true)) ? implode(', ', json_decode($item->nama_barang, true)) : ($item->nama_barang ?: '') }}">
                                 <span class="text-sm text-gray-900">
                                     @if($item->type == 'tt' && is_string($item->nama_barang) && (str_starts_with($item->nama_barang, '[') || str_starts_with($item->nama_barang, '{')))
                                         @php
