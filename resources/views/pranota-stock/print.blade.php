@@ -80,7 +80,7 @@
             <tr>
                 <th style="width: 3%;">NO</th>
                 <th style="width: 10%;">TANGGAL</th>
-                <th style="width: 27%;">KAPAL/ALAT BERAT/KENDARAAN/BUNTUT/LAIN LAIN</th>
+                <th style="width: 27%;">PEMAKAI</th>
                 <th style="width: 15%;">NAMA BARANG</th>
                 <th style="width: 12%;">KETERANGAN</th>
                 <th style="width: 12%;">TOTAL BELANJA</th>
