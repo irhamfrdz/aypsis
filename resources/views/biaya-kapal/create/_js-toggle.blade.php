@@ -1193,6 +1193,4 @@
             if (meratusWrapper) meratusWrapper.classList.add('hidden');
             clearAllMeratusSections();
         }
-
-        }
     });
