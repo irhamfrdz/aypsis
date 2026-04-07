@@ -1125,6 +1125,12 @@ class UserController extends Controller
                             $action = str_replace('pricelist-biaya-storage-', '', $action);
                             $module = 'master-pricelist-biaya-storage';
                         }
+                        // Special handling for master-pricelist-meratus permissions
+                        elseif (strpos($action, 'pricelist-meratus-') === 0) {
+                            // For master-pricelist-meratus-view, extract the action
+                            $action = str_replace('pricelist-meratus-', '', $action);
+                            $module = 'master-pricelist-meratus';
+                        }
                         // Special handling for master-tipe-akun permissions
                         elseif (strpos($action, 'tipe-akun-') === 0) {
                             // For master-tipe-akun-view, extract the action
@@ -2699,6 +2705,26 @@ class UserController extends Controller
                             'create' => 'master-pricelist-biaya-storage-create',
                             'update' => 'master-pricelist-biaya-storage-update',
                             'delete' => 'master-pricelist-biaya-storage-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-meratus permissions explicitly
+                    if ($module === 'master-pricelist-meratus' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-meratus-view',
+                            'create' => 'master-pricelist-meratus-create',
+                            'update' => 'master-pricelist-meratus-update',
+                            'delete' => 'master-pricelist-meratus-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

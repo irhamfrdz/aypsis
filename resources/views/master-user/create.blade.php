@@ -982,6 +982,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist Meratus --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist Meratus</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-meratus][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-meratus][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-meratus][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-meratus][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Operational --}}
                             <tr class="module-row" data-module="operational">
                                 <td class="module-header">
