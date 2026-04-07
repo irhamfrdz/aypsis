@@ -206,7 +206,7 @@
                                     if ($firstUsage->alatBerat) $refItems[] = $firstUsage->alatBerat->nama;
                                     if ($firstUsage->kendaraan) $refItems[] = $firstUsage->kendaraan->nomor_polisi;
                                     if ($firstUsage->buntut) $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
-                                    if ($firstUsage->lain_lain) $refItems[] = $firstUsage->lain_lain;
+                                    if ($firstUsage->kantor) $refItems[] = $firstUsage->kantor;
                                 }
                                 $reference = count($refItems) > 0 ? implode(' / ', $refItems) : '-';
                             @endphp
@@ -551,25 +551,24 @@
                                                 </div>
                                             </div>
                                          </div>
-                                          <div class="relative" id="lain_lain_dropdown">
-                                             <label for="lain_lain" class="block text-sm font-medium text-gray-700 mb-1">Lain-lain (Opsional)</label>
+                                          <div class="relative" id="kantor_dropdown">
+                                             <label for="kantor" class="block text-sm font-medium text-gray-700 mb-1">Kantor (Opsional)</label>
                                              <div class="relative">
-                                                 <input type="text" name="lain_lain" id="lain_lain" 
+                                                 <input type="text" name="kantor" id="kantor" 
                                                         class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out bg-white" 
                                                         placeholder="Ketik atau pilih..." autocomplete="off">
-                                                 <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="toggleLainLainDropdown()">
-                                                     <svg class="h-5 w-5 transition-transform duration-200" id="lain_lain_dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                 <div class="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 cursor-pointer" onclick="toggleKantorDropdown()">
+                                                     <svg class="h-5 w-5 transition-transform duration-200" id="kantor_dropdown_arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                      </svg>
                                                  </div>
                                              </div>
-                                             <div id="lain_lain_options_list" class="absolute z-[60] w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden border border-gray-100">
-                                                 <div class="lain-lain-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="Montir Garasi" onclick="selectLainLain('Montir Garasi')">Montir Garasi</div>
-                                                 <div class="lain-lain-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="Montir Pelabuhan" onclick="selectLainLain('Montir Pelabuhan')">Montir Pelabuhan</div>
-                                                 <div class="lain-lain-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="Tukang Las Garasi" onclick="selectLainLain('Tukang Las Garasi')">Tukang Las Garasi</div>
-                                                 <div class="lain-lain-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="Tukang Tambal Ban Garasi" onclick="selectLainLain('Tukang Tambal Ban Garasi')">Tukang Tambal Ban Garasi</div>
-                                                 <div class="lain-lain-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="Kenek Montir Garasi" onclick="selectLainLain('Kenek Montir Garasi')">Kenek Montir Garasi</div>
-                                                 <div id="lain_lain_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada saran yang cocok</div>
+                                             <div id="kantor_options_list" class="absolute z-[60] w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden border border-gray-100">
+                                                 <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="Kantor AYP Jakarta" onclick="selectKantor('Kantor AYP Jakarta')">Kantor AYP Jakarta</div>
+                                                 <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="Kantor AYP Batam" onclick="selectKantor('Kantor AYP Batam')">Kantor AYP Batam</div>
+                                                 <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="Kantor Pelabuhan" onclick="selectKantor('Kantor Pelabuhan')">Kantor Pelabuhan</div>
+                                                 <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="Kantor Garasi" onclick="selectKantor('Kantor Garasi')">Kantor Garasi</div>
+                                                 <div id="kantor_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada saran yang cocok</div>
                                              </div>
                                           </div>
                                          <div>
@@ -653,7 +652,7 @@
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buntut</th>
                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
                                                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alat Berat</th>
-                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lain-lain</th>
+                                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kantor</th>
                                                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM</th>
                                                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                                                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oleh</th>
@@ -1484,59 +1483,59 @@
         }
     }
 
-    // SEARCHABLE DROPDOWN LAIN-LAIN LOGIC
-    const lainLainInput = document.getElementById('lain_lain');
-    const lainLainList = document.getElementById('lain_lain_options_list');
-    const lainLainDropdownArrow = document.getElementById('lain_lain_dropdown_arrow');
-    const lainLainOptions = document.querySelectorAll('.lain-lain-option');
-    const lainLainNoResults = document.getElementById('lain_lain_no_results');
+    // SEARCHABLE DROPDOWN KANTOR LOGIC
+    const kantorInput = document.getElementById('kantor');
+    const kantorList = document.getElementById('kantor_options_list');
+    const kantorDropdownArrow = document.getElementById('kantor_dropdown_arrow');
+    const kantorOptions = document.querySelectorAll('.kantor-option');
+    const kantorNoResults = document.getElementById('kantor_no_results');
 
-    function toggleLainLainDropdown() {
-        const isHidden = lainLainList.classList.contains('hidden');
+    function toggleKantorDropdown() {
+        const isHidden = kantorList.classList.contains('hidden');
         if (isHidden) {
-            openLainLainDropdown();
+            openKantorDropdown();
         } else {
-            closeLainLainDropdown();
+            closeKantorDropdown();
         }
     }
 
-    function openLainLainDropdown() {
-        lainLainList.classList.remove('hidden');
-        lainLainDropdownArrow.style.transform = 'rotate(180deg)';
-        lainLainInput.focus();
+    function openKantorDropdown() {
+        kantorList.classList.remove('hidden');
+        kantorDropdownArrow.style.transform = 'rotate(180deg)';
+        kantorInput.focus();
     }
 
-    function closeLainLainDropdown() {
-        if (lainLainList) {
-            lainLainList.classList.add('hidden');
+    function closeKantorDropdown() {
+        if (kantorList) {
+            kantorList.classList.add('hidden');
         }
-        if (lainLainDropdownArrow) {
-            lainLainDropdownArrow.style.transform = 'rotate(0deg)';
+        if (kantorDropdownArrow) {
+            kantorDropdownArrow.style.transform = 'rotate(0deg)';
         }
     }
 
-    window.selectLainLain = function(val) {
-        lainLainInput.value = val;
-        closeLainLainDropdown();
+    window.selectKantor = function(val) {
+        kantorInput.value = val;
+        closeKantorDropdown();
     };
 
-    window.toggleLainLainDropdown = toggleLainLainDropdown;
+    window.toggleKantorDropdown = toggleKantorDropdown;
 
-    if (lainLainInput) {
-        lainLainInput.addEventListener('focus', function() {
-            openLainLainDropdown();
+    if (kantorInput) {
+        kantorInput.addEventListener('focus', function() {
+            openKantorDropdown();
         });
 
-        lainLainInput.addEventListener('input', function() {
+        kantorInput.addEventListener('input', function() {
             const value = this.value.toLowerCase();
-            filterLainLainOptions(value);
-            openLainLainDropdown();
+            filterKantorOptions(value);
+            openKantorDropdown();
         });
     }
 
-    function filterLainLainOptions(value) {
+    function filterKantorOptions(value) {
         let hasVisible = false;
-        lainLainOptions.forEach(option => {
+        kantorOptions.forEach(option => {
             const text = option.textContent.toLowerCase();
             if (text.includes(value)) {
                 option.classList.remove('hidden');
@@ -1547,9 +1546,9 @@
         });
 
         if (!hasVisible) {
-            lainLainNoResults.classList.remove('hidden');
+            kantorNoResults.classList.remove('hidden');
         } else {
-            lainLainNoResults.classList.add('hidden');
+            kantorNoResults.classList.add('hidden');
         }
     }
 

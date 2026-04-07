@@ -422,24 +422,23 @@
                                         <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
                                 </div>
-                                {{-- Lain-lain --}}
+                                {{-- Kantor --}}
                                 <div class="group">
-                                    <label for="lain_lain" class="block text-sm font-bold text-gray-700 mb-2">Lain-lain</label>
-                                    <div class="relative dropdown-container-lain-lain">
-                                        <input type="text" name="lain_lain" id="lain_lain" 
-                                               value="{{ old('lain_lain') }}" 
+                                    <label for="kantor" class="block text-sm font-bold text-gray-700 mb-2">Kantor</label>
+                                    <div class="relative dropdown-container-kantor">
+                                        <input type="text" name="kantor" id="kantor" 
+                                               value="{{ old('kantor') }}" 
                                                placeholder="Ketik atau pilih..."
                                                autocomplete="off"
                                                class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
-                                        <div id="dropdown_options_lain_lain" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b-xl max-h-60 overflow-y-auto hidden shadow-xl mt-1 border-t-0">
-                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Montir Garasi">Montir Garasi</div>
-                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Montir Pelabuhan">Montir Pelabuhan</div>
-                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Tukang Las Garasi">Tukang Las Garasi</div>
-                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Tukang Tambal Ban Garasi">Tukang Tambal Ban Garasi</div>
-                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kenek Montir Garasi">Kenek Montir Garasi</div>
+                                        <div id="dropdown_options_kantor" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b-xl max-h-60 overflow-y-auto hidden shadow-xl mt-1 border-t-0">
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kantor AYP Jakarta">Kantor AYP Jakarta</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kantor AYP Batam">Kantor AYP Batam</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kantor Pelabuhan">Kantor Pelabuhan</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="Kantor Garasi">Kantor Garasi</div>
                                         </div>
                                     </div>
-                                    @error('lain_lain')
+                                    @error('kantor')
                                         <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -728,11 +727,11 @@ document.addEventListener('DOMContentLoaded', function() {
         updateHargaTotal();
     }
 
-    // Logic for Lain-lain Manual Input with Suggestions
-    (function initLainLainDropdown() {
-        const input = document.getElementById('lain_lain');
-        const optionsDiv = document.getElementById('dropdown_options_lain_lain');
-        const container = optionsDiv.closest('.dropdown-container-lain-lain');
+    // Logic for Kantor Manual Input with Suggestions
+    (function initKantorDropdown() {
+        const input = document.getElementById('kantor');
+        const optionsDiv = document.getElementById('dropdown_options_kantor');
+        const container = optionsDiv.closest('.dropdown-container-kantor');
         const options = Array.from(optionsDiv.querySelectorAll('.option-item'));
 
         input.addEventListener('focus', () => {

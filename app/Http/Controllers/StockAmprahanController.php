@@ -106,7 +106,7 @@ class StockAmprahanController extends Controller
             'buntut_id' => 'nullable|exists:mobils,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
-            'lain_lain' => 'nullable|string|max:255',
+            'kantor' => 'nullable|string|max:255',
             'tanggal_pengambilan' => 'nullable|required_if:is_langsung_pakai,1|date',
             'jumlah_pakai' => 'nullable|required_if:is_langsung_pakai,1|numeric|min:0',
             'keterangan_pakai' => 'nullable|required_if:is_langsung_pakai,1|string',
@@ -154,7 +154,7 @@ class StockAmprahanController extends Controller
                 'buntut_id' => $request->buntut_id,
                 'kapal_id' => $request->kapal_id,
                 'alat_berat_id' => $request->alat_berat_id,
-                'lain_lain' => $request->lain_lain,
+                'kantor' => $request->kantor,
                 'jumlah' => $request->jumlah_pakai,
                 'tanggal_pengambilan' => $request->tanggal_pengambilan,
                 'keterangan' => $request->keterangan_pakai,
@@ -208,7 +208,7 @@ class StockAmprahanController extends Controller
             'buntut_id' => 'nullable|exists:mobils,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
-            'lain_lain' => 'nullable|string|max:255',
+            'kantor' => 'nullable|string|max:255',
             'tanggal_pengambilan' => 'nullable|required_if:is_langsung_pakai,1|date',
             'jumlah_pakai' => 'nullable|required_if:is_langsung_pakai,1|numeric|min:0',
             'keterangan_pakai' => 'nullable|required_if:is_langsung_pakai,1|string',
@@ -256,7 +256,7 @@ class StockAmprahanController extends Controller
                 'buntut_id' => $request->buntut_id,
                 'kapal_id' => $request->kapal_id,
                 'alat_berat_id' => $request->alat_berat_id,
-                'lain_lain' => $request->lain_lain,
+                'kantor' => $request->kantor,
                 'jumlah' => $request->jumlah_pakai,
                 'tanggal_pengambilan' => $request->tanggal_pengambilan,
                 'keterangan' => $request->keterangan_pakai,
@@ -289,7 +289,7 @@ class StockAmprahanController extends Controller
             'buntut_id' => 'nullable|exists:mobils,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
-            'lain_lain' => 'nullable|string|max:255',
+            'kantor' => 'nullable|string|max:255',
             'kilometer' => 'nullable|numeric|min:0',
         ]);
 
@@ -333,7 +333,7 @@ class StockAmprahanController extends Controller
             'buntut_id' => $request->buntut_id,
             'kapal_id' => $request->kapal_id,
             'alat_berat_id' => $request->alat_berat_id,
-            'lain_lain' => $request->lain_lain,
+            'kantor' => $request->kantor,
             'jumlah' => $request->jumlah,
             'tanggal_pengambilan' => $request->tanggal,
             'keterangan' => $request->keterangan,
@@ -421,7 +421,7 @@ class StockAmprahanController extends Controller
                 $buntutInfo = $entry->buntut ? ($entry->buntut->nomor_polisi . ' - ' . $entry->buntut->merek) : '-';
                 $kapalInfo = $entry->kapal ? $entry->kapal->nama_kapal : '-';
                 $alatBeratInfo = $entry->alatBerat ? ($entry->alatBerat->kode_alat . ' - ' . $entry->alatBerat->nama . ($entry->alatBerat->merk ? ' - ' . $entry->alatBerat->merk : '')) : '-';
-                $lainLainInfo = $entry->lain_lain ?? '-';
+                $kantorInfo = $entry->kantor ?? '-';
                 
                 return [
                     'type' => $entry->type,
@@ -434,7 +434,7 @@ class StockAmprahanController extends Controller
                     'buntut' => $buntutInfo,
                     'kapal' => $kapalInfo,
                     'alat_berat' => $alatBeratInfo,
-                    'lain_lain' => $lainLainInfo,
+                    'kantor' => $kantorInfo,
                     'kilometer' => $entry->kilometer ?? '-',
                     'keterangan' => $entry->keterangan,
                     'created_by' => $entry->createdBy->name ?? '-',

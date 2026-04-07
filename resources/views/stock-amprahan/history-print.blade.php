@@ -117,7 +117,7 @@
                     @if($usage->buntut) @php $parts[] = ($usage->buntut->no_kir ?? $usage->buntut->nomor_polisi) . ' (Buntut)'; @endphp @endif
                     @if($usage->kapal) @php $parts[] = $usage->kapal->nama_kapal; @endphp @endif
                     @if($usage->alatBerat) @php $parts[] = $usage->alatBerat->kode_alat; @endphp @endif
-                    @if($usage->lain_lain) @php $parts[] = $usage->lain_lain; @endphp @endif
+                    @if($usage->kantor) @php $parts[] = $usage->kantor; @endphp @endif
                     {{ empty($parts) ? '-' : implode(' / ', $parts) }}
                 </td>
                 <td>{{ $usage->kilometer ?? '-' }}</td>
