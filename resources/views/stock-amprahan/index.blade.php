@@ -1613,7 +1613,7 @@
         });
     });
 
-    // Bulk Selection Logic
+    // Bulk Selection Logic with localStorage Persistence
     const selectAll = document.getElementById('selectAll');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const bulkActions = document.getElementById('bulkActions');
@@ -1621,61 +1621,108 @@
     const btnBulkPranota = document.getElementById('btnBulkPranota');
     const btnCancelSelection = document.getElementById('btnCancelSelection');
 
-    let selectedIds = [];
+    const STORAGE_KEY = 'selected_stock_items';
 
-    function updateBulkActions() {
-        const checkedBoxes = Array.from(itemCheckboxes).filter(cb => cb.checked);
-        selectedIds = checkedBoxes.map(cb => cb.value);
+    function getSelectedItems() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function setSelectedItems(items) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    function getItemData(cb) {
+        return {
+            id: cb.value,
+            nama_barang: cb.dataset.nama,
+            kode: cb.dataset.kode,
+            harga: cb.dataset.harga,
+            adjustment: cb.dataset.adjustment,
+            jumlah: cb.dataset.jumlah,
+            satuan: cb.dataset.satuan,
+            tanggal: cb.dataset.tanggal,
+            type: cb.dataset.type,
+            reference: cb.dataset.reference,
+            keterangan: cb.dataset.keterangan
+        };
+    }
+
+    function updateBulkActionsUI() {
+        const selectedItems = getSelectedItems();
+        const count = Object.keys(selectedItems).length;
 
         if (selectedCountLabel) {
-            selectedCountLabel.textContent = selectedIds.length;
+            selectedCountLabel.textContent = count;
         }
 
         if (bulkActions) {
-            if (selectedIds.length > 0) {
+            if (count > 0) {
                 bulkActions.classList.remove('hidden');
             } else {
                 bulkActions.classList.add('hidden');
             }
         }
+
+        // Update current page checkboxes
+        itemCheckboxes.forEach(cb => {
+            cb.checked = !!selectedItems[cb.value];
+        });
+
+        if (selectAll) {
+            const allOnPageChecked = Array.from(itemCheckboxes).every(cb => cb.checked);
+            selectAll.checked = allOnPageChecked && itemCheckboxes.length > 0;
+            selectAll.indeterminate = !allOnPageChecked && count > 0;
+        }
     }
+
+    // Initialize UI on page load
+    updateBulkActionsUI();
 
     if (selectAll) {
         selectAll.addEventListener('change', function() {
+            const selectedItems = getSelectedItems();
             itemCheckboxes.forEach(cb => {
-                cb.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedItems[cb.value] = getItemData(cb);
+                } else {
+                    delete selectedItems[cb.value];
+                }
             });
-            updateBulkActions();
+            setSelectedItems(selectedItems);
+            updateBulkActionsUI();
         });
     }
 
     itemCheckboxes.forEach(cb => {
         cb.addEventListener('change', function() {
-            updateBulkActions();
-            if (selectAll) {
-                const allChecked = Array.from(itemCheckboxes).every(cb => cb.checked);
-                selectAll.checked = allChecked;
-                selectAll.indeterminate = !allChecked && selectedIds.length > 0;
+            const selectedItems = getSelectedItems();
+            if (this.checked) {
+                selectedItems[this.value] = getItemData(this);
+            } else {
+                delete selectedItems[this.value];
             }
+            setSelectedItems(selectedItems);
+            updateBulkActionsUI();
         });
     });
 
     if (btnCancelSelection) {
         btnCancelSelection.addEventListener('click', function() {
-            itemCheckboxes.forEach(cb => {
-                cb.checked = false;
-            });
-            if (selectAll) {
-                selectAll.checked = false;
-                selectAll.indeterminate = false;
+            if (confirm('Apakah Anda yakin ingin membatalkan semua pilihan?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                updateBulkActionsUI();
             }
-            updateBulkActions();
         });
     }
 
     if (btnBulkPranota) {
         btnBulkPranota.addEventListener('click', function() {
-            if (selectedIds.length === 0) return;
+            const selectedItems = getSelectedItems();
+            if (Object.keys(selectedItems).length === 0) return;
             openPranotaModal();
         });
     }
@@ -1736,32 +1783,31 @@
         const tbody = document.getElementById('pranota-items');
         tbody.innerHTML = '';
         
+        const selectedItems = getSelectedItems();
         let totalBiaya = 0;
         let count = 0;
 
-        itemCheckboxes.forEach(cb => {
-            if (cb.checked) {
-                count++;
-                const nama = cb.dataset.nama || '-';
-                const kode = cb.dataset.kode || '-';
-                const harga = parseFloat(cb.dataset.harga || 0);
-                const adjustment = parseFloat(cb.dataset.adjustment || 0);
-                const jumlah = parseFloat(cb.dataset.jumlah || 0);
-                const biaya = (harga * jumlah) + adjustment;
-                totalBiaya += biaya;
+        Object.values(selectedItems).forEach(item => {
+            count++;
+            const nama = item.nama_barang || '-';
+            const kode = item.kode || '-';
+            const harga = parseFloat(item.harga || 0);
+            const adjustment = parseFloat(item.adjustment || 0);
+            const jumlah = parseFloat(item.jumlah || 0);
+            const biaya = (harga * jumlah) + adjustment;
+            totalBiaya += biaya;
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-4 py-3 whitespace-nowrap text-gray-500">${count}</td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <div class="font-bold text-gray-900">${nama}</div>
-                        <div class="text-[10px] text-gray-400">Bukti: ${kode}</div>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-center font-bold text-gray-800">${jumlah.toLocaleString('id-ID')}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-indigo-600">Rp ${biaya.toLocaleString('id-ID')}</td>
-                `;
-                tbody.appendChild(row);
-            }
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="px-4 py-3 whitespace-nowrap text-gray-500">${count}</td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="font-bold text-gray-900">${nama}</div>
+                    <div class="text-[10px] text-gray-400">Bukti: ${kode}</div>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-center font-bold text-gray-800">${jumlah.toLocaleString('id-ID')}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-indigo-600">Rp ${biaya.toLocaleString('id-ID')}</td>
+            `;
+            tbody.appendChild(row);
         });
 
         document.getElementById('total-count-display').textContent = count;
@@ -1836,24 +1882,7 @@
                 return;
             }
 
-            const items = [];
-            itemCheckboxes.forEach(cb => {
-                if (cb.checked) {
-                    items.push({
-                        id: cb.value,
-                        nama_barang: cb.dataset.nama,
-                        kode: cb.dataset.kode,
-                        harga: cb.dataset.harga,
-                        adjustment: cb.dataset.adjustment,
-                        jumlah: cb.dataset.jumlah,
-                        satuan: cb.dataset.satuan,
-                        tanggal: cb.dataset.tanggal,
-                        type: cb.dataset.type,
-                        reference: cb.dataset.reference,
-                        keterangan: cb.dataset.keterangan
-                    });
-                }
-            });
+            const items = Object.values(getSelectedItems());
 
             const btn = this;
             btn.disabled = true;
@@ -1887,6 +1916,7 @@
             .then(data => {
                 if (data.success) {
                     alert(data.message);
+                    localStorage.removeItem(STORAGE_KEY);
                     window.location.reload();
                 } else {
                     alert(data.message || 'Terjadi kesalahan');
