@@ -399,9 +399,6 @@
             subTotal += (price * qty);
         });
         
-        const pph = Math.round(subTotal * 0.02);
-        const grandTotal = subTotal - pph;
-        
         section.querySelector('.sub-total-display-meratus').value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
         section.querySelector('.sub-total-value-meratus').value = subTotal;
         
