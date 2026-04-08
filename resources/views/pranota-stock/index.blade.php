@@ -72,6 +72,11 @@
                             <i class="fas fa-print"></i> Cetak
                         </a>
                         @endcan
+                        @can('pranota-stock-create')
+                        <a href="{{ route('pranota-stock.edit', $item->id) }}" class="text-yellow-600 hover:text-yellow-900 mr-3">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        @endcan
                         @can('pranota-stock-delete')
                         <form action="{{ route('pranota-stock.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota ini?')">
                             @csrf

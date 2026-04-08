@@ -879,12 +879,101 @@ class StockAmprahanController extends Controller
             return redirect()->back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
         }
     }
-    public function togglePranotaStatus($id)
+    public function pranotaEdit($id)
     {
-        $item = StockAmprahan::findOrFail($id);
-        $item->status_pranota = ($item->status_pranota == 'Sudah') ? 'Belum' : 'Sudah';
-        $item->save();
+        $pranota = \App\Models\PranotaStock::findOrFail($id);
         
-        return back()->with('success', 'Status Pranota berhasil diperbarui.');
+        // Hydrate items with fresh data from DB to ensure they are up to date
+        if (is_array($pranota->items)) {
+            $itemIds = collect($pranota->items)->pluck('id')->filter()->toArray();
+            $stockItems = \App\Models\StockAmprahan::with(['masterNamaBarangAmprahan'])
+                ->whereIn('id', $itemIds)
+                ->get()
+                ->keyBy('id');
+                
+            $hydratedItems = array_map(function($it) use ($stockItems) {
+                $id = $it['id'] ?? null;
+                if ($id && isset($stockItems[$id])) {
+                    $item = $stockItems[$id];
+                    return array_merge($it, [
+                        'nama_barang' => $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? ($it['nama_barang'] ?? '-')),
+                        'harga' => $item->harga_satuan ?? ($it['harga'] ?? 0),
+                        'adjustment' => $item->adjustment ?? ($it['adjustment'] ?? 0),
+                        'satuan' => $item->satuan ?? ($it['satuan'] ?? '-'),
+                    ]);
+                }
+                return $it;
+            }, $pranota->items);
+            
+            $pranota->items = $hydratedItems;
+        }
+
+        $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
+
+        return view('pranota-stock.edit', compact('pranota', 'karyawans'));
+    }
+
+    public function pranotaUpdate(Request $request, $id)
+    {
+        try {
+            $pranota = \App\Models\PranotaStock::findOrFail($id);
+            
+            $data = $request->validate([
+                'nomor_pranota' => 'required|string|unique:pranota_stocks,nomor_pranota,' . $id,
+                'tanggal_pranota' => 'required|date',
+                'nomor_accurate' => 'nullable|string',
+                'vendor' => 'nullable|string',
+                'rekening' => 'nullable|string',
+                'penerima' => 'nullable|string',
+                'adjustment' => 'nullable|numeric',
+                'keterangan' => 'nullable|string',
+                'items' => 'required|array',
+            ]);
+
+            // Track old items to revert status if removed
+            $oldItemIds = is_array($pranota->items) ? collect($pranota->items)->pluck('id')->filter()->toArray() : [];
+            $newItemIds = collect($data['items'])->pluck('id')->filter()->toArray();
+            
+            $removedIds = array_diff($oldItemIds, $newItemIds);
+            
+            DB::beginTransaction();
+
+            $pranota->update([
+                'nomor_pranota' => $data['nomor_pranota'],
+                'tanggal_pranota' => $data['tanggal_pranota'],
+                'nomor_accurate' => $data['nomor_accurate'],
+                'vendor' => $data['vendor'],
+                'rekening' => $data['rekening'],
+                'penerima' => $data['penerima'],
+                'adjustment' => $data['adjustment'] ?? 0,
+                'keterangan' => $data['keterangan'],
+                'items' => $data['items'],
+                'updated_by' => Auth::id(),
+            ]);
+
+            // Revert status for removed items
+            if (!empty($removedIds)) {
+                \App\Models\StockAmprahan::whereIn('id', $removedIds)->update(['status_pranota' => 'Belum']);
+            }
+
+            // Ensure status for current items is 'Sudah'
+            if (!empty($newItemIds)) {
+                \App\Models\StockAmprahan::whereIn('id', $newItemIds)->update(['status_pranota' => 'Sudah']);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil memperbarui pranota',
+                'redirect' => route('pranota-stock.index')
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui pranota: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
