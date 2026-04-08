@@ -206,6 +206,11 @@
                     <input type="hidden" name="meratus[${sectionIndex}][pph]" class="pph-value-meratus" value="0">
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Materai</label>
+                    <input type="text" class="materai-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="Rp 0">
+                    <input type="hidden" name="meratus[${sectionIndex}][biaya_materai]" class="materai-value-meratus" value="0">
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Grand Total</label>
                     <input type="text" class="grand-total-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="meratus[${sectionIndex}][grand_total]" class="grand-total-value-meratus" value="0">
@@ -277,6 +282,21 @@
             } else {
                 this.value = 'Rp 0';
                 pphValue.value = 0;
+            }
+            calculateMeratusSectionTotal(sectionIndex);
+        });
+
+        // Materai Manual edit listener
+        const materaiDisplay = section.querySelector('.materai-display-meratus');
+        const materaiValue = section.querySelector('.materai-value-meratus');
+        materaiDisplay.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '');
+            if (val) {
+                this.value = 'Rp ' + parseInt(val).toLocaleString('id-ID');
+                materaiValue.value = val;
+            } else {
+                this.value = 'Rp 0';
+                materaiValue.value = 0;
             }
             calculateMeratusSectionTotal(sectionIndex);
         });
@@ -414,7 +434,9 @@
             pphValue.value = pph;
         }
         
-        const grandTotal = subTotal - pph;
+        const materaiValue = parseFloat(section.querySelector('.materai-value-meratus').value) || 0;
+        
+        const grandTotal = subTotal - pph + materaiValue;
         
         section.querySelector('.grand-total-display-meratus').value = grandTotal > 0 ? `Rp ${grandTotal.toLocaleString('id-ID')}` : 'Rp 0';
         section.querySelector('.grand-total-value-meratus').value = grandTotal;
