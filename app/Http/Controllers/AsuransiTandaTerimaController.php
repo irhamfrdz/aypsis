@@ -198,6 +198,8 @@ class AsuransiTandaTerimaController extends Controller
         // Tanda Terima Regular
         $tt = DB::table('tanda_terimas')
             ->leftJoin('surat_jalans', 'tanda_terimas.surat_jalan_id', '=', 'surat_jalans.id')
+            ->leftJoin('asuransi_tanda_terimas', 'tanda_terimas.id', '=', 'asuransi_tanda_terimas.tanda_terima_id')
+            ->leftJoin('vendor_asuransi', 'asuransi_tanda_terimas.vendor_asuransi_id', '=', 'vendor_asuransi.id')
             ->select(
                 'tanda_terimas.id', 
                 DB::raw("'tt' as type"), 
@@ -212,7 +214,6 @@ class AsuransiTandaTerimaController extends Controller
                 'tanda_terimas.created_at', 
                 DB::raw('NULL as deleted_at')
             )
-
             ->when($search, function($q) use ($search) {
                 $q->where(function($sub) use ($search) {
                     $sub->where('tanda_terimas.no_surat_jalan', 'like', "%{$search}%")
@@ -220,14 +221,18 @@ class AsuransiTandaTerimaController extends Controller
                         ->orWhere('tanda_terimas.pengirim', 'like', "%{$search}%")
                         ->orWhere('tanda_terimas.penerima', 'like', "%{$search}%")
                         ->orWhere('tanda_terimas.nama_barang', 'like', "%{$search}%")
-                        ->orWhere('surat_jalans.jenis_barang', 'like', "%{$search}%");
+                        ->orWhere('surat_jalans.jenis_barang', 'like', "%{$search}%")
+                        ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
+                        ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
             });
 
         // Tanda Terima Tanpa SJ
         $tttsj = DB::table('tanda_terima_tanpa_surat_jalan')
+            ->leftJoin('asuransi_tanda_terimas', 'tanda_terima_tanpa_surat_jalan.id', '=', 'asuransi_tanda_terimas.tanda_terima_tanpa_sj_id')
+            ->leftJoin('vendor_asuransi', 'asuransi_tanda_terimas.vendor_asuransi_id', '=', 'vendor_asuransi.id')
             ->select(
-                'id', 
+                'tanda_terima_tanpa_surat_jalan.id', 
                 DB::raw("'tttsj' as type"), 
                 'no_tanda_terima as number', 
                 'tanggal_tanda_terima as date', 
@@ -240,7 +245,6 @@ class AsuransiTandaTerimaController extends Controller
                 'created_at', 
                 DB::raw('NULL as deleted_at')
             )
-
             ->when($search, function($q) use ($search) {
                 $q->where(function($sub) use ($search) {
                     $sub->where('no_tanda_terima', 'like', "%{$search}%")
@@ -248,13 +252,17 @@ class AsuransiTandaTerimaController extends Controller
                         ->orWhere('penerima', 'like', "%{$search}%")
                         ->orWhere('no_kontainer', 'like', "%{$search}%")
                         ->orWhere('nama_barang', 'like', "%{$search}%")
-                        ->orWhere('jenis_barang', 'like', "%{$search}%");
+                        ->orWhere('jenis_barang', 'like', "%{$search}%")
+                        ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
+                        ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
             });
 
         // Tanda Terima LCL
         $lcl = DB::table('tanda_terimas_lcl')
             ->leftJoin('tanda_terima_lcl_kontainer_pivot', 'tanda_terimas_lcl.id', '=', 'tanda_terima_lcl_kontainer_pivot.tanda_terima_lcl_id')
+            ->leftJoin('asuransi_tanda_terimas', 'tanda_terimas_lcl.id', '=', 'asuransi_tanda_terimas.tanda_terima_lcl_id')
+            ->leftJoin('vendor_asuransi', 'asuransi_tanda_terimas.vendor_asuransi_id', '=', 'vendor_asuransi.id')
             ->select(
                 'tanda_terimas_lcl.id', 
                 DB::raw("'lcl' as type"), 
@@ -270,14 +278,15 @@ class AsuransiTandaTerimaController extends Controller
                 'tanda_terimas_lcl.deleted_at'
             )
             ->whereNull('tanda_terimas_lcl.deleted_at')
-
             ->groupBy('tanda_terimas_lcl.id', 'type', 'number', 'date', 'pengirim', 'penerima', 'tanda_terimas_lcl.created_at', 'tanda_terimas_lcl.deleted_at')
             ->when($search, function($q) use ($search) {
                 $q->where(function($sub) use ($search) {
                     $sub->where('nomor_tanda_terima', 'like', "%{$search}%")
                        ->orWhere('nama_pengirim', 'like', "%{$search}%")
                        ->orWhere('nama_penerima', 'like', "%{$search}%")
-                       ->orWhere('tanda_terima_lcl_kontainer_pivot.nomor_kontainer', 'like', "%{$search}%");
+                       ->orWhere('tanda_terima_lcl_kontainer_pivot.nomor_kontainer', 'like', "%{$search}%")
+                       ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
+                       ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
             });
 
