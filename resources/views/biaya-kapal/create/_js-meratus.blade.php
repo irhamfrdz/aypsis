@@ -113,7 +113,7 @@
         pricelistMeratusData.forEach(item => {
             const locStr = item.lokasi ? ` (${item.lokasi})` : '';
             const sizeStr = item.size ? ` - ${item.size}` : '';
-            meratusOptions += `<option value="${item.id}" data-harga="${item.harga}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}">${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
+            meratusOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}">${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
         });
         
         section.innerHTML = `
@@ -313,7 +313,7 @@
         pricelistMeratusData.forEach(item => {
             const locStr = item.lokasi ? ` (${item.lokasi})` : '';
             const sizeStr = item.size ? ` - ${item.size}` : '';
-            meratusOptions += `<option value="${item.id}" data-harga="${item.harga}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}">${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
+            meratusOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}">${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
         });
         
         const div = document.createElement('div');

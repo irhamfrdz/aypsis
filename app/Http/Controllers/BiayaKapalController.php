@@ -429,14 +429,7 @@ class BiayaKapalController extends Controller
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                     }
                 }
-                if (isset($section['custom_prices']) && is_array($section['custom_prices'])) {
-                    foreach ($section['custom_prices'] as &$price) {
-                        if (is_string($price)) {
-                            $price = str_replace(',', '.', str_replace('.', '', $price));
-                        }
-                    }
-                    unset($price);
-                }
+                // custom_prices come from type="number" inputs - no formatting needed
                 if (isset($section['quantities']) && is_array($section['quantities'])) {
                     foreach ($section['quantities'] as &$qty) {
                         if (is_string($qty)) {
@@ -1096,7 +1089,7 @@ class BiayaKapalController extends Controller
                             $pph = 0;
                             $biayaMaterai = 0;
                             
-                            if ($typeIndex === 0) {
+                            if ($typeIndex == 0) {
                                 $pphRaw = $section['pph'] ?? 0;
                                 $pph = floatval(str_replace(['.', ','], ['', '.'], (string)$pphRaw));
                                 
@@ -3181,7 +3174,7 @@ class BiayaKapalController extends Controller
                                 $pph = 0;
                                 $biayaMaterai = 0;
                                 
-                                if ($typeIndex === 0) {
+                                if ($typeIndex == 0) {
                                     $pphRaw = $section['pph'] ?? 0;
                                     $pph = floatval(str_replace(['.', ','], ['', '.'], (string)$pphRaw));
                                     
