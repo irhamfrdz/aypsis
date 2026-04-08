@@ -486,9 +486,27 @@ function ensureDbFields() {
 }
 
 // --- FUNGSI UPDATE & RENDER ---
+let _syncTimer = null;
+function autoSync() {
+    if (_syncTimer) clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(() => {
+        fetch('{{ route('kontainer-sewa-final.sync') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ data: db })
+        })
+        .then(r => r.json())
+        .then(d => { if(d.success) console.log('Auto-synced'); else console.error('Sync error:', d.message); })
+        .catch(e => console.error('Auto-sync error', e));
+    }, 1000);
+}
 function updateDB() {
     ensureDbFields();
     localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
+    autoSync();
     renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP();
     const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value="${x.val||x}">${x.val||x}</option>`).join('');
     ['v','t','z'].forEach(k => { 
@@ -827,7 +845,7 @@ window.onload = () => {
         db.cart = initial.cart || []; 
         db.audits_map = initial.audits_map || [];
 
-        // Untuk Master Data: Hanya timpa jika server memiliki data (setelah Simpan Data/Sync)
+        // Gunakan data server sebagai sumber utama (karena sudah auto-sync)
         if (initial.v && initial.v.length > 0) db.v = initial.v;
         if (initial.t && initial.t.length > 0) db.t = initial.t;
         if (initial.z && initial.z.length > 0) db.z = initial.z;
@@ -838,9 +856,10 @@ window.onload = () => {
         db = initial;
     }
     
-    updateDB(); 
-
-    updateDB(); 
+    // Render tanpa auto-sync saat load (data sudah dari server)
+    ensureDbFields();
+    localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
+    renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP();
     
     // Restore Last Active Tab
     const lastTab = localStorage.getItem('LAST_ACTIVE_TAB');

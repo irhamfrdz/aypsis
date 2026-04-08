@@ -289,7 +289,6 @@ class AsuransiTandaTerimaController extends Controller
                        ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
             });
-
         return $tt->union($tttsj)->union($lcl);
     }
 
