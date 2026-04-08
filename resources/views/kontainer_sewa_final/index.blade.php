@@ -860,6 +860,13 @@ window.onload = () => {
     ensureDbFields();
     localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
     renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP();
+    const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value="${x.val||x}">${x.val||x}</option>`).join('');
+    ['v','t','z'].forEach(k => { 
+        if(document.getElementById('rt-'+k)) document.getElementById('rt-'+k).innerHTML = ops(k); 
+        if(document.getElementById('mu-'+k)) document.getElementById('mu-'+k).innerHTML = ops(k);
+        if(document.getElementById('edu-'+k)) document.getElementById('edu-'+k).innerHTML = ops(k);
+    });
+    if(document.getElementById('list-u')) document.getElementById('list-u').innerHTML = db.u.filter(u => u.act !== false).map(u => `<option value="${u.no}">${u.v} | ${u.t} | ${u.z}</option>`).join('');
     
     // Restore Last Active Tab
     const lastTab = localStorage.getItem('LAST_ACTIVE_TAB');
