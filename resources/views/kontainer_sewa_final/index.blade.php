@@ -478,6 +478,7 @@ function fmtTglDB(d) {
     return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
 }
 function fmtRibuan(n) { return Math.round(n).toLocaleString('id-ID'); }
+function inputRibuan(el) { let v = el.value.replace(/\D/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; }
 function cleanNum(s) { return parseInt(s.toString().replace(/\./g, '')) || 0; }
 function ensureDbFields() {
     const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[] };
