@@ -1,7 +1,6 @@
     // ============= MERATUS SECTIONS MANAGEMENT =============
+    // Note: meratusSectionsContainer & addMeratusSectionBtn are declared in _js-jenis-biaya.blade.php
     let meratusSectionCounter = 0;
-    const meratusSectionsContainer = document.getElementById('meratus_sections_container');
-    const addMeratusSectionBtn = document.getElementById('add_meratus_section_btn');
     
     function initializeMeratusSections() {
         if (meratusSectionsContainer) meratusSectionsContainer.innerHTML = '';
