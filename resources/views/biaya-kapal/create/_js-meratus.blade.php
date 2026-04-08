@@ -202,7 +202,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">PPH (2%)</label>
-                    <input type="text" class="pph-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
+                    <input type="text" class="pph-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="Rp 0">
                     <input type="hidden" name="meratus[${sectionIndex}][pph]" class="pph-value-meratus" value="0">
                 </div>
                 <div>
@@ -263,6 +263,22 @@
                 this.classList.remove('bg-blue-200', 'text-blue-700');
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
+        });
+
+        // PPH Manual edit listener
+        const pphDisplay = section.querySelector('.pph-display-meratus');
+        const pphValue = section.querySelector('.pph-value-meratus');
+        pphDisplay.addEventListener('input', function() {
+            this.setAttribute('data-manual-pph', 'true');
+            let val = this.value.replace(/\D/g, '');
+            if (val) {
+                this.value = 'Rp ' + parseInt(val).toLocaleString('id-ID');
+                pphValue.value = val;
+            } else {
+                this.value = 'Rp 0';
+                pphValue.value = 0;
+            }
+            calculateMeratusSectionTotal(sectionIndex);
         });
         
         calculateMeratusSectionTotal(sectionIndex);
@@ -389,8 +405,19 @@
         section.querySelector('.sub-total-display-meratus').value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
         section.querySelector('.sub-total-value-meratus').value = subTotal;
         
-        section.querySelector('.pph-display-meratus').value = pph > 0 ? `Rp ${pph.toLocaleString('id-ID')}` : 'Rp 0';
-        section.querySelector('.pph-value-meratus').value = pph;
+        const pphDisplay = section.querySelector('.pph-display-meratus');
+        const pphValue = section.querySelector('.pph-value-meratus');
+        
+        let pph = 0;
+        if (pphDisplay.hasAttribute('data-manual-pph')) {
+            pph = parseFloat(pphValue.value) || 0;
+        } else {
+            pph = Math.round(subTotal * 0.02);
+            pphDisplay.value = pph > 0 ? `Rp ${pph.toLocaleString('id-ID')}` : 'Rp 0';
+            pphValue.value = pph;
+        }
+        
+        const grandTotal = subTotal - pph;
         
         section.querySelector('.grand-total-display-meratus').value = grandTotal > 0 ? `Rp ${grandTotal.toLocaleString('id-ID')}` : 'Rp 0';
         section.querySelector('.grand-total-value-meratus').value = grandTotal;
