@@ -1,42 +1,55 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    $paperSize = request('paper_size', 'Half Folio');
+    // Calculate Vendor first to determine default paper size
+    $vendorDisplay = $biayaKapal->nama_vendor ?? ($meratusDetails->pluck('vendor')->filter()->unique()->values()->first() ?? 'MERATUS');
+    $isAbqori = str_contains(strtoupper($vendorDisplay), 'ABQORI');
+
+    $paperSize = request('paper_size', $isAbqori ? 'Half-Folio' : 'Half-Folio'); // Defaulting to Half-Folio as it's common for these invoices
     $paperMap = [
-        'Half Folio' => [
-            'size' => '215.9mm 165.1mm',
-            'width' => '215.9mm',
-            'height' => '165.1mm',
-            'containerWidth' => '215.9mm',
-            'fontSize' => '13px',
-            'headerH1' => '20px',
-            'tableFont' => '12px',
-        ],
         'Folio' => [
             'size' => '215.9mm 330.2mm',
             'width' => '215.9mm',
             'height' => '330.2mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '15px',
-            'headerH1' => '24px',
-            'tableFont' => '13px',
+            'fontSize' => '13px',
+            'headerH1' => '20px',
+            'tableFont' => '11px',
+        ],
+        'Half-Folio' => [
+            'size' => '165.1mm 215.9mm',
+            'width' => '165.1mm',
+            'height' => '215.9mm',
+            'containerWidth' => '165.1mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
         ],
         'A4' => [
             'size' => 'A4',
             'width' => '210mm',
             'height' => '297mm',
             'containerWidth' => '210mm',
-            'fontSize' => '15px',
-            'headerH1' => '24px',
-            'tableFont' => '13px',
+            'fontSize' => '13px',
+            'headerH1' => '20px',
+            'tableFont' => '11px',
         ],
+        'Half-A4' => [
+            'size' => '148.5mm 210mm',
+            'width' => '148.5mm',
+            'height' => '210mm',
+            'containerWidth' => '148.5mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
+        ]
     ];
-    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half Folio'];
+    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-Folio'];
 @endphp
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
-    <title>Biaya Meratus - {{ $biayaKapal->nomor_invoice }}</title>
+    <title>Invoice Biaya Meratus - {{ $biayaKapal->nomor_invoice }}</title>
     <style>
         * {
             margin: 0;
@@ -45,17 +58,15 @@
         }
 
         @page {
-            size: {{ $currentPaper['size'] }} portrait;
-            margin: 10mm;
+            size: {{ $currentPaper['size'] }};
+            margin: 5mm;
         }
 
         html, body {
             width: {{ $currentPaper['width'] }};
-            height: {{ $currentPaper['height'] }};
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
-            font-weight: bold;
-            line-height: 1.4;
+            line-height: 1.2;
             color: #000;
             background: white;
             margin: 0;
@@ -64,296 +75,343 @@
 
         .container {
             width: 100%;
-            max-width: calc({{ $currentPaper['containerWidth'] }} - 20mm);
-            padding: 0 10mm;
+            max-width: calc({{ $currentPaper['containerWidth'] }} - 10mm);
+            padding: 0 5mm;
             margin: 0 auto;
             box-sizing: border-box;
-            min-height: calc({{ $currentPaper['height'] }} - 20mm);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 8px;
-            border-bottom: 2px double #000;
-            padding-bottom: 6px;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 2px;
         }
 
         .header h1 {
             font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
-            margin-bottom: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            color: #1a1a1a;
         }
 
-        .header p {
+        .info-section {
+            margin-bottom: 12px;
             font-size: {{ $currentPaper['fontSize'] }};
-            color: #000;
-            margin: 1px 0;
         }
 
-        .document-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 6px 8px;
-            border: 1px solid #333;
-            border-radius: 4px;
-            background-color: transparent;
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
         }
 
-        .info-item {
-            display: flex;
-            gap: 10px;
-        }
-
-        .info-label {
-            font-weight: 600;
-            min-width: 90px;
-        }
-
-        .info-value {
+        .info-table td {
+            padding: 2px 4px;
+            font-size: {{ $currentPaper['tableFont'] }};
+            vertical-align: top;
             font-weight: bold;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 8px;
-        }
-
-        th, td {
-            border: 1px solid #333;
-            padding: 4px;
-            text-align: left;
+        .section-header {
+            font-weight: bold;
+            margin-bottom: 5px;
             font-size: {{ $currentPaper['tableFont'] }};
         }
 
-        th {
-            background-color: #000;
-            color: white;
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5mm;
+            table-layout: fixed;
+        }
+
+        .custom-table th, 
+        .custom-table td {
+            border: 1px solid #333;
+            padding: 1px 4px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .custom-table th {
+            background-color: #f8f9fa;
+            color: #333;
             font-weight: bold;
+            font-size: {{ $currentPaper['tableFont'] }};
             text-align: center;
+            border: 1.5px solid #333;
         }
 
-        .text-right {
-            text-align: right;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .summary-box {
-            margin-top: 8px;
-            padding: 0;
-            background-color: transparent;
-            border: none;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 3px;
-            font-size: {{ $currentPaper['fontSize'] }};
-            padding: 2px 0;
-        }
-
-        .summary-row.total {
-            border-top: 2px solid #333;
-            padding-top: 4px;
-            margin-top: 4px;
+        .custom-table td {
+            font-size: {{ $currentPaper['tableFont'] }};
             font-weight: bold;
-            font-size: calc({{ $currentPaper['fontSize'] }} + 2px);
         }
 
-        .summary-row .label {
-            font-weight: 600;
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+
+        .total-row td {
+            background-color: #f0f0f0 !important;
+            font-weight: bold !important;
+            border: 1.5px solid #333 !important;
         }
 
-        .summary-row .value {
-            font-weight: bold;
-            text-align: right;
-            margin-left: 20px;
+        .keterangan-box {
+            border: 1.5px solid #333;
+            padding: 4px;
+            margin-top: 10px;
+            min-height: 40px;
         }
 
         .footer {
-            margin-top: 35px;
-            clear: both;
+            margin-top: 10px;
         }
 
-        .signatures {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-        }
-
-        .signature-box {
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
             text-align: center;
         }
 
-        .signature-box .title {
-            font-weight: bold;
-            margin-bottom: 85px;
-            font-size: {{ $currentPaper['fontSize'] }};
-        }
-
-        .signature-box .name {
-            font-weight: bold;
-            border-top: 1px solid #000;
-            padding-top: 5px;
-            display: inline-block;
-            min-width: 140px;
-            font-size: {{ $currentPaper['fontSize'] }};
+        .signature-table td {
+            width: 33.33%;
+            padding: 5px;
         }
 
         @media print {
-            .no-print {
-                display: none;
-            }
-            body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+            .no-print { display: none !important; }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
 
-        .print-controls {
+        .no-print-controls {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
+            top: 10px;
+            right: 10px;
             background: white;
-            padding: 15px;
-            border: 1px solid #ddd;
+            padding: 10px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .print-controls button {
-            background-color: #0066cc;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            font-size: 12px;
-            cursor: pointer;
-            border-radius: 4px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
         }
     </style>
 </head>
 <body>
-    <div class="print-controls no-print">
-        <div style="margin-bottom: 15px;">
-            <label style="display: block; font-size: 12px; margin-bottom: 5px; color: #666;">Ukuran Kertas:</label>
-            <select id="paper_size_select" onchange="window.location.href = window.location.pathname + '?paper_size=' + this.value" style="width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
-                <option value="Half Folio" {{ $paperSize == 'Half Folio' ? 'selected' : '' }}>Half Folio (Default)</option>
-                <option value="Folio" {{ $paperSize == 'Folio' ? 'selected' : '' }}>Folio</option>
-                <option value="A4" {{ $paperSize == 'A4' ? 'selected' : '' }}>A4</option>
-            </select>
+    <div class="no-print-controls no-print">
+        @include('components.paper-selector', ['selectedSize' => $paperSize])
+        <div style="margin-top: 6px; font-size: 12px; color: #444;">
+            <strong>Current: {{ $paperSize }}</strong><br>
+            <small>{{ $currentPaper['width'] }} × {{ $currentPaper['height'] }}</small>
         </div>
-        <button onclick="window.print()">Cetak Dokumen</button>
-        <button onclick="window.history.back()" style="background-color: #666; margin-top: 10px; width: 100%;">Kembali</button>
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">Print</button>
+        <a href="{{ route('biaya-kapal.index') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm no-underline" style="text-decoration: none;">Kembali</a>
     </div>
 
     <div class="container">
         <div class="header">
-            <h1>BUKTI PENGELUARAN BIAYA MERATUS</h1>
-            <p>PT. AYP LOGISTICS INDONESIA</p>
+            <h1>PERMOHONAN TRANSFER</h1>
+        </div>
+        
+        @php
+            $penerimaDisplay = $biayaKapal->penerima ?? ($meratusDetails->pluck('penerima')->filter()->unique()->values()->first() ?? '-');
+            $rekeningDisplay = $biayaKapal->nomor_rekening ?? ($meratusDetails->pluck('nomor_rekening')->filter()->unique()->values()->first() ?? '-');
+            
+            // Calculate Totals and Group by Type
+            $meratusByType = [];
+            $totalSubtotal = 0;
+            $totalPPH = 0;
+            $totalMaterai = 0;
+            $totalGrandTotal = 0;
+            
+            foreach($meratusDetails as $detail) {
+                // Group by Type (Jenis Biaya)
+                $typeKey = $detail->jenis_biaya ?? 'BIAYA MERATUS';
+                if (!isset($meratusByType[$typeKey])) {
+                    $meratusByType[$typeKey] = [
+                        'qty' => 0, 
+                        'cost' => 0
+                    ];
+                }
+                
+                $meratusByType[$typeKey]['qty'] += $detail->kuantitas;
+                $meratusByType[$typeKey]['cost'] += $detail->sub_total;
+                
+                $totalSubtotal += $detail->sub_total;
+                $totalPPH += $detail->pph;
+                $totalMaterai += $detail->biaya_materai;
+                $totalGrandTotal += ($detail->sub_total - $detail->pph + $detail->biaya_materai);
+            }
+        @endphp
+
+        <div class="info-section">
+            <table class="info-table">
+                <tr>
+                    <td style="width: 15%;">Nomor</td>
+                    <td style="width: 35%;">: {{ $biayaKapal->nomor_invoice }}</td>
+                    <td style="width: 15%;">Tanggal</td>
+                    <td>: {{ $biayaKapal->tanggal->format('d/M/Y') }}</td>
+                </tr>
+                <tr>
+                    <td>Penerima</td>
+                    <td>: {{ $penerimaDisplay }}</td>
+                    <td>Vendor</td>
+                    <td>: {{ $vendorDisplay }}</td>
+                </tr>
+                <tr>
+                    <td>No. Rekening</td>
+                    <td>: {{ $rekeningDisplay }}</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
         </div>
 
-        <div class="document-info">
-            <div class="info-item">
-                <span class="info-label">NO. INVOICE:</span>
-                <span class="info-value">{{ $biayaKapal->nomor_invoice }}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">TANGGAL:</span>
-                <span class="info-value">{{ \Carbon\Carbon::parse($biayaKapal->created_at)->format('d/m/Y') }}</span>
-            </div>
-        </div>
-
-        <table>
+        <!-- TABLE 1: DETAIL BIAYA KAPAL -->
+        <div class="section-header">Detail Biaya Kapal:</div>
+        <table class="custom-table">
             <thead>
                 <tr>
-                    <th>NO</th>
-                    <th>KAPAL / VOYAGE</th>
-                    <th>JENIS BIAYA</th>
-                    <th>DETAIL</th>
-                    <th>QTY</th>
-                    <th>HARGA</th>
-                    <th>SUBTOTAL</th>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 18%;">Tanggal Ref.</th>
+                    <th style="width: 37%;">Referensi</th>
+                    <th style="width: 20%;">Nomor Voyage</th>
+                    <th style="width: 20%;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @php
-                    $totalSubtotal = 0;
-                    $totalPph = 0;
-                    $totalMaterai = 0;
+                    $perSection = $meratusDetails->groupBy(function($item) {
+                        return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-') . '|' . ($item->nomor_referensi ?? '-');
+                    });
                 @endphp
-                @foreach($meratusDetails as $index => $detail)
-                    @php
-                        $totalSubtotal += $detail->sub_total;
-                        $totalPph += $detail->pph;
-                        $totalMaterai += $detail->biaya_materai;
-                    @endphp
-                    <tr>
-                        <td class="text-center">{{ $index + 1 }}</td>
-                        <td>
-                            {{ $detail->kapal }}<br>
-                            <small>{{ $detail->voyage }}</small>
-                        </td>
-                        <td>
-                            {{ $detail->jenis_biaya }}
-                        </td>
-                        <td>
-                            @if($detail->lokasi) {{ $detail->lokasi }} @endif
-                            @if($detail->size) ({{ $detail->size }}) @endif
-                            @if($detail->keterangan) <br><small>{{ $detail->keterangan }}</small> @endif
-                        </td>
-                        <td class="text-center">{{ number_format($detail->kuantitas, 0, ',', '.') }}</td>
-                        <td class="text-right">{{ number_format($detail->harga, 0, ',', '.') }}</td>
-                        <td class="text-right">{{ number_format($detail->sub_total, 0, ',', '.') }}</td>
-                    </tr>
-                @endforeach
+                
+                @forelse($perSection as $sectionKey => $details)
+                @php
+                    $firstDate = $details->min('tanggal_invoice_vendor');
+                    $lastDate = $details->max('tanggal_invoice_vendor');
+                    $isSameDate = $firstDate == $lastDate;
+                    $formattedDate = $firstDate ? \Carbon\Carbon::parse($firstDate)->format('d/M/Y') : '-';
+                    if (!$isSameDate && $firstDate && $lastDate) {
+                        $formattedDate = \Carbon\Carbon::parse($firstDate)->format('d/M/Y') . ' - ' . \Carbon\Carbon::parse($lastDate)->format('d/M/Y');
+                    }
+                    
+                    $references = $details->pluck('nomor_referensi')->filter()->unique()->values();
+                    $sectionGrandTotal = $details->sum('sub_total') - $details->sum('pph') + $details->sum('biaya_materai');
+                @endphp
+                <tr>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td class="text-center">{{ $formattedDate }}</td>
+                    <td>
+                        @foreach($references as $ref)
+                            {{ $ref }}{{ !$loop->last ? ',' : '' }}
+                            @if(!$loop->last && $loop->iteration % 2 == 0) <br> @endif
+                        @endforeach
+                        @if($references->isEmpty()) - @endif
+                    </td>
+                    <td class="text-center">{{ $details->first()->voyage ?? '-' }}</td>
+
+                    <td class="text-right">Rp {{ number_format($sectionGrandTotal, 0, ',', '.') }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" class="text-center">Tidak ada data detail.</td>
+                </tr>
+                @endforelse
+                <tr class="total-row">
+                    <td colspan="4" class="text-right">TOTAL PEMBAYARAN</td>
+                    <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+                </tr>
             </tbody>
         </table>
 
-        <div class="summary-box">
-            <div class="summary-row">
-                <span class="label">SUB TOTAL:</span>
-                <span class="value">Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</span>
-            </div>
-            <div class="summary-row">
-                <span class="label">PPH:</span>
-                <span class="value">Rp {{ number_format($totalPph, 0, ',', '.') }}</span>
-            </div>
-            <div class="summary-row">
-                <span class="label">BIAYA MATERAI:</span>
-                <span class="value">Rp {{ number_format($totalMaterai, 0, ',', '.') }}</span>
-            </div>
-            @php
-                $totalGrandTotal = $totalSubtotal - $totalPph + $totalMaterai;
-            @endphp
-            <div class="summary-row total">
-                <span class="label">GRAND TOTAL:</span>
-                <span class="value">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</span>
+        <!-- TABLE 2: DETAIL BIAYA (GABUNGAN) -->
+        <div class="section-header">Detail Biaya (Gabungan):</div>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">No</th>
+                    <th style="width: 57%;">Jenis Biaya</th>
+                    <th style="width: 15%;">Jumlah</th>
+                    <th style="width: 20%;">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php $no = 1; @endphp
+                
+                @foreach($meratusByType as $typeName => $data)
+                    @if($data['cost'] > 0 || $data['qty'] > 0)
+                    <tr>
+                        <td class="text-center">{{ $no++ }}</td>
+                        <td>{{ strtoupper($typeName) }}</td>
+                        <td class="text-center">{{ rtrim(rtrim(number_format($data['qty'], 2, ',', '.'), '0'), ',') }}</td>
+                        <td class="text-right">Rp {{ number_format($data['cost'], 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
+                @endforeach
+                
+                @if($totalPPH > 0)
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td>PPH (2%)</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+
+                @if($totalMaterai > 0)
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td>BIAYA MATERAI</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">Rp {{ number_format($totalMaterai, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+                
+                <tr class="total-row">
+                    <td colspan="3" class="text-right">TOTAL</td>
+                    <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <!-- KETERANGAN BOX -->
+        <div class="keterangan-box">
+            <strong style="font-size: 8px;">Keterangan:</strong><br>
+            <div style="font-size: 8px;">
+                @php
+                    $keterangan = $biayaKapal->keterangan ?? '';
+                @endphp
+                {!! nl2br(e(trim($keterangan))) !!}
             </div>
         </div>
-
-        <div class="footer">
-            <div class="signatures">
-                <div class="signature-box">
-                    <div class="title">Disetujui Oleh,</div>
-                    <div class="name">OPERATIONAL MANAGER</div>
-                </div>
-                <div class="signature-box">
-                    <div class="title">Diperiksa Oleh,</div>
-                    <div class="name">FINANCE / ACCOUNTING</div>
-                </div>
-                <div class="signature-box">
-                    <div class="title">Dibuat Oleh,</div>
-                    <div class="name">STAFF OPERATIONAL</div>
-                </div>
-            </div>
+        
+        <!-- FOOTER SIGNATURES -->
+        <div class="footer" style="margin-top: 40px;">
+            <table class="signature-table">
+                <tr>
+                    <td><strong>Dibuat Oleh:</strong></td>
+                    <td><strong>Diperiksa Oleh:</strong></td>
+                    <td><strong>Disetujui Oleh:</strong></td>
+                </tr>
+                <tr>
+                    <td style="height: 85px;"></td>
+                    <td style="height: 85px;"></td>
+                    <td style="height: 85px;"></td>
+                </tr>
+                <tr>
+                    <td>( {{ $biayaKapal->creator->name ?? '__________' }} )</td>
+                    <td>( __________ )</td>
+                    <td>( {{ $biayaKapal->approver->name ?? '__________' }} )</td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>
