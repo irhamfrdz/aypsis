@@ -52,9 +52,14 @@
                 </thead>
                 <tbody class="text-gray-600 text-sm divide-y divide-gray-100">
                     @forelse($data as $item)
-                        <tr class="hover:bg-gray-50 transition-colors">
+                        <tr class="hover:bg-gray-50 transition-colors {{ !($item['has_tanda_terima'] ?? true) ? 'bg-yellow-50' : '' }}">
                             <td class="px-6 py-4">{{ $loop->iteration }}</td>
-                            <td class="px-6 py-4 text-center">{{ \Carbon\Carbon::parse($item['tanggal'])->format('d/m/Y') }}</td>
+                            <td class="px-6 py-4 text-center">
+                                {{ \Carbon\Carbon::parse($item['tanggal'])->format('d/m/Y') }}
+                                @if(!($item['has_tanda_terima'] ?? true))
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-700 ml-1" title="Belum ada Tanda Terima">Belum TT</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 font-medium text-gray-800">{{ $item['no_surat_jalan'] }}</td>
                             <td class="px-6 py-4">{{ $item['no_plat'] }}</td>
                             <td class="px-6 py-4">{{ $item['supir'] }}</td>
