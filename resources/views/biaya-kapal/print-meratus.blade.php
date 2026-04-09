@@ -227,8 +227,10 @@
             // Calculate Totals and Group by Type
             $meratusByType = [];
             $totalSubtotal = 0;
-            $totalPPH = 0;
-            $totalPPN = 0;
+            $totalPPH = 0; // Total PPH yang benar-benar memotong (untuk kalkulasi)
+            $totalPPN = 0; // Total PPN yang benar-benar menambah (untuk kalkulasi)
+            $displayPPH = 0; // Untuk tampilan baris di tabel
+            $displayPPN = 0; // Untuk tampilan baris di tabel
             $totalMaterai = 0;
             $totalGrandTotal = 0;
             
@@ -246,8 +248,17 @@
                 $meratusByType[$typeKey]['cost'] += $detail->sub_total;
                 
                 $totalSubtotal += $detail->sub_total;
-                $totalPPH += (($detail->pph_active ?? true) ? $detail->pph : 0);
-                $totalPPN += (($detail->ppn_active ?? false) ? $detail->ppn : 0);
+                
+                $isPphActive = ($detail->pph_active ?? true);
+                $isPpnActive = ($detail->ppn_active ?? false);
+                
+                $totalPPH += ($isPphActive ? $detail->pph : 0);
+                $totalPPN += ($isPpnActive ? $detail->ppn : 0);
+                
+                // Selalu jumlahkan untuk tampilan
+                $displayPPH += $detail->pph;
+                $displayPPN += $detail->ppn;
+                
                 $totalMaterai += $detail->biaya_materai;
                 $totalGrandTotal += $detail->grand_total;
             }
@@ -359,12 +370,12 @@
                     @endif
                 @endforeach
                 
-                @if($totalPPH > 0)
+                @if($displayPPH > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td>PPH (2%)</td>
+                    <td>PPH (2%) {{ $totalPPH <= 0 ? '(Reimburse)' : '' }}</td>
                     <td class="text-center">1</td>
-                    <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($displayPPH, 0, ',', '.') }}</td>
                 </tr>
                 @endif
 
