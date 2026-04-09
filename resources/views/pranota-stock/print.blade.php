@@ -286,7 +286,7 @@
                     <tr>
                         <td class="text-center">{{ $i++ }}</td>
                         <td class="text-center">{{ isset($item['tanggal']) ? \Carbon\Carbon::parse($item['tanggal'])->format('d/M/Y') : '-' }}</td>
-                        <td>{{ (!isset($item['reference']) || $item['reference'] == '-' || trim($item['reference']) == '') ? 'stock lokasi penyimpanan' : $item['reference'] }}</td>
+                        <td>{{ $item['reference'] ?? '-' }}</td>
                         <td><span class="font-bold">{{ $item['nama_barang'] ?? ($item['nama'] ?? '-') }}</span></td>
                         <td>{{ $item['keterangan'] ?? '-' }}</td>
                         <td class="text-right">{{ number_format($totalBelanja, 0, ',', '.') }}</td>
