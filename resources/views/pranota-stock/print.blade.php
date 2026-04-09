@@ -329,7 +329,8 @@
                     'Perlengkapan' => 'Perlengkapan',
                     'Transport' => 'Transportasi',
                     'Pemakaian' => 'Pemakaian',
-                    'Perbaikan' => 'Perbaikan'
+                    'Perbaikan' => 'Perbaikan',
+                    'Stock' => 'Stock'
                 ];
                 $typeTotals = array_fill_keys(array_values($displayTypes), 0);
                 
@@ -341,6 +342,7 @@
                         'Kapal' => 0,
                         'Alat Berat' => 0,
                         'Buntut' => 0,
+                        'Gudang' => 0,
                         'Lain-lain' => 0
                     ];
                 }
@@ -358,8 +360,15 @@
                             if (stripos($itemType, $search) !== false) {
                                 $typeTotals[$label] += $itemNominal;
                                 $matched = true;
-                                if ($refType && isset($categoryDetails[$label][$refType])) {
-                                    $categoryDetails[$label][$refType] += $itemNominal;
+                                
+                                // Determine sub-category
+                                $subCat = $refType;
+                                if (!$subCat && $label === 'Stock') {
+                                    $subCat = 'Gudang';
+                                }
+                                
+                                if ($subCat && isset($categoryDetails[$label][$subCat])) {
+                                    $categoryDetails[$label][$subCat] += $itemNominal;
                                 }
                                 break;
                             }
