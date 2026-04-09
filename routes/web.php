@@ -171,6 +171,9 @@ Route::middleware([
           Route::delete('/kontainer-sewa-final/submit-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'destroyPranota'])->name('kontainer-sewa-final.destroy-pranota');
           Route::delete('/kontainer-sewa-final/audit/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'destroyAudit'])->name('kontainer-sewa-final.destroy-audit');
           Route::get('/kontainer-sewa-final/print-pranota/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPranota'])->name('kontainer-sewa-final.print-pranota');
+          Route::get('/kontainer-sewa-final/generate-payment-number', [App\Http\Controllers\KontainerSewaFinalController::class, 'generatePaymentNumber'])->name('kontainer-sewa-final.generate-payment-number');
+          Route::post('/kontainer-sewa-final/submit-payment', [App\Http\Controllers\KontainerSewaFinalController::class, 'submitPayment'])->name('kontainer-sewa-final.submit-payment');
+          Route::get('/kontainer-sewa-final/print-payment/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPayment'])->name('kontainer-sewa-final.print-payment');
           
           Route::get('daftar-tagihan-kontainer-sewa-2/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getPricelistForDpp'])->name('daftar-tagihan-kontainer-sewa-2.get_pricelist');
           Route::get('daftar-tagihan-kontainer-sewa-2/create-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'createGroup'])->name('daftar-tagihan-kontainer-sewa-2.create-group');

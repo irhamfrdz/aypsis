@@ -234,25 +234,25 @@ class AsuransiTandaTerimaController extends Controller
             ->select(
                 'tanda_terima_tanpa_surat_jalan.id', 
                 DB::raw("'tttsj' as type"), 
-                'no_tanda_terima as number', 
-                'tanggal_tanda_terima as date', 
-                'pengirim', 
-                'penerima', 
-                'no_kontainer', 
-                DB::raw('COALESCE(nama_barang, jenis_barang) as nama_barang'), 
-                'jumlah_barang as kuantitas', 
-                'satuan_barang as satuan', 
-                'created_at', 
+                'tanda_terima_tanpa_surat_jalan.no_tanda_terima as number', 
+                'tanda_terima_tanpa_surat_jalan.tanggal_tanda_terima as date', 
+                'tanda_terima_tanpa_surat_jalan.pengirim', 
+                'tanda_terima_tanpa_surat_jalan.penerima', 
+                'tanda_terima_tanpa_surat_jalan.no_kontainer', 
+                DB::raw('COALESCE(tanda_terima_tanpa_surat_jalan.nama_barang, tanda_terima_tanpa_surat_jalan.jenis_barang) as nama_barang'), 
+                'tanda_terima_tanpa_surat_jalan.jumlah_barang as kuantitas', 
+                'tanda_terima_tanpa_surat_jalan.satuan_barang as satuan', 
+                'tanda_terima_tanpa_surat_jalan.created_at', 
                 DB::raw('NULL as deleted_at')
             )
             ->when($search, function($q) use ($search) {
                 $q->where(function($sub) use ($search) {
-                    $sub->where('no_tanda_terima', 'like', "%{$search}%")
-                        ->orWhere('pengirim', 'like', "%{$search}%")
-                        ->orWhere('penerima', 'like', "%{$search}%")
-                        ->orWhere('no_kontainer', 'like', "%{$search}%")
-                        ->orWhere('nama_barang', 'like', "%{$search}%")
-                        ->orWhere('jenis_barang', 'like', "%{$search}%")
+                    $sub->where('tanda_terima_tanpa_surat_jalan.no_tanda_terima', 'like', "%{$search}%")
+                        ->orWhere('tanda_terima_tanpa_surat_jalan.pengirim', 'like', "%{$search}%")
+                        ->orWhere('tanda_terima_tanpa_surat_jalan.penerima', 'like', "%{$search}%")
+                        ->orWhere('tanda_terima_tanpa_surat_jalan.no_kontainer', 'like', "%{$search}%")
+                        ->orWhere('tanda_terima_tanpa_surat_jalan.nama_barang', 'like', "%{$search}%")
+                        ->orWhere('tanda_terima_tanpa_surat_jalan.jenis_barang', 'like', "%{$search}%")
                         ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
                         ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
@@ -266,10 +266,10 @@ class AsuransiTandaTerimaController extends Controller
             ->select(
                 'tanda_terimas_lcl.id', 
                 DB::raw("'lcl' as type"), 
-                'nomor_tanda_terima as number', 
-                'tanggal_tanda_terima as date', 
-                'nama_pengirim as pengirim', 
-                'nama_penerima as penerima', 
+                'tanda_terimas_lcl.nomor_tanda_terima as number', 
+                'tanda_terimas_lcl.tanggal_tanda_terima as date', 
+                'tanda_terimas_lcl.nama_pengirim as pengirim', 
+                'tanda_terimas_lcl.nama_penerima as penerima', 
                 DB::raw('GROUP_CONCAT(DISTINCT tanda_terima_lcl_kontainer_pivot.nomor_kontainer SEPARATOR ", ") as no_kontainer'),
                 DB::raw('(SELECT GROUP_CONCAT(nama_barang SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as nama_barang'),
                 DB::raw('(SELECT SUM(jumlah) FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as kuantitas'),
@@ -281,9 +281,9 @@ class AsuransiTandaTerimaController extends Controller
             ->groupBy('tanda_terimas_lcl.id', 'type', 'number', 'date', 'pengirim', 'penerima', 'tanda_terimas_lcl.created_at', 'tanda_terimas_lcl.deleted_at')
             ->when($search, function($q) use ($search) {
                 $q->where(function($sub) use ($search) {
-                    $sub->where('nomor_tanda_terima', 'like', "%{$search}%")
-                       ->orWhere('nama_pengirim', 'like', "%{$search}%")
-                       ->orWhere('nama_penerima', 'like', "%{$search}%")
+                    $sub->where('tanda_terimas_lcl.nomor_tanda_terima', 'like', "%{$search}%")
+                       ->orWhere('tanda_terimas_lcl.nama_pengirim', 'like', "%{$search}%")
+                       ->orWhere('tanda_terimas_lcl.nama_penerima', 'like', "%{$search}%")
                        ->orWhere('tanda_terima_lcl_kontainer_pivot.nomor_kontainer', 'like', "%{$search}%")
                        ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
                        ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
