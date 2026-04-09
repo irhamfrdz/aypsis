@@ -63,16 +63,27 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
                 $sheet->getColumnDimension('H')->setWidth(20);
 
                 // Styling for the whole sheet
-                $sheet->getStyle('A1:Z500')->getFont()->setName('Arial');
-                $sheet->getStyle('A1:Z500')->getFont()->setSize(10);
+                $highestRow = $sheet->getHighestRow();
+                $sheet->getStyle("A1:Z{$highestRow}")->getFont()->setName('Arial');
+                $sheet->getStyle("A1:Z{$highestRow}")->getFont()->setSize(10);
 
                 // Center align column A and G
-                $sheet->getStyle('A1:A500')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-                $sheet->getStyle('G1:G500')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                $sheet->getStyle("A1:A{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                $sheet->getStyle("G1:G{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                 
-                // Vertical align everything to top and wrap Column C
-                $sheet->getStyle('A1:Z1000')->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
-                $sheet->getStyle('C1:C1000')->getAlignment()->setWrapText(true);
+                // Vertical align everything to top
+                $sheet->getStyle("A1:Z{$highestRow}")->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+
+                // Post-process column C: replace ", " with newline for in-cell line breaks
+                for ($row = 1; $row <= $highestRow; $row++) {
+                    $cell = $sheet->getCell("C{$row}");
+                    $value = $cell->getValue();
+                    
+                    if ($value && is_string($value) && strpos($value, ', ') !== false) {
+                        $cell->setValue(str_replace(', ', "," . chr(10), $value));
+                        $sheet->getStyle("C{$row}")->getAlignment()->setWrapText(true);
+                    }
+                }
             },
         ];
     }
