@@ -329,8 +329,7 @@
                     'Perlengkapan' => 'Perlengkapan',
                     'Transport' => 'Transportasi',
                     'Pemakaian' => 'Pemakaian',
-                    'Perbaikan' => 'Perbaikan',
-                    'Stock' => 'Stock'
+                    'Perbaikan' => 'Perbaikan'
                 ];
                 $typeTotals = array_fill_keys(array_values($displayTypes), 0);
                 
@@ -356,7 +355,7 @@
                                 // Determine sub-category
                                 $subCat = $refType;
                                 if (!$subCat) {
-                                    $subCat = 'Stock ' . ($item['lokasi'] ?? '-');
+                                    $subCat = ($item['lokasi'] ?? '-');
                                 }
                                 
                                 if (!isset($categoryDetails[$label][$subCat])) {
