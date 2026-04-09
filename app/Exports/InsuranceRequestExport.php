@@ -70,6 +70,9 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
                 $sheet->getStyle('A1:A500')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                 $sheet->getStyle('G1:G500')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                 
+                // Wrap text for description column (C)
+                $sheet->getStyle('C1:C500')->getAlignment()->setWrapText(true);
+                
                 // Vertical align everything to top
                 $sheet->getStyle('A1:Z500')->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
             },
