@@ -436,6 +436,7 @@ class AsuransiTandaTerimaController extends Controller
             'nomor_urut' => '-',
             'nama_kapal' => '-',
             'nomor_voyage' => '-',
+            'images' => [],
         ];
 
         if ($type == 'tt') {
@@ -467,6 +468,26 @@ class AsuransiTandaTerimaController extends Controller
                         $details['nama_kapal'] = $prospek->nama_kapal ?? '-';
                     }
                 }
+
+                // Images
+                $images = $tt->gambar_checkpoint;
+                if (is_string($images)) $images = json_decode($images, true);
+                if (is_array($images)) {
+                    foreach ($images as $img) {
+                        if ($img) $details['images'][] = Storage::disk('public')->url($img);
+                    }
+                }
+                
+                // SJ Images fallback
+                if (empty($details['images']) && $tt->suratJalan && $tt->suratJalan->gambar_checkpoint) {
+                    $sjImages = $tt->suratJalan->gambar_checkpoint;
+                    if (is_string($sjImages)) $sjImages = json_decode($sjImages, true);
+                    if (is_array($sjImages)) {
+                        foreach ($sjImages as $img) {
+                            if ($img) $details['images'][] = Storage::disk('public')->url($img);
+                        }
+                    }
+                }
             }
         } elseif ($type == 'tttsj') {
             $tttsj = TandaTerimaTanpaSuratJalan::find($id);
@@ -477,6 +498,15 @@ class AsuransiTandaTerimaController extends Controller
                 $details['jumlah_barang'] = (string)($tttsj->jumlah_barang ?? '-');
                 $details['satuan'] = $tttsj->satuan_barang ?? '-';
                 $details['size_kontainer'] = $tttsj->size_kontainer ?? '-';
+
+                // Images
+                $images = $tttsj->gambar_tanda_terima;
+                if (is_string($images)) $images = json_decode($images, true);
+                if (is_array($images)) {
+                    foreach ($images as $img) {
+                        if ($img) $details['images'][] = Storage::disk('public')->url($img);
+                    }
+                }
             }
         } elseif ($type == 'lcl') {
             $lcl = TandaTerimaLcl::with(['items', 'kontainerPivot'])->find($id);
@@ -487,6 +517,15 @@ class AsuransiTandaTerimaController extends Controller
                 $details['jumlah_barang'] = (string)($lcl->items->sum('jumlah') ?: '-');
                 $details['satuan'] = $lcl->items->pluck('satuan')->filter()->unique()->implode(', ') ?: '-';
                 $details['size_kontainer'] = $lcl->kontainerPivot->pluck('size_kontainer')->filter()->unique()->implode(', ') ?: '-';
+
+                // Images
+                $images = $lcl->gambar_surat_jalan;
+                if (is_string($images)) $images = json_decode($images, true);
+                if (is_array($images)) {
+                    foreach ($images as $img) {
+                        if ($img) $details['images'][] = Storage::disk('public')->url($img);
+                    }
+                }
             }
         }
 

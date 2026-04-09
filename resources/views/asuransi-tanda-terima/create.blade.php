@@ -191,6 +191,52 @@
                                 @endif
                             </p>
                         </div>
+                   
+                        @php
+                            $existingImages = [];
+                            if (isset($selectedReceipt)) {
+                                if ($selectedType == 'tt') {
+                                    $images = $selectedReceipt->gambar_checkpoint;
+                                    if (is_string($images)) $images = json_decode($images, true);
+                                    if (is_array($images)) {
+                                        foreach ($images as $img) if ($img) $existingImages[] = Storage::disk('public')->url($img);
+                                    }
+                                    if (empty($existingImages) && $selectedReceipt->suratJalan && $selectedReceipt->suratJalan->gambar_checkpoint) {
+                                        $sjImages = $selectedReceipt->suratJalan->gambar_checkpoint;
+                                        if (is_string($sjImages)) $sjImages = json_decode($sjImages, true);
+                                        if (is_array($sjImages)) {
+                                            foreach ($sjImages as $img) if ($img) $existingImages[] = Storage::disk('public')->url($img);
+                                        }
+                                    }
+                                } elseif ($selectedType == 'tttsj') {
+                                    $images = $selectedReceipt->gambar_tanda_terima;
+                                    if (is_string($images)) $images = json_decode($images, true);
+                                    if (is_array($images)) {
+                                         foreach ($images as $img) if ($img) $existingImages[] = Storage::disk('public')->url($img);
+                                    }
+                                } elseif ($selectedType == 'lcl') {
+                                    $images = $selectedReceipt->gambar_surat_jalan;
+                                    if (is_string($images)) $images = json_decode($images, true);
+                                    if (is_array($images)) {
+                                         foreach ($images as $img) if ($img) $existingImages[] = Storage::disk('public')->url($img);
+                                    }
+                                }
+                            }
+                        @endphp
+
+                        <!-- Images Section -->
+                        <div class="md:col-span-6 mt-2 pt-2 border-t border-blue-100 {{ !empty($existingImages) ? '' : 'hidden' }}" id="receipt_images_wrapper">
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider mb-2">Lampiran Gambar Tanda Terima</p>
+                            <div class="flex flex-wrap gap-2" id="info_images_list">
+                                @if(!empty($existingImages))
+                                    @foreach($existingImages as $imgUrl)
+                                        <a href="{{ $imgUrl }}" target="_blank" class="block w-20 h-20 rounded-lg overflow-hidden border border-blue-200 hover:border-blue-400 transition shadow-sm">
+                                            <img src="{{ $imgUrl }}" class="w-full h-full object-cover">
+                                        </a>
+                                    @endforeach
+                                @endif
+                            </div>
+                        </div>
 
                         <!-- View Button -->
                         <div class="md:col-span-6 flex justify-end mt-2 pt-2 border-t border-blue-100 {{ $selectedReceipt ? '' : 'hidden' }}" id="view_receipt_wrapper">
@@ -556,14 +602,21 @@
 
         const viewWrapper = document.getElementById('view_receipt_wrapper');
         const viewBtn = document.getElementById('btn_view_receipt');
+        const imagesWrapper = document.getElementById('receipt_images_wrapper');
+        const imagesList = document.getElementById('info_images_list');
 
         if (!id) {
             Object.values(infoFields).forEach(f => f.textContent = '-');
             if (viewWrapper) viewWrapper.classList.add('hidden');
+            if (imagesWrapper) imagesWrapper.classList.add('hidden');
+            if (imagesList) imagesList.innerHTML = '';
             return;
         }
 
         Object.values(infoFields).forEach(f => f.textContent = '...');
+
+        if (imagesList) imagesList.innerHTML = '';
+        if (imagesWrapper) imagesWrapper.classList.add('hidden');
 
         fetch(`/asuransi-tanda-terima/get-receipt-details/${type}/${id}`)
             .then(response => response.json())
@@ -592,6 +645,24 @@
                     viewWrapper.classList.remove('hidden');
                 } else if (viewWrapper) {
                     viewWrapper.classList.add('hidden');
+                }
+
+                // Handle images
+                if (data.images && data.images.length > 0 && imagesWrapper && imagesList) {
+                    imagesWrapper.classList.remove('hidden');
+                    data.images.forEach(imgUrl => {
+                        const imgAnchor = document.createElement('a');
+                        imgAnchor.href = imgUrl;
+                        imgAnchor.target = '_blank';
+                        imgAnchor.className = 'block w-20 h-20 rounded-lg overflow-hidden border border-blue-200 hover:border-blue-400 transition shadow-sm';
+                        
+                        const img = document.createElement('img');
+                        img.src = imgUrl;
+                        img.className = 'w-full h-full object-cover';
+                        
+                        imgAnchor.appendChild(img);
+                        imagesList.appendChild(imgAnchor);
+                    });
                 }
             })
             .catch(error => {
