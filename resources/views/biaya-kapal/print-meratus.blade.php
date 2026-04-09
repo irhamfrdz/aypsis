@@ -231,6 +231,7 @@
             $totalPPN = 0; // Total PPN yang benar-benar menambah (untuk kalkulasi)
             $displayPPH = 0; // Untuk tampilan baris di tabel
             $displayPPN = 0; // Untuk tampilan baris di tabel
+            $totalAdjustment = 0;
             $totalMaterai = 0;
             $totalGrandTotal = 0;
             
@@ -259,6 +260,7 @@
                 $displayPPH += $detail->pph;
                 $displayPPN += $detail->ppn;
                 
+                $totalAdjustment += $detail->adjustment;
                 $totalMaterai += $detail->biaya_materai;
                 $totalGrandTotal += $detail->grand_total;
             }
@@ -394,6 +396,15 @@
                     <td>BIAYA MATERAI</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalMaterai, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+
+                @if($totalAdjustment != 0)
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td>ADJUSTMENT</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 

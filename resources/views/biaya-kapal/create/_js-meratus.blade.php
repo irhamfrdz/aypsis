@@ -228,6 +228,11 @@
                     <input type="hidden" name="meratus[${sectionIndex}][biaya_materai]" class="materai-value-meratus" value="0">
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment</label>
+                    <input type="text" class="adjustment-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="Rp 0">
+                    <input type="hidden" name="meratus[${sectionIndex}][adjustment]" class="adjustment-value-meratus" value="0">
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Grand Total</label>
                     <input type="text" class="grand-total-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="meratus[${sectionIndex}][grand_total]" class="grand-total-value-meratus" value="0">
@@ -330,6 +335,25 @@
             } else {
                 this.value = 'Rp 0';
                 materaiValue.value = 0;
+            }
+            calculateMeratusSectionTotal(sectionIndex);
+        });
+
+        // Adjustment Manual edit listener
+        const adjustmentDisplay = section.querySelector('.adjustment-display-meratus');
+        const adjustmentValue = section.querySelector('.adjustment-value-meratus');
+        adjustmentDisplay.addEventListener('input', function() {
+            // Allow negative prefix for adjustment
+            let isNegative = this.value.includes('-');
+            let val = this.value.replace(/\D/g, '');
+            
+            if (val) {
+                let numVal = parseInt(val) * (isNegative ? -1 : 1);
+                this.value = (isNegative ? '- Rp ' : 'Rp ') + parseInt(val).toLocaleString('id-ID');
+                adjustmentValue.value = numVal;
+            } else {
+                this.value = 'Rp 0';
+                adjustmentValue.value = 0;
             }
             calculateMeratusSectionTotal(sectionIndex);
         });
@@ -502,8 +526,9 @@
         const pphForCalculation = pphActive ? pph : 0;
         const ppnForCalculation = ppnActive ? ppn : 0;
         const materaiValue = parseFloat(section.querySelector('.materai-value-meratus').value) || 0;
+        const adjustmentValue = parseFloat(section.querySelector('.adjustment-value-meratus').value) || 0;
         
-        const grandTotal = subTotal + ppnForCalculation - pphForCalculation + materaiValue;
+        const grandTotal = subTotal + ppnForCalculation - pphForCalculation + materaiValue + adjustmentValue;
         
         section.querySelector('.grand-total-display-meratus').value = grandTotal > 0 ? `Rp ${grandTotal.toLocaleString('id-ID')}` : 'Rp 0';
         section.querySelector('.grand-total-value-meratus').value = grandTotal;

@@ -24,6 +24,7 @@ class BiayaKapalMeratus extends Model
         'ppn',
         'pph_active',
         'ppn_active',
+        'adjustment',
         'grand_total',
         'penerima',
         'nomor_rekening',
@@ -40,6 +41,7 @@ class BiayaKapalMeratus extends Model
         'ppn' => 'decimal:2',
         'pph_active' => 'boolean',
         'ppn_active' => 'boolean',
+        'adjustment' => 'decimal:2',
         'grand_total' => 'decimal:2',
         'biaya_materai' => 'decimal:2',
         'tanggal_invoice_vendor' => 'date',
@@ -83,5 +85,13 @@ class BiayaKapalMeratus extends Model
     public function getFormattedPpnAttribute()
     {
         return 'Rp ' . number_format((float) $this->ppn, 0, ',', '.');
+    }
+
+    /**
+     * Accessor for formatted adjustment
+     */
+    public function getFormattedAdjustmentAttribute()
+    {
+        return 'Rp ' . number_format((float) $this->adjustment, 0, ',', '.');
     }
 }

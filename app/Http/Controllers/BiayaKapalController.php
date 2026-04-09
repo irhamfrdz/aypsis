@@ -423,7 +423,7 @@ class BiayaKapalController extends Controller
         // Meratus Sections Cleaning
         if (isset($data['meratus']) && is_array($data['meratus'])) {
             foreach ($data['meratus'] as &$section) {
-                $numericMeratus = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'grand_total'];
+                $numericMeratus = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
                 foreach ($numericMeratus as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
@@ -670,8 +670,9 @@ class BiayaKapalController extends Controller
             'meratus.*.ppn' => 'nullable|numeric|min:0',
             'meratus.*.pph_active' => 'nullable',
             'meratus.*.ppn_active' => 'nullable',
-            'meratus.*.biaya_materai' => 'nullable|numeric|min:0',
-            'meratus.*.grand_total' => 'nullable|numeric|min:0',
+            'meratus.*.biaya_materai' => 'nullable|numeric',
+            'meratus.*.adjustment' => 'nullable|numeric',
+            'meratus.*.grand_total' => 'nullable|numeric',
             'meratus.*.nomor_referensi' => 'nullable|string|max:100',
             'meratus.*.penerima' => 'nullable|string|max:255',
             'meratus.*.nomor_rekening' => 'nullable|string|max:100',
@@ -1109,12 +1110,15 @@ class BiayaKapalController extends Controller
                                 
                                 $biayaMateraiRaw = $section['biaya_materai'] ?? 0;
                                 $biayaMaterai = floatval($biayaMateraiRaw);
+
+                                $adjustmentRaw = $section['adjustment'] ?? 0;
+                                $adjustment = floatval($adjustmentRaw);
                             }
                             
                             $pphForCalc = $pphActive ? $pph : 0;
                             $ppnForCalc = $ppnActive ? $ppn : 0;
                             
-                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai : 0);
+                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
 
                             BiayaKapalMeratus::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
@@ -1132,6 +1136,7 @@ class BiayaKapalController extends Controller
                                 'pph_active' => $pphActive,
                                 'ppn_active' => $ppnActive,
                                 'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
+                                'adjustment' => $typeIndex == 0 ? $adjustment : 0,
                                 'grand_total' => $grandTotal,
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
