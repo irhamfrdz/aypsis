@@ -16,6 +16,8 @@ class TandaTerimaTanpaSuratJalan extends Model
         'no_tanda_terima',
         'tanggal_tanda_terima',
         'nomor_surat_jalan_customer',
+        'surat_jalan_pabrik',
+        'tanggal_surat_jalan_pabrik',
         'nomor_tanda_terima', // Keep both for backward compatibility
         'term_id',
         'aktifitas',
@@ -67,6 +69,7 @@ class TandaTerimaTanpaSuratJalan extends Model
 
     protected $casts = [
         'tanggal_tanda_terima' => 'date',
+        'tanggal_surat_jalan_pabrik' => 'date',
         'tanggal_seal' => 'date',
         'berat' => 'decimal:2',
         'panjang' => 'decimal:2',

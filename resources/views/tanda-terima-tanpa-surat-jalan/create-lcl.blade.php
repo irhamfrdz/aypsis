@@ -184,6 +184,33 @@
                             @enderror
                         </div>
 
+                        <!-- Surat Jalan Pabrik -->
+                        <div>
+                            <label for="surat_jalan_pabrik" class="block text-sm font-medium text-gray-700 mb-1">
+                                No. Surat Jalan Pabrik
+                            </label>
+                            <input type="text" name="surat_jalan_pabrik" id="surat_jalan_pabrik"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                   value="{{ old('surat_jalan_pabrik') }}"
+                                   placeholder="SJ-PABRIK-001">
+                            @error('surat_jalan_pabrik')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Tanggal Surat Jalan Pabrik -->
+                        <div>
+                            <label for="tanggal_surat_jalan_pabrik" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tanggal SJ Pabrik
+                            </label>
+                            <input type="date" name="tanggal_surat_jalan_pabrik" id="tanggal_surat_jalan_pabrik"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                   value="{{ old('tanggal_surat_jalan_pabrik') }}">
+                            @error('tanggal_surat_jalan_pabrik')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Term -->
                         <div>
                             <label for="termSearch" class="block text-sm font-medium text-gray-700 mb-1">

@@ -89,6 +89,14 @@
                             <dd class="text-sm text-gray-900 font-semibold">{{ $tandaTerima->no_surat_jalan }}</dd>
                         </div>
                         <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Surat Jalan Pabrik</dt>
+                            <dd class="text-sm text-gray-900 font-semibold">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {{ $tandaTerima->surat_jalan_pabrik ?: '-' }}
+                                </span>
+                            </dd>
+                        </div>
+                        <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Tanggal</dt>
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->tanggal_surat_jalan?->format('d F Y') ?? '-' }}</dd>
                         </div>

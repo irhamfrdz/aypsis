@@ -409,6 +409,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         $validated = $request->validate([
             'tanggal_tanda_terima' => 'required|date',
             'nomor_surat_jalan_customer' => 'nullable|string|max:255',
+            'surat_jalan_pabrik' => 'nullable|string|max:255',
+            'tanggal_surat_jalan_pabrik' => 'nullable|date',
             'no_surat_jalan_customer' => 'nullable|string|max:255',
             'nomor_tanda_terima' => 'nullable|string|max:255',
             'term_id' => 'nullable|exists:terms,id',
@@ -792,6 +794,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         $validated = $request->validate([
             'tanggal_tanda_terima' => 'required|date',
             'nomor_surat_jalan_customer' => 'nullable|string|max:255',
+            'surat_jalan_pabrik' => 'nullable|string|max:255',
+            'tanggal_surat_jalan_pabrik' => 'nullable|date',
             'nomor_tanda_terima' => 'required|string|max:255',
             'supir' => 'nullable|string|max:255',
             'kenek' => 'nullable|string|max:255',

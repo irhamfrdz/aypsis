@@ -254,6 +254,7 @@ class TandaTerimaController extends Controller
                     'sj.kegiatan',
                     'tt.id as tanda_terima_id',
                     'tt.penerima',
+                    'tt.surat_jalan_pabrik',
                     'tt.created_at',
                     'uj.nomor_uang_jalan',
                     'uj.tanggal_uang_jalan'
@@ -263,7 +264,7 @@ class TandaTerimaController extends Controller
                       ->orWhere('sj.kegiatan', '')
                       ->orWhere('sj.kegiatan', 'NOT LIKE', '%bongkar%');
                 })
-                ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.penerima', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
+                ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.penerima', 'tt.surat_jalan_pabrik', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
 
             // Apply search filter
             if (!empty($search)) {
@@ -481,6 +482,7 @@ class TandaTerimaController extends Controller
             // Field yang akan disinkronkan ke surat jalan
             'tanggal_surat_jalan' => 'nullable|date',
             'nomor_surat_jalan' => 'nullable|string|max:255',
+            'surat_jalan_pabrik' => 'nullable|string|max:255',
             'rit' => 'nullable|string|max:255',
             'pengirim' => 'nullable|string|max:255',
             'term' => 'nullable|string|max:255',
@@ -590,6 +592,8 @@ class TandaTerimaController extends Controller
             // Additional data from form
             $tandaTerima->estimasi_nama_kapal = $request->estimasi_nama_kapal;
             $tandaTerima->nomor_ro = $request->nomor_ro;
+            $tandaTerima->surat_jalan_pabrik = $request->surat_jalan_pabrik;
+            $tandaTerima->tanggal_surat_jalan_pabrik = $request->tanggal_surat_jalan_pabrik;
             $tandaTerima->tanggal = $request->tanggal;
             $tandaTerima->tanggal_checkpoint_supir = $request->tanggal_checkpoint_supir;
             $tandaTerima->supir_pengganti = $request->supir_pengganti;
@@ -1090,6 +1094,8 @@ class TandaTerimaController extends Controller
 
         $request->validate([
             'estimasi_nama_kapal' => 'nullable|string|max:255',
+            'surat_jalan_pabrik' => 'nullable|string|max:255',
+            'tanggal_surat_jalan_pabrik' => 'nullable|date',
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
             'tanggal_garasi' => 'nullable|date',
@@ -1133,13 +1139,6 @@ class TandaTerimaController extends Controller
             // Support untuk array fields dari edit form
             'nama_barang' => 'nullable|array',
             'nama_barang.*' => 'nullable|string|max:255',
-            'jumlah' => 'nullable',
-            'satuan' => 'nullable',
-            'panjang' => 'nullable',
-            'lebar' => 'nullable',
-            'tinggi' => 'nullable',
-            'meter_kubik' => 'nullable',
-            'tonase' => 'nullable',
             'gambar_checkpoint' => 'nullable|array|max:5',
             'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
             'lembur' => 'nullable|boolean',
@@ -1185,6 +1184,8 @@ class TandaTerimaController extends Controller
 
             $updateData = [
                 'estimasi_nama_kapal' => $request->estimasi_nama_kapal,
+                'surat_jalan_pabrik' => $request->surat_jalan_pabrik,
+                'tanggal_surat_jalan_pabrik' => $request->tanggal_surat_jalan_pabrik,
                 'tanggal_ambil_kontainer' => $request->tanggal_ambil_kontainer,
                 'tanggal_terima_pelabuhan' => $request->tanggal_terima_pelabuhan,
                 'tanggal_garasi' => $request->tanggal_garasi,

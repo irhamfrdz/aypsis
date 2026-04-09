@@ -628,6 +628,16 @@
                         @enderror
                     </div>
                     <div>
+                        <label for="surat_jalan_pabrik" class="block text-sm font-medium text-gray-700 mb-2">Surat Jalan Pabrik</label>
+                        <input type="text" name="surat_jalan_pabrik" id="surat_jalan_pabrik"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm font-mono @error('surat_jalan_pabrik') border-red-500 @enderror"
+                               placeholder="Masukkan nomor surat jalan pabrik"
+                               value="{{ old('surat_jalan_pabrik', $tandaTerima->surat_jalan_pabrik) }}">
+                        @error('surat_jalan_pabrik')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
                         <label for="expired_date" class="block text-sm font-medium text-gray-700 mb-2">Expired Date</label>
                         <input type="date" name="expired_date" id="expired_date"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm @error('expired_date') border-red-500 @enderror"
@@ -845,6 +855,65 @@
                             @error('tujuan_pengiriman')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="estimasi_nama_kapal" class="block text-xs font-medium text-gray-500 mb-2">
+                                    Estimasi Nama Kapal
+                                </label>
+                                <input type="text"
+                                       name="estimasi_nama_kapal"
+                                       id="estimasi_nama_kapal"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('estimasi_nama_kapal') border-red-500 @enderror"
+                                       placeholder="Contoh: Meratus"
+                                       value="{{ old('estimasi_nama_kapal', $tandaTerima->estimasi_nama_kapal) }}">
+                                @error('estimasi_nama_kapal')
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="nomor_ro" class="block text-xs font-medium text-gray-500 mb-2">
+                                    Nomor RO
+                                </label>
+                                <input type="text"
+                                       name="nomor_ro"
+                                       id="nomor_ro"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('nomor_ro') border-red-500 @enderror"
+                                       placeholder="Masukkan nomor RO"
+                                       value="{{ old('nomor_ro', $tandaTerima->nomor_ro) }}">
+                                @error('nomor_ro')
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="surat_jalan_pabrik" class="block text-xs font-medium text-gray-500 mb-2">
+                                    Surat Jalan Pabrik
+                                </label>
+                                <input type="text"
+                                       name="surat_jalan_pabrik"
+                                       id="surat_jalan_pabrik"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('surat_jalan_pabrik') border-red-500 @enderror"
+                                       placeholder="SJ-PABRIK-001"
+                                       value="{{ old('surat_jalan_pabrik', $tandaTerima->surat_jalan_pabrik) }}">
+                                @error('surat_jalan_pabrik')
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="tanggal_surat_jalan_pabrik" class="block text-xs font-medium text-gray-500 mb-2">
+                                    Tanggal Surat Jalan Pabrik
+                                </label>
+                                <input type="date"
+                                       name="tanggal_surat_jalan_pabrik"
+                                       id="tanggal_surat_jalan_pabrik"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_surat_jalan_pabrik') border-red-500 @enderror"
+                                       value="{{ old('tanggal_surat_jalan_pabrik', $tandaTerima->tanggal_surat_jalan_pabrik ? $tandaTerima->tanggal_surat_jalan_pabrik->format('Y-m-d') : '') }}">
+                                @error('tanggal_surat_jalan_pabrik')
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                         <div>
                             <label for="catatan" class="block text-xs font-medium text-gray-500 mb-2">Catatan</label>

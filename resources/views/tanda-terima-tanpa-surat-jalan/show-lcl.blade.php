@@ -66,6 +66,18 @@
                                     <p class="text-base text-gray-900">{{ $tandaTerima->no_surat_jalan_customer }}</p>
                                 </div>
                             @endif
+                            @if($tandaTerima->surat_jalan_pabrik)
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-2">No. Surat Jalan Pabrik</label>
+                                    <p class="text-base text-gray-900">{{ $tandaTerima->surat_jalan_pabrik }}</p>
+                                </div>
+                            @endif
+                            @if($tandaTerima->tanggal_surat_jalan_pabrik)
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-2">Tanggal SJ Pabrik</label>
+                                    <p class="text-base text-gray-900">{{ $tandaTerima->tanggal_surat_jalan_pabrik->format('d/m/Y') }}</p>
+                                </div>
+                            @endif
                             @if($tandaTerima->term && $tandaTerima->term->nama_status)
                                 <div>
                                     <label class="block text-sm font-medium text-gray-500 mb-2">Term</label>

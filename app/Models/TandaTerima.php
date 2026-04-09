@@ -13,6 +13,8 @@ class TandaTerima extends Model
     protected $fillable = [
         'surat_jalan_id',
         'no_surat_jalan',
+        'surat_jalan_pabrik',
+        'tanggal_surat_jalan_pabrik',
         'tanggal_surat_jalan',
         'supir',
         'supir_pengganti',
@@ -72,6 +74,7 @@ class TandaTerima extends Model
 
     protected $casts = [
         'tanggal_surat_jalan' => 'date',
+        'tanggal_surat_jalan_pabrik' => 'date',
         'tanggal' => 'date',
         'tanggal_checkpoint_supir' => 'date',
         'tanggal_ambil_kontainer' => 'date',

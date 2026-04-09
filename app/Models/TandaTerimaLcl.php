@@ -21,6 +21,8 @@ namespace App\Models;
         'nomor_tanda_terima',
         'tanggal_tanda_terima', 
         'no_surat_jalan_customer',
+        'surat_jalan_pabrik',
+        'tanggal_surat_jalan_pabrik',
         'term_id',
         // Single Penerima
         'nama_penerima',
@@ -59,6 +61,7 @@ namespace App\Models;
         
     protected $casts = [
         'tanggal_tanda_terima' => 'date',
+        'tanggal_surat_jalan_pabrik' => 'date',
         'gambar_surat_jalan' => 'array',
         'asuransi_uploaded_at' => 'datetime',
         'asuransi_approved_at' => 'datetime',
