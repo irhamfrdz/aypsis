@@ -116,5 +116,54 @@
     <button onclick="window.close()" style="padding: 10px 20px; background: #64748b; color: white; border: none; cursor: pointer; border-radius: 5px;">Tutup</button>
 </div>
 
+<!-- HALAMAN 2: DETAIL KONTAINER -->
+<div style="page-break-before: always; margin-top: 30px;">
+    <div class="header">
+        <h2>Lampiran Detail Kontainer</h2>
+        <p>Nomor Pembayaran: {{ $payment->nomor_pembayaran }}</p>
+    </div>
+
+    @foreach($payment->details as $detail)
+    <div style="margin-bottom: 30px;">
+        <h4 style="margin-bottom: 5px; background: #f2f2f2; padding: 5px;">Pranota: {{ $detail->pranota->nomor }} (Invoice: {{ $detail->pranota->no_invoice ?: '-' }})</h4>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th width="30">No</th>
+                    <th>Nomor Kontainer</th>
+                    <th>Masa Sewa</th>
+                    <th align="right">AYPSIS</th>
+                    <th align="right">Vendor Bill</th>
+                    <th align="right">Selisih</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($detail->pranota->audits as $idx => $audit)
+                <tr>
+                    <td align="center">{{ $idx + 1 }}</td>
+                    <td>{{ $audit->unit_number }}</td>
+                    <td>{{ $audit->period_name }}</td>
+                    <td align="right">{{ number_format($audit->aypsis_nominal, 0, ',', '.') }}</td>
+                    <td align="right">{{ number_format($audit->vendor_nominal, 0, ',', '.') }}</td>
+                    <td align="right">{{ number_format($audit->vendor_nominal - $audit->aypsis_nominal, 0, ',', '.') }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" align="right"><strong>Subtotal Pranota</strong></td>
+                    <td align="right"><strong>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</strong></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    @endforeach
+
+    <div style="margin-top: 20px; border-top: 2px solid #000; padding-top: 10px; text-align: right;">
+        <p style="font-size: 1.2em;"><strong>Grand Total: Rp {{ number_format($payment->grand_total, 0, ',', '.') }}</strong></p>
+    </div>
+</div>
+
 </body>
 </html>

@@ -562,7 +562,7 @@ class KontainerSewaFinalController extends Controller
 
     public function printPayment($id)
     {
-        $payment = BtmSewaPayment::with('details.pranota.vendor')->findOrFail($id);
+        $payment = BtmSewaPayment::with('details.pranota.vendor', 'details.pranota.audits')->findOrFail($id);
         return view('kontainer_sewa_final.print_payment', compact('payment'));
     }
 }
