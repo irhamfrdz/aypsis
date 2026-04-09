@@ -355,7 +355,7 @@
                                 // Determine sub-category
                                 $subCat = $refType;
                                 if (!$subCat) {
-                                    $subCat = ($item['lokasi'] ?? '-');
+                                    $subCat = 'Stock ' . ($item['lokasi'] ?? '-');
                                 }
                                 
                                 if (!isset($categoryDetails[$label][$subCat])) {

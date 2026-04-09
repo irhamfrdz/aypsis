@@ -836,7 +836,7 @@ class StockAmprahanController extends Controller
                             if (!$refType) $refType = 'Lain-lain';
                         }
                     }
-                    $reference = count($refItems) > 0 ? implode(' / ', $refItems) : ($item->lokasi ?? '-');
+                    $reference = count($refItems) > 0 ? implode(' / ', $refItems) : 'Stock ' . ($item->lokasi ?? '-');
                     
                     return array_merge($it, [
                         'tanggal' => $item->tanggal_beli ? $item->tanggal_beli->format('Y-m-d') : ($item->created_at ? $item->created_at->format('Y-m-d') : '-'),
