@@ -336,15 +336,7 @@
                 
                 $categoryDetails = [];
                 foreach ($displayTypes as $label) {
-                    $categoryDetails[$label] = [
-                        'Kendaraan' => 0,
-                        'Truck' => 0,
-                        'Kapal' => 0,
-                        'Alat Berat' => 0,
-                        'Buntut' => 0,
-                        'Gudang' => 0,
-                        'Lain-lain' => 0
-                    ];
+                    $categoryDetails[$label] = [];
                 }
                 $otherTotal = 0;
                 $summaryGrandTotal = 0;
@@ -363,13 +355,14 @@
                                 
                                 // Determine sub-category
                                 $subCat = $refType;
-                                if (!$subCat && $label === 'Stock') {
-                                    $subCat = 'Gudang';
+                                if (!$subCat) {
+                                    $subCat = 'Stock ' . ($item['lokasi'] ?? '-');
                                 }
                                 
-                                if ($subCat && isset($categoryDetails[$label][$subCat])) {
-                                    $categoryDetails[$label][$subCat] += $itemNominal;
+                                if (!isset($categoryDetails[$label][$subCat])) {
+                                    $categoryDetails[$label][$subCat] = 0;
                                 }
+                                $categoryDetails[$label][$subCat] += $itemNominal;
                                 break;
                             }
                         }

@@ -848,6 +848,7 @@ class StockAmprahanController extends Controller
                         'harga' => $item->harga_satuan ?? ($it['harga'] ?? 0),
                         'adjustment' => $item->adjustment ?? ($it['adjustment'] ?? 0),
                         'satuan' => $item->satuan ?? ($it['satuan'] ?? '-'),
+                        'lokasi' => $item->lokasi ?? '-',
                     ]);
                 }
                 return $it;
