@@ -71,8 +71,8 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
                 $sheet->getStyle('G1:G500')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                 
                 // Vertical align everything to top and wrap Column C
-                $sheet->getStyle('A1:Z500')->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
-                $sheet->getStyle('C1:C500')->getAlignment()->setWrapText(true);
+                $sheet->getStyle('A1:Z1000')->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+                $sheet->getStyle('C1:C1000')->getAlignment()->setWrapText(true);
             },
         ];
     }
