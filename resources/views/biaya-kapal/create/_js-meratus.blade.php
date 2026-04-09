@@ -201,9 +201,26 @@
                     <input type="hidden" name="meratus[${sectionIndex}][sub_total]" class="sub-total-value-meratus" value="0">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">PPH (2%)</label>
-                    <input type="text" class="pph-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="Rp 0">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-sm font-medium text-gray-700">PPH (2%)</label>
+                        <div class="flex items-center gap-1">
+                            <input type="checkbox" name="meratus[${sectionIndex}][pph_active]" class="pph-active-meratus w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer" checked onchange="calculateMeratusSectionTotal(${sectionIndex})">
+                            <span class="text-[10px] text-gray-600 font-medium cursor-pointer" onclick="this.previousElementSibling.click()">Aktifkan</span>
+                        </div>
+                    </div>
+                    <input type="text" class="pph-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors duration-200" value="Rp 0">
                     <input type="hidden" name="meratus[${sectionIndex}][pph]" class="pph-value-meratus" value="0">
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-sm font-medium text-gray-700">PPN (11%)</label>
+                        <div class="flex items-center gap-1">
+                            <input type="checkbox" name="meratus[${sectionIndex}][ppn_active]" class="ppn-active-meratus w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer" onchange="calculateMeratusSectionTotal(${sectionIndex})">
+                            <span class="text-[10px] text-gray-600 font-medium cursor-pointer" onclick="this.previousElementSibling.click()">Aktifkan</span>
+                        </div>
+                    </div>
+                    <input type="text" class="ppn-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors duration-200" value="Rp 0">
+                    <input type="hidden" name="meratus[${sectionIndex}][ppn]" class="ppn-value-meratus" value="0">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Materai</label>
@@ -282,6 +299,22 @@
             } else {
                 this.value = 'Rp 0';
                 pphValue.value = 0;
+            }
+            calculateMeratusSectionTotal(sectionIndex);
+        });
+
+        // PPN Manual edit listener
+        const ppnDisplay = section.querySelector('.ppn-display-meratus');
+        const ppnValue = section.querySelector('.ppn-value-meratus');
+        ppnDisplay.addEventListener('input', function() {
+            this.setAttribute('data-manual-ppn', 'true');
+            let val = this.value.replace(/\D/g, '');
+            if (val) {
+                this.value = 'Rp ' + parseInt(val).toLocaleString('id-ID');
+                ppnValue.value = val;
+            } else {
+                this.value = 'Rp 0';
+                ppnValue.value = 0;
             }
             calculateMeratusSectionTotal(sectionIndex);
         });
@@ -422,6 +455,7 @@
         section.querySelector('.sub-total-display-meratus').value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
         section.querySelector('.sub-total-value-meratus').value = subTotal;
         
+        const pphActive = section.querySelector('.pph-active-meratus').checked;
         const pphDisplay = section.querySelector('.pph-display-meratus');
         const pphValue = section.querySelector('.pph-value-meratus');
         
@@ -433,10 +467,43 @@
             pphDisplay.value = pph > 0 ? `Rp ${pph.toLocaleString('id-ID')}` : 'Rp 0';
             pphValue.value = pph;
         }
+
+        // PPN Calculation
+        const ppnActive = section.querySelector('.ppn-active-meratus').checked;
+        const ppnDisplay = section.querySelector('.ppn-display-meratus');
+        const ppnValue = section.querySelector('.ppn-value-meratus');
         
+        let ppn = 0;
+        if (ppnDisplay.hasAttribute('data-manual-ppn')) {
+            ppn = parseFloat(ppnValue.value) || 0;
+        } else {
+            ppn = Math.round(subTotal * 0.11);
+            ppnDisplay.value = ppn > 0 ? `Rp ${ppn.toLocaleString('id-ID')}` : 'Rp 0';
+            ppnValue.value = ppn;
+        }
+
+        // Update Styling based on active state
+        if (pphActive) {
+            pphDisplay.classList.remove('bg-gray-100', 'text-gray-400');
+            pphDisplay.classList.add('bg-white');
+        } else {
+            pphDisplay.classList.add('bg-gray-100', 'text-gray-400');
+            pphDisplay.classList.remove('bg-white');
+        }
+
+        if (ppnActive) {
+            ppnDisplay.classList.remove('bg-gray-100', 'text-gray-400');
+            ppnDisplay.classList.add('bg-white');
+        } else {
+            ppnDisplay.classList.add('bg-gray-100', 'text-gray-400');
+            ppnDisplay.classList.remove('bg-white');
+        }
+        
+        const pphForCalculation = pphActive ? pph : 0;
+        const ppnForCalculation = ppnActive ? ppn : 0;
         const materaiValue = parseFloat(section.querySelector('.materai-value-meratus').value) || 0;
         
-        const grandTotal = subTotal - pph + materaiValue;
+        const grandTotal = subTotal + ppnForCalculation - pphForCalculation + materaiValue;
         
         section.querySelector('.grand-total-display-meratus').value = grandTotal > 0 ? `Rp ${grandTotal.toLocaleString('id-ID')}` : 'Rp 0';
         section.querySelector('.grand-total-value-meratus').value = grandTotal;

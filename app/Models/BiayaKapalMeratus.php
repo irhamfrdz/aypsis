@@ -21,6 +21,9 @@ class BiayaKapalMeratus extends Model
         'harga',
         'sub_total',
         'pph',
+        'ppn',
+        'pph_active',
+        'ppn_active',
         'grand_total',
         'penerima',
         'nomor_rekening',
@@ -34,6 +37,9 @@ class BiayaKapalMeratus extends Model
         'harga' => 'decimal:2',
         'sub_total' => 'decimal:2',
         'pph' => 'decimal:2',
+        'ppn' => 'decimal:2',
+        'pph_active' => 'boolean',
+        'ppn_active' => 'boolean',
         'grand_total' => 'decimal:2',
         'biaya_materai' => 'decimal:2',
         'tanggal_invoice_vendor' => 'date',
@@ -69,5 +75,13 @@ class BiayaKapalMeratus extends Model
     public function getFormattedPphAttribute()
     {
         return 'Rp ' . number_format((float) $this->pph, 0, ',', '.');
+    }
+
+    /**
+     * Accessor for formatted ppn
+     */
+    public function getFormattedPpnAttribute()
+    {
+        return 'Rp ' . number_format((float) $this->ppn, 0, ',', '.');
     }
 }

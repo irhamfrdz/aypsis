@@ -228,6 +228,7 @@
             $meratusByType = [];
             $totalSubtotal = 0;
             $totalPPH = 0;
+            $totalPPN = 0;
             $totalMaterai = 0;
             $totalGrandTotal = 0;
             
@@ -245,9 +246,10 @@
                 $meratusByType[$typeKey]['cost'] += $detail->sub_total;
                 
                 $totalSubtotal += $detail->sub_total;
-                $totalPPH += $detail->pph;
+                $totalPPH += (($detail->pph_active ?? true) ? $detail->pph : 0);
+                $totalPPN += (($detail->ppn_active ?? false) ? $detail->ppn : 0);
                 $totalMaterai += $detail->biaya_materai;
-                $totalGrandTotal += ($detail->sub_total - $detail->pph + $detail->biaya_materai);
+                $totalGrandTotal += $detail->grand_total;
             }
         @endphp
 
@@ -304,7 +306,7 @@
                     }
                     
                     $references = $details->pluck('nomor_referensi')->filter()->unique()->values();
-                    $sectionGrandTotal = $details->sum('sub_total') - $details->sum('pph') + $details->sum('biaya_materai');
+                    $sectionGrandTotal = $details->sum('grand_total');
                 @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
@@ -363,6 +365,15 @@
                     <td>PPH (2%)</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+
+                @if($totalPPN > 0)
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td>PPN (11%)</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">Rp {{ number_format($totalPPN, 0, ',', '.') }}</td>
                 </tr>
                 @endif
 
