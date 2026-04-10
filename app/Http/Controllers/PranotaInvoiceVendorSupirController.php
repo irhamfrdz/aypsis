@@ -178,22 +178,29 @@ class PranotaInvoiceVendorSupirController extends Controller
     {
         try {
             DB::beginTransaction();
-            $pranota = PranotaInvoiceVendorSupir::findOrFail($id);
+            $pranota = PranotaInvoiceVendorSupir::with('vendor')->findOrFail($id);
             
-            // Calculate 2% of total_nominal (yang pada saat belum di PPH adalah subtotal utuh)
-            $pph = $pranota->total_nominal * 0.02;
+            $isMAS = strpos($pranota->vendor->nama_vendor ?? '', 'Menara Anugrah Semesta') !== false;
+            
+            // Base calculation
+            $baseForPph = $pranota->total_nominal;
+            if ($isMAS) {
+                $baseForPph += $pranota->total_uang_muat;
+            }
+            
+            $pph = $baseForPph * 0.02;
             $netNominal = $pranota->total_nominal - $pph;
             $grandTotal = $netNominal + $pranota->total_uang_muat;
             
             $pranota->update([
                 'pph' => $pph,
-                'total_nominal' => $netNominal, // Simpan total_nominal baru yang sudah dipotong PPH
+                'total_nominal' => $netNominal,
                 'grand_total' => $grandTotal,
                 'updated_by' => Auth::id()
             ]);
             
             DB::commit();
-            return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'PPH 2% berhasil ditambahkan ke Pranota.');
+            return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'PPH 2% berhasil ditambahkan ke Pranota' . ($isMAS ? ' (termasuk Uang Muat)' : '') . '.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
@@ -204,7 +211,7 @@ class PranotaInvoiceVendorSupirController extends Controller
     {
         try {
             DB::beginTransaction();
-            $pranota = PranotaInvoiceVendorSupir::findOrFail($id);
+            $pranota = PranotaInvoiceVendorSupir::with('vendor')->findOrFail($id);
             
             if ($pranota->pph > 0) {
                 // Return total_nominal to its original state by adding back the PPH
@@ -253,12 +260,11 @@ class PranotaInvoiceVendorSupirController extends Controller
     {
         try {
             DB::beginTransaction();
-            $pranota = PranotaInvoiceVendorSupir::findOrFail($id);
-            $uangMuatInputs = $request->input('uang_muat', []); // ['tagihan_id' => 'amount']
+            $pranota = PranotaInvoiceVendorSupir::with('vendor')->findOrFail($id);
+            $uangMuatInputs = $request->input('uang_muat', []);
             
             $totalNominalUangMuat = 0;
             foreach ($uangMuatInputs as $tagihanId => $amount) {
-                // Remove formatting (strip thousand separators)
                 $cleanAmount = preg_replace('/[^0-9]/', '', $amount);
                 $cleanAmount = empty($cleanAmount) ? 0 : (float) $cleanAmount;
                 
@@ -267,10 +273,31 @@ class PranotaInvoiceVendorSupirController extends Controller
                 $totalNominalUangMuat += $cleanAmount;
             }
             
-            $grandTotal = $pranota->total_nominal + $totalNominalUangMuat;
+            $isMAS = strpos($pranota->vendor->nama_vendor ?? '', 'Menara Anugrah Semesta') !== false;
+            
+            // If it's already has PPH, we need to decide if we recalculate it
+            $pph = $pranota->pph;
+            $totalNominal = $pranota->total_nominal;
+            
+            if ($pph > 0) {
+                if ($isMAS) {
+                    // Re-calculate everything from gross
+                    $grossInvoice = $pranota->total_nominal + $pranota->pph;
+                    $newPph = ($grossInvoice + $totalNominalUangMuat) * 0.02;
+                    $totalNominal = $grossInvoice - $newPph;
+                    $pph = $newPph;
+                }
+                // If not MAS, the existing logic keeps PPH fixed on invoice only, 
+                // but usually PPH should be recalculated if the base changes if pph is global.
+                // However, user specifically asked MAS for Uang Muat PPH.
+            }
+            
+            $grandTotal = $totalNominal + $totalNominalUangMuat;
             
             $pranota->update([
                 'total_uang_muat' => $totalNominalUangMuat,
+                'total_nominal' => $totalNominal,
+                'pph' => $pph,
                 'grand_total' => $grandTotal,
                 'updated_by' => Auth::id()
             ]);
