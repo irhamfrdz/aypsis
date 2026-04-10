@@ -48,28 +48,38 @@
                         <th class="px-6 py-4 border-b">Tujuan</th>
                         <th class="px-6 py-4 border-b text-right">Ongkos Truk</th>
                         <th class="px-6 py-4 border-b text-right">Uang Jalan</th>
+                        <th class="px-6 py-4 border-b">Bukti</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 text-sm divide-y divide-gray-100">
                     @forelse($data as $item)
-                        <tr class="hover:bg-gray-50 transition-colors {{ !($item['has_tanda_terima'] ?? true) ? 'bg-yellow-50' : '' }}">
-                            <td class="px-6 py-4">{{ $loop->iteration }}</td>
-                            <td class="px-6 py-4 text-center">
+                        @php
+                            $isAdj = str_ends_with($item['type'] ?? '', '_adj');
+                        @endphp
+                        <tr class="hover:bg-gray-50 transition-colors {{ !($item['has_tanda_terima'] ?? true) && !$isAdj ? 'bg-yellow-50' : '' }} {{ $isAdj ? 'bg-blue-50/30' : '' }}">
+                            <td class="px-6 py-4 text-xs">{{ $isAdj ? '' : $loop->iteration }}</td>
+                            <td class="px-6 py-4 text-center {{ $isAdj ? 'text-blue-500/70 text-[11px]' : '' }}">
                                 {{ \Carbon\Carbon::parse($item['tanggal'])->format('d/m/Y') }}
-                                @if(!($item['has_tanda_terima'] ?? true))
+                                @if(!($item['has_tanda_terima'] ?? true) && !$isAdj)
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-700 ml-1" title="Belum ada Tanda Terima">Belum TT</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 font-medium text-gray-800">{{ $item['no_surat_jalan'] }}</td>
-                            <td class="px-6 py-4">{{ $item['no_plat'] }}</td>
-                            <td class="px-6 py-4">{{ $item['supir'] }}</td>
-                            <td class="px-6 py-4">{{ $item['keterangan'] }}</td>
-                            <td class="px-6 py-4">{{ $item['tujuan'] }}</td>
-                            <td class="px-6 py-4 text-right font-semibold text-gray-800">
+                            <td class="px-6 py-4 font-medium {{ $isAdj ? 'opacity-30' : 'text-gray-800' }}">{{ $item['no_surat_jalan'] }}</td>
+                            <td class="px-6 py-4 {{ $isAdj ? 'opacity-30' : '' }}">{{ $item['no_plat'] }}</td>
+                            <td class="px-6 py-4 {{ $isAdj ? 'opacity-30' : '' }}">{{ $item['supir'] }}</td>
+                            <td class="px-6 py-4 {{ $isAdj ? 'pl-12 italic text-blue-600' : '' }}">
+                                @if($isAdj) <i class="fas fa-level-up-alt fa-rotate-90 mr-2 opacity-50"></i> @endif
+                                {{ $item['keterangan'] }}
+                            </td>
+                            <td class="px-6 py-4 {{ $isAdj ? 'opacity-30' : '' }}">{{ $item['tujuan'] }}</td>
+                            <td class="px-6 py-4 text-right font-semibold {{ $isAdj ? 'opacity-30' : 'text-gray-800' }}">
                                 Rp {{ number_format($item['ongkos_truck'], 0, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 text-right font-semibold text-gray-800">
+                            <td class="px-6 py-4 text-right font-semibold {{ $isAdj ? 'text-blue-700' : 'text-gray-800' }}">
                                 Rp {{ number_format($item['uang_jalan'], 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 text-xs {{ $isAdj ? 'text-blue-600 font-medium' : 'opacity-30' }}">
+                                {{ $item['nomor_bukti'] ?? '-' }}
                             </td>
                         </tr>
                     @empty
@@ -93,6 +103,7 @@
                         <td class="px-6 py-4 text-right border-t text-sm">
                             Rp {{ number_format($data->sum('uang_jalan'), 0, ',', '.') }}
                         </td>
+                        <td class="px-6 py-4 border-t"></td>
                     </tr>
                 </tfoot>
                 @endif
