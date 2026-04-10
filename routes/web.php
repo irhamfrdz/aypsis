@@ -3192,6 +3192,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('pranota-invoice-vendor-supir/{id}/add-pph', [\App\Http\Controllers\PranotaInvoiceVendorSupirController::class, 'addPph'])
          ->name('pranota-invoice-vendor-supir.add-pph')
          ->middleware('can:pranota-invoice-vendor-supir-update');
+
+    Route::post('pranota-invoice-vendor-supir/{id}/remove-pph', [\App\Http\Controllers\PranotaInvoiceVendorSupirController::class, 'removePph'])
+         ->name('pranota-invoice-vendor-supir.remove-pph')
+         ->middleware('can:pranota-invoice-vendor-supir-update');
     
     Route::post('pranota-invoice-vendor-supir/{id}/add-uang-muat', [\App\Http\Controllers\PranotaInvoiceVendorSupirController::class, 'addUangMuat'])
          ->name('pranota-invoice-vendor-supir.add-uang-muat')

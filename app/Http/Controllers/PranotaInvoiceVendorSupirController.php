@@ -200,6 +200,33 @@ class PranotaInvoiceVendorSupirController extends Controller
         }
     }
 
+    public function removePph($id)
+    {
+        try {
+            DB::beginTransaction();
+            $pranota = PranotaInvoiceVendorSupir::findOrFail($id);
+            
+            if ($pranota->pph > 0) {
+                // Return total_nominal to its original state by adding back the PPH
+                $originalNominal = $pranota->total_nominal + $pranota->pph;
+                $grandTotal = $originalNominal + $pranota->total_uang_muat;
+                
+                $pranota->update([
+                    'pph' => 0,
+                    'total_nominal' => $originalNominal,
+                    'grand_total' => $grandTotal,
+                    'updated_by' => Auth::id()
+                ]);
+            }
+            
+            DB::commit();
+            return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'PPH berhasil dihapus dari Pranota.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
     public function getSuratJalans($id)
     {
         try {

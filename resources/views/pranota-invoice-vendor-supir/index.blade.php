@@ -151,6 +151,15 @@
                                 </form>
                                 @endif
 
+                                @if(auth()->user()->can('pranota-invoice-vendor-supir-update') && $pranota->pph > 0)
+                                <button type="button" onclick="confirmRemovePph('{{ $pranota->id }}')" class="text-slate-500 hover:text-slate-700 transition-colors" title="Hapus PPH">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+                                <form id="remove-pph-form-{{ $pranota->id }}" action="{{ route('pranota-invoice-vendor-supir.remove-pph', $pranota->id) }}" method="POST" class="hidden">
+                                    @csrf
+                                </form>
+                                @endif
+
                                 @if(auth()->user()->can('pranota-invoice-vendor-supir-update'))
                                 <button type="button" onclick="openUangMuatModal('{{ $pranota->id }}')" class="text-indigo-500 hover:text-indigo-700 transition-colors" title="Kelola Uang Muat">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -198,6 +207,12 @@
     function confirmAddPph(id) {
         if(confirm('Apakah Anda yakin ingin menambahkan PPH 2% pada pranota ini? Total nominal akan dikurangi 2% dan disimpan sebagai PPH.')) {
             document.getElementById('add-pph-form-' + id).submit();
+        }
+    }
+
+    function confirmRemovePph(id) {
+        if(confirm('Apakah Anda yakin ingin menghapus PPH pada pranota ini? Total nominal akan dikembalikan ke nilai aslinya tanpa potongan 2%.')) {
+            document.getElementById('remove-pph-form-' + id).submit();
         }
     }
 
