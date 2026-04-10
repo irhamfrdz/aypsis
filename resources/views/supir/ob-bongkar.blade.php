@@ -99,26 +99,6 @@
             </div>
 
             <!-- Form Pilih Kapal dan Voyage -->
-            @php
-                // Group BLs by kapal (nama_kapal) to get voyages per ship
-                $blsByKapal = \App\Models\Bl::select('nama_kapal', 'no_voyage')
-                    ->whereNotNull('nama_kapal')
-                    ->whereNotNull('no_voyage')
-                    ->where('nama_kapal', '!=', '')
-                    ->where('no_voyage', '!=', '')
-                    ->groupBy('nama_kapal', 'no_voyage')
-                    ->orderBy('nama_kapal')
-                    ->orderBy('no_voyage')
-                    ->get()
-                    ->groupBy('nama_kapal');
-    $voyageData = $blsByKapal->map(function($bls) {
-        return $bls->map(function($b) {
-            return [
-                'voyage' => $b->no_voyage
-            ];
-        })->values();
-    })->toArray();
-            @endphp
             <div class="bg-white rounded-lg shadow-sm p-4">
                 <form action="{{ route('supir.ob-bongkar.store') }}" method="POST" id="obBongkarForm">
                     @csrf
@@ -139,12 +119,14 @@
                                        onblur="hideKapalDropdown()">
                                 <input type="hidden" id="kapal" name="kapal" required>
                                 <div id="kapal-dropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto hidden">
-                                    @foreach($blsByKapal->keys() as $kapalName)
-                                        <div class="kapal-option px-3 py-2 hover:bg-orange-50 cursor-pointer text-sm" 
-                                             data-value="{{ $kapalName }}">
-                                            {{ $kapalName }}
-                                        </div>
-                                    @endforeach
+                                    @if(isset($voyageData))
+                                        @foreach(array_keys($voyageData) as $kapalName)
+                                            <div class="kapal-option px-3 py-2 hover:bg-orange-50 cursor-pointer text-sm" 
+                                                 data-value="{{ $kapalName }}">
+                                                {{ $kapalName }}
+                                            </div>
+                                        @endforeach
+                                    @endif
                                 </div>
                             </div>
                         </div>
