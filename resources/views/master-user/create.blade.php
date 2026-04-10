@@ -1380,6 +1380,21 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-ob][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Pembayaran Biaya Kapal</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-biaya-kapal][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-biaya-kapal][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-biaya-kapal][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-biaya-kapal][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                            </tr>
+
                             {{-- Audit Log --}}
                             <tr class="module-row" data-module="audit-log">
                                 <td class="module-header">

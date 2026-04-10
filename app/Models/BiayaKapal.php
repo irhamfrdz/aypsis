@@ -35,6 +35,7 @@ class BiayaKapal extends Model
         'total_biaya',
         'pph_dokumen',
         'grand_total_dokumen',
+        'status_pembayaran',
     ];
 
     protected $casts = [
@@ -51,12 +52,50 @@ class BiayaKapal extends Model
         'nama_kapal' => 'array',
         'no_voyage' => 'array',
         'no_bl' => 'array',
+        'status_pembayaran' => 'string',
     ];
 
     // Accessors
     public function getFormattedNominalAttribute()
     {
         return 'Rp ' . number_format($this->nominal, 0, ',', '.');
+    }
+
+    public function getDisplayNamaKapalAttribute()
+    {
+        if (is_array($this->nama_kapal)) {
+            return implode(', ', $this->nama_kapal);
+        }
+        return (string) $this->nama_kapal;
+    }
+
+    public function getDisplayNoVoyageAttribute()
+    {
+        if (is_array($this->no_voyage)) {
+            return implode(', ', $this->no_voyage);
+        }
+        return (string) $this->no_voyage;
+    }
+
+    public function getDisplayNoBlAttribute()
+    {
+        if (is_array($this->no_bl)) {
+            return implode(', ', $this->no_bl);
+        }
+        return (string) $this->no_bl;
+    }
+
+    public function getStatusLabelAttribute()
+    {
+        $status = $this->status_pembayaran ?? 'pending';
+        switch ($status) {
+            case 'paid':
+                return '<span class="px-2 py-1 text-xs font-semibold leading-tight text-green-700 bg-green-100 rounded-full">Lunas</span>';
+            case 'cancelled':
+                return '<span class="px-2 py-1 text-xs font-semibold leading-tight text-red-700 bg-red-100 rounded-full">Dibatalkan</span>';
+            default:
+                return '<span class="px-2 py-1 text-xs font-semibold leading-tight text-yellow-700 bg-yellow-100 rounded-full">Belum Lunas</span>';
+        }
     }
 
     public function getJenisBiayaLabelAttribute()
@@ -82,6 +121,16 @@ class BiayaKapal extends Model
     }
 
     // Scopes
+    public function scopePending($query)
+    {
+        return $query->where('status_pembayaran', 'pending');
+    }
+
+    public function scopePaid($query)
+    {
+        return $query->where('status_pembayaran', 'paid');
+    }
+
     public function scopeBahanBakar($query)
     {
         return $query->where('jenis_biaya', 'bahan_bakar');
@@ -123,6 +172,13 @@ class BiayaKapal extends Model
     }
 
     // Relationships
+    public function pembayarans()
+    {
+        return $this->belongsToMany(PembayaranBiayaKapal::class, 'pembayaran_biaya_kapal_items', 'biaya_kapal_id', 'pembayaran_biaya_kapal_id')
+                    ->withPivot('nominal')
+                    ->withTimestamps();
+    }
+
     public function barangDetails()
     {
         return $this->hasMany(BiayaKapalBarang::class, 'biaya_kapal_id');

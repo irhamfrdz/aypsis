@@ -1720,6 +1720,8 @@ Route::middleware([
          ->name('biaya-kapal.destroy')
          ->middleware('can:biaya-kapal-delete');
 
+    Route::resource('pembayaran-biaya-kapal', \App\Http\Controllers\PembayaranBiayaKapalController::class);
+
     // 🏢 Master Gudang (Warehouse Master) Management with permissions
     // Import & Template routes (must be before resource routes)
     Route::get('master-gudang/template/download', [\App\Http\Controllers\MasterGudangController::class, 'template'])

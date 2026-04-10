@@ -618,6 +618,7 @@ class UserController extends Controller
                 'audit-log' => 'audit-log',
                 'belanja-amprahan' => 'belanja-amprahan',
                 'biaya-kapal' => 'biaya-kapal',
+                'pembayaran-biaya-kapal' => 'pembayaran-biaya-kapal',
                 'bl' => 'bl',
                 'checkpoint-kontainer-keluar' => 'checkpoint-kontainer-keluar',
                 'checkpoint-kontainer-masuk' => 'checkpoint-kontainer-masuk',
@@ -955,6 +956,30 @@ class UserController extends Controller
                     'approve' => 'approve',
                     'print' => 'print',
                     'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
+            // Special handling for pembayaran-biaya-kapal permissions
+            if (strpos($permissionName, 'pembayaran-biaya-kapal-') === 0) {
+                $module = 'pembayaran-biaya-kapal';
+                $action = str_replace('pembayaran-biaya-kapal-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map pembayaran-biaya-kapal actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete'
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
@@ -3157,6 +3182,34 @@ class UserController extends Controller
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
                                 $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pembayaran-biaya-kapal module
+                    if ($module === 'pembayaran-biaya-kapal') {
+                        // For pembayaran-biaya-kapal, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'pembayaran-biaya-kapal-view',
+                            'create' => 'pembayaran-biaya-kapal-create',
+                            'update' => 'pembayaran-biaya-kapal-edit',
+                            'delete' => 'pembayaran-biaya-kapal-delete'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            } else if ($action === 'update') {
+                                // Fallback: try update if edit not found
+                                $fallback = Permission::where('name', 'pembayaran-biaya-kapal-update')->first();
+                                if ($fallback) {
+                                    $permissionIds[] = $fallback->id;
+                                    $found = true;
+                                }
                             }
                         }
                     }
