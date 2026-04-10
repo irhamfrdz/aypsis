@@ -982,11 +982,11 @@ class ObController extends Controller
                     }
                 }
                 
-                // Set status OB langsung
-                $bl->sudah_ob = true;
-                $bl->supir_id = $request->supir_id;
-                $bl->tanggal_ob = now();
-                $bl->catatan_ob = $request->catatan;
+                // Set status OB di BLS (harus false karena muat belum berarti bongkar OB)
+                $bl->sudah_ob = false;
+                $bl->supir_id = null;
+                $bl->tanggal_ob = null;
+                $bl->catatan_ob = null;
                 
                 // Generate nomor BL otomatis jika belum ada
                 $lastBl = Bl::whereNotNull('nomor_bl')
@@ -1031,11 +1031,11 @@ class ObController extends Controller
                     'nomor_kontainer' => $existingBl->nomor_kontainer
                 ]);
                 
-                // Jika sudah ada, update status OB-nya
-                $existingBl->sudah_ob = true;
-                $existingBl->supir_id = $request->supir_id;
-                $existingBl->tanggal_ob = now();
-                $existingBl->catatan_ob = $request->catatan;
+                // Jika sudah ada, status OB-nya di BLS tetap false (muat != bongkar)
+                $existingBl->sudah_ob = false;
+                $existingBl->supir_id = null;
+                $existingBl->tanggal_ob = null;
+                $existingBl->catatan_ob = null;
                 $existingBl->updated_by = $user->id;
                 // If BL was previously TL, clear TL status because now a supir is assigned
                 if ($existingBl->sudah_tl) {
@@ -2828,11 +2828,11 @@ class ObController extends Controller
                 }
             }
             
-            // Mark as sudah OB (TL tidak perlu supir karena langsung dimuat)
-            $bl->sudah_ob = true;
+            // Mark as belum OB in BLS (muat stage != bongkar OB)
+            $bl->sudah_ob = false;
             $bl->supir_id = null;
-            $bl->tanggal_ob = now();
-            $bl->catatan_ob = 'Proses TL (Tanda Langsung) - Langsung Dimuat';
+            $bl->tanggal_ob = null;
+            $bl->catatan_ob = null;
 
             // Mark BL as TL as well to keep status consistent
             $bl->sudah_tl = true;
