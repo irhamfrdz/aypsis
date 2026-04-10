@@ -142,15 +142,17 @@ class SupirDashboardController extends Controller
         ]);
 
         // Prepare voyage data as a plain PHP array for JS injection
-        $voyageData = $naikKapals->groupBy('nama_kapal')->map(function($voyages) {
-            return $voyages->map(function($v) {
+        // Gunakan normalized_nama_kapal sebagai key grouping utama agar km. sekar dan km sekar jadi satu
+        $voyageData = $naikKapals->groupBy('normalized_nama_kapal')->mapWithKeys(function($voyages) {
+            $displayName = $voyages->first()->nama_kapal; // Ambil satu representasi nama untuk display
+            return [$displayName => $voyages->map(function($v) {
                 return [
                     'voyage' => $v->no_voyage,
                     'tanggal_muat' => $v->tanggal_muat ? $v->tanggal_muat->format('d/m/Y') : '-',
                     'pelabuhan_tujuan' => $v->pelabuhan_tujuan ?? '-',
                     'jenis_barang' => $v->jenis_barang ?? '-',
                 ];
-            })->values()->toArray();
+            })->values()->toArray()];
         })->toArray();
 
         return view('supir.ob-muat', compact('masterKapals', 'naikKapals', 'voyageData'));
@@ -575,12 +577,14 @@ class SupirDashboardController extends Controller
                                   ->get();
 
         // Build voyage data map
-        $voyageData = $blsDataForVoyage->groupBy('nama_kapal')->map(function($voyages) {
-            return $voyages->map(function($v) {
+        // Gunakan normalized_nama_kapal sebagai key grouping utama agar km. sekar dan km sekar jadi satu
+        $voyageData = $blsDataForVoyage->groupBy('normalized_nama_kapal')->mapWithKeys(function($voyages) {
+            $displayName = $voyages->first()->nama_kapal; // Ambil satu representasi nama untuk display
+            return [$displayName => $voyages->map(function($v) {
                 return [
                     'voyage' => $v->no_voyage
                 ];
-            })->values()->toArray();
+            })->values()->toArray()];
         })->toArray();
 
         \Log::info('OB Bongkar Page Accessed', [
