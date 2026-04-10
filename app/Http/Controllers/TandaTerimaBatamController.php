@@ -256,8 +256,75 @@ class TandaTerimaBatamController extends Controller
 
         DB::beginTransaction();
         try {
+            $dataToUpdate = $request->except([
+                'jumlah', 'satuan', 'panjang', 'lebar', 'tinggi', 
+                'meter_kubik', 'tonase', 'nama_barang', 'nomor_kontainer', 'no_seal', 
+                'gambar_checkpoint', 'lembur', 'nginap', 'tidak_lembur_nginap'
+            ]);
+            
+            $dataToUpdate['lembur'] = $request->boolean('lembur');
+            $dataToUpdate['nginap'] = $request->boolean('nginap');
+            $dataToUpdate['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
+
+            $dimensiDetails = [];
+            if ($request->has('jumlah') && is_array($request->jumlah)) {
+                $namaBarangArray = $request->nama_barang ?? [];
+                $jumlahArray = $request->jumlah;
+                $satuanArray = $request->satuan ?? [];
+                $panjangArray = $request->panjang ?? [];
+                $lebarArray = $request->lebar ?? [];
+                $tinggiArray = $request->tinggi ?? [];
+                $meterKubikArray = $request->meter_kubik ?? [];
+                $tonaseArray = $request->tonase ?? [];
+                
+                foreach ($jumlahArray as $index => $jumlah) {
+                    if (empty($namaBarangArray[$index]) && empty($jumlah) && empty($satuanArray[$index]) && 
+                        empty($panjangArray[$index]) && empty($lebarArray[$index]) && 
+                        empty($tinggiArray[$index]) && empty($tonaseArray[$index])) {
+                        continue;
+                    }
+                    
+                    $dimensiDetails[] = [
+                        'nama_barang' => $namaBarangArray[$index] ?? null,
+                        'jumlah' => $jumlah ? (int) $jumlah : null,
+                        'satuan' => $satuanArray[$index] ?? null,
+                        'panjang' => isset($panjangArray[$index]) && $panjangArray[$index] !== '' ? round((float) $panjangArray[$index], 3) : null,
+                        'lebar' => isset($lebarArray[$index]) && $lebarArray[$index] !== '' ? round((float) $lebarArray[$index], 3) : null,
+                        'tinggi' => isset($tinggiArray[$index]) && $tinggiArray[$index] !== '' ? round((float) $tinggiArray[$index], 3) : null,
+                        'meter_kubik' => isset($meterKubikArray[$index]) && $meterKubikArray[$index] !== '' ? round((float) $meterKubikArray[$index], 3) : null,
+                        'tonase' => isset($tonaseArray[$index]) && $tonaseArray[$index] !== '' ? round((float) $tonaseArray[$index], 3) : null,
+                    ];
+                }
+            }
+            
+            if (!empty($dimensiDetails)) {
+                $dataToUpdate['dimensi_details'] = $dimensiDetails;
+                $dataToUpdate['dimensi_items'] = $dimensiDetails;
+                $first = $dimensiDetails[0];
+                $dataToUpdate['jumlah'] = $first['jumlah'];
+                $dataToUpdate['satuan'] = $first['satuan'];
+                $dataToUpdate['panjang'] = $first['panjang'];
+                $dataToUpdate['lebar'] = $first['lebar'];
+                $dataToUpdate['tinggi'] = $first['tinggi'];
+                $dataToUpdate['meter_kubik'] = $first['meter_kubik'];
+                $dataToUpdate['tonase'] = $first['tonase'];
+            }
+
+            if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
+                $nomorKontainers = array_filter($request->nomor_kontainer, function($value) { return !empty(trim($value)); });
+                if (!empty($nomorKontainers)) {
+                    $dataToUpdate['no_kontainer'] = implode(',', $nomorKontainers);
+                }
+            }
+            if ($request->has('no_seal') && is_array($request->no_seal)) {
+                $noSeals = array_filter($request->no_seal, function($value) { return !empty(trim($value)); });
+                if (!empty($noSeals)) {
+                    $dataToUpdate['no_seal'] = implode(',', $noSeals);
+                }
+            }
+
             $tandaTerima = TandaTerimaBatam::findOrFail($id);
-            $tandaTerima->update($request->all());
+            $tandaTerima->update($dataToUpdate);
             
             // Re-link or update Prospek if needed
             $tandaTerima->autoLinkProspek();

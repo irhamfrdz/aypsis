@@ -40,11 +40,11 @@
     <nav class="mb-6">
         <ol class="flex items-center space-x-2 text-sm text-gray-600">
             <li>
-                <a href="{{ route('tanda-terima.index') }}" class="hover:text-blue-600 transition">Tanda Terima</a>
+                <a href="{{ route('tanda-terima-batam.index') }}" class="hover:text-blue-600 transition">Tanda Terima</a>
             </li>
             <li><i class="fas fa-chevron-right text-xs"></i></li>
             <li>
-                <a href="{{ route('tanda-terima.show', $tandaTerima) }}" class="hover:text-blue-600 transition">Detail</a>
+                <a href="{{ route('tanda-terima-batam.show', $tandaTerima) }}" class="hover:text-blue-600 transition">Detail</a>
             </li>
             <li><i class="fas fa-chevron-right text-xs"></i></li>
             <li class="text-gray-900 font-medium">Edit</li>
@@ -72,7 +72,7 @@
             <p class="text-sm text-gray-600 mt-1">Update informasi tanda terima</p>
         </div>
 
-        <form action="{{ route('tanda-terima.update', $tandaTerima) }}" method="POST" enctype="multipart/form-data" class="p-6">
+        <form action="{{ route('tanda-terima-batam.update', $tandaTerima) }}" method="POST" enctype="multipart/form-data" class="p-6">
             @csrf
             @method('PUT')
 
@@ -860,7 +860,7 @@
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
-                <a href="{{ route('tanda-terima.show', $tandaTerima) }}" class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition duration-200">
+                <a href="{{ route('tanda-terima-batam.show', $tandaTerima) }}" class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition duration-200">
                     <i class="fas fa-times mr-2"></i> Batal
                 </a>
                 <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-200">

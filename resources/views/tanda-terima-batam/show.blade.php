@@ -8,7 +8,7 @@
     <nav class="mb-6">
         <ol class="flex items-center space-x-2 text-sm text-gray-600">
             <li>
-                <a href="{{ route('tanda-terima.index') }}" class="hover:text-blue-600 transition">Tanda Terima</a>
+                <a href="{{ route('tanda-terima-batam.index') }}" class="hover:text-blue-600 transition">Tanda Terima</a>
             </li>
             <li><i class="fas fa-chevron-right text-xs"></i></li>
             <li class="text-gray-900 font-medium">Detail</li>
@@ -60,7 +60,7 @@
                         <i class="fas fa-check-circle text-xs mr-2"></i> Completed
                     </span>
                 @endif
-                <a href="{{ route('tanda-terima.edit', $tandaTerima->id) }}"
+                <a href="{{ route('tanda-terima-batam.edit', $tandaTerima->id) }}"
                    class="inline-flex items-center px-4 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg transition duration-200">
                     <i class="fas fa-edit mr-2"></i> Edit
                 </a>
@@ -704,11 +704,11 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 class="text-md font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
                 <div class="space-y-2">
-                    <a href="{{ route('tanda-terima.edit', $tandaTerima->id) }}"
+                    <a href="{{ route('tanda-terima-batam.edit', $tandaTerima->id) }}"
                        class="block w-full text-center px-4 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-lg transition duration-200">
                         <i class="fas fa-edit mr-2"></i> Edit Tanda Terima
                     </a>
-                    <a href="{{ route('tanda-terima.index') }}"
+                    <a href="{{ route('tanda-terima-batam.index') }}"
                        class="block w-full text-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition duration-200">
                         <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar
                     </a>
@@ -901,7 +901,7 @@
             <!-- Danger Zone -->
             <div class="bg-white rounded-lg shadow-sm border border-red-200 p-6">
                 <h3 class="text-md font-semibold text-red-900 mb-4">Danger Zone</h3>
-                <form action="{{ route('tanda-terima.destroy', $tandaTerima->id) }}"
+                <form action="{{ route('tanda-terima-batam.destroy', $tandaTerima->id) }}"
                       method="POST"
                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima ini?\n\nNo. Surat Jalan: {{ $tandaTerima->no_surat_jalan }}\n\nData yang dihapus dapat dipulihkan dari trash.');">
                     @csrf
