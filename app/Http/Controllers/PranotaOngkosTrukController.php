@@ -78,7 +78,7 @@ class PranotaOngkosTrukController extends Controller
             }
         }
 
-        $supirs = Karyawan::where('jabatan', 'like', '%Supir%')->get();
+        $supirs = Karyawan::where('pekerjaan', 'like', '%Supir%')->get();
         $vendors = VendorSupir::all();
 
         return view('pranota-ongkos-truk.create', compact('items', 'supirs', 'vendors'));
