@@ -121,15 +121,23 @@
 
             <!-- Bottom Section: Checklist -->
             <div class="w-full space-y-8">
-                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-gray-100 border border-gray-100">
-                    <div class="flex items-center justify-between mb-8">
-                        <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                            <span class="w-1.5 h-6 bg-indigo-600 rounded-full mr-3"></span>
-                            Checklist Pemeriksaan
-                        </h2>
-                        <span class="text-xs font-semibold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100 uppercase tracking-wider">
-                            Total 57 Item
-                        </span>
+                <div id="checklist-section" class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-gray-100 border border-gray-100">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                                <span class="w-1.5 h-6 bg-indigo-600 rounded-full mr-3"></span>
+                                Checklist Pemeriksaan
+                            </h2>
+                            <p class="text-xs text-gray-400 mt-1 font-medium">Total 57 item yang harus diperiksa</p>
+                        </div>
+                        
+                        <div class="relative w-full md:w-72">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400 text-xs"></i>
+                            </div>
+                            <input type="text" id="checklistSearch" placeholder="Cari item pengecekan..." 
+                                   class="block w-full pl-10 pr-4 py-2.5 border border-gray-100 rounded-2xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 sm:text-xs transition-all font-medium">
+                        </div>
                     </div>
 
                         @php
@@ -222,6 +230,9 @@
                         <!-- Tabs Content -->
                         @foreach($categories as $categoryName => $items)
                         <div id="{{ Str::slug($categoryName) }}" class="tab-content {{ !$loop->first ? 'hidden' : '' }}">
+                            <div class="search-category-title hidden mb-4">
+                                <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase tracking-widest">{{ $categoryName }}</span>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 @foreach($items as $item)
                                 <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-indigo-200 hover:bg-white transition-all duration-200 group">
@@ -292,6 +303,14 @@
                             </div>
                         </div>
                         @endforeach
+
+                        <div id="noResults" class="hidden py-12 text-center">
+                            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-search text-gray-300 text-2xl"></i>
+                            </div>
+                            <h3 class="text-sm font-bold text-gray-900">Tidak ada item ditemukan</h3>
+                            <p class="text-xs text-gray-500 mt-1">Coba kata kunci lain atau hapus pencarian</p>
+                        </div>
 
                     <div class="mt-8 pt-8 border-t border-gray-50">
                         <label class="block text-sm font-black text-gray-900 uppercase tracking-widest mb-6">Pernyataan</label>
@@ -368,11 +387,74 @@
         });
 
         // Scroll to top of checklist
-        const checklistContainer = document.querySelector('.lg\\:col-span-2');
+        const checklistContainer = document.getElementById('checklist-section');
         if(checklistContainer) {
-            checklistContainer.scrollIntoView({ behavior: 'smooth' });
+            checklistContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
+
+    // Search Logic
+    const searchInput = document.getElementById('checklistSearch');
+    const noResults = document.getElementById('noResults');
+    const tabHeader = document.querySelector('.overflow-x-auto');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const categoryTitles = document.querySelectorAll('.search-category-title');
+    const navButtons = document.querySelectorAll('.tab-content .flex.justify-between');
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        let globalMatch = false;
+        
+        if (query === '') {
+            tabHeader.classList.remove('hidden');
+            noResults.classList.add('hidden');
+            categoryTitles.forEach(t => t.classList.add('hidden'));
+            
+            // Restore active tab
+            const activeBtn = document.querySelector('.tab-btn.bg-indigo-600') || document.querySelector('.tab-btn');
+            switchTab(activeBtn.dataset.target);
+            
+            // Show all items and nav buttons in current tab
+            const currentTab = document.getElementById(activeBtn.dataset.target);
+            currentTab.querySelectorAll('.grid > div').forEach(item => item.classList.remove('hidden'));
+            currentTab.querySelectorAll('.flex.justify-between').forEach(b => b.classList.remove('hidden'));
+            return;
+        }
+
+        tabHeader.classList.add('hidden');
+        navButtons.forEach(b => b.classList.add('hidden'));
+
+        tabContents.forEach(content => {
+            const items = content.querySelectorAll('.grid > div');
+            const categoryTitle = content.querySelector('.search-category-title');
+            let categoryHasMatch = false;
+
+            items.forEach(item => {
+                const label = item.querySelector('label').textContent.toLowerCase();
+                if (label.includes(query)) {
+                    item.classList.remove('hidden');
+                    categoryHasMatch = true;
+                    globalMatch = true;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+
+            if (categoryHasMatch) {
+                content.classList.remove('hidden');
+                categoryTitle.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+                categoryTitle.classList.add('hidden');
+            }
+        });
+
+        if (globalMatch) {
+            noResults.classList.add('hidden');
+        } else {
+            noResults.classList.remove('hidden');
+        }
+    });
 
     document.querySelector('select[name="mobil_id"]').addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
