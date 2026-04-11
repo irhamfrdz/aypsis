@@ -181,6 +181,8 @@ class ReportOngkosTrukController extends Controller
                 'nomor_bukti' => $mainNomorBukti,
                 'type' => 'regular',
                 'has_tanda_terima' => $sj->tandaTerima ? true : false,
+                'id' => $sj->id,
+                'model_type' => 'SuratJalan',
             ]);
 
             // Adjustment Rows
@@ -231,6 +233,8 @@ class ReportOngkosTrukController extends Controller
                     'nomor_bukti' => $nomorBukti,
                     'type' => 'regular_adj',
                     'has_tanda_terima' => $sj->tandaTerima ? true : false,
+                    'id' => $adj->id,
+                    'model_type' => ($adj instanceof \App\Models\InvoiceAktivitasLain) ? 'InvoiceAktivitasLain' : 'PembayaranAktivitasLain',
                 ]);
             }
         }
@@ -283,6 +287,8 @@ class ReportOngkosTrukController extends Controller
                 'nomor_bukti' => $mainNomorBukti,
                 'type' => 'bongkaran',
                 'has_tanda_terima' => $sjb->tandaTerima ? true : false,
+                'id' => $sjb->id,
+                'model_type' => 'SuratJalanBongkaran',
             ]);
 
             // Adjustment Rows
@@ -333,6 +339,8 @@ class ReportOngkosTrukController extends Controller
                     'nomor_bukti' => $nomorBukti,
                     'type' => 'bongkaran_adj',
                     'has_tanda_terima' => $sjb->tandaTerima ? true : false,
+                    'id' => $adj->id,
+                    'model_type' => ($adj instanceof \App\Models\InvoiceAktivitasLain) ? 'InvoiceAktivitasLain' : 'PembayaranAktivitasLain',
                 ]);
             }
         }

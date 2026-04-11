@@ -26,6 +26,7 @@ use App\Http\Controllers\TujuanKegiatanUtamaController;
 use App\Http\Controllers\PermohonanController;
 use App\Http\Controllers\MasterKegiatanController;
 use App\Http\Controllers\PranotaSupirController;
+use App\Http\Controllers\PranotaOngkosTrukController;
 use App\Http\Controllers\PembayaranPranotaSupirController;
 use App\Http\Controllers\SupirDashboardController;
 use App\Http\Controllers\CheckpointController;
@@ -3814,6 +3815,15 @@ Route::get('/test-gate-in-ajax', function () {
         Route::get('/print/by-date', [PranotaSupirController::class, 'printByDate'])
             ->name('print.by-date')
             ->middleware('can:pranota-supir-print');
+    });
+    
+    // Pranota Ongkos Truk
+    Route::prefix('pranota-ongkos-truk')->name('pranota-ongkos-truk.')->middleware(['auth'])->group(function () {
+        Route::get('/', [PranotaOngkosTrukController::class, 'index'])->name('index');
+        Route::get('/create', [PranotaOngkosTrukController::class, 'create'])->name('create');
+        Route::post('/', [PranotaOngkosTrukController::class, 'store'])->name('store');
+        Route::get('/{id}', [PranotaOngkosTrukController::class, 'show'])->name('show');
+        Route::delete('/{id}', [PranotaOngkosTrukController::class, 'destroy'])->name('destroy');
     });
 
           // --- Rute Pranota & Pembayaran Pranota Tagihan Kontainer ---

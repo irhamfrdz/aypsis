@@ -26,6 +26,9 @@
                 <button onclick="window.print()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition duration-200 flex items-center shadow-sm font-medium">
                     <i class="fas fa-print mr-2"></i> Print
                 </button>
+                <button id="btnAddToPranota" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-200 flex items-center shadow-sm font-medium">
+                    <i class="fas fa-plus-circle mr-2"></i> Tambahkan ke Pranota
+                </button>
                 <a href="{{ route('report.ongkos-truk.export', request()->query()) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200 flex items-center shadow-sm font-medium">
                     <i class="fas fa-file-excel mr-2"></i> Export Excel
                 </a>
@@ -39,6 +42,9 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-50 text-gray-700 uppercase text-xs font-bold tracking-wider">
+                        <th class="px-6 py-4 border-b text-center w-10">
+                            <input type="checkbox" id="checkAll" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 cursor-pointer">
+                        </th>
                         <th class="px-6 py-4 border-b">No</th>
                         <th class="px-6 py-4 border-b text-center">Tanggal</th>
                         <th class="px-6 py-4 border-b">No. Surat Jalan</th>
@@ -57,6 +63,12 @@
                             $isAdj = str_ends_with($item['type'] ?? '', '_adj');
                         @endphp
                         <tr class="hover:bg-gray-50 transition-colors {{ !($item['has_tanda_terima'] ?? true) && !$isAdj ? 'bg-yellow-50' : '' }} {{ $isAdj ? 'bg-blue-50/30' : '' }}">
+                            <td class="px-6 py-4 text-center">
+                                <input type="checkbox" class="data-checkbox rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 cursor-pointer" 
+                                    value="{{ $item['no_surat_jalan'] }}" 
+                                    data-id="{{ $item['id'] ?? '' }}"
+                                    data-type="{{ $item['model_type'] ?? '' }}">
+                            </td>
                             <td class="px-6 py-4 text-xs">{{ $isAdj ? '' : $loop->iteration }}</td>
                             <td class="px-6 py-4 text-center {{ $isAdj ? 'text-blue-500/70 text-[11px]' : '' }}">
                                 {{ \Carbon\Carbon::parse($item['tanggal'])->format('d/m/Y') }}
@@ -96,7 +108,7 @@
                 @if($data->count() > 0)
                 <tfoot class="bg-gray-50 font-bold text-gray-800 uppercase text-xs">
                     <tr>
-                        <td colspan="7" class="px-6 py-4 text-right border-t">Grand Total</td>
+                        <td colspan="8" class="px-6 py-4 text-right border-t">Grand Total</td>
                         <td class="px-6 py-4 text-right border-t text-sm">
                             Rp {{ number_format($data->sum('ongkos_truck'), 0, ',', '.') }}
                         </td>
@@ -154,4 +166,56 @@
         }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkAll = document.getElementById('checkAll');
+        const checkboxes = document.querySelectorAll('.data-checkbox');
+        const btnAddToPranota = document.getElementById('btnAddToPranota');
+
+        // Check All functionality
+        checkAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => {
+                cb.checked = checkAll.checked;
+            });
+        });
+
+        // Individual checkbox change
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                const allChecked = Array.from(checkboxes).every(c => c.checked);
+                const someChecked = Array.from(checkboxes).some(c => c.checked);
+                checkAll.checked = allChecked;
+                checkAll.indeterminate = someChecked && !allChecked;
+            });
+        });
+
+        // Add to Pranota action
+        btnAddToPranota.addEventListener('click', function() {
+            const selectedItems = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => ({
+                    id: cb.dataset.id,
+                    no_sj: cb.value,
+                    type: cb.dataset.type
+                }));
+
+            if (selectedItems.length === 0) {
+                alert('Silakan pilih minimal satu data laporan!');
+                return;
+            }
+
+            // Construct data to send or URL parameters
+            const ids = selectedItems.map(item => item.id).filter(id => id).join(',');
+            const sjs = selectedItems.map(item => item.no_sj).join(',');
+            const types = selectedItems.map(item => item.type).join(',');
+
+            // Base URL for Pranota
+            const url = "{{ route('pranota-ongkos-truk.create') }}?selected_ids=" + ids + "&sjs=" + encodeURIComponent(sjs) + "&types=" + types;
+            
+            // Open in new window as requested
+            window.open(url, '_blank', 'width=1200,height=800,scrollbars=yes');
+        });
+    });
+</script>
 @endsection
