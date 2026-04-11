@@ -93,11 +93,15 @@
                     <div class="flex gap-2">
                         @can('bl-edit')
                         <button type="button" onclick="bulkUpdateSize(event)" 
-                           class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm mr-2">
+                           style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-right: 8px; transition: all 0.2s;"
+                           onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-1px)'"
+                           onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'">
                             <i class="fas fa-sync-alt mr-2"></i> Update Size
                         </button>
                         <button type="button" onclick="bulkUpdateTvHeader(event)" 
-                           class="inline-flex items-center px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                           style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.2s;"
+                           onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-1px)'"
+                           onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'">
                             <i class="fas fa-balance-scale mr-2"></i> Update T/V
                         </button>
                         @endcan
