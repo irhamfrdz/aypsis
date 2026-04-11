@@ -203,8 +203,12 @@
                         <span id="selectedCount" class="font-bold">0</span> item terpilih
                     </span>
                     <button type="button" onclick="bulkAction('split')" 
-                            class="px-3 py-1 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm flex items-center shadow-sm">
+                            class="px-3 py-1 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm flex items-center shadow-sm mr-2">
                         <i class="fas fa-project-diagram mr-1"></i> Pecah BL
+                    </button>
+                    <button type="button" onclick="bulkAction('updateTv')" 
+                            class="px-3 py-1 bg-teal-600 text-white rounded-md hover:bg-teal-700 text-sm flex items-center shadow-sm">
+                        <i class="fas fa-sync-alt mr-1"></i> Update T/V
                     </button>
                 </div>
             </div>
@@ -673,6 +677,41 @@
             document.getElementById('splitBlIds').value = ids.join(',');
             document.getElementById('splitModal').classList.remove('hidden');
             document.getElementById('splitModal').classList.add('flex');
+        } else if (action === 'updateTv') {
+            if (confirm(`Apakah Anda yakin ingin mengupdate Volume & Tonnage untuk ${ids.length} BL terpilih berdasarkan Tanda Terima?`)) {
+                // Show loading
+                const btn = event.target.closest('button');
+                const originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Updating...';
+
+                fetch('{{ route("bl.bulk-update-tv") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ ids: ids })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Gagal update: ' + data.message);
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Terjadi kesalahan sistem.');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                });
+            }
         }
     };
 

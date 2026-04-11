@@ -2131,6 +2131,142 @@ class BlController extends Controller
     }
 
     /**
+     * Bulk update Volume and Tonnage for BL records based on Tanda Terima components.
+     */
+    public function bulkUpdateVolumeTonnage(Request $request)
+    {
+        $user = Auth::user();
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-edit")
+                ->exists();
+            if (!$hasPermission) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+            }
+        }
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:bls,id'
+        ]);
+
+        try {
+            $ids = $request->ids;
+            $updatedCount = 0;
+            $notFoundCount = 0;
+
+            $bls = Bl::whereIn('id', $ids)->get();
+
+            foreach ($bls as $bl) {
+                $foundData = null;
+
+                // Priority 1: Direct link via Prospek -> Tanda Terima (FCL)
+                if ($bl->prospek && $bl->prospek->tanda_terima_id) {
+                    $tt = \App\Models\TandaTerima::find($bl->prospek->tanda_terima_id);
+                    if ($tt && ($tt->tonase > 0 || $tt->meter_kubik > 0)) {
+                        $foundData = [
+                            'tonnage' => $tt->tonase,
+                            'volume' => $tt->meter_kubik
+                        ];
+                    }
+                }
+
+                if (!$foundData) {
+                    $nomorKontainer = $bl->nomor_kontainer;
+                    if (!$nomorKontainer) continue;
+
+                    $pengirim = $bl->pengirim ?: ($bl->prospek ? $bl->prospek->pt_pengirim : null);
+                    
+                    // Fallback to matching by container and pengirim
+                    
+                    // 2. Check Tanda Terima LCL
+                    $ttLclItem = \DB::table('tanda_terimas_lcl as tt')
+                        ->join('tanda_terima_lcl_kontainer_pivot as pivot', 'tt.id', '=', 'pivot.tanda_terima_lcl_id')
+                        ->join('tanda_terima_lcl_items as items', 'tt.id', '=', 'items.tanda_terima_lcl_id')
+                        ->select(
+                            \DB::raw('COALESCE(SUM(items.tonase), 0) as total_tonnage'),
+                            \DB::raw('COALESCE(SUM(items.meter_kubik), 0) as total_volume')
+                        )
+                        ->where('pivot.nomor_kontainer', $nomorKontainer)
+                        ->when($pengirim, function($q) use ($pengirim) {
+                            return $q->where('tt.nama_pengirim', 'like', "%{$pengirim}%");
+                        })
+                        ->groupBy('tt.id')
+                        ->orderBy('tt.created_at', 'desc')
+                        ->first();
+
+                    if ($ttLclItem && ($ttLclItem->total_tonnage > 0 || $ttLclItem->total_volume > 0)) {
+                        $foundData = [
+                            'tonnage' => $ttLclItem->total_tonnage,
+                            'volume' => $ttLclItem->total_volume
+                        ];
+                    }
+
+                    // 3. Check Tanda Terima Tanpa Surat Jalan
+                    if (!$foundData) {
+                        $tttsj = \DB::table('tanda_terima_tanpa_surat_jalan')
+                            ->where('no_kontainer', $nomorKontainer)
+                            ->when($pengirim, function($q) use ($pengirim) {
+                                return $q->where('pengirim', 'like', "%{$pengirim}%");
+                            })
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+
+                        if ($tttsj && ($tttsj->tonase > 0 || $tttsj->meter_kubik > 0)) {
+                            $foundData = [
+                                'tonnage' => $tttsj->tonase,
+                                'volume' => $tttsj->meter_kubik
+                            ];
+                        }
+                    }
+
+                    // 4. Regular Tanda Terima (last resort if not linked via prospek)
+                    if (!$foundData) {
+                        $tt = \DB::table('tanda_terimas')
+                            ->where('no_kontainer', $nomorKontainer)
+                            ->when($pengirim, function($q) use ($pengirim) {
+                                return $q->where('pengirim', 'like', "%{$pengirim}%");
+                            })
+                            ->orderBy('created_at', 'desc')
+                            ->first();
+
+                        if ($tt && ($tt->tonase > 0 || $tt->meter_kubik > 0)) {
+                            $foundData = [
+                                'tonnage' => $tt->tonase,
+                                'volume' => $tt->meter_kubik
+                            ];
+                        }
+                    }
+                }
+
+                if ($foundData) {
+                    $bl->update([
+                        'tonnage' => $foundData['tonnage'],
+                        'volume' => $foundData['volume']
+                    ]);
+                    $updatedCount++;
+                } else {
+                    $notFoundCount++;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Proses selesai. {$updatedCount} data BL diperbarui. " . ($notFoundCount > 0 ? "{$notFoundCount} data tidak ditemukan referensinya." : "")
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error in bulkUpdateVolumeTonnage: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Remove the specified BL from storage.
      */
     public function destroy(Bl $bl)
