@@ -13,6 +13,7 @@ class HistoryKontainer extends Model
         'tipe_kontainer',
         'jenis_kegiatan',
         'tanggal_kegiatan',
+        'asal_gudang_id',
         'gudang_id',
         'keterangan',
         'created_by'
