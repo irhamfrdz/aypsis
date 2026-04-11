@@ -17,14 +17,11 @@ class PranotaOngkosTrukController extends Controller
 {
     public function index(Request $request)
     {
-        $query = PranotaOngkosTruk::with(['supir', 'vendor', 'creator']);
+        $query = PranotaOngkosTruk::with(['creator']);
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('no_pranota', 'like', "%{$search}%")
-                  ->orWhereHas('supir', function($q) use ($search) {
-                      $q->where('nama_karyawan', 'like', "%{$search}%");
-                  });
+            $query->where('no_pranota', 'like', "%{$search}%");
         }
 
         $pranotas = $query->latest()->paginate(10);
@@ -244,7 +241,7 @@ class PranotaOngkosTrukController extends Controller
 
     public function show($id)
     {
-        $pranota = PranotaOngkosTruk::with(['items', 'supir', 'vendor', 'creator'])->findOrFail($id);
+        $pranota = PranotaOngkosTruk::with(['items', 'creator'])->findOrFail($id);
         return view('pranota-ongkos-truk.show', compact('pranota'));
     }
 
