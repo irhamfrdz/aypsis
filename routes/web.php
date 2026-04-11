@@ -5316,6 +5316,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                 ->middleware('can:bl-edit');
                 
            Route::post('bl/bulk-update-size', [\App\Http\Controllers\BlController::class, 'bulkUpdateSize'])->name('bl.bulk-update-size')
+                ->middleware('can:bl-edit');
            Route::post('bl/bulk-update-tv', [\App\Http\Controllers\BlController::class, 'bulkUpdateVolumeTonnage'])->name('bl.bulk-update-tv')
                 ->middleware('can:bl-edit');
                 

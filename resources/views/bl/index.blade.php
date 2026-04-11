@@ -202,11 +202,11 @@
                      <span class="text-sm text-blue-800 mr-3">
                         <span id="selectedCount" class="font-bold">0</span> item terpilih
                     </span>
-                    <button type="button" onclick="bulkAction('split')" 
+                    <button type="button" onclick="bulkAction('split', event)" 
                             class="px-3 py-1 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm flex items-center shadow-sm mr-2">
                         <i class="fas fa-project-diagram mr-1"></i> Pecah BL
                     </button>
-                    <button type="button" onclick="bulkAction('updateTv')" 
+                    <button type="button" onclick="bulkAction('updateTv', event)" 
                             class="px-3 py-1 bg-teal-600 text-white rounded-md hover:bg-teal-700 text-sm flex items-center shadow-sm">
                         <i class="fas fa-sync-alt mr-1"></i> Update T/V
                     </button>
@@ -666,7 +666,7 @@
     }
     
     // Bulk Action Handler
-    window.bulkAction = function(action) {
+    window.bulkAction = function(action, event) {
         const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
         if (checkedBoxes.length === 0) return;
         
