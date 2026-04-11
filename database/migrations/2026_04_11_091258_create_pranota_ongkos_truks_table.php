@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // 0. Drop existing tables if they exist from failed attempts
+        Schema::disableForeignKeyConstraints();
+        Schema::dropIfExists('pranota_ongkos_truk_items');
+        Schema::dropIfExists('pranota_ongkos_truks');
+        Schema::enableForeignKeyConstraints();
+
         // 1. Create parent table first
         Schema::create('pranota_ongkos_truks', function (Blueprint $table) {
             $table->id();
