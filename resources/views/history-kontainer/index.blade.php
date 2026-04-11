@@ -123,15 +123,7 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-semibold text-gray-900">
-                                            @if($history->jenis_kegiatan == 'Keluar')
-                                                {{ $history->gudang->nama_gudang ?? '-' }}
-                                            @elseif($history->jenis_kegiatan == 'Masuk')
-                                                -
-                                            @else
-                                                {{ $history->asal_gudang_nama ?? '-' }}
-                                            @endif
-                                        </div>
+                                        <div class="text-sm font-semibold text-gray-900">{{ $history->asal_gudang_nama ?? '-' }}</div>
                                     </div>
                                 </div>
                             </td>
@@ -143,14 +135,8 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-semibold text-gray-900">
-                                            @if($history->jenis_kegiatan == 'Keluar')
-                                                -
-                                            @else
-                                                {{ $history->gudang->nama_gudang ?? '-' }}
-                                            @endif
-                                        </div>
-                                        @if($history->jenis_kegiatan != 'Keluar' && $history->gudang && $history->gudang->lokasi)
+                                        <div class="text-sm font-semibold text-gray-900">{{ $history->gudang->nama_gudang ?? '-' }}</div>
+                                        @if($history->gudang && $history->gudang->lokasi)
                                             <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mt-0.5">{{ $history->gudang->lokasi }}</div>
                                         @endif
                                     </div>
