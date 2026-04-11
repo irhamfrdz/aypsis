@@ -3821,6 +3821,8 @@ Route::get('/test-gate-in-ajax', function () {
     Route::prefix('pranota-ongkos-truk')->name('pranota-ongkos-truk.')->middleware(['auth'])->group(function () {
         Route::get('/', [PranotaOngkosTrukController::class, 'index'])->name('index');
         Route::get('/create', [PranotaOngkosTrukController::class, 'create'])->name('create');
+        Route::get('/generate-nomor', [PranotaOngkosTrukController::class, 'generateNomorPranota'])->name('generate-nomor');
+        Route::get('/get-preview-data', [PranotaOngkosTrukController::class, 'getPreviewData'])->name('get-preview-data');
         Route::post('/', [PranotaOngkosTrukController::class, 'store'])->name('store');
         Route::get('/{id}', [PranotaOngkosTrukController::class, 'show'])->name('show');
         Route::delete('/{id}', [PranotaOngkosTrukController::class, 'destroy'])->name('destroy');

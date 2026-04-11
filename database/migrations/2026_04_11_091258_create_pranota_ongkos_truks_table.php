@@ -24,6 +24,7 @@ return new class extends Migration
             $table->date('tanggal_pranota');
             $table->unsignedBigInteger('supir_id')->nullable();
             $table->unsignedBigInteger('vendor_id')->nullable();
+            $table->decimal('adjustment', 15, 2)->default(0);
             $table->decimal('total_nominal', 15, 2)->default(0);
             $table->text('keterangan')->nullable();
             $table->string('status')->default('draft');

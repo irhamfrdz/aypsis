@@ -167,11 +167,123 @@
     }
 </style>
 
+<!-- Modal Masuk Pranota -->
+<div id="pranotaModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[100]">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-2xl rounded-2xl bg-white transition-all duration-300 transform">
+        <div class="mt-1">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-4 border-b">
+                <div class="flex items-center">
+                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-file-invoice text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900">Konfirmasi Masuk Pranota Ongkos Truk</h3>
+                </div>
+                <button type="button" onclick="closePranotaModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="mt-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="modal_nomor_pranota" class="block text-sm font-semibold text-gray-700 mb-1">
+                            Nomor Pranota <span class="text-red-500">*</span>
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="text" id="modal_nomor_pranota" name="nomor_pranota" required readonly
+                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 cursor-not-allowed text-gray-600"
+                                   placeholder="Generating...">
+                            <button type="button" onclick="generateNomorPranota()" 
+                                    class="px-4 py-2 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-xl transition-colors"
+                                    title="Generate nomor baru">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="modal_tanggal_pranota" class="block text-sm font-semibold text-gray-700 mb-1">
+                            Tanggal Pranota <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="modal_tanggal_pranota" name="tanggal_pranota" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
+                               value="{{ date('Y-m-d') }}">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Item Terpilih</label>
+                    <div class="overflow-x-auto border border-gray-100 rounded-2xl max-h-72 shadow-inner">
+                        <table id="pranota-table" class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50/50 sticky top-0 backdrop-blur-sm">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">No. SJ</th>
+                                    <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Unit</th>
+                                    <th class="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest text-right">Ongkos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pranota-items-container" class="bg-white divide-y divide-gray-100">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 flex items-center justify-between px-2">
+                        <span class="text-sm text-gray-500" id="modal-item-count">0 item terpilih</span>
+                        <div class="text-right">
+                            <span class="text-xs text-gray-400 block">Total Nominal</span>
+                            <span class="text-2xl font-black text-blue-600" id="modal-grand-total">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="modal_adjustment" class="block text-sm font-semibold text-gray-700 mb-1">
+                            Adjustment (Opsional)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-2.5 text-gray-400 text-sm">Rp</span>
+                            <input type="number" id="modal_adjustment" name="adjustment"
+                                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
+                                   placeholder="0">
+                        </div>
+                        <p class="text-[10px] text-gray-500 mt-1">Gunakan minus (-) untuk pengurangan</p>
+                    </div>
+                    <div>
+                        <label for="modal_keterangan" class="block text-sm font-semibold text-gray-700 mb-1">
+                            Keterangan (Opsional)
+                        </label>
+                        <textarea id="modal_keterangan" name="keterangan" rows="2"
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
+                                  placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end gap-3 pt-4 border-t">
+                <button type="button" onclick="closePranotaModal()"
+                        class="px-6 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-bold rounded-xl transition duration-200">
+                    Batal
+                </button>
+                <button type="button" id="btnConfirmPranota"
+                        class="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-200 transition duration-200 flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Simpan Pranota
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const checkAll = document.getElementById('checkAll');
         const checkboxes = document.querySelectorAll('.data-checkbox');
         const btnAddToPranota = document.getElementById('btnAddToPranota');
+        const currentPranotaItems = [];
 
         // Check All functionality
         checkAll.addEventListener('change', function() {
@@ -183,38 +295,172 @@
         // Individual checkbox change
         checkboxes.forEach(cb => {
             cb.addEventListener('change', function() {
-                const allChecked = Array.from(checkboxes).every(c => c.checked);
-                const someChecked = Array.from(checkboxes).some(c => c.checked);
-                checkAll.checked = allChecked;
-                checkAll.indeterminate = someChecked && !allChecked;
+                const checked = Array.from(checkboxes).filter(c => c.checked);
+                checkAll.checked = checked.length === checkboxes.length;
+                checkAll.indeterminate = checked.length > 0 && checked.length < checkboxes.length;
             });
         });
 
-        // Add to Pranota action
+        // Add to Pranota action using Modal (OB Style)
         btnAddToPranota.addEventListener('click', function() {
-            const selectedItems = Array.from(checkboxes)
-                .filter(cb => cb.checked)
-                .map(cb => ({
-                    id: cb.dataset.id,
-                    no_sj: cb.value,
-                    type: cb.dataset.type
-                }));
-
-            if (selectedItems.length === 0) {
+            const selectedCheckboxRows = Array.from(checkboxes).filter(cb => cb.checked);
+            
+            if (selectedCheckboxRows.length === 0) {
                 alert('Silakan pilih minimal satu data laporan!');
                 return;
             }
 
-            // Construct data to send or URL parameters
-            const ids = selectedItems.map(item => item.id).filter(id => id).join(',');
-            const sjs = selectedItems.map(item => item.no_sj).join(',');
-            const types = selectedItems.map(item => item.type).join(',');
+            const ids = selectedCheckboxRows.map(cb => cb.dataset.id).join(',');
+            const types = selectedCheckboxRows.map(cb => cb.dataset.type).join(',');
 
-            // Base URL for Pranota
-            const url = "{{ route('pranota-ongkos-truk.create') }}?selected_ids=" + ids + "&sjs=" + encodeURIComponent(sjs) + "&types=" + types;
+            // Show loading state/opening modal
+            openPranotaModal();
+            fetchPreviewData(ids, types);
+        });
+
+        window.openPranotaModal = function() {
+            document.getElementById('pranotaModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden'); // Prevent scroll
+            generateNomorPranota();
+        };
+
+        window.closePranotaModal = function() {
+            document.getElementById('pranotaModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            // Reset form inside modal
+            document.getElementById('modal_vendor_id').value = '';
+            document.getElementById('modal_supir_id').value = '';
+            document.getElementById('modal_keterangan').value = '';
+        };
+
+        window.generateNomorPranota = function() {
+            const input = document.getElementById('modal_nomor_pranota');
+            input.value = 'Generating...';
             
-            // Open in new window as requested
-            window.open(url, '_blank', 'width=1200,height=800,scrollbars=yes');
+            fetch('{{ route('pranota-ongkos-truk.generate-nomor', [], false) }}')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        input.value = data.nomor_pranota;
+                    } else {
+                        input.value = 'Error generating';
+                    }
+                })
+                .catch(() => {
+                    input.value = 'Error generating';
+                });
+        };
+
+        function fetchPreviewData(ids, types) {
+            const container = document.getElementById('pranota-items-container');
+            container.innerHTML = '<tr><td colspan="4" class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-blue-600"></i></td></tr>';
+
+            const url = `{{ route('pranota-ongkos-truk.get-preview-data', [], false) }}?selected_ids=${ids}&types=${types}`;
+            
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        populateModalTable(data.items);
+                    } else {
+                        alert('Gagal mengambil data preview.');
+                        closePranotaModal();
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    alert('Terjadi kesalahan saat memproses data.');
+                    closePranotaModal();
+                });
+        }
+
+        function populateModalTable(items) {
+            const container = document.getElementById('pranota-items-container');
+            container.innerHTML = '';
+            
+            currentPranotaItems.length = 0; // Clear the array
+
+            if (items.length === 0) {
+                container.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">Tidak ada data valid terpilih.</td></tr>';
+                return;
+            }
+
+            items.forEach((item, index) => {
+                currentPranotaItems.push(item);
+
+                const row = `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${item.no_surat_jalan}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">${item.tanggal}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">${item.no_plat} <span class="text-[10px] ml-1 opacity-50">(${item.supir})</span></td>
+                        <td class="px-6 py-3 whitespace-nowrap text-sm font-bold text-gray-900 text-right">Rp ${new Intl.NumberFormat('id-ID').format(item.nominal)}</td>
+                    </tr>
+                `;
+                container.innerHTML += row;
+            });
+
+            document.getElementById('modal-item-count').textContent = `${items.length} item terpilih`;
+            updateModalGrandTotal();
+        }
+
+        function updateModalGrandTotal() {
+            const itemsTotal = currentPranotaItems.reduce((sum, item) => sum + (parseFloat(item.nominal) || 0), 0);
+            const adjustment = parseFloat(document.getElementById('modal_adjustment').value) || 0;
+            const grandTotal = itemsTotal + adjustment;
+            
+            document.getElementById('modal-grand-total').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(grandTotal)}`;
+        }
+
+        document.getElementById('modal_adjustment').addEventListener('input', updateModalGrandTotal);
+
+        // Submitting via AJAX
+        document.getElementById('btnConfirmPranota').addEventListener('click', function() {
+            if (currentPranotaItems.length === 0) return;
+
+            const btn = this;
+            const originalText = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Memproses...';
+
+            const payload = {
+                tanggal_pranota: document.getElementById('modal_tanggal_pranota').value,
+                adjustment: document.getElementById('modal_adjustment').value,
+                keterangan: document.getElementById('modal_keterangan').value,
+                items: currentPranotaItems.map(item => ({
+                    id: item.id,
+                    type: item.type,
+                    no_surat_jalan: item.no_surat_jalan,
+                    tanggal: item.tanggal,
+                    nominal: item.nominal
+                }))
+            };
+
+            fetch('{{ route('pranota-ongkos-truk.store', [], false) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.href = data.redirect_url;
+                } else {
+                    alert('Gagal menyimpan pranota: ' + (data.message || 'Error unknown'));
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                alert('Terjadi kesalahan sistem.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
         });
     });
 </script>

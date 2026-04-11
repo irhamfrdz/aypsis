@@ -128,9 +128,8 @@ class PranotaOngkosTrukController extends Controller
             $pranota = PranotaOngkosTruk::create([
                 'no_pranota' => $no_pranota,
                 'tanggal_pranota' => $request->tanggal_pranota,
-                'supir_id' => $request->supir_id,
-                'vendor_id' => $request->vendor_id,
-                'total_nominal' => collect($request->items)->sum('nominal'),
+                'adjustment' => $request->adjustment ?? 0,
+                'total_nominal' => collect($request->items)->sum('nominal') + ($request->adjustment ?? 0),
                 'keterangan' => $request->keterangan,
                 'status' => 'submitted',
                 'created_by' => Auth::id(),
@@ -149,11 +148,98 @@ class PranotaOngkosTrukController extends Controller
             }
 
             DB::commit();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pranota Ongkos Truk berhasil disimpan.',
+                    'redirect_url' => route('pranota-ongkos-truk.show', $pranota->id)
+                ]);
+            }
+
             return redirect()->route('pranota-ongkos-truk.show', $pranota->id)->with('success', 'Pranota Ongkos Truk berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menyimpan pranota: ' . $e->getMessage()
+                ], 500);
+            }
             return back()->with('error', 'Gagal menyimpan pranota: ' . $e->getMessage());
         }
+    }
+
+    public function generateNomorPranota()
+    {
+        try {
+            $nomorTerakhir = NomorTerakhir::where('modul', 'POT')->first();
+            $nextNumber = ($nomorTerakhir ? $nomorTerakhir->nomor_terakhir : 0) + 1;
+            $tahun = now()->format('y');
+            $bulan = now()->format('m');
+            $no_pranota = "POT{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+            return response()->json([
+                'success' => true,
+                'nomor_pranota' => $no_pranota
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getPreviewData(Request $request)
+    {
+        $selectedIds = $request->filled('selected_ids') ? explode(',', $request->selected_ids) : [];
+        $types = $request->filled('types') ? explode(',', $request->types) : [];
+
+        $items = collect();
+        foreach ($selectedIds as $index => $id) {
+            $type = $types[$index] ?? '';
+            if ($type === 'SuratJalan') {
+                $sj = SuratJalan::with(['supirKaryawan', 'tujuanPengambilanRelation', 'uangJalan'])->find($id);
+                if ($sj) {
+                    $ongkosTruk = $this->calculateOngkosTruk($sj);
+                    $uangJalanNominal = $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0;
+                    $nominalBersih = $ongkosTruk - $uangJalanNominal;
+
+                    $items->push([
+                        'id' => $id,
+                        'no_surat_jalan' => $sj->no_surat_jalan,
+                        'tanggal' => $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/M/Y') : '-',
+                        'nominal' => $nominalBersih,
+                        'type' => $type,
+                        'supir' => $sj->supirKaryawan ? ($sj->supirKaryawan->nama_panggilan ?? $sj->supirKaryawan->nama_lengkap) : ($sj->supir ?: '-'),
+                        'no_plat' => $sj->no_plat ?: '-'
+                    ]);
+                }
+            } elseif ($type === 'SuratJalanBongkaran') {
+                $sjb = SuratJalanBongkaran::with(['supirKaryawan', 'tujuanPengambilanRelation', 'uangJalan'])->find($id);
+                if ($sjb) {
+                    $ongkosTruk = $this->calculateOngkosTruk($sjb);
+                    $uangJalanNominal = $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0;
+                    $nominalBersih = $ongkosTruk - $uangJalanNominal;
+
+                    $items->push([
+                        'id' => $id,
+                        'no_surat_jalan' => $sjb->nomor_surat_jalan,
+                        'tanggal' => $sjb->tanggal_surat_jalan ? $sjb->tanggal_surat_jalan->format('d/M/Y') : '-',
+                        'nominal' => $nominalBersih,
+                        'type' => $type,
+                        'supir' => $sjb->supirKaryawan ? ($sjb->supirKaryawan->nama_panggilan ?? $sjb->supirKaryawan->nama_lengkap) : ($sjb->supir ?: '-'),
+                        'no_plat' => $sjb->no_plat ?: '-'
+                    ]);
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'items' => $items
+        ]);
     }
 
     public function show($id)

@@ -15,8 +15,6 @@ class PranotaOngkosTruk extends Model
     protected $fillable = [
         'no_pranota',
         'tanggal_pranota',
-        'supir_id',
-        'vendor_id',
         'total_nominal',
         'keterangan',
         'status',
@@ -26,16 +24,6 @@ class PranotaOngkosTruk extends Model
     protected $casts = [
         'tanggal_pranota' => 'date',
     ];
-
-    public function supir()
-    {
-        return $this->belongsTo(Karyawan::class, 'supir_id');
-    }
-
-    public function vendor()
-    {
-        return $this->belongsTo(VendorSupir::class, 'vendor_id');
-    }
 
     public function creator()
     {
