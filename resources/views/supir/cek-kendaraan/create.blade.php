@@ -237,7 +237,7 @@
                                 @foreach($items as $item)
                                 <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-indigo-200 hover:bg-white transition-all duration-200 group">
                                     <div class="flex items-center justify-between mb-3">
-                                        <label class="text-xs font-black text-gray-500 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">{{ $item['label'] }}</label>
+                                        <label class="item-label text-xs font-black text-gray-700 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">{{ $item['label'] }}</label>
                                         
                                         <!-- Quick Check: Semua OK -->
                                         @if($item['type'] != 'status_jumlah')
@@ -396,17 +396,17 @@
     // Search Logic
     const searchInput = document.getElementById('checklistSearch');
     const noResults = document.getElementById('noResults');
-    const tabHeader = document.querySelector('.overflow-x-auto');
+    const tabHeader = document.querySelector('#checklist-section .overflow-x-auto');
     const tabContents = document.querySelectorAll('.tab-content');
     const categoryTitles = document.querySelectorAll('.search-category-title');
-    const navButtons = document.querySelectorAll('.tab-content .flex.justify-between');
+    const navButtons = document.querySelectorAll('.tab-content .flex.justify-between.mt-8');
 
     searchInput.addEventListener('input', function() {
         const query = this.value.toLowerCase().trim();
         let globalMatch = false;
         
         if (query === '') {
-            tabHeader.classList.remove('hidden');
+            if (tabHeader) tabHeader.classList.remove('hidden');
             noResults.classList.add('hidden');
             categoryTitles.forEach(t => t.classList.add('hidden'));
             
@@ -416,12 +416,14 @@
             
             // Show all items and nav buttons in current tab
             const currentTab = document.getElementById(activeBtn.dataset.target);
-            currentTab.querySelectorAll('.grid > div').forEach(item => item.classList.remove('hidden'));
-            currentTab.querySelectorAll('.flex.justify-between').forEach(b => b.classList.remove('hidden'));
+            if (currentTab) {
+                currentTab.querySelectorAll('.grid > div').forEach(item => item.classList.remove('hidden'));
+                currentTab.querySelectorAll('.flex.justify-between').forEach(b => b.classList.remove('hidden'));
+            }
             return;
         }
 
-        tabHeader.classList.add('hidden');
+        if (tabHeader) tabHeader.classList.add('hidden');
         navButtons.forEach(b => b.classList.add('hidden'));
 
         tabContents.forEach(content => {
@@ -430,8 +432,10 @@
             let categoryHasMatch = false;
 
             items.forEach(item => {
-                const label = item.querySelector('label').textContent.toLowerCase();
-                if (label.includes(query)) {
+                const labelEl = item.querySelector('.item-label');
+                const labelText = labelEl ? labelEl.textContent.toLowerCase() : '';
+                
+                if (labelText.includes(query)) {
                     item.classList.remove('hidden');
                     categoryHasMatch = true;
                     globalMatch = true;
