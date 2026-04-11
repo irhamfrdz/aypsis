@@ -2148,16 +2148,35 @@ class BlController extends Controller
         }
 
         $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'exists:bls,id'
+            'ids' => 'required_without:all_filtered|array',
+            'ids.*' => 'exists:bls,id',
+            'all_filtered' => 'nullable|boolean',
+            'nama_kapal' => 'required_if:all_filtered,true|string',
+            'no_voyage' => 'required_if:all_filtered,true|string',
         ]);
 
         try {
-            $ids = $request->ids;
+            if ($request->all_filtered) {
+                $nama_kapal = $request->nama_kapal;
+                $no_voyage = $request->no_voyage;
+                
+                // Use same flexible logic as index()
+                $kapalPattern = str_replace('.', '', $nama_kapal);
+                $bls = Bl::where(function($q) use ($nama_kapal, $kapalPattern) {
+                        $q->where('nama_kapal', $nama_kapal)
+                          ->orWhere(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
+                    })
+                    ->where('no_voyage', $no_voyage)
+                    ->get();
+                    
+                Log::info("BulkUpdateTV AllFiltered: Found " . $bls->count() . " BL records for {$nama_kapal} Voy {$no_voyage}");
+            } else {
+                $ids = $request->ids;
+                $bls = Bl::whereIn('id', $ids)->get();
+            }
+
             $updatedCount = 0;
             $notFoundCount = 0;
-
-            $bls = Bl::whereIn('id', $ids)->get();
 
             foreach ($bls as $bl) {
                 $foundData = null;

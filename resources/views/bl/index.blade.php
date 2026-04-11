@@ -93,8 +93,12 @@
                     <div class="flex gap-2">
                         @can('bl-edit')
                         <button type="button" onclick="bulkUpdateSize(event)" 
-                           class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                           class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm mr-2">
                             <i class="fas fa-sync-alt mr-2"></i> Update Size
+                        </button>
+                        <button type="button" onclick="bulkUpdateTvHeader(event)" 
+                           class="inline-flex items-center px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                            <i class="fas fa-balance-scale mr-2"></i> Update T/V
                         </button>
                         @endcan
                         <a href="{{ request()->fullUrlWithQuery(['tanpa_size' => request('tanpa_size') == '1' ? null : '1']) }}" 
@@ -856,6 +860,58 @@
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
+                nama_kapal: shipName,
+                no_voyage: voyage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Gagal: ' + (data.message || 'Terjadi kesalahan sistem.'));
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Terjadi kesalahan sistem.');
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        });
+    };
+    
+    // 4. Bulk Update T/V from Header
+    window.bulkUpdateTvHeader = function(event) {
+        const shipName = "{{ request('nama_kapal') }}";
+        const voyage = "{{ request('no_voyage') }}";
+        
+        if (!shipName || !voyage) {
+            alert('Filter kapal dan voyage harus aktif untuk menggunakan fitur ini.');
+            return;
+        }
+
+        if (!confirm(`Apakah Anda yakin ingin mengupdate Volume & Tonnage untuk SEMUA BL di kapal "${shipName}" voyage "${voyage}"? Data akan diambil dari Tanda Terima.`)) {
+            return;
+        }
+
+        // Show loading
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+
+        fetch("{{ route('bl.bulk-update-tv') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                all_filtered: true,
                 nama_kapal: shipName,
                 no_voyage: voyage
             })
