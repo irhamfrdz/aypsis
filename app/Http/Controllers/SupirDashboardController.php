@@ -105,13 +105,13 @@ class SupirDashboardController extends Controller
                                            ->where('no_voyage', '!=', '')
                                            ->where('nama_kapal', '!=', '')
                                            ->select(
-                                               \DB::raw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) as normalized_nama_kapal"),
-                                               \DB::raw("MAX(nama_kapal) as nama_kapal"), // Ambil satu representasi nama untuk display
+                                               \DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) as normalized_nama_kapal"),
+                                               \DB::raw("MAX(TRIM(nama_kapal)) as nama_kapal"), // Ambil satu representasi nama untuk display
                                                'no_voyage', 
                                                \DB::raw('MAX(tanggal_muat) as tanggal_muat'),
                                                \DB::raw('MAX(pelabuhan_tujuan) as pelabuhan_tujuan')
                                            )
-                                           ->groupBy(\DB::raw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))"), 'no_voyage')
+                                           ->groupBy(\DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')))"), 'no_voyage')
                                            ->orderBy('normalized_nama_kapal')
                                            ->orderBy('no_voyage')
                                            ->get();
@@ -223,7 +223,7 @@ class SupirDashboardController extends Controller
         // Gunakan normalisasi nama kapal agar pencarian fleksibel
         $normalizedKapal = $this->normalizeShipName($selectedKapal);
         
-        $bls = \App\Models\NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+        $bls = \App\Models\NaikKapal::whereRaw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) = ?", [$normalizedKapal])
                              ->where('no_voyage', $selectedVoyage)
                              ->whereNotNull('nomor_kontainer')
                              ->where('nomor_kontainer', '!=', '')
@@ -563,15 +563,15 @@ class SupirDashboardController extends Controller
         // Ambil data dari BL untuk bongkar kontainer (dikelompokkan berdasarkan kapal dan voyage)
         // Gunakan raw query untuk normalisasi nama kapal agar tidak muncul double (misal KM. SEKAR vs KM SEKAR)
         $blsDataForVoyage = \App\Models\Bl::select(
-                                    \DB::raw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) as normalized_nama_kapal"),
-                                    \DB::raw("MAX(nama_kapal) as nama_kapal"), // Ambil satu representasi nama untuk display
+                                    \DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) as normalized_nama_kapal"),
+                                    \DB::raw("MAX(TRIM(nama_kapal)) as nama_kapal"), // Ambil satu representasi nama untuk display
                                     'no_voyage'
                                   )
                                   ->whereNotNull('nama_kapal')
                                   ->whereNotNull('no_voyage')
                                   ->where('nama_kapal', '!=', '')
                                   ->where('no_voyage', '!=', '')
-                                  ->groupBy(\DB::raw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))"), 'no_voyage')
+                                  ->groupBy(\DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')))"), 'no_voyage')
                                   ->orderBy('normalized_nama_kapal')
                                   ->orderBy('no_voyage')
                                   ->get();
@@ -621,7 +621,7 @@ class SupirDashboardController extends Controller
         // Gunakan normalisasi nama kapal
         $normalizedKapal = $this->normalizeShipName($request->kapal);
         
-        $blExists = \App\Models\Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+        $blExists = \App\Models\Bl::whereRaw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) = ?", [$normalizedKapal])
                                   ->where('no_voyage', $request->voyage)
                                   ->exists();
 
@@ -670,7 +670,7 @@ class SupirDashboardController extends Controller
         // Gunakan normalisasi nama kapal agar pencarian fleksibel
         $normalizedKapal = $this->normalizeShipName($selectedKapal);
 
-        $bls = \App\Models\Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+        $bls = \App\Models\Bl::whereRaw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) = ?", [$normalizedKapal])
                              ->where('no_voyage', $selectedVoyage)
                              ->whereNotNull('nomor_kontainer')
                              ->where('nomor_kontainer', '!=', '')
