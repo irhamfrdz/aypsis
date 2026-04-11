@@ -105,11 +105,11 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Berlaku SIM (Dari)</label>
-                                <input type="date" name="masa_berlaku_sim_start" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
+                                <input type="date" name="masa_berlaku_sim_start" value="{{ isset($karyawan->sim_berlaku_mulai) ? \Carbon\Carbon::parse($karyawan->sim_berlaku_mulai)->format('Y-m-d') : '' }}" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Berlaku SIM (Sampai)</label>
-                                <input type="date" name="masa_berlaku_sim_end" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
+                                <input type="date" name="masa_berlaku_sim_end" value="{{ isset($karyawan->sim_berlaku_sampai) ? \Carbon\Carbon::parse($karyawan->sim_berlaku_sampai)->format('Y-m-d') : '' }}" class="w-full rounded-xl border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm px-4 py-3 bg-gray-50">
                             </div>
                     </div>
                 </div>
