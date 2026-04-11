@@ -34,7 +34,7 @@ class PranotaOngkosTruk extends Model
 
     public function vendor()
     {
-        return $this->belongsTo(Vendor::class, 'vendor_id');
+        return $this->belongsTo(VendorSupir::class, 'vendor_id');
     }
 
     public function creator()

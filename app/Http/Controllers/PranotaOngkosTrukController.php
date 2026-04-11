@@ -8,7 +8,7 @@ use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
 use App\Models\NomorTerakhir;
 use App\Models\Karyawan;
-use App\Models\Vendor;
+use App\Models\VendorSupir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -79,7 +79,7 @@ class PranotaOngkosTrukController extends Controller
         }
 
         $supirs = Karyawan::where('jabatan', 'like', '%Supir%')->get();
-        $vendors = Vendor::all();
+        $vendors = VendorSupir::all();
 
         return view('pranota-ongkos-truk.create', compact('items', 'supirs', 'vendors'));
     }

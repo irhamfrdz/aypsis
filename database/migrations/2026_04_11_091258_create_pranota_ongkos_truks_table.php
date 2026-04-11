@@ -24,7 +24,7 @@ return new class extends Migration
             $table->timestamps();
             
             $table->foreign('supir_id')->references('id')->on('karyawans')->onDelete('set null');
-            $table->foreign('vendor_id')->references('id')->on('vendors')->onDelete('set null');
+            $table->foreign('vendor_id')->references('id')->on('vendor_supirs')->onDelete('set null');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
         });
     }
