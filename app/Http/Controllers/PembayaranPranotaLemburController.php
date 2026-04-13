@@ -74,8 +74,8 @@ class PembayaranPranotaLemburController extends Controller
         // Get approved pranota lembur that are not yet paid
         $pranotaLemburQuery = PranotaLembur::query();
 
-        // Only show approved and not paid pranota
-        $pranotaLemburQuery->where('status', PranotaLembur::STATUS_APPROVED)
+        // Only show not paid and not cancelled pranota
+        $pranotaLemburQuery->where('status', '!=', PranotaLembur::STATUS_CANCELLED)
             ->whereDoesntHave('pembayaranPranotaLemburs');
 
         // Filter by date range if provided
