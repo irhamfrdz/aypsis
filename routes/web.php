@@ -3984,6 +3984,37 @@ Route::get('/test-gate-in-ajax', function () {
                 ->middleware('can:pembayaran-pranota-uang-jalan-delete');
         });
 
+    // 💰 PEMBAYARAN PRANOTA LEMBUR (Overtime Payment)
+    Route::prefix('pembayaran-pranota-lembur')
+        ->name('pembayaran-pranota-lembur.')
+        ->middleware(['auth'])
+        ->group(function() {
+            Route::get('/', [\App\Http\Controllers\PembayaranPranotaLemburController::class, 'index'])
+                ->name('index')
+                ->middleware('can:pembayaran-pranota-lembur-view');
+            Route::get('/create', [\App\Http\Controllers\PembayaranPranotaLemburController::class, 'create'])
+                ->name('create')
+                ->middleware('can:pembayaran-pranota-lembur-create');
+            Route::get('/generate-nomor', [\App\Http\Controllers\PembayaranPranotaLemburController::class, 'generateNomor'])
+                ->name('generate-nomor')
+                ->middleware('can:pembayaran-pranota-lembur-create');
+            Route::post('/', [\App\Http\Controllers\PembayaranPranotaLemburController::class, 'store'])
+                ->name('store')
+                ->middleware('can:pembayaran-pranota-lembur-create');
+            Route::get('/{pembayaranPranotaLembur}', [\App\Http\Controllers\PembayaranPranotaLemburController::class, 'show'])
+                ->name('show')
+                ->middleware('can:pembayaran-pranota-lembur-view');
+            Route::get('/{pembayaranPranotaLembur}/edit', [\App\Http\Controllers\PembayaranPranotaLemburController::class, 'edit'])
+                ->name('edit')
+                ->middleware('can:pembayaran-pranota-lembur-edit');
+            Route::put('/{pembayaranPranotaLembur}', [\App\Http\Controllers\PembayaranPranotaLemburController::class, 'update'])
+                ->name('update')
+                ->middleware('can:pembayaran-pranota-lembur-edit');
+            Route::delete('/{pembayaranPranotaLembur}', [\App\Http\Controllers\PembayaranPranotaLemburController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:pembayaran-pranota-lembur-delete');
+        });
+
      // 💰 PEMBAYARAN PRANOTA UANG JALAN BONGKARAN (Travel Allowance Payment Bongkaran)
      Route::prefix('pembayaran-pranota-uang-jalan-bongkaran')
           ->name('pembayaran-pranota-uang-jalan-bongkaran.')

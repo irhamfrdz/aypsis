@@ -1399,7 +1399,15 @@
 
                         @if(Route::has('pembayaran-pranota-uang-jalan-bongkaran.index') && $user && $user->can('pembayaran-pranota-uang-jalan-bongkaran-view'))
                             <a href="{{ route('pembayaran-pranota-uang-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-uang-jalan-bongkaran.*') ? 'bg-teal-50 text-teal-700 font-medium' : 'text-gray-600' }}">
-                                <span class="text-xs">Bayar Pranota Bongkaran</span>
+                                <div class="w-1.5 h-1.5 rounded-full bg-teal-400 mr-2 flex-shrink-0"></div>
+                                <span>Pemb. Pranota UJ Bongkaran</span>
+                            </a>
+                        @endif
+
+                        @if(Route::has('pembayaran-pranota-lembur.index') && $user && ($user->can('pembayaran-pranota-lembur-view') || $user->is_admin))
+                            <a href="{{ route('pembayaran-pranota-lembur.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-lembur.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                                <div class="w-1.5 h-1.5 rounded-full bg-orange-400 mr-2 flex-shrink-0"></div>
+                                <span>Pembayaran Pranota Lembur</span>
                             </a>
                         @endif
                     </div> 

@@ -85,6 +85,16 @@ class PranotaLembur extends Model
             ->withTimestamps();
     }
 
+    public function pembayaranPranotaLemburs()
+    {
+        return $this->belongsToMany(
+            PembayaranPranotaLembur::class,
+            'pembayaran_pranota_lembur_items',
+            'pranota_lembur_id',
+            'pembayaran_pranota_lembur_id'
+        )->withPivot('subtotal')->withTimestamps();
+    }
+
     // Helper methods
     public function getStatusLabelAttribute()
     {
