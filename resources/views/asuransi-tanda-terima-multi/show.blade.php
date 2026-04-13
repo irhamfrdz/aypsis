@@ -63,8 +63,8 @@
         <div class="bg-gray-900 p-8 flex justify-between items-center">
             <div class="grid grid-cols-2 md:grid-cols-3 gap-8 w-full md:w-2/3">
                 <div>
-                    <p class="text-[10px] font-bold text-blue-400/60 uppercase tracking-widest mb-1">Total Pertanggungan</p>
-                    <p class="text-lg font-black text-white">Rp {{ number_format($batch->total_nilai_pertanggungan, 0, ',', '.') }}</p>
+                    <p class="text-[10px] font-bold text-blue-400/60 uppercase tracking-widest mb-1">Total Nilai Barang</p>
+                    <p class="text-lg font-black text-white">Rp {{ number_format($batch->total_nilai_barang, 0, ',', '.') }}</p>
                 </div>
                 <div>
                     <p class="text-[10px] font-bold text-blue-400/60 uppercase tracking-widest mb-1">Premi Dasar</p>
@@ -164,7 +164,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="text-sm font-bold text-gray-900 italic">Rp {{ number_format($item->nilai_pertanggungan, 0, ',', '.') }}</div>
+                                <div class="text-sm font-bold text-gray-900 italic">Rp {{ number_format($item->nilai_barang, 0, ',', '.') }}</div>
                             </td>
                         </tr>
                     @endforeach
@@ -173,7 +173,7 @@
                     <tr>
                         <td colspan="6" class="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Subtotal Nilai Barang</td>
                         <td class="px-6 py-4 text-right">
-                            <div class="text-sm font-black text-gray-900">Rp {{ number_format($batch->total_nilai_pertanggungan, 0, ',', '.') }}</div>
+                            <div class="text-sm font-black text-gray-900">Rp {{ number_format($batch->total_nilai_barang, 0, ',', '.') }}</div>
                         </td>
                     </tr>
                 </tfoot>

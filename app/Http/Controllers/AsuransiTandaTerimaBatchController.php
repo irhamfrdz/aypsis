@@ -205,7 +205,7 @@ class AsuransiTandaTerimaBatchController extends Controller
 
             $batch->save();
 
-            $totalNP = 0;
+            $totalNB = 0;
             foreach ($request->selected_receipts as $receiptKey) {
                 // Key format: type_id
                 list($type, $id) = explode('_', $receiptKey);
@@ -214,21 +214,20 @@ class AsuransiTandaTerimaBatchController extends Controller
                 $batchItem->batch_id = $batch->id;
                 $batchItem->receipt_type = $type;
                 
-                // Get nilai pertanggungan from request if provided per item, 
                 // but for now let's assume it's entered in the form
-                $nilaiPertanggungan = $request->input("nilai_pertanggungan.{$receiptKey}", 0);
-                $batchItem->nilai_pertanggungan = $nilaiPertanggungan;
+                $nilaiBarang = $request->input("nilai_barang.{$receiptKey}", 0);
+                $batchItem->nilai_barang = $nilaiBarang;
                 
                 if ($type == 'tt') $batchItem->tanda_terima_id = $id;
                 elseif ($type == 'tttsj') $batchItem->tanda_terima_tanpa_sj_id = $id;
                 elseif ($type == 'lcl') $batchItem->tanda_terima_lcl_id = $id;
                 
                 $batchItem->save();
-                $totalNP += $nilaiPertanggungan;
+                $totalNB += $nilaiBarang;
             }
 
-            $batch->total_nilai_pertanggungan = $totalNP;
-            $batch->premi = $totalNP * ($batch->asuransi_rate / 100);
+            $batch->total_nilai_barang = $totalNB;
+            $batch->premi = $totalNB * ($batch->asuransi_rate / 100);
             $batch->grand_total = $batch->premi + $batch->biaya_admin;
             $batch->save();
 
@@ -271,7 +270,7 @@ class AsuransiTandaTerimaBatchController extends Controller
         ]);
 
         // Recalculate totals
-        $asuransiTandaTerimaMulti->premi = $asuransiTandaTerimaMulti->total_nilai_pertanggungan * ($asuransiTandaTerimaMulti->asuransi_rate / 100);
+        $asuransiTandaTerimaMulti->premi = $asuransiTandaTerimaMulti->total_nilai_barang * ($asuransiTandaTerimaMulti->asuransi_rate / 100);
         $asuransiTandaTerimaMulti->grand_total = $asuransiTandaTerimaMulti->premi + $asuransiTandaTerimaMulti->biaya_admin;
         $asuransiTandaTerimaMulti->save();
 

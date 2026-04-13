@@ -18,7 +18,7 @@ class AsuransiTandaTerima extends Model
         'tanda_terima_lcl_id',
         'nomor_polis',
         'tanggal_polis',
-        'nilai_pertanggungan',
+        'nilai_barang',
         'asuransi_rate',
         'premi',
         'grand_total',
@@ -34,7 +34,7 @@ class AsuransiTandaTerima extends Model
 
     protected $casts = [
         'tanggal_polis' => 'date',
-        'nilai_pertanggungan' => 'decimal:2',
+        'nilai_barang' => 'decimal:2',
         'asuransi_rate' => 'decimal:4',
         'premi' => 'decimal:2',
         'grand_total' => 'decimal:2',

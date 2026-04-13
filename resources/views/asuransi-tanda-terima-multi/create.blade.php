@@ -80,7 +80,7 @@
                         <div class="space-y-3">
                             <div class="flex justify-between items-center opacity-70">
                                 <span class="text-xs uppercase tracking-widest font-bold">Total Nilai Barang</span>
-                                <span class="text-xs font-mono" id="summary_total_np">Rp 0</span>
+                                <span class="text-xs font-mono" id="summary_total_nb">Rp 0</span>
                             </div>
                             <div class="flex justify-between items-center opacity-70">
                                 <span class="text-xs uppercase tracking-widest font-bold">Estimasi Premi</span>
@@ -128,7 +128,7 @@
                                     <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">No. Kontainer</th>
                                     <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest">Qty</th>
                                     <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Satuan</th>
-                                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest w-48">Nilai Pertanggungan</th>
+                                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest w-48">Nilai Barang</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
@@ -171,8 +171,8 @@
                                         <td class="px-4 py-4">
                                             <div class="relative">
                                                 <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-400 text-[10px] font-bold">Rp</span>
-                                                <input type="number" name="nilai_pertanggungan[{{ $key }}]" 
-                                                    class="np-input w-full rounded-lg border-gray-200 pl-7 py-1 text-xs focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:opacity-50"
+                                                <input type="number" name="nilai_barang[{{ $key }}]" 
+                                                    class="nb-input w-full rounded-lg border-gray-200 pl-7 py-1 text-xs focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:opacity-50"
                                                     placeholder="0" disabled>
                                             </div>
                                         </td>
@@ -201,7 +201,7 @@
         const adminInput = document.getElementById('biaya_admin');
         const selectAll = document.getElementById('selectAll');
         const checkboxes = document.querySelectorAll('.receipt-checkbox');
-        const npInputs = document.querySelectorAll('.np-input');
+        const nbInputs = document.querySelectorAll('.nb-input');
         const searchInput = document.getElementById('receiptSearch');
         
         // Formatter
@@ -240,7 +240,7 @@
 
         function toggleInput(checkbox) {
             const tr = checkbox.closest('tr');
-            const input = tr.querySelector('.np-input');
+            const input = tr.querySelector('.nb-input');
             input.disabled = !checkbox.checked;
             if (!checkbox.checked) {
                 input.value = '';
@@ -249,25 +249,25 @@
 
         // Real-time calculation
         document.addEventListener('input', function(e) {
-            if (e.target.classList.contains('np-input')) {
+            if (e.target.classList.contains('nb-input')) {
                 updateSummary();
             }
         });
 
         function updateSummary() {
-            let totalNP = 0;
+            let totalNB = 0;
             document.querySelectorAll('.receipt-checkbox:checked').forEach(cb => {
                 const tr = cb.closest('tr');
-                const val = parseFloat(tr.querySelector('.np-input').value) || 0;
-                totalNP += val;
+                const val = parseFloat(tr.querySelector('.nb-input').value) || 0;
+                totalNB += val;
             });
 
             const rate = parseFloat(rateInput.value) || 0;
             const admin = parseFloat(adminInput.value) || 0;
-            const premi = totalNP * (rate / 100);
+            const premi = totalNB * (rate / 100);
             const grandTotal = premi + admin;
 
-            document.getElementById('summary_total_np').innerText = moneyFormatter.format(totalNP);
+            document.getElementById('summary_total_nb').innerText = moneyFormatter.format(totalNB);
             document.getElementById('summary_premi').innerText = moneyFormatter.format(premi);
             document.getElementById('summary_grand_total').innerText = moneyFormatter.format(grandTotal);
         }

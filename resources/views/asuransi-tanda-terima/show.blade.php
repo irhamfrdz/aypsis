@@ -73,9 +73,9 @@
                     <div class="space-y-4 font-mono text-gray-900">
                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                             <span class="text-sm text-gray-700 font-sans font-medium">NILAI BARANG</span>
-                            <span class="text-lg font-bold">Rp {{ number_format($asuransiTandaTerima->nilai_pertanggungan > 0 ? $asuransiTandaTerima->nilai_pertanggungan : $asuransiTandaTerima->premi, 0, ',', '.') }}</span>
+                            <span class="text-lg font-bold">Rp {{ number_format($asuransiTandaTerima->nilai_barang > 0 ? $asuransiTandaTerima->nilai_barang : $asuransiTandaTerima->premi, 0, ',', '.') }}</span>
                         </div>
-                        @if($asuransiTandaTerima->nilai_pertanggungan > 0)
+                        @if($asuransiTandaTerima->nilai_barang > 0)
                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                             <span class="text-sm text-gray-700 font-sans font-medium">PREMI ASURANSI</span>
                             <span class="text-md font-semibold font-sans text-gray-800">Rp {{ number_format($asuransiTandaTerima->premi, 0, ',', '.') }}</span>

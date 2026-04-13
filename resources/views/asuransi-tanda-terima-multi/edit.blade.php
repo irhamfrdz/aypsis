@@ -117,7 +117,7 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="text-xs font-bold text-indigo-700">Rp {{ number_format($item->nilai_pertanggungan, 0, ',', '.') }}</span>
+                        <span class="text-xs font-bold text-indigo-700">Rp {{ number_format($item->nilai_barang, 0, ',', '.') }}</span>
                         <div class="text-[10px] text-gray-400 uppercase font-medium">Nilai Barang</div>
                     </div>
                 </div>

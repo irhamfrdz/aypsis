@@ -69,7 +69,7 @@ class AsuransiTandaTerimaController extends Controller
                     'tanda_terimas.satuan',
                     'tanda_terimas.estimasi_nama_kapal as ship_name',
                     'asuransi_tanda_terimas.nama_kapal as insurance_ship',
-                    'asuransi_tanda_terimas.nilai_pertanggungan as amount',
+                    'asuransi_tanda_terimas.nilai_barang as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
                     'asuransi_tanda_terimas.asuransi_rate as rate',
                     'asuransi_tanda_terimas.vendor_asuransi_id'
@@ -96,7 +96,7 @@ class AsuransiTandaTerimaController extends Controller
                     'satuan_barang as satuan',
                     DB::raw('NULL as ship_name'),
                     'asuransi_tanda_terimas.nama_kapal as insurance_ship',
-                    'asuransi_tanda_terimas.nilai_pertanggungan as amount',
+                    'asuransi_tanda_terimas.nilai_barang as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
                     'asuransi_tanda_terimas.asuransi_rate as rate',
                     'asuransi_tanda_terimas.vendor_asuransi_id'
@@ -124,7 +124,7 @@ class AsuransiTandaTerimaController extends Controller
                     DB::raw('(SELECT GROUP_CONCAT(DISTINCT satuan SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as satuan'),
                     DB::raw('NULL as ship_name'),
                     'asuransi_tanda_terimas.nama_kapal as insurance_ship',
-                    'asuransi_tanda_terimas.nilai_pertanggungan as amount',
+                    'asuransi_tanda_terimas.nilai_barang as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
                     'asuransi_tanda_terimas.asuransi_rate as rate',
                     'asuransi_tanda_terimas.vendor_asuransi_id'
@@ -335,7 +335,7 @@ class AsuransiTandaTerimaController extends Controller
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
         $rate = $request->asuransi_rate ?? ($vendor->tarif ?? 0);
         
-        $data['nilai_pertanggungan'] = $request->nilai_barang;
+        $data['nilai_barang'] = $request->nilai_barang;
         $data['asuransi_rate'] = $rate;
         $data['premi'] = $request->nilai_barang * ($rate / 100);
         $data['grand_total'] = $data['premi'];
@@ -394,7 +394,7 @@ class AsuransiTandaTerimaController extends Controller
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
         $rate = $request->asuransi_rate ?? ($vendor->tarif ?? 0);
 
-        $data['nilai_pertanggungan'] = $request->nilai_barang;
+        $data['nilai_barang'] = $request->nilai_barang;
         $data['asuransi_rate'] = $rate;
         $data['premi'] = $request->nilai_barang * ($rate / 100);
         $data['grand_total'] = $data['premi'];

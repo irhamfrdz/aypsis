@@ -17,11 +17,11 @@ class AsuransiTandaTerimaBatchItem extends Model
         'tanda_terima_id',
         'tanda_terima_tanpa_sj_id',
         'tanda_terima_lcl_id',
-        'nilai_pertanggungan',
+        'nilai_barang',
     ];
 
     protected $casts = [
-        'nilai_pertanggungan' => 'decimal:2',
+        'nilai_barang' => 'decimal:2',
     ];
 
     public function batch()

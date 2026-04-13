@@ -17,7 +17,7 @@ class AsuransiTandaTerimaBatch extends Model
         'nomor_polis',
         'tanggal_polis',
         'vendor_asuransi_id',
-        'total_nilai_pertanggungan',
+        'total_nilai_barang',
         'asuransi_rate',
         'premi',
         'biaya_admin',
@@ -30,7 +30,7 @@ class AsuransiTandaTerimaBatch extends Model
 
     protected $casts = [
         'tanggal_polis' => 'date',
-        'total_nilai_pertanggungan' => 'decimal:2',
+        'total_nilai_barang' => 'decimal:2',
         'asuransi_rate' => 'decimal:5',
         'premi' => 'decimal:2',
         'biaya_admin' => 'decimal:2',
