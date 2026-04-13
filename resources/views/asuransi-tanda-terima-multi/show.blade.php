@@ -102,6 +102,8 @@
                         <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">No. Tanda Terima / Ref</th>
                         <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Type</th>
                         <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Nama Barang / Deskripsi</th>
+                        <th class="px-6 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Qty</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Satuan</th>
                         <th class="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Nilai Barang</th>
                     </tr>
                 </thead>
@@ -129,6 +131,24 @@
                                     @endif
                                 </div>
                             </td>
+                            <td class="px-6 py-4 text-center text-xs font-bold text-gray-700">
+                                @if($item->receipt_type == 'tt' && $item->tandaTerima)
+                                    {{ number_format($item->tandaTerima->jumlah, 0, ',', '.') }}
+                                @elseif($item->receipt_type == 'tttsj' && $item->tandaTerimaTanpaSj)
+                                    {{ number_format($item->tandaTerimaTanpaSj->jumlah_barang, 0, ',', '.') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase">
+                                @if($item->receipt_type == 'tt' && $item->tandaTerima)
+                                    {{ $item->tandaTerima->satuan ?? '-' }}
+                                @elseif($item->receipt_type == 'tttsj' && $item->tandaTerimaTanpaSj)
+                                    {{ $item->tandaTerimaTanpaSj->satuan_barang ?? '-' }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <div class="text-sm font-bold text-gray-900 italic">Rp {{ number_format($item->nilai_pertanggungan, 0, ',', '.') }}</div>
                             </td>
@@ -137,7 +157,7 @@
                 </tbody>
                 <tfoot class="bg-gray-50/80">
                     <tr>
-                        <td colspan="3" class="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Subtotal Nilai Barang</td>
+                        <td colspan="5" class="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Subtotal Nilai Barang</td>
                         <td class="px-6 py-4 text-right">
                             <div class="text-sm font-black text-gray-900">Rp {{ number_format($batch->total_nilai_pertanggungan, 0, ',', '.') }}</div>
                         </td>

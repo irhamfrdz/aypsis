@@ -73,9 +73,33 @@
         <div class="space-y-3">
             @foreach($batch->items as $item)
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center group transition-all hover:border-blue-200">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-bold text-gray-900">{{ $item->receipt_number }}</span>
-                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{{ $item->receipt_type }}</span>
+                    <div class="flex items-center gap-4">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-gray-900">{{ $item->receipt_number }}</span>
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{{ $item->receipt_type }}</span>
+                        </div>
+                        <div class="h-8 w-px bg-gray-100"></div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-gray-700">
+                                @if($item->receipt_type == 'tt' && $item->tandaTerima)
+                                    {{ number_format($item->tandaTerima->jumlah, 0, ',', '.') }}
+                                @elseif($item->receipt_type == 'tttsj' && $item->tandaTerimaTanpaSj)
+                                    {{ number_format($item->tandaTerimaTanpaSj->jumlah_barang, 0, ',', '.') }}
+                                @else
+                                    -
+                                @endif
+                                <span class="text-gray-400 ml-1">
+                                    @if($item->receipt_type == 'tt' && $item->tandaTerima)
+                                        {{ $item->tandaTerima->satuan ?? '-' }}
+                                    @elseif($item->receipt_type == 'tttsj' && $item->tandaTerimaTanpaSj)
+                                        {{ $item->tandaTerimaTanpaSj->satuan_barang ?? '-' }}
+                                    @else
+                                        -
+                                    @endif
+                                </span>
+                            </span>
+                            <span class="text-[8px] font-black text-gray-300 uppercase tracking-tighter">Kuantitas</span>
+                        </div>
                     </div>
                     <div class="text-right">
                         <span class="text-xs font-bold text-indigo-700">Rp {{ number_format($item->nilai_pertanggungan, 0, ',', '.') }}</span>

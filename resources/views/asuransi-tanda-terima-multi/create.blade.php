@@ -125,6 +125,8 @@
                                     </th>
                                     <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Details</th>
                                     <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Barang</th>
+                                    <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest">Qty</th>
+                                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Satuan</th>
                                     <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest w-48">Nilai Pertanggungan</th>
                                 </tr>
                             </thead>
@@ -149,13 +151,19 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-4 max-w-xs">
+                                        <td class="px-4 py-4 truncate max-w-[150px]">
                                             <div class="text-[11px] text-gray-700 font-medium leading-relaxed">
                                                 {{ $receipt->name ?? '-' }}
                                             </div>
                                             <div class="text-[9px] text-gray-400 mt-1">
-                                                Qty: {{ $receipt->qty }} {{ $receipt->satuan }} | Cont: {{ $receipt->no_kontainer ?? '-' }}
+                                                Cont: {{ $receipt->no_kontainer ?? '-' }}
                                             </div>
+                                        </td>
+                                        <td class="px-4 py-4 text-center text-sm font-bold text-gray-700">
+                                            {{ number_format($receipt->qty, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-4 text-left text-[10px] font-bold text-gray-500 uppercase">
+                                            {{ $receipt->satuan ?? '-' }}
                                         </td>
                                         <td class="px-4 py-4">
                                             <div class="relative">
