@@ -1025,5 +1025,27 @@ class ManifestController extends Controller
             'satuan' => $manifest->satuan
         ]);
     }
+
+    /**
+     * Update kuantitas via AJAX
+     */
+    public function updateKuantitas(Request $request, string $id)
+    {
+        $manifest = Manifest::findOrFail($id);
+
+        $validated = $request->validate([
+            'kuantitas' => 'nullable|numeric',
+        ]);
+
+        $validated['updated_by'] = Auth::id();
+
+        $manifest->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kuantitas berhasil diperbarui',
+            'kuantitas' => $manifest->kuantitas
+        ]);
+    }
 }
 
