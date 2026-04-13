@@ -57,6 +57,8 @@ class AsuransiTandaTerimaBatchController extends Controller
 
     private function getAvailableReceipts(Request $request)
     {
+        $search = $request->search;
+
         // 1. Regular Tanda Terima
         $tt = DB::table('tanda_terimas')
             ->leftJoin('surat_jalans', 'tanda_terimas.surat_jalan_id', '=', 'surat_jalans.id')
@@ -83,6 +85,15 @@ class AsuransiTandaTerimaBatchController extends Controller
                 'tanda_terimas.satuan'
             );
 
+        if ($search) {
+            $tt->where(function($q) use ($search) {
+                $q->where('tanda_terimas.no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('tanda_terimas.pengirim', 'like', "%{$search}%")
+                  ->orWhere('tanda_terimas.penerima', 'like', "%{$search}%")
+                  ->orWhere('tanda_terimas.no_kontainer', 'like', "%{$search}%");
+            });
+        }
+
         // 2. Tanpa SJ
         $tttsj = DB::table('tanda_terima_tanpa_surat_jalan')
             ->whereNotExists(function($q) {
@@ -108,9 +119,19 @@ class AsuransiTandaTerimaBatchController extends Controller
                 'satuan_barang as satuan'
             );
 
+        if ($search) {
+            $tttsj->where(function($q) use ($search) {
+                $q->where('no_tanda_terima', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('penerima', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+            });
+        }
+
         // 3. LCL
         $lcl = DB::table('tanda_terimas_lcl')
             ->leftJoin('tanda_terima_lcl_items', 'tanda_terimas_lcl.id', '=', 'tanda_terima_lcl_items.tanda_terima_lcl_id')
+            ->leftJoin('tanda_terima_lcl_kontainer_pivot', 'tanda_terimas_lcl.id', '=', 'tanda_terima_lcl_kontainer_pivot.tanda_terima_lcl_id')
             ->whereNull('tanda_terimas_lcl.deleted_at')
             ->whereNotExists(function($q) {
                 $q->select(DB::raw(1))
@@ -129,7 +150,7 @@ class AsuransiTandaTerimaBatchController extends Controller
                 'tanggal_tanda_terima as date',
                 'nama_pengirim as pengirim',
                 'nama_penerima as penerima',
-                'nomor_kontainer as no_kontainer',
+                DB::raw('COALESCE(tanda_terimas_lcl.nomor_kontainer, tanda_terima_lcl_kontainer_pivot.nomor_kontainer) as no_kontainer'),
                 'tanda_terimas_lcl.nama_barang as name',
                 DB::raw('COALESCE(SUM(tanda_terima_lcl_items.jumlah), 0) as qty'),
                 DB::raw('MIN(tanda_terima_lcl_items.satuan) as satuan')
@@ -140,9 +161,19 @@ class AsuransiTandaTerimaBatchController extends Controller
                 'tanggal_tanda_terima',
                 'nama_pengirim',
                 'nama_penerima',
-                'nomor_kontainer',
+                'no_kontainer',
                 'tanda_terimas_lcl.nama_barang'
             );
+
+        if ($search) {
+            $lcl->where(function($q) use ($search) {
+                $q->where('nomor_tanda_terima', 'like', "%{$search}%")
+                  ->orWhere('nama_pengirim', 'like', "%{$search}%")
+                  ->orWhere('nama_penerima', 'like', "%{$search}%")
+                  ->orWhere('tanda_terima_lcl_kontainer_pivot.nomor_kontainer', 'like', "%{$search}%")
+                  ->orWhere('tanda_terimas_lcl.nomor_kontainer', 'like', "%{$search}%");
+            });
+        }
 
         return $tt->union($tttsj)->union($lcl)->orderBy('date', 'desc')->limit(100)->get();
     }
