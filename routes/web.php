@@ -1542,7 +1542,7 @@ Route::middleware([
              'destroy' => 'can:asuransi-tanda-terima-delete'
          ]);
 
-    Route::resource('asuransi-tanda-terima-multi', AsuransiTandaTerimaBatchController::class)
+    Route::resource('asuransi-tanda-terima-multi', \App\Http\Controllers\AsuransiTandaTerimaBatchController::class)
          ->middleware([
             'index' => 'can:asuransi-tanda-terima-multi-view',
             'show' => 'can:asuransi-tanda-terima-multi-view',
