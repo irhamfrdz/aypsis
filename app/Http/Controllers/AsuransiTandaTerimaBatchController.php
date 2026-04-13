@@ -110,7 +110,8 @@ class AsuransiTandaTerimaBatchController extends Controller
 
         // 3. LCL
         $lcl = DB::table('tanda_terimas_lcl')
-            ->whereNull('deleted_at')
+            ->leftJoin('tanda_terima_lcl_items', 'tanda_terimas_lcl.id', '=', 'tanda_terima_lcl_items.tanda_terima_lcl_id')
+            ->whereNull('tanda_terimas_lcl.deleted_at')
             ->whereNotExists(function($q) {
                 $q->select(DB::raw(1))
                     ->from('asuransi_tanda_terimas')
@@ -122,16 +123,25 @@ class AsuransiTandaTerimaBatchController extends Controller
                     ->whereColumn('asuransi_tanda_terima_batch_items.tanda_terima_lcl_id', 'tanda_terimas_lcl.id');
             })
             ->select(
-                'id',
+                'tanda_terimas_lcl.id',
                 DB::raw("'lcl' as type"),
                 'nomor_tanda_terima as number',
                 'tanggal_tanda_terima as date',
                 'nama_pengirim as pengirim',
                 'nama_penerima as penerima',
-                DB::raw('NULL as no_kontainer'),
-                DB::raw('NULL as name'),
-                DB::raw('0 as qty'),
-                DB::raw('NULL as satuan')
+                'nomor_kontainer as no_kontainer',
+                'tanda_terimas_lcl.nama_barang as name',
+                DB::raw('COALESCE(SUM(tanda_terima_lcl_items.jumlah), 0) as qty'),
+                DB::raw('MIN(tanda_terima_lcl_items.satuan) as satuan')
+            )
+            ->groupBy(
+                'tanda_terimas_lcl.id',
+                'nomor_tanda_terima',
+                'tanggal_tanda_terima',
+                'nama_pengirim',
+                'nama_penerima',
+                'nomor_kontainer',
+                'tanda_terimas_lcl.nama_barang'
             );
 
         return $tt->union($tttsj)->union($lcl)->orderBy('date', 'desc')->limit(100)->get();
