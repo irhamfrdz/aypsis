@@ -152,7 +152,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-4 truncate max-w-[150px]">
+                                        <td class="px-4 py-4 min-w-[150px]">
                                             <div class="text-[11px] text-gray-700 font-medium leading-relaxed">
                                                 {{ $receipt->name ?? '-' }}
                                             </div>

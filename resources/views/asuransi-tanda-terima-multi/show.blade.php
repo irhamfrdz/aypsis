@@ -132,7 +132,7 @@
                                     @endif
                                 </span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 min-w-[200px]">
                                 <div class="text-[11px] text-gray-600 font-medium">
                                     @if($item->receipt_type == 'tt' && $item->tandaTerima)
                                         {{ $item->tandaTerima->nama_barang ?? '-' }}
