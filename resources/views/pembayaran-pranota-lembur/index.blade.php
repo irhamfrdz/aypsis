@@ -20,13 +20,6 @@
         <form action="{{ route('pembayaran-pranota-lembur.index') }}" method="GET" class="flex flex-col md:flex-row gap-2">
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari No. Pranota..." class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             
-            <select name="status" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                <option value="">Semua Status</option>
-                @foreach($statuses as $key => $label)
-                    <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>{{ $label }}</option>
-                @endforeach
-            </select>
-
             <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150">
                 Filter
             </button>
@@ -46,7 +39,6 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pranota</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pembayaran</th>
                     <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
@@ -57,11 +49,6 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $pranota->nomor_pranota }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold">Rp {{ number_format($pranota->total_setelah_adjustment, 0, ',', '.') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $pranota->status_badge }}">
-                                {{ $pranota->status_label }}
-                            </span>
-                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             @if($pranota->pembayaranPranotaLemburs->count() > 0)
                                 @foreach($pranota->pembayaranPranotaLemburs as $pembayaran)
@@ -77,7 +64,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                            @if($pranota->status === 'approved')
+                            @if($pranota->pembayaranPranotaLemburs->count() == 0)
                                 <a href="{{ route('pembayaran-pranota-lembur.create', ['pranota_id' => $pranota->id]) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Bayar</a>
                             @endif
                             <a href="{{ route('pranota-lembur.show', $pranota->id) }}" class="text-gray-600 hover:text-gray-900">Detail</a>
@@ -85,7 +72,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Data tidak ditemukan.</td>
+                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Data tidak ditemukan.</td>
                     </tr>
                 @endforelse
             </tbody>
