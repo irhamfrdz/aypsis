@@ -151,7 +151,7 @@ class AsuransiTandaTerimaBatchController extends Controller
                 'nama_pengirim as pengirim',
                 'nama_penerima as penerima',
                 DB::raw('COALESCE(tanda_terimas_lcl.nomor_kontainer, tanda_terima_lcl_kontainer_pivot.nomor_kontainer) as no_kontainer'),
-                'tanda_terimas_lcl.nama_barang as name',
+                DB::raw('COALESCE(tanda_terimas_lcl.nama_barang, (SELECT GROUP_CONCAT(nama_barang SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_items.tanda_terima_lcl_id = tanda_terimas_lcl.id)) as name'),
                 DB::raw('COALESCE(SUM(tanda_terima_lcl_items.jumlah), 0) as qty'),
                 DB::raw('MIN(tanda_terima_lcl_items.satuan) as satuan')
             )
