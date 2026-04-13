@@ -614,6 +614,7 @@ class UserController extends Controller
                 'monitoring-cek-kendaraan' => 'monitoring-cek-kendaraan',
                 'dashboard-dokumen-kapal-alexindo' => 'dashboard-dokumen-kapal-alexindo',
                 'asuransi-tanda-terima' => 'asuransi-tanda-terima',
+                'asuransi-tanda-terima-multi' => 'asuransi-tanda-terima-multi',
                 'aktivitas-lainnya' => 'aktivitas-lainnya',
                 'audit-log' => 'audit-log',
                 'belanja-amprahan' => 'belanja-amprahan',
@@ -1203,6 +1204,11 @@ class UserController extends Controller
                         elseif (strpos($action, 'vendor-asuransi-') === 0) {
                             $action = str_replace('vendor-asuransi-', '', $action);
                             $module = 'master-vendor-asuransi';
+                        }
+                        // Special handling for asuransi-tanda-terima-multi permissions
+                        elseif (strpos($action, 'asuransi-tanda-terima-multi-') === 0) {
+                            $action = str_replace('asuransi-tanda-terima-multi-', '', $action);
+                            $module = 'asuransi-tanda-terima-multi';
                         }
                         // Special handling for asuransi-tanda-terima permissions
                         elseif (strpos($action, 'asuransi-tanda-terima-') === 0) {
@@ -2571,6 +2577,26 @@ class UserController extends Controller
                             'create' => 'master-vendor-asuransi-create',
                             'update' => 'master-vendor-asuransi-update',
                             'delete' => 'master-vendor-asuransi-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle asuransi-tanda-terima-multi permissions explicitly
+                    if ($module === 'asuransi-tanda-terima-multi' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'asuransi-tanda-terima-multi-view',
+                            'create' => 'asuransi-tanda-terima-multi-create',
+                            'update' => 'asuransi-tanda-terima-multi-update',
+                            'delete' => 'asuransi-tanda-terima-multi-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
