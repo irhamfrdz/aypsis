@@ -125,6 +125,7 @@
                                     </th>
                                     <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Details</th>
                                     <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Barang</th>
+                                    <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">No. Kontainer</th>
                                     <th class="px-4 py-3 text-center text-[10px] font-bold text-gray-500 uppercase tracking-widest">Qty</th>
                                     <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">Satuan</th>
                                     <th class="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest w-48">Nilai Pertanggungan</th>
@@ -155,8 +156,10 @@
                                             <div class="text-[11px] text-gray-700 font-medium leading-relaxed">
                                                 {{ $receipt->name ?? '-' }}
                                             </div>
-                                            <div class="text-[9px] text-gray-400 mt-1">
-                                                Cont: {{ $receipt->no_kontainer ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-4">
+                                            <div class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md inline-block">
+                                                {{ $receipt->no_kontainer ?? '-' }}
                                             </div>
                                         </td>
                                         <td class="px-4 py-4 text-center text-sm font-bold text-gray-700">

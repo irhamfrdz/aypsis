@@ -101,6 +101,7 @@
                     <tr>
                         <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">No. Tanda Terima / Ref</th>
                         <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Type</th>
+                        <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">No. Kontainer</th>
                         <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Nama Barang / Deskripsi</th>
                         <th class="px-6 py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Qty</th>
                         <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Satuan</th>
@@ -116,6 +117,19 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter bg-gray-100 text-gray-500 border border-gray-200">
                                     {{ $item->receipt_type }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-xs font-bold text-blue-600">
+                                    @if($item->receipt_type == 'tt' && $item->tandaTerima)
+                                        {{ $item->tandaTerima->no_kontainer ?? '-' }}
+                                    @elseif($item->receipt_type == 'tttsj' && $item->tandaTerimaTanpaSj)
+                                        {{ $item->tandaTerimaTanpaSj->no_kontainer ?? '-' }}
+                                    @elseif($item->receipt_type == 'lcl' && $item->tandaTerimaLcl)
+                                        {{ $item->tandaTerimaLcl->nomor_kontainer ?? '-' }}
+                                    @else
+                                        -
+                                    @endif
                                 </span>
                             </td>
                             <td class="px-6 py-4">
@@ -157,7 +171,7 @@
                 </tbody>
                 <tfoot class="bg-gray-50/80">
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Subtotal Nilai Barang</td>
+                        <td colspan="6" class="px-6 py-4 text-right text-[10px] font-black text-gray-500 uppercase tracking-widest">Subtotal Nilai Barang</td>
                         <td class="px-6 py-4 text-right">
                             <div class="text-sm font-black text-gray-900">Rp {{ number_format($batch->total_nilai_pertanggungan, 0, ',', '.') }}</div>
                         </td>

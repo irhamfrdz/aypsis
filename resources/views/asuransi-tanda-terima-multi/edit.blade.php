@@ -80,6 +80,21 @@
                         </div>
                         <div class="h-8 w-px bg-gray-100"></div>
                         <div class="flex flex-col">
+                            <span class="text-[10px] font-bold text-blue-600">
+                                @if($item->receipt_type == 'tt' && $item->tandaTerima)
+                                    {{ $item->tandaTerima->no_kontainer ?? '-' }}
+                                @elseif($item->receipt_type == 'tttsj' && $item->tandaTerimaTanpaSj)
+                                    {{ $item->tandaTerimaTanpaSj->no_kontainer ?? '-' }}
+                                @elseif($item->receipt_type == 'lcl' && $item->tandaTerimaLcl)
+                                    {{ $item->tandaTerimaLcl->nomor_kontainer ?? '-' }}
+                                @else
+                                    -
+                                @endif
+                            </span>
+                            <span class="text-[8px] font-black text-gray-300 uppercase tracking-tighter">No. Kontainer</span>
+                        </div>
+                        <div class="h-8 w-px bg-gray-100"></div>
+                        <div class="flex flex-col">
                             <span class="text-[10px] font-bold text-gray-700">
                                 @if($item->receipt_type == 'tt' && $item->tandaTerima)
                                     {{ number_format($item->tandaTerima->jumlah, 0, ',', '.') }}
