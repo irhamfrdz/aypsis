@@ -642,6 +642,7 @@ class UserController extends Controller
                 'pembayaran-pranota-uang-jalan-bongkaran' => 'pembayaran-pranota-uang-jalan-bongkaran',
                 'pembayaran-pranota-uang-jalan-batam' => 'pembayaran-pranota-uang-jalan-batam',
                 'pembayaran-pranota-uang-jalan' => 'pembayaran-pranota-uang-jalan',
+                'pembayaran-pranota-lembur' => 'pembayaran-pranota-lembur',
                 'pembayaran-uang-muka' => 'pembayaran-uang-muka',
                 'pergerakan-kapal' => 'pergerakan-kapal',
                 'pergerakan-kontainer' => 'pergerakan-kontainer',
