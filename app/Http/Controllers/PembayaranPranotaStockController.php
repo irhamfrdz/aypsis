@@ -112,7 +112,7 @@ class PembayaranPranotaStockController extends Controller
                 $subtotal = 0;
                 if (is_array($pranota->items)) {
                     foreach ($pranota->items as $item) {
-                        $subtotal += ($item['harga_satuan'] ?? 0) * ($item['jumlah'] ?? 0);
+                        $subtotal += ($item['harga'] ?? 0) * ($item['jumlah'] ?? 0);
                     }
                 }
                 $subtotal += $pranota->adjustment ?? 0;
