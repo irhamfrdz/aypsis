@@ -134,6 +134,21 @@ class AsuransiTandaTerimaController extends Controller
             $receipts = $receipts->merge($lclItems);
         }
 
+        $receipts = $receipts->map(function($item) {
+            $namaBarang = $item->nama_barang;
+            
+            // Handle JSON stored in nama_barang (common for regular Tanda Terima from SJ)
+            if (is_string($namaBarang) && (str_starts_with($namaBarang, '[') || str_starts_with($namaBarang, '{'))) {
+                $decoded = json_decode($namaBarang, true);
+                if (is_array($decoded)) {
+                    $namaBarang = implode(', ', $decoded);
+                }
+            }
+            
+            $item->nama_barang = $namaBarang ?: '-';
+            return $item;
+        });
+
         $vendor = null;
         if ($request->vendor_id) {
             $vendor = VendorAsuransi::find($request->vendor_id);
