@@ -9,7 +9,13 @@
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Asuransi Tanda Terima</h1>
-                <p class="text-gray-600 mt-1">Kelola data asuransi untuk tanda terima</p>
+                <p class="text-gray-600 mt-1">
+                    Kelola data asuransi untuk tanda terima 
+                    <span id="selectedCount" class="text-blue-600 font-bold ml-1"></span>
+                    <button type="button" onclick="clearAllSelections()" id="clearSelectionBtn" class="text-xs text-red-500 hover:text-red-700 underline ml-2 hidden">
+                        Hapus Pilihan
+                    </button>
+                </p>
             </div>
             <div class="flex space-x-2">
                 <form id="bulkExportForm" action="{{ route('asuransi-tanda-terima.export-request') }}" method="POST" target="_blank">
@@ -69,7 +75,9 @@
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200">
                     Cari
                 </button>
-                <a href="{{ route('asuransi-tanda-terima.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition duration-200">
+                <a href="{{ route('asuransi-tanda-terima.index') }}" 
+                   onclick="sessionStorage.removeItem('selected_asuransi_receipt_ids')"
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition duration-200">
                     Reset
                 </a>
             </form>
@@ -256,12 +264,113 @@
 </div>
 
 <script>
+    const STORAGE_KEY = 'selected_asuransi_receipt_ids';
+
+    function getSelectedIds() {
+        const stored = sessionStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : [];
+    }
+
+    function setSelectedIds(ids) {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+    }
+
+    function updateCheckboxStates() {
+        const selectedIds = getSelectedIds();
+        const checkboxes = document.querySelectorAll('.receipt-checkbox');
+        let allChecked = checkboxes.length > 0;
+
+        checkboxes.forEach(cb => {
+            if (selectedIds.includes(cb.value)) {
+                cb.checked = true;
+            } else {
+                cb.checked = false;
+                allChecked = false;
+            }
+        });
+
+        const selectAll = document.getElementById('selectAllCheckboxes');
+        if (selectAll) {
+            selectAll.checked = allChecked && checkboxes.length > 0;
+        }
+
+        updateIndicator();
+    }
+
+    function updateIndicator() {
+        const count = getSelectedIds().length;
+        const indicator = document.getElementById('selectedCount');
+        const clearBtn = document.getElementById('clearSelectionBtn');
+        
+        if (indicator) {
+            indicator.textContent = count > 0 ? `(${count} terpilih)` : '';
+        }
+        
+        if (clearBtn) {
+            if (count > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+        }
+    }
+
+    function clearAllSelections() {
+        if (confirm('Hapus semua pilihan?')) {
+            setSelectedIds([]);
+            updateCheckboxStates();
+        }
+    }
+
+    // Initialize checkboxes on load
+    document.addEventListener('DOMContentLoaded', updateCheckboxStates);
+
+    // Individual checkbox change
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('receipt-checkbox')) {
+            let selectedIds = getSelectedIds();
+            if (e.target.checked) {
+                if (!selectedIds.includes(e.target.value)) {
+                    selectedIds.push(e.target.value);
+                }
+            } else {
+                selectedIds = selectedIds.filter(id => id !== e.target.value);
+            }
+            setSelectedIds(selectedIds);
+            updateIndicator();
+            
+            // Update select all state
+            const checkboxes = document.querySelectorAll('.receipt-checkbox');
+            const selectAll = document.getElementById('selectAllCheckboxes');
+            if (selectAll) {
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                selectAll.checked = allChecked && checkboxes.length > 0;
+            }
+        }
+    });
+
+    // Select All change
     document.getElementById('selectAllCheckboxes').addEventListener('change', function() {
-        document.querySelectorAll('.receipt-checkbox').forEach(cb => cb.checked = this.checked);
+        const checkboxes = document.querySelectorAll('.receipt-checkbox');
+        let selectedIds = getSelectedIds();
+        
+        checkboxes.forEach(cb => {
+            cb.checked = this.checked;
+            if (this.checked) {
+                if (!selectedIds.includes(cb.value)) {
+                    selectedIds.push(cb.value);
+                }
+            } else {
+                selectedIds = selectedIds.filter(id => id !== cb.value);
+            }
+        });
+        
+        setSelectedIds(selectedIds);
+        updateIndicator();
     });
 
     function showExportModal() {
-        const selected = Array.from(document.querySelectorAll('.receipt-checkbox:checked')).map(cb => cb.value);
+        const selected = getSelectedIds();
         if (selected.length === 0) {
             alert('Silakan pilih minimal satu data tanda terima.');
             return;
@@ -287,6 +396,10 @@
         dInput.value = reqDate; 
         dInput.className = 'dynamic-input';
         form.appendChild(dInput);
+
+        // Optional: Clear selection after export if needed
+        // setSelectedIds([]);
+        // updateCheckboxStates();
 
         form.submit();
         hideExportModal();
