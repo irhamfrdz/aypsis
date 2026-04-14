@@ -715,17 +715,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Calculate Jumlah from Harga Total
             const rawTotal = parseFloat(hargaTotalInput.value.replace(/\./g, '').replace(',', '.')) || 0;
             
-            // We want (Harga Satuan * Jumlah) + Adjustment = RawTotal
             // 1. Calculate the raw quantity
             const rawJumlah = rawTotal / hargaSatuan;
             
-            // 2. Round the quantity to 2 decimals (as stored in DB)
-            const roundedJumlah = Math.round(rawJumlah * 100) / 100;
-            jumlahInput.value = roundedJumlah.toFixed(2);
+            // 2. Floor the quantity to 2 decimals (truncate instead of round)
+            const flooredJumlah = Math.floor(rawJumlah * 100) / 100;
+            jumlahInput.value = flooredJumlah.toFixed(2);
             
-            // 3. Calculate the leftover adjustment needed to match the exact RawTotal
-            const leftoverAdjustment = Math.round(rawTotal - (hargaSatuan * roundedJumlah));
-            adjustmentInput.value = leftoverAdjustment;
+            // User requested NOT to use adjustment, so we leave it as is or reset it
         } else if (!isManualTotal) {
             // Standard one-way calculation: Satuan * Jumlah + Adjustment
             const jumlah = parseFloat(jumlahInput.value) || 0;
