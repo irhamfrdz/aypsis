@@ -101,7 +101,7 @@ class AsuransiTandaTerimaController extends Controller
                     'asuransi_tanda_terimas.asuransi_rate as rate',
                     'asuransi_tanda_terimas.vendor_asuransi_id'
                 )
-                ->whereIn('id', $idsByType['tttsj'])
+                ->whereIn('tanda_terima_tanpa_surat_jalan.id', $idsByType['tttsj'])
                 ->get();
             $receipts = $receipts->merge($tttsjItems);
         }
