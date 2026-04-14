@@ -720,12 +720,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (!isManualTotal) {
             // Standard one-way calculation: Satuan * Jumlah + Adjustment
             const jumlah = parseFloat(jumlahInput.value) || 0;
-            const hargaTotal = (hargaSatuan * jumlah) + adjustment;
+            // Round the total price to nearest whole number (IDR style)
+            const hargaTotal = Math.round((hargaSatuan * jumlah) + adjustment);
             
-            // Format number with thousand separators
+            // Format number with thousand separators, no decimal places
             const formattedTotal = hargaTotal.toLocaleString('id-ID', {
                 minimumFractionDigits: 0,
-                maximumFractionDigits: 2
+                maximumFractionDigits: 0
             });
             
             if (hargaTotalInput) {
