@@ -211,7 +211,7 @@
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
                                 <input type="text" id="harga_total" readonly class="block w-full pl-12 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 cursor-not-allowed shadow-sm font-semibold" value="0">
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">
+                            <p id="harga_total_info" class="mt-1 text-xs text-gray-500">
                                 <i class="fas fa-info-circle mr-1"></i>Otomatis dihitung dari (Harga Satuan × Jumlah) + Adjustment
                             </p>
                         </div>
@@ -699,21 +699,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to calculate and update total price
-    function updateHargaTotal() {
+    function updateHargaTotal(isManualTotal = false) {
         const hargaSatuan = parseFloat(document.getElementById('harga_satuan').value) || 0;
-        const jumlah = parseFloat(document.getElementById('jumlah').value) || 0;
-        const adjustment = parseFloat(document.getElementById('adjustment').value) || 0;
-        const hargaTotal = (hargaSatuan * jumlah) + adjustment;
-        
-        // Format number with thousand separators
-        const formattedTotal = hargaTotal.toLocaleString('id-ID', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2
-        });
-        
+        const jumlahInput = document.getElementById('jumlah');
         const hargaTotalInput = document.getElementById('harga_total');
-        if (hargaTotalInput) {
-            hargaTotalInput.value = formattedTotal;
+        const searchTypeBarang = document.getElementById('search_type_barang');
+        const adjustment = parseFloat(document.getElementById('adjustment').value) || 0;
+
+        const isBbm = searchTypeBarang.value.toUpperCase().includes('BBM') || 
+                      searchTypeBarang.value.toUpperCase().includes('SOLAR') || 
+                      searchTypeBarang.value.toUpperCase().includes('DEX') ||
+                      searchTypeBarang.value.toUpperCase().includes('BENSIN');
+
+        if (isManualTotal && isBbm && hargaSatuan > 0) {
+            // Calculate Jumlah from Harga Total
+            // Format total is usually raw when inputting, but might have separators if formatted
+            const rawTotal = parseFloat(hargaTotalInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const calculatedJumlah = (rawTotal - adjustment) / hargaSatuan;
+            jumlahInput.value = calculatedJumlah.toFixed(2);
+        } else if (!isManualTotal) {
+            // Standard one-way calculation: Satuan * Jumlah + Adjustment
+            const jumlah = parseFloat(jumlahInput.value) || 0;
+            const hargaTotal = (hargaSatuan * jumlah) + adjustment;
+            
+            // Format number with thousand separators
+            const formattedTotal = hargaTotal.toLocaleString('id-ID', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+            
+            if (hargaTotalInput) {
+                hargaTotalInput.value = formattedTotal;
+            }
         }
     }
 
@@ -721,13 +738,58 @@ document.addEventListener('DOMContentLoaded', function() {
     const hargaSatuanInput = document.getElementById('harga_satuan');
     const jumlahInput = document.getElementById('jumlah');
     const adjustmentInput = document.getElementById('adjustment');
+    const hargaTotalInput = document.getElementById('harga_total');
+    const selectTypeBarang = document.getElementById('master_nama_barang_amprahan_id');
+    const searchTypeBarang = document.getElementById('search_type_barang');
     
-    if (hargaSatuanInput && jumlahInput && adjustmentInput) {
-        hargaSatuanInput.addEventListener('input', updateHargaTotal);
-        jumlahInput.addEventListener('input', updateHargaTotal);
-        adjustmentInput.addEventListener('input', updateHargaTotal);
+    // Enable/Disable editable Harga Total based on Type Barang
+    function toggleHargaTotalEditable() {
+        const isBbm = searchTypeBarang.value.toUpperCase().includes('BBM') || 
+                      searchTypeBarang.value.toUpperCase().includes('SOLAR') || 
+                      searchTypeBarang.value.toUpperCase().includes('DEX') ||
+                      searchTypeBarang.value.toUpperCase().includes('BENSIN');
+        const infoText = document.getElementById('harga_total_info');
         
-        // Calculate on page load if there are old values
+        if (isBbm) {
+            hargaTotalInput.readOnly = false;
+            hargaTotalInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            hargaTotalInput.classList.add('bg-white');
+            hargaTotalInput.placeholder = "Input Total";
+            if (infoText) infoText.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Untuk BBM: Input Harga Total akan otomatis menghitung Jumlah';
+        } else {
+            hargaTotalInput.readOnly = true;
+            hargaTotalInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+            hargaTotalInput.classList.remove('bg-white');
+            hargaTotalInput.placeholder = "";
+            if (infoText) infoText.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Otomatis dihitung dari (Harga Satuan × Jumlah) + Adjustment';
+        }
+    }
+
+    if (hargaSatuanInput && jumlahInput && adjustmentInput && hargaTotalInput) {
+        hargaSatuanInput.addEventListener('input', () => updateHargaTotal(false));
+        jumlahInput.addEventListener('input', () => updateHargaTotal(false));
+        adjustmentInput.addEventListener('input', () => updateHargaTotal(false));
+        
+        // Manual input for Harga Total (only for BBM)
+        hargaTotalInput.addEventListener('input', () => updateHargaTotal(true));
+        
+        // When focused, show raw number if it's BBM
+        hargaTotalInput.addEventListener('focus', function() {
+            if (!this.readOnly) {
+                this.value = this.value.replace(/\./g, '');
+            }
+        });
+        
+        // When blurred, re-format
+        hargaTotalInput.addEventListener('blur', function() {
+            updateHargaTotal(false);
+        });
+
+        // Toggle editable on type change
+        selectTypeBarang.addEventListener('change', toggleHargaTotalEditable);
+        
+        // Initial setup
+        toggleHargaTotalEditable();
         updateHargaTotal();
     }
 
