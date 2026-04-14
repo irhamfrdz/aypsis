@@ -4026,6 +4026,31 @@ Route::get('/test-gate-in-ajax', function () {
                 ->middleware('can:pembayaran-pranota-lembur-delete');
         });
 
+    // 💰 PEMBAYARAN PRANOTA STOCK
+    Route::prefix('pembayaran-pranota-stock')
+        ->name('pembayaran-pranota-stock.')
+        ->middleware(['auth'])
+        ->group(function() {
+            Route::get('/', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'index'])
+                ->name('index')
+                ->middleware('can:pembayaran-pranota-stock-view');
+            Route::get('/create', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'create'])
+                ->name('create')
+                ->middleware('can:pembayaran-pranota-stock-create');
+            Route::get('/generate-nomor', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'generateNomor'])
+                ->name('generate-nomor')
+                ->middleware('can:pembayaran-pranota-stock-create');
+            Route::post('/', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'store'])
+                ->name('store')
+                ->middleware('can:pembayaran-pranota-stock-create');
+            Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'show'])
+                ->name('show')
+                ->middleware('can:pembayaran-pranota-stock-view');
+            Route::delete('/{id}', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:pembayaran-pranota-stock-delete');
+        });
+
      // 💰 PEMBAYARAN PRANOTA UANG JALAN BONGKARAN (Travel Allowance Payment Bongkaran)
      Route::prefix('pembayaran-pranota-uang-jalan-bongkaran')
           ->name('pembayaran-pranota-uang-jalan-bongkaran.')

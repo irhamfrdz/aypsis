@@ -644,6 +644,7 @@ class UserController extends Controller
                 'pembayaran-pranota-uang-jalan-batam' => 'pembayaran-pranota-uang-jalan-batam',
                 'pembayaran-pranota-uang-jalan' => 'pembayaran-pranota-uang-jalan',
                 'pembayaran-pranota-lembur' => 'pembayaran-pranota-lembur',
+                'pembayaran-pranota-stock' => 'pembayaran-pranota-stock',
                 'pembayaran-uang-muka' => 'pembayaran-uang-muka',
                 'pergerakan-kapal' => 'pergerakan-kapal',
                 'pergerakan-kontainer' => 'pergerakan-kontainer',
@@ -3115,6 +3116,27 @@ class UserController extends Controller
                             }
                         }
                     }
+
+                    // Special handling for pembayaran-pranota-stock
+                    if ($module === 'pembayaran-pranota-stock') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'edit',
+                            'delete' => 'delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = 'pembayaran-pranota-stock-' . $actionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
 
                     // Special handling for perbaikan-kontainer module
                     if ($module === 'perbaikan-kontainer') {

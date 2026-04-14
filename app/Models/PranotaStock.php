@@ -33,4 +33,14 @@ class PranotaStock extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function pembayaranPranotaStocks()
+    {
+        return $this->belongsToMany(
+            PembayaranPranotaStock::class,
+            'pembayaran_pranota_stock_items',
+            'pranota_stock_id',
+            'pembayaran_pranota_stock_id'
+        )->withPivot('subtotal')->withTimestamps();
+    }
 }

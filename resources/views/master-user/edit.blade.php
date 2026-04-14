@@ -3019,6 +3019,26 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-pranota-lembur][print]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-lembur.print') || (isset($userMatrixPermissions['pembayaran-pranota-lembur']['print']) && $userMatrixPermissions['pembayaran-pranota-lembur']['print']) || ($user && $user->can('pembayaran-pranota-lembur-print'))) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[pembayaran-pranota-lembur][export]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-lembur.export') || (isset($userMatrixPermissions['pembayaran-pranota-lembur']['export']) && $userMatrixPermissions['pembayaran-pranota-lembur']['export']) || ($user && $user->can('pembayaran-pranota-lembur-export'))) checked @endif></td>
                             </tr>
+
+                            {{-- Pembayaran Pranota Stock --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <svg class="w-4 h-4 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span class="text-orange-600 font-bold">Pembayaran Pranota Stock</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-stock][view]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-stock.view') || (isset($userMatrixPermissions['pembayaran-pranota-stock']['view']) && $userMatrixPermissions['pembayaran-pranota-stock']['view']) || ($user && $user->can('pembayaran-pranota-stock-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-stock][create]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-stock.create') || (isset($userMatrixPermissions['pembayaran-pranota-stock']['create']) && $userMatrixPermissions['pembayaran-pranota-stock']['create']) || ($user && $user->can('pembayaran-pranota-stock-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-stock][update]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-stock.update') || (isset($userMatrixPermissions['pembayaran-pranota-stock']['update']) && $userMatrixPermissions['pembayaran-pranota-stock']['update']) || ($user && $user->can('pembayaran-pranota-stock-edit'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-stock][delete]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-stock.delete') || (isset($userMatrixPermissions['pembayaran-pranota-stock']['delete']) && $userMatrixPermissions['pembayaran-pranota-stock']['delete']) || ($user && $user->can('pembayaran-pranota-stock-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
  
                             {{-- Pembayaran Uang Muka --}}
                             <tr class="submodule-row" data-parent="pembayaran">

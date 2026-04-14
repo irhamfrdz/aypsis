@@ -7,9 +7,14 @@
 <div class="bg-white shadow-md rounded-lg p-6">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold text-gray-800">Riwayat Pranota Stock Amprahan</h2>
-        <a href="{{ route('stock-amprahan.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
-            <i class="fas fa-arrow-left mr-2"></i> Kembali ke Stock
-        </a>
+        <div class="flex space-x-2">
+            <a href="{{ route('pembayaran-pranota-stock.index') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
+                <i class="fas fa-money-bill-wave mr-2"></i> Pembayaran
+            </a>
+            <a href="{{ route('stock-amprahan.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
+                <i class="fas fa-arrow-left mr-2"></i> Kembali ke Stock
+            </a>
+        </div>
     </div>
 
     <!-- Form Filter -->
