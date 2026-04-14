@@ -3083,6 +3083,30 @@ Route::middleware(['auth'])->group(function () {
          ->name('pranota-uang-rit.print')
          ->middleware('can:pranota-uang-rit-view');
 
+    // Pembayaran Pranota Rit Management with permissions
+    Route::prefix('pembayaran-pranota-rit')
+        ->name('pembayaran-pranota-rit.')
+        ->group(function () {
+            Route::get('/', [\App\Http\Controllers\PembayaranPranotaRitController::class, 'index'])
+                ->name('index')
+                ->middleware('can:pembayaran-pranota-rit-view');
+            Route::get('/create', [\App\Http\Controllers\PembayaranPranotaRitController::class, 'create'])
+                ->name('create')
+                ->middleware('can:pembayaran-pranota-rit-create');
+            Route::post('/', [\App\Http\Controllers\PembayaranPranotaRitController::class, 'store'])
+                ->name('store')
+                ->middleware('can:pembayaran-pranota-rit-create');
+            Route::get('/generate-nomor', [\App\Http\Controllers\PembayaranPranotaRitController::class, 'generateNomor'])
+                ->name('generate-nomor')
+                ->middleware('can:pembayaran-pranota-rit-create');
+            Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaRitController::class, 'show'])
+                ->name('show')
+                ->middleware('can:pembayaran-pranota-rit-view');
+            Route::delete('/{id}', [\App\Http\Controllers\PembayaranPranotaRitController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:pembayaran-pranota-rit-delete');
+        });
+
     // ═══════════════════════════════════════════════════════════════════════
     // � PRANOTA UANG RIT KENEK MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════

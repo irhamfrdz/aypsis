@@ -645,6 +645,7 @@ class UserController extends Controller
                 'pembayaran-pranota-uang-jalan' => 'pembayaran-pranota-uang-jalan',
                 'pembayaran-pranota-lembur' => 'pembayaran-pranota-lembur',
                 'pembayaran-pranota-stock' => 'pembayaran-pranota-stock',
+                'pembayaran-pranota-rit' => 'pembayaran-pranota-rit',
                 'pembayaran-uang-muka' => 'pembayaran-uang-muka',
                 'pergerakan-kapal' => 'pergerakan-kapal',
                 'pergerakan-kontainer' => 'pergerakan-kontainer',
@@ -3129,6 +3130,27 @@ class UserController extends Controller
 
                         if (isset($actionMap[$action])) {
                             $permissionName = 'pembayaran-pranota-stock-' . $actionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+                    // Special handling for pembayaran-pranota-rit
+                    if ($module === 'pembayaran-pranota-rit') {
+                        $actionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'edit',
+                            'delete' => 'delete',
+                            'approve' => 'approve',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = 'pembayaran-pranota-rit-' . $actionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
                             if ($permission) {
                                 $permissionIds[] = $permission->id;

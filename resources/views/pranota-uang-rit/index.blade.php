@@ -195,6 +195,16 @@
                                             @endif
                                         @endcan
 
+                                        @can('pembayaran-pranota-rit-create')
+                                            @if($item->status === 'approved')
+                                            <a href="{{ route('pembayaran-pranota-rit.create', ['pranota_id' => $item->id]) }}" 
+                                               class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-100 hover:bg-indigo-200 rounded-lg transition-colors duration-200" 
+                                               title="Bayar (Double Book)">
+                                                <i class="fas fa-wallet"></i>
+                                            </a>
+                                            @endif
+                                        @endcan
+
                                         @can('pranota-uang-rit-mark-paid')
                                             @if($item->status === 'approved')
                                             <button type="button" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 bg-green-100 hover:bg-green-200 rounded-lg transition-colors duration-200" 
