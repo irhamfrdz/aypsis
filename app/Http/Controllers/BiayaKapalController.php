@@ -1864,7 +1864,9 @@ class BiayaKapalController extends Controller
             'loloDetails',
             'storageDetails',
             'freightDetails',
-            'perijinanDetails'
+            'perijinanDetails',
+            'meratusDetails',
+            'demurrageDetails'
         ]);
 
         // Resolve container details for trucking if needed
@@ -1937,6 +1939,14 @@ class BiayaKapalController extends Controller
         if ($biayaKapal->klasifikasiBiaya && 
             stripos($biayaKapal->klasifikasiBiaya->nama, 'meratus') !== false) {
             return $this->printMeratus($biayaKapal);
+        }
+
+        // Check if it's Biaya Demurrage
+        if ($biayaKapal->klasifikasiBiaya && 
+            (stripos($biayaKapal->klasifikasiBiaya->nama, 'demurrage') !== false || 
+             $biayaKapal->jenis_biaya === 'KB048')) {
+            $biayaKapal->load(['demurrageDetails']);
+            return view('biaya-kapal.print-demurrage', compact('biayaKapal'));
         }
 
         // Check if it's Biaya Dokumen and use specific print template
