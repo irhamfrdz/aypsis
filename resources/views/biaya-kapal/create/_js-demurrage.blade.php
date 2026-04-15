@@ -3,7 +3,10 @@
     
     // Define empty pricelist data for Demurrage if not provided by controller
     // This allows the section to work even if no master data is available yet
-    const demurragePricelistData = typeof pricelistStoragesData !== 'undefined' ? [] : []; 
+    // Define pricelist data for Demurrage from Meratus Pricelist
+    const demurragePricelistData = typeof pricelistMeratusData !== 'undefined' 
+        ? pricelistMeratusData.filter(item => item.jenis_biaya === 'DEMURRAGE') 
+        : [];
     
     function initializeDemurrageSections() {
         if (!demurrageSectionsContainer) return;
@@ -44,13 +47,7 @@
             kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
         });
 
-        // Use distinct vendors/locations from Storage pricelist as a fallback or empty list
-        const uniqueVendors = [...new Set(demurragePricelistData.map(item => item.vendor))];
-        let vendorOptions = '<option value="">-- Pilih Vendor --</option>';
-        uniqueVendors.forEach(vendor => {
-            vendorOptions += `<option value="${vendor}">${vendor}</option>`;
-        });
-
+        // Use distinct locations from Meratus pricelist
         const uniqueLocations = [...new Set(demurragePricelistData.map(item => item.lokasi))];
         let lokasiOptions = '<option value="">-- Pilih Lokasi --</option>';
         uniqueLocations.forEach(lokasi => {
@@ -85,10 +82,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Vendor <span class="text-red-500">*</span></label>
                     <div class="flex gap-2">
-                        <select name="demurrage_sections[${sectionIndex}][vendor]" class="demurrage-vendor-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500" ${uniqueVendors.length > 0 ? 'required' : 'disabled'}>
-                            ${vendorOptions}
-                        </select>
-                        <input type="text" name="demurrage_sections[${sectionIndex}][vendor_manual]" class="demurrage-vendor-manual w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500" placeholder="Ketik Vendor" required>
+                        <input type="text" name="demurrage_sections[${sectionIndex}][vendor]" class="demurrage-vendor w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500" placeholder="Ketik Vendor" value="MERATUS" required>
                     </div>
                 </div>
                 <div>
@@ -97,7 +91,10 @@
                         <select name="demurrage_sections[${sectionIndex}][lokasi]" class="demurrage-lokasi-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500" ${uniqueLocations.length > 0 ? 'required' : 'disabled'}>
                             ${lokasiOptions}
                         </select>
-                        <input type="text" name="demurrage_sections[${sectionIndex}][lokasi_manual]" class="demurrage-lokasi-manual w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500" placeholder="Ketik Lokasi" required>
+                        <input type="text" name="demurrage_sections[${sectionIndex}][lokasi_manual]" class="demurrage-lokasi-manual w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 hidden" placeholder="Ketik Lokasi" required>
+                        <button type="button" class="demurrage-lokasi-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
+                            <i class="fas fa-keyboard"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -211,6 +208,32 @@
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
+        
+        // Setup manual lokasi toggle
+        const lokasiSelect     = section.querySelector('.demurrage-lokasi-select');
+        const lokasiManualInput = section.querySelector('.demurrage-lokasi-manual');
+        const lokasiManualBtn   = section.querySelector('.demurrage-lokasi-manual-btn');
+
+        lokasiManualBtn.addEventListener('click', function() {
+            if (lokasiManualInput.classList.contains('hidden')) {
+                lokasiSelect.classList.add('hidden');
+                lokasiSelect.disabled = true;
+                lokasiManualInput.classList.remove('hidden');
+                lokasiManualInput.disabled = false;
+                lokasiManualInput.focus();
+                this.innerHTML = '<i class="fas fa-list"></i>';
+            } else {
+                lokasiManualInput.classList.add('hidden');
+                lokasiManualInput.disabled = true;
+                lokasiSelect.classList.remove('hidden');
+                lokasiSelect.disabled = false;
+                this.innerHTML = '<i class="fas fa-keyboard"></i>';
+            }
+        });
+
+        // Event listener for lokasi change to trigger subtotal recalc
+        lokasiSelect.addEventListener('change', () => calculateDemurrageSectionSubtotal(section));
+        lokasiManualInput.addEventListener('input', () => calculateDemurrageSectionSubtotal(section));
 
         // --- KONTAINER MULTI-SELECT LOGIC ---
         const kontainerList         = section.querySelector('.demurrage-kontainer-list');
@@ -323,10 +346,38 @@
         const totalInput    = section.querySelector('.demurrage-total-input');
 
         function calculateDemurrageSectionSubtotal(sec) {
-            // Since we don't have Demurrage pricelist in this workspace yet, 
-            // the subtotal calculation remains zero by default until manual input or master data is added.
-            // But we still trigger total update.
-            recalcDemurrageTotal(true);
+            const lokSelect = sec.querySelector('.demurrage-lokasi-select');
+            const lokManual = sec.querySelector('.demurrage-lokasi-manual');
+            const lokasi = !lokSelect.disabled ? lokSelect.value : lokManual.value;
+
+            if (!lokasi) return;
+
+            let currentSubtotal = 0;
+            const checkboxes = sec.querySelectorAll('.demurrage-kontainer-checkbox:checked');
+            
+            checkboxes.forEach(cb => {
+                const blId = cb.dataset.blId;
+                const size = cb.dataset.size; // usually 20 or 40
+                const hari = parseFloat(sec.querySelector(`.demurrage-kontainer-hari[data-bl-id="${blId}"]`).value) || 0;
+                
+                // Find price from pricelistMeratusData
+                // Example p.size: '20ft'
+                const normSize = size + 'ft';
+                const pricelist = demurragePricelistData.find(p => 
+                    p.lokasi.toLowerCase() === lokasi.toLowerCase() && 
+                    p.size === normSize
+                );
+                
+                if (pricelist) {
+                    currentSubtotal += parseFloat(pricelist.harga) * hari;
+                }
+            });
+
+            const subField = sec.querySelector('.demurrage-subtotal-input');
+            if (currentSubtotal > 0) {
+                subField.value = new Intl.NumberFormat('id-ID').format(currentSubtotal);
+                recalcDemurrageTotal(true);
+            }
         }
 
         function recalcDemurrageTotal(updatePph = false) {
