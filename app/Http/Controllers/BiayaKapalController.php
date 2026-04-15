@@ -380,6 +380,17 @@ class BiayaKapalController extends Controller
             unset($section);
         }
 
+        // DEMURRAGE Sections
+        if (isset($data['demurrage_sections']) && is_array($data['demurrage_sections'])) {
+            foreach ($data['demurrage_sections'] as &$section) {
+                if (isset($section['subtotal'])) $section['subtotal'] = str_replace(',', '.', str_replace('.', '', $section['subtotal']));
+                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
+                if (isset($section['total_biaya'])) $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+            }
+            unset($section);
+        }
+
         // Perijinan Sections Cleaning
         if (isset($data['perijinan_sections']) && is_array($data['perijinan_sections'])) {
             foreach ($data['perijinan_sections'] as &$section) {
@@ -592,19 +603,22 @@ class BiayaKapalController extends Controller
             'lolo_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // STORAGE sections validation
-            'storage_sections' => 'nullable|array',
-            'storage_sections.*.kapal' => 'nullable|string|max:255',
-            'storage_sections.*.voyage' => 'nullable|string|max:255',
-            'storage_sections.*.lokasi' => 'nullable|string|max:255',
-            'storage_sections.*.vendor' => 'nullable|string|max:255',
-            'storage_sections.*.kontainer' => 'nullable|array',
-            'storage_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
-            'storage_sections.*.kontainer.*.hari' => 'nullable|numeric|min:1',
-            'storage_sections.*.subtotal' => 'nullable|numeric|min:0',
-            'storage_sections.*.pph' => 'nullable|numeric|min:0',
-            'storage_sections.*.adjustment' => 'nullable|numeric',
-            'storage_sections.*.notes_adjustment' => 'nullable|string',
             'storage_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // DEMURRAGE sections validation
+            'demurrage_sections' => 'nullable|array',
+            'demurrage_sections.*.kapal' => 'nullable|string|max:255',
+            'demurrage_sections.*.voyage' => 'nullable|string|max:255',
+            'demurrage_sections.*.lokasi' => 'nullable|string|max:255',
+            'demurrage_sections.*.vendor' => 'nullable|string|max:255',
+            'demurrage_sections.*.kontainer' => 'nullable|array',
+            'demurrage_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'demurrage_sections.*.kontainer.*.hari' => 'nullable|numeric|min:1',
+            'demurrage_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'demurrage_sections.*.pph' => 'nullable|numeric|min:0',
+            'demurrage_sections.*.adjustment' => 'nullable|numeric',
+            'demurrage_sections.*.notes_adjustment' => 'nullable|string',
+            'demurrage_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // Perlengkapan sections
             'perlengkapan_sections'                     => 'nullable|array',
@@ -986,6 +1000,56 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for STORAGE from section totals
                 $totalStorage = \App\Models\BiayaKapalStorage::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $biayaKapal->update(['nominal' => $totalStorage]);
+            }
+
+            // BIAYA DEMURRAGE SECTIONS: Store Demurrage details
+            if ($request->has('demurrage_sections') && !empty($request->demurrage_sections)) {
+                foreach ($request->demurrage_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                        continue;
+                    }
+
+                    // Kumpulkan kontainer yang dipilih
+                    $kontainerIds = [];
+                    if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                        foreach ($section['kontainer'] as $k) {
+                            if (!empty($k['bl_id'])) {
+                                $kontainerIds[] = [
+                                    'bl_id'           => $k['bl_id'],
+                                    'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                    'size'            => $k['size'] ?? null,
+                                    'hari'            => $k['hari'] ?? 1,
+                                ];
+                            }
+                        }
+                    }
+
+                    // Clean numeric fields
+                    $cleanNum = function ($val) {
+                        return (float) str_replace(['.', ','], ['', '.'], $val ?? 0);
+                    };
+
+                    \App\Models\BiayaKapalDemurrage::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal'          => $section['kapal'] ?? null,
+                        'voyage'         => $section['voyage'] ?? null,
+                        'lokasi'         => $section['lokasi'] ?? null,
+                        'vendor'         => $section['vendor'] ?? null,
+                        'kontainer_ids'  => $kontainerIds,
+                        'subtotal'       => $cleanNum($section['subtotal'] ?? 0),
+                        'biaya_materai'  => $cleanNum($section['biaya_materai'] ?? 0),
+                        'ppn'            => $cleanNum($section['ppn'] ?? 0),
+                        'pph'            => $cleanNum($section['pph'] ?? 0),
+                        'adjustment'     => $cleanNum($section['adjustment'] ?? 0),
+                        'notes_adjustment' => $section['notes_adjustment'] ?? null,
+                        'total_biaya'    => $cleanNum($section['total_biaya'] ?? 0),
+                    ]);
+                }
+
+                // Auto-calculate nominal for DEMURRAGE from section totals
+                $totalDemurrage = \App\Models\BiayaKapalDemurrage::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalDemurrage]);
             }
 
 

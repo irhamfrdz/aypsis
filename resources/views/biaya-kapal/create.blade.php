@@ -53,6 +53,9 @@
 {{-- Biaya Storage --}}
 @include('biaya-kapal.create._section-storage')
 
+{{-- Biaya Demurrage --}}
+@include('biaya-kapal.create._section-demurrage')
+
 {{-- Biaya Perlengkapan --}}
 @include('biaya-kapal.create._section-perlengkapan')
 @include('biaya-kapal.create._section-perijinan')
@@ -90,6 +93,7 @@
 @include('biaya-kapal.create._js-trucking')
 @include('biaya-kapal.create._js-stuffing')
 @include('biaya-kapal.create._js-storage')
+@include('biaya-kapal.create._js-demurrage')
 @include('biaya-kapal.create._js-thc')
 @include('biaya-kapal.create._js-perijinan')
 @include('biaya-kapal.create._js-freight')

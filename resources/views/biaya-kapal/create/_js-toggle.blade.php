@@ -746,6 +746,76 @@
             if (freightWrapper) freightWrapper.classList.add('hidden');
             clearAllFreightSections();
         }
+        // Show DEMURRAGE fields if "Biaya Demurrage" is selected
+        else if (selectedValue === 'KB048' || selectedText.toLowerCase().includes('demurrage')) {
+            // Show Demurrage multi kapal wrapper
+            if (demurrageWrapper) demurrageWrapper.classList.remove('hidden');
+            initializeDemurrageSections();
+
+            // Hide standard kapal/voyage/bl fields
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Hide other standard fields
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
+
+            // Remove required attributes
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaInput) {
+                penerimaInput.setAttribute('required', 'required');
+            }
+
+            // Hide other type-specific fields
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+
+            // Reset values
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            dpInput.value = '0';
+            sisaPembayaranInput.value = '0';
+
+            // Hide Stuffing, THC, LOLO, TKBM, Operasional, Trucking, Perlengkapan, Labuh Tambat, Storage, Freight
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+            if (loloWrapper) loloWrapper.classList.add('hidden');
+            clearAllLoloSections();
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            if (operasionalWrapper) operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+            if (labuhTambatWrapper) labuhTambatWrapper.classList.add('hidden');
+            clearAllLabuhTambatSections();
+            if (freightWrapper) freightWrapper.classList.add('hidden');
+            clearAllFreightSections();
+        }
         // Show FREIGHT fields if "Biaya Freight" is selected
         else if (selectedText.toLowerCase().includes('freight')) {
             // Show Freight multi kapal wrapper
@@ -1121,6 +1191,8 @@
             clearAllLoloSections();
             if (storageWrapper) storageWrapper.classList.add('hidden');
             clearAllStorageSections();
+            if (demurrageWrapper) demurrageWrapper.classList.add('hidden');
+            clearAllDemurrageSections();
             if (freightWrapper) freightWrapper.classList.add('hidden');
             clearAllFreightSections();
             if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
@@ -1195,6 +1267,10 @@
             clearAllStuffingSections();
             if (thcWrapper) thcWrapper.classList.add('hidden');
             clearAllTHCSections();
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
+            if (demurrageWrapper) demurrageWrapper.classList.add('hidden');
+            clearAllDemurrageSections();
 
             // Hide Perlengkapan wrapper
             if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');

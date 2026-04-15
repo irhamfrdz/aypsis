@@ -229,6 +229,12 @@
     const addStorageSectionBtn = document.getElementById('add_storage_section_btn');
     const addStorageSectionBottomBtn = document.getElementById('add_storage_section_bottom_btn');
 
+    // Demurrage specific fields
+    const demurrageWrapper = document.getElementById('demurrage_wrapper');
+    const demurrageSectionsContainer = document.getElementById('demurrage_sections_container');
+    const addDemurrageSectionBtn = document.getElementById('add_demurrage_section_btn');
+    const addDemurrageSectionBottomBtn = document.getElementById('add_demurrage_section_bottom_btn');
+
     // Format nominal input with thousand separator
     
     nominalInput.addEventListener('input', function(e) {
@@ -423,6 +429,15 @@
             if (input.name.includes('[subtotal]') || input.name.includes('[biaya_materai]') || 
                 input.name.includes('[ppn]') || input.name.includes('[pph]') || 
                 input.name.includes('[total_biaya]')) {
+                input.value = input.value.replace(/\./g, '');
+            }
+        });
+
+        // Clean Biaya Demurrage fields
+        document.querySelectorAll('[name^="demurrage_sections"]').forEach(input => {
+            if (input.name.includes('[subtotal]') || input.name.includes('[biaya_materai]') || 
+                input.name.includes('[ppn]') || input.name.includes('[pph]') || 
+                input.name.includes('[total_biaya]') || input.name.includes('[adjustment]')) {
                 input.value = input.value.replace(/\./g, '');
             }
         });
