@@ -111,6 +111,7 @@ class KasTruckController extends Controller
                     'pembayaran_pranota_kontainer',
                     'pembayaran_pranota_vendor_supirs',
                     'pembayaran_dp_obs',
+                    'pembayaran_biaya_kapals',
                 ];
                 foreach ($tablesWithNomorPembayaran as $tbl) {
                     try {

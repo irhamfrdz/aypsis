@@ -81,8 +81,8 @@ class ReportOngkosTrukController extends Controller
             $querySjb->whereIn('no_plat', $noPlat);
         }
 
-        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
-        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
+        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan'])->get();
+        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan'])->get();
 
         // Fetch all adjustments in bulk to avoid N+1
         $sjIds = $suratJalans->pluck('id');
@@ -129,13 +129,6 @@ class ReportOngkosTrukController extends Controller
             return str_contains($type, 'adjusment') || str_contains($type, 'adjustment');
         })->groupBy('no_surat_jalan');
 
-        // Fetch direct PAL payments that have no_surat_jalan + nomor_accurate (for main row bukti)
-        $palNomorAccurateBySj = PembayaranAktivitasLain::whereIn('no_surat_jalan', $allNoSjs)
-            ->whereNotNull('nomor_accurate')
-            ->where('nomor_accurate', '!=', '')
-            ->get()
-            ->groupBy('no_surat_jalan');
-
         $data = collect();
 
         foreach ($suratJalans as $sj) {
@@ -172,13 +165,6 @@ class ReportOngkosTrukController extends Controller
                     }
                 }
                 $mainNomorBukti = $buktis->filter()->unique()->implode(', ') ?: '-';
-            }
-            // Fallback: cek langsung dari PembayaranAktivitasLain yang punya no_surat_jalan + nomor_accurate
-            if ($mainNomorBukti === '-' && isset($palNomorAccurateBySj[$sj->no_surat_jalan])) {
-                $accNums = $palNomorAccurateBySj[$sj->no_surat_jalan]->pluck('nomor_accurate')->filter()->unique();
-                if ($accNums->isNotEmpty()) {
-                    $mainNomorBukti = $accNums->implode(', ');
-                }
             }
 
             // Main Row (Base Amount - Before Adjustment)
@@ -285,13 +271,6 @@ class ReportOngkosTrukController extends Controller
                     }
                 }
                 $mainNomorBukti = $buktis->filter()->unique()->implode(', ') ?: '-';
-            }
-            // Fallback: cek langsung dari PembayaranAktivitasLain yang punya no_surat_jalan + nomor_accurate
-            if ($mainNomorBukti === '-' && isset($palNomorAccurateBySj[$sjb->nomor_surat_jalan])) {
-                $accNums = $palNomorAccurateBySj[$sjb->nomor_surat_jalan]->pluck('nomor_accurate')->filter()->unique();
-                if ($accNums->isNotEmpty()) {
-                    $mainNomorBukti = $accNums->implode(', ');
-                }
             }
 
             // Main Row
