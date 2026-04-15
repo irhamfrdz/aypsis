@@ -1,5 +1,6 @@
     // ============= MERATUS SECTIONS MANAGEMENT =============
     let meratusSectionCounter = 0;
+    const meratusWrapper = document.getElementById('meratus_wrapper');
     const meratusSectionsContainer = document.getElementById('meratus_sections_container');
     const addMeratusSectionBtn = document.getElementById('add_meratus_section_btn');
     
@@ -146,45 +147,45 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Total</label>
-                    <input type="text" class="sub-total-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
-                    <input type="hidden" name="meratus[${sectionIndex}][sub_total]" class="sub-total-value-meratus" value="0">
+                    <input type="text" class="sub-total-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="${data ? 'Rp ' + parseInt(data.sub_total || 0).toLocaleString('id-ID') : 'Rp 0'}" readonly>
+                    <input type="hidden" name="meratus[${sectionIndex}][sub_total]" class="sub-total-value-meratus" value="${data ? (data.sub_total || 0) : 0}">
                 </div>
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <label class="block text-sm font-medium text-gray-700">PPH (2%)</label>
                         <div class="flex items-center gap-1">
-                            <input type="checkbox" name="meratus[${sectionIndex}][pph_active]" class="pph-active-meratus w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer" checked onchange="calculateMeratusSectionTotal(${sectionIndex})">
+                            <input type="checkbox" name="meratus[${sectionIndex}][pph_active]" class="pph-active-meratus w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer" ${!data || data.pph_active !== false ? 'checked' : ''} onchange="calculateMeratusSectionTotal(${sectionIndex})">
                             <span class="text-[10px] text-gray-600 font-medium cursor-pointer" onclick="this.previousElementSibling.click()">Aktifkan</span>
                         </div>
                     </div>
-                    <input type="text" class="pph-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors duration-200" value="Rp 0">
-                    <input type="hidden" name="meratus[${sectionIndex}][pph]" class="pph-value-meratus" value="0">
+                    <input type="text" class="pph-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors duration-200" value="${data ? 'Rp ' + parseInt(data.pph || 0).toLocaleString('id-ID') : 'Rp 0'}">
+                    <input type="hidden" name="meratus[${sectionIndex}][pph]" class="pph-value-meratus" value="${data ? (data.pph || 0) : 0}">
                 </div>
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <label class="block text-sm font-medium text-gray-700">PPN (11%)</label>
                         <div class="flex items-center gap-1">
-                            <input type="checkbox" name="meratus[${sectionIndex}][ppn_active]" class="ppn-active-meratus w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer" onchange="calculateMeratusSectionTotal(${sectionIndex})">
+                            <input type="checkbox" name="meratus[${sectionIndex}][ppn_active]" class="ppn-active-meratus w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer" ${data && data.ppn_active ? 'checked' : ''} onchange="calculateMeratusSectionTotal(${sectionIndex})">
                             <span class="text-[10px] text-gray-600 font-medium cursor-pointer" onclick="this.previousElementSibling.click()">Aktifkan</span>
                         </div>
                     </div>
-                    <input type="text" class="ppn-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors duration-200" value="Rp 0">
-                    <input type="hidden" name="meratus[${sectionIndex}][ppn]" class="ppn-value-meratus" value="0">
+                    <input type="text" class="ppn-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors duration-200" value="${data ? 'Rp ' + parseInt(data.ppn || 0).toLocaleString('id-ID') : 'Rp 0'}">
+                    <input type="hidden" name="meratus[${sectionIndex}][ppn]" class="ppn-value-meratus" value="${data ? (data.ppn || 0) : 0}">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Materai</label>
-                    <input type="text" class="materai-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="Rp 0">
-                    <input type="hidden" name="meratus[${sectionIndex}][biaya_materai]" class="materai-value-meratus" value="0">
+                    <input type="text" class="materai-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="${data ? 'Rp ' + parseInt(data.biaya_materai || 0).toLocaleString('id-ID') : 'Rp 0'}">
+                    <input type="hidden" name="meratus[${sectionIndex}][biaya_materai]" class="materai-value-meratus" value="${data ? (data.biaya_materai || 0) : 0}">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Adjustment</label>
-                    <input type="text" class="adjustment-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="Rp 0">
-                    <input type="hidden" name="meratus[${sectionIndex}][adjustment]" class="adjustment-value-meratus" value="0">
+                    <input type="text" class="adjustment-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="${data ? (parseInt(data.adjustment) < 0 ? '-' : '') + 'Rp ' + Math.abs(parseInt(data.adjustment || 0)).toLocaleString('id-ID') : 'Rp 0'}">
+                    <input type="hidden" name="meratus[${sectionIndex}][adjustment]" class="adjustment-value-meratus" value="${data ? (data.adjustment || 0) : 0}">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Grand Total</label>
-                    <input type="text" class="grand-total-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
-                    <input type="hidden" name="meratus[${sectionIndex}][grand_total]" class="grand-total-value-meratus" value="0">
+                    <input type="text" class="grand-total-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="${data ? 'Rp ' + parseInt(data.grand_total || 0).toLocaleString('id-ID') : 'Rp 0'}" readonly>
+                    <input type="hidden" name="meratus[${sectionIndex}][grand_total]" class="grand-total-value-meratus" value="${data ? (data.grand_total || 0) : 0}">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Referensi</label>

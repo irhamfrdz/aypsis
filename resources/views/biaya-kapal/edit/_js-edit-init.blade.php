@@ -214,7 +214,15 @@
                                  'is_muat' => $i->is_muat,
                                  'is_bongkar' => $i->is_bongkar
                              ];
-                         })->toArray()
+                         })->toArray(),
+                         'sub_total' => $firstItem->sub_total ?? 0,
+                         'pph' => $firstItem->pph ?? 0,
+                         'ppn' => $firstItem->ppn ?? 0,
+                         'pph_active' => ($firstItem->pph > 0) || (($firstItem->sub_total ?? 0) > 0 && ($firstItem->pph ?? 0) != 0),
+                         'ppn_active' => ($firstItem->ppn > 0),
+                         'biaya_materai' => $firstItem->biaya_materai ?? 0,
+                         'adjustment' => $firstItem->adjustment ?? 0,
+                         'grand_total' => $firstItem->grand_total ?? 0,
                      ];
                  }
             }

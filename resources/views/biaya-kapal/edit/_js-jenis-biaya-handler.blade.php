@@ -888,6 +888,73 @@
             // Hide Storage wrapper
             if (storageWrapper) storageWrapper.classList.add('hidden');
             clearAllStorageSections();
+        } 
+        // Show Meratus wrapper if "Meratus" is selected
+        else if (selectedText.toLowerCase().includes('meratus')) {
+            if (meratusWrapper) meratusWrapper.classList.remove('hidden');
+            if (meratusSectionsContainer && meratusSectionsContainer.children.length === 0) {
+                initializeMeratusSections();
+            }
+            
+            // Hide standard fields
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Hide normal nominal
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(nominalInput) nominalInput.removeAttribute('required');
+            
+            // Hide other type-specific fields
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            
+            // Hide perijinan
+            if (perijinanWrapper) perijinanWrapper.classList.add('hidden');
+            clearAllPerijinanSections();
+            
+            // Hide Operasional
+            if (operasionalWrapper) operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+
+            // Hide Labuh Tambat
+            if (labuhTambatWrapper) labuhTambatWrapper.classList.add('hidden');
+            clearAllLabuhTambatSections();
+
+            // Hide Trucking
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
+
+            // Hide Stuffing
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+
+            // Hide THC
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+
+            // Hide LOLO
+            if (loloWrapper) loloWrapper.classList.add('hidden');
+            clearAllLoloSections();
+
+            // Hide Storage
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
         } else {
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
