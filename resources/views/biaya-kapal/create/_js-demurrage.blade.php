@@ -286,7 +286,7 @@
                                 <div class="font-semibold text-sm text-gray-800">
                                     <i class="fas fa-cube text-indigo-500 mr-1"></i>
                                     ${kontainer.nomor_kontainer}
-                                    <span class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">${kontainer.size_kontainer || '-'}'</span>
+                                    <span class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">${kontainer.size_kontainer || '-'}</span>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
@@ -356,16 +356,22 @@
             if (lokasi) {
                 checkboxes.forEach(cb => {
                     const blId = cb.dataset.blId;
-                    const sizeNum = cb.dataset.size; // usually 20 or 40
+                    const sizeRaw = cb.dataset.size || ''; 
                     const hari = parseFloat(sec.querySelector(`.demurrage-kontainer-hari[data-bl-id="${blId}"]`).value) || 0;
                     
-                    // Match normalized size (e.g., '20ft')
-                    const normSize = (sizeNum + 'ft').toLowerCase();
+                    // Normalize size safely (extract 20 or 40)
+                    let baseSize = '20'; // Default fallback assumption
+                    if (sizeRaw.includes('40')) {
+                        baseSize = '40';
+                    } else if (sizeRaw.includes('20')) {
+                        baseSize = '20';
+                    }
+                    const normSize = baseSize + 'ft';
                     
                     const pricelist = demurragePricelistData.find(p => {
                         const pLokasi = (p.lokasi || '').toString().toLowerCase();
                         const pSize   = (p.size || '').toString().toLowerCase();
-                        return pLokasi === lokasi.toLowerCase() && pSize === normSize;
+                        return pLokasi === lokasi.toLowerCase() && pSize === normSize.toLowerCase();
                     });
                     
                     if (pricelist) {
