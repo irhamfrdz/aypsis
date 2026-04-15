@@ -2329,6 +2329,9 @@ class BiayaKapalController extends Controller
         // Get pricelist perijinans
         $pricelistPerijinans = \App\Models\PricelistPerijinan::where('status', 'Aktif')->orderBy('lokasi')->get();
 
+        // Get pricelist meratus
+        $pricelistMeratus = \App\Models\PricelistMeratus::where('status', 'Aktif')->orderBy('jenis_biaya')->get();
+
         return view('biaya-kapal.edit', compact(
             'biayaKapal', 
             'kapals', 
@@ -2349,7 +2352,8 @@ class BiayaKapalController extends Controller
             'pricelistFreights',
             'pricelistFreightVendors',
             'dokumenPerijinans',
-            'pricelistPerijinans'
+            'pricelistPerijinans',
+            'pricelistMeratus'
         ));
     }
 

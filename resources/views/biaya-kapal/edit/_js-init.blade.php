@@ -231,4 +231,7 @@
     // Pricelist Perijinan data
     var pricelistPerijinansData = {!! json_encode($pricelistPerijinans) !!};
 
+    // Pricelist Meratus data
+    var pricelistMeratusData = {!! json_encode($pricelistMeratus ?? []) !!};
+
     // Format nominal input with thousand separator
