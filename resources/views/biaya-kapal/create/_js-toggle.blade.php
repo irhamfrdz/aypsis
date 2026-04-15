@@ -762,15 +762,15 @@
 
             // Hide other standard fields
             if(nominalWrapper) nominalWrapper.classList.add('hidden');
-            if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
-            if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
-            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
-            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            if(nomorReferensiWrapper) nomorReferensiWrapper.classList.add('hidden');
 
             // Remove required attributes
             if(nominalInput) nominalInput.removeAttribute('required');
             if(penerimaInput) {
-                penerimaInput.setAttribute('required', 'required');
+                penerimaInput.removeAttribute('required');
             }
 
             // Hide other type-specific fields
