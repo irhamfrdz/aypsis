@@ -4,6 +4,7 @@
         $editAirSections = [];
         $editTkbmSections = [];
         $editOperasionalSections = [];
+        $editMeratusSections = [];
 
         // Group Buruh
         if($biayaKapal->barangDetails->count() > 0) {
@@ -183,6 +184,41 @@
                 ];
             }
         }
+
+        // Map Meratus
+        if($biayaKapal->meratusDetails->count() > 0) {
+            $groupedMeratus = $biayaKapal->meratusDetails->groupBy(function($item) {
+                $tgl = $item->tanggal_invoice_vendor ? \Carbon\Carbon::parse($item->tanggal_invoice_vendor)->format('Y-m-d') : '';
+                return ($item->kapal ?? '') . '|||' . ($item->voyage ?? '') . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl . '|||' . ($item->keterangan ?? '');
+            });
+            foreach($groupedMeratus as $key => $items) {
+                 $parts = explode('|||', $key);
+                 if(count($parts) >= 2) {
+                     $firstItem = $items->first();
+                     $editMeratusSections[] = [
+                         'kapal' => $parts[0],
+                         'voyage' => $parts[1],
+                         'penerima' => $parts[2],
+                         'nomor_rekening' => $parts[3],
+                         'nomor_referensi' => $parts[4],
+                         'tanggal_invoice_vendor' => $parts[5],
+                         'keterangan' => $parts[6],
+                         'types' => $items->map(function($i){
+                             return [
+                                 'type_id' => $i->pricelist_meratus_id ?? 'MANUAL',
+                                 'manual_name' => $i->jenis_biaya,
+                                 'lokasi' => $i->lokasi,
+                                 'size' => $i->size,
+                                 'harga' => $i->harga,
+                                 'kuantitas' => $i->kuantitas,
+                                 'is_muat' => $i->is_muat,
+                                 'is_bongkar' => $i->is_bongkar
+                             ];
+                         })->toArray()
+                     ];
+                 }
+            }
+        }
     @endphp
 
     var existingKapalSections = @json($editKapalSections);
@@ -193,6 +229,7 @@
     var existingTruckingSections = @json($editTruckingSections);
     var existingLabuhTambatSections = @json($editLabuhTambatSections);
     var existingPerijinanSections = @json($editPerijinanSections);
+    var existingMeratusSections = @json($editMeratusSections);
 
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(initializeEditMode, 500);
@@ -553,6 +590,14 @@
             clearAllPerijinanSections();
             existingPerijinanSections.forEach(myData => {
                 addPerijinanSection(myData);
+            });
+        }
+
+        // 10. MERATUS SECTIONS
+        if (existingMeratusSections.length > 0) {
+            if (typeof clearAllMeratusSections === 'function') clearAllMeratusSections();
+            existingMeratusSections.forEach(myData => {
+                if (typeof addMeratusSection === 'function') addMeratusSection(myData);
             });
         }
     }

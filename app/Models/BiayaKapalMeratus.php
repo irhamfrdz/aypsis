@@ -31,6 +31,8 @@ class BiayaKapalMeratus extends Model
         'tanggal_invoice_vendor',
         'biaya_materai',
         'keterangan',
+        'is_muat',
+        'is_bongkar',
     ];
  
     protected $casts = [
@@ -45,6 +47,8 @@ class BiayaKapalMeratus extends Model
         'grand_total' => 'decimal:2',
         'biaya_materai' => 'decimal:2',
         'tanggal_invoice_vendor' => 'date',
+        'is_muat' => 'boolean',
+        'is_bongkar' => 'boolean',
     ];
  
     /**

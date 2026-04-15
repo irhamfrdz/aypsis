@@ -1,6 +1,8 @@
+<script>
     // ============= MERATUS SECTIONS MANAGEMENT =============
-    // Note: meratusSectionsContainer & addMeratusSectionBtn are declared in _js-jenis-biaya.blade.php
     let meratusSectionCounter = 0;
+    const meratusSectionsContainer = document.getElementById('meratus_sections_container');
+    const addMeratusSectionBtn = document.getElementById('add_meratus_section_btn');
     
     function initializeMeratusSections() {
         if (meratusSectionsContainer) meratusSectionsContainer.innerHTML = '';
@@ -11,7 +13,6 @@
     function clearAllMeratusSections() {
         if (meratusSectionsContainer) meratusSectionsContainer.innerHTML = '';
         meratusSectionCounter = 0;
-        if (nominalInput) nominalInput.value = '';
     }
     
     if (addMeratusSectionBtn) {
@@ -94,8 +95,8 @@
         
         calculateMeratusSectionTotal(sectionIndex);
     };
- 
-    function addMeratusSection() {
+
+    window.addMeratusSection = function(data = null) {
         meratusSectionCounter++;
         const sectionIndex = meratusSectionCounter;
         
@@ -105,17 +106,10 @@
         
         let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
         allKapalsData.forEach(kapal => {
-            kapalOptions += `<option value="${kapal.nama_kapal}">${kapal.nama_kapal}</option>`;
+            let selected = data && data.kapal === kapal.nama_kapal ? 'selected' : '';
+            kapalOptions += `<option value="${kapal.nama_kapal}" ${selected}>${kapal.nama_kapal}</option>`;
         });
- 
-        // Meratus options from pricelistMeratusData
-        let meratusOptions = '<option value="">-- Pilih Jenis Biaya Meratus --</option>';
-        pricelistMeratusData.forEach(item => {
-            const locStr = item.lokasi ? ` (${item.lokasi})` : '';
-            const sizeStr = item.size ? ` - ${item.size}` : '';
-            meratusOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}">${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
-        });
-        
+
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
                 <h4 class="text-md font-semibold text-blue-800">
@@ -145,70 +139,12 @@
                 </div>
                 <div class="meratus-types-container md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Detail Biaya Tagihan Meratus</label>
-                    <div class="meratus-types-list space-y-2 mb-2">
-                        <div class="meratus-type-item flex flex-col gap-1 border p-3 rounded bg-white relative">
-                            <div class="flex gap-2 w-full">
-                                <select name="meratus[${sectionIndex}][types][]" class="type-select-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" required onchange="updateMeratusPriceFromSelect(this, ${sectionIndex})">
-                                    ${meratusOptions}
-                                </select>
-                                
-                                <input type="hidden" name="meratus[${sectionIndex}][types][]" class="hidden-type-manual-meratus" value="MANUAL" disabled>
-                                
-                                <input type="text" name="meratus[${sectionIndex}][manual_names][]" class="type-manual-input-meratus hidden w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nama Biaya Manual">
-                                
-                                <button type="button" class="type-toggle-btn-meratus px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleMeratusTypeInput(this, ${sectionIndex})">
-                                    <i class="fas fa-keyboard"></i>
-                                </button>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 mt-1">
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Lokasi</label>
-                                    <select name="meratus[${sectionIndex}][lokasi_items][]" class="lokasi-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
-                                        <option value="">-- Lokasi --</option>
-                                        <option value="Jakarta">Jakarta</option>
-                                        <option value="Batam">Batam</option>
-                                        <option value="Pinang">Pinang</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Size</label>
-                                    <select name="meratus[${sectionIndex}][size_items][]" class="size-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
-                                        <option value="">-- Size --</option>
-                                        <option value="20ft">20ft</option>
-                                        <option value="40ft">40ft</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                                    <input type="number" name="meratus[${sectionIndex}][custom_prices][]" class="price-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100" placeholder="0" readonly oninput="calculateMeratusSectionTotal(${sectionIndex})">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
-                                    <input type="number" step="0.01" min="0" name="meratus[${sectionIndex}][quantities][]" class="quantity-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" oninput="calculateMeratusSectionTotal(${sectionIndex})">
-                                </div>
-                                <div class="flex items-end pb-1">
-                                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                                        <input type="hidden" name="meratus[${sectionIndex}][is_muat][]" value="0">
-                                        <input type="checkbox" value="1" class="is-muat-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
-                                        Muat
-                                    </label>
-                                </div>
-                                <div class="flex items-end pb-1">
-                                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                                        <input type="hidden" name="meratus[${sectionIndex}][is_bongkar][]" value="0">
-                                        <input type="checkbox" value="1" class="is-bongkar-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
-                                        Bongkar
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="meratus-types-list space-y-2 mb-2"></div>
                     <button type="button" class="add-type-btn-meratus text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded transition duration-200 flex items-center gap-1" onclick="addTypeToMeratusSection(${sectionIndex})">
                         <i class="fas fa-plus"></i> Tambah Biaya
                     </button>
                 </div>
- 
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Sub Total</label>
                     <input type="text" class="sub-total-display-meratus w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
@@ -253,23 +189,23 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Referensi</label>
-                    <input type="text" name="meratus[${sectionIndex}][nomor_referensi]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Masukkan No. Referensi">
+                    <input type="text" name="meratus[${sectionIndex}][nomor_referensi]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="${data ? (data.nomor_referensi || '') : ''}" placeholder="Masukkan No. Referensi">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-                    <input type="text" name="meratus[${sectionIndex}][penerima]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Masukkan nama penerima">
+                    <input type="text" name="meratus[${sectionIndex}][penerima]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="${data ? (data.penerima || '') : ''}" placeholder="Masukkan nama penerima">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Rekening</label>
-                    <input type="text" name="meratus[${sectionIndex}][nomor_rekening]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Masukkan nomor rekening">
+                    <input type="text" name="meratus[${sectionIndex}][nomor_rekening]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="${data ? (data.nomor_rekening || '') : ''}" placeholder="Masukkan nomor rekening">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Invoice Vendor</label>
-                    <input type="date" name="meratus[${sectionIndex}][tanggal_invoice_vendor]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <input type="date" name="meratus[${sectionIndex}][tanggal_invoice_vendor]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="${data ? (data.tanggal_invoice_vendor || '') : ''}">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                    <textarea name="meratus[${sectionIndex}][keterangan]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Catatan opsional..."></textarea>
+                    <textarea name="meratus[${sectionIndex}][keterangan]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Catatan opsional...">${data ? (data.keterangan || '') : ''}</textarea>
                 </div>
             </div>
         `;
@@ -278,12 +214,17 @@
         
         // Setup kapal change listener
         const kapalSelect = section.querySelector('.kapal-select-meratus');
+        const voyageSelect = section.querySelector('.voyage-select-meratus');
+        
         kapalSelect.addEventListener('change', function() {
             loadVoyagesForMeratusSection(sectionIndex, this.value);
         });
         
+        if (data && data.kapal) {
+            loadVoyagesForMeratusSection(sectionIndex, data.kapal, data.voyage);
+        }
+
         // Manual voyage toggle
-        const voyageSelect = section.querySelector('.voyage-select-meratus');
         const voyageInput = section.querySelector('.voyage-input-meratus');
         const voyageManualBtn = section.querySelector('.voyage-manual-btn-meratus');
  
@@ -306,7 +247,23 @@
             }
         });
 
-        // PPH Manual edit listener
+        // Initialize types
+        if (data && data.types && data.types.length > 0) {
+            data.types.forEach(tData => {
+                addTypeToMeratusSection(sectionIndex, tData);
+            });
+        } else {
+            addTypeToMeratusSection(sectionIndex);
+        }
+
+        // Setup manual edit listeners (same as create)
+        setupMeratusManualListeners(section, sectionIndex);
+        
+        calculateMeratusSectionTotal(sectionIndex);
+        return section;
+    };
+
+    function setupMeratusManualListeners(section, sectionIndex) {
         const pphDisplay = section.querySelector('.pph-display-meratus');
         const pphValue = section.querySelector('.pph-value-meratus');
         pphDisplay.addEventListener('input', function() {
@@ -322,7 +279,6 @@
             calculateMeratusSectionTotal(sectionIndex);
         });
 
-        // PPN Manual edit listener
         const ppnDisplay = section.querySelector('.ppn-display-meratus');
         const ppnValue = section.querySelector('.ppn-value-meratus');
         ppnDisplay.addEventListener('input', function() {
@@ -338,7 +294,6 @@
             calculateMeratusSectionTotal(sectionIndex);
         });
 
-        // Materai Manual edit listener
         const materaiDisplay = section.querySelector('.materai-display-meratus');
         const materaiValue = section.querySelector('.materai-value-meratus');
         materaiDisplay.addEventListener('input', function() {
@@ -353,14 +308,11 @@
             calculateMeratusSectionTotal(sectionIndex);
         });
 
-        // Adjustment Manual edit listener
         const adjustmentDisplay = section.querySelector('.adjustment-display-meratus');
         const adjustmentValue = section.querySelector('.adjustment-value-meratus');
         adjustmentDisplay.addEventListener('input', function() {
-            // Allow negative prefix for adjustment
             let isNegative = this.value.includes('-');
             let val = this.value.replace(/\D/g, '');
-            
             if (val) {
                 let numVal = parseInt(val) * (isNegative ? -1 : 1);
                 this.value = (isNegative ? '- Rp ' : 'Rp ') + parseInt(val).toLocaleString('id-ID');
@@ -371,33 +323,32 @@
             }
             calculateMeratusSectionTotal(sectionIndex);
         });
-        
-        calculateMeratusSectionTotal(sectionIndex);
     }
-    
-    function addTypeToMeratusSection(sectionIndex) {
+
+    window.addTypeToMeratusSection = function(sectionIndex, data = null) {
         const section = document.querySelector(`.meratus-section[data-section-index="${sectionIndex}"]`);
         const typesList = section.querySelector('.meratus-types-list');
         
-        // Get meratus options
         let meratusOptions = '<option value="">-- Pilih Jenis Biaya Meratus --</option>';
         pricelistMeratusData.forEach(item => {
             const locStr = item.lokasi ? ` (${item.lokasi})` : '';
             const sizeStr = item.size ? ` - ${item.size}` : '';
-            meratusOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}">${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
+            let selected = data && data.type_id == item.id ? 'selected' : '';
+            meratusOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}" ${selected}>${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
         });
         
+        const isManual = data && data.type_id === 'MANUAL';
         const div = document.createElement('div');
         div.className = 'meratus-type-item flex flex-col gap-1 border p-3 rounded bg-white relative';
         div.innerHTML = `
             <div class="flex gap-2 w-full">
-                <select name="meratus[${sectionIndex}][types][]" class="type-select-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" required onchange="updateMeratusPriceFromSelect(this, ${sectionIndex})">
+                <select name="meratus[${sectionIndex}][types][]" class="type-select-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isManual ? 'hidden' : ''}" ${isManual ? 'disabled' : ''} required onchange="updateMeratusPriceFromSelect(this, ${sectionIndex})">
                     ${meratusOptions}
                 </select>
                 
-                <input type="hidden" name="meratus[${sectionIndex}][types][]" class="hidden-type-manual-meratus" value="MANUAL" disabled>
+                <input type="hidden" name="meratus[${sectionIndex}][types][]" class="hidden-type-manual-meratus" value="MANUAL" ${isManual ? '' : 'disabled'}>
                 
-                <input type="text" name="meratus[${sectionIndex}][manual_names][]" class="type-manual-input-meratus hidden w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Nama Biaya Manual">
+                <input type="text" name="meratus[${sectionIndex}][manual_names][]" class="type-manual-input-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isManual ? '' : 'hidden'}" value="${isManual ? (data.manual_name || '') : ''}" placeholder="Nama Biaya Manual">
                 
                 <button type="button" class="type-toggle-btn-meratus px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleMeratusTypeInput(this, ${sectionIndex})">
                     <i class="fas fa-keyboard"></i>
@@ -413,38 +364,38 @@
                     <label class="text-xs text-gray-500 block mb-1">Lokasi</label>
                     <select name="meratus[${sectionIndex}][lokasi_items][]" class="lokasi-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
                         <option value="">-- Lokasi --</option>
-                        <option value="Jakarta">Jakarta</option>
-                        <option value="Batam">Batam</option>
-                        <option value="Pinang">Pinang</option>
+                        <option value="Jakarta" ${data && data.lokasi === 'Jakarta' ? 'selected' : ''}>Jakarta</option>
+                        <option value="Batam" ${data && data.lokasi === 'Batam' ? 'selected' : ''}>Batam</option>
+                        <option value="Pinang" ${data && data.lokasi === 'Pinang' ? 'selected' : ''}>Pinang</option>
                     </select>
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Size</label>
                     <select name="meratus[${sectionIndex}][size_items][]" class="size-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
                         <option value="">-- Size --</option>
-                        <option value="20ft">20ft</option>
-                        <option value="40ft">40ft</option>
+                        <option value="20ft" ${data && data.size === '20ft' ? 'selected' : ''}>20ft</option>
+                        <option value="40ft" ${data && data.size === '40ft' ? 'selected' : ''}>40ft</option>
                     </select>
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                    <input type="number" name="meratus[${sectionIndex}][custom_prices][]" class="price-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100" placeholder="0" readonly oninput="calculateMeratusSectionTotal(${sectionIndex})">
+                    <input type="number" name="meratus[${sectionIndex}][custom_prices][]" class="price-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 ${isManual ? 'bg-white' : 'bg-gray-100'}" value="${data ? (data.harga || 0) : 0}" placeholder="0" ${isManual ? '' : 'readonly'} oninput="calculateMeratusSectionTotal(${sectionIndex})">
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
-                    <input type="number" step="0.01" min="0" name="meratus[${sectionIndex}][quantities][]" class="quantity-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" oninput="calculateMeratusSectionTotal(${sectionIndex})">
+                    <input type="number" step="0.01" min="0" name="meratus[${sectionIndex}][quantities][]" class="quantity-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" value="${data ? (data.kuantitas || 0) : 0}" placeholder="0" oninput="calculateMeratusSectionTotal(${sectionIndex})">
                 </div>
                 <div class="flex items-end pb-1">
                     <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                        <input type="hidden" name="meratus[${sectionIndex}][is_muat][]" value="0">
-                        <input type="checkbox" value="1" class="is-muat-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
+                        <input type="hidden" name="meratus[${sectionIndex}][is_muat][]" value="${data && data.is_muat ? '1' : '0'}">
+                        <input type="checkbox" value="1" class="is-muat-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" ${data && data.is_muat ? 'checked' : ''} onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
                         Muat
                     </label>
                 </div>
                 <div class="flex items-end pb-1">
                     <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
-                        <input type="hidden" name="meratus[${sectionIndex}][is_bongkar][]" value="0">
-                        <input type="checkbox" value="1" class="is-bongkar-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
+                        <input type="hidden" name="meratus[${sectionIndex}][is_bongkar][]" value="${data && data.is_bongkar ? '1' : '0'}">
+                        <input type="checkbox" value="1" class="is-bongkar-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" ${data && data.is_bongkar ? 'checked' : ''} onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
                         Bongkar
                     </label>
                 </div>
@@ -452,6 +403,12 @@
         `;
         
         typesList.appendChild(div);
+        
+        if (isManual) {
+            const toggleBtn = div.querySelector('.type-toggle-btn-meratus');
+            toggleBtn.classList.add('bg-blue-200', 'text-blue-700');
+            toggleBtn.innerHTML = '<i class="fas fa-list"></i>';
+        }
     }
     
     window.removeMeratusSection = function(sectionIndex) {
@@ -462,7 +419,7 @@
         }
     };
     
-    function loadVoyagesForMeratusSection(sectionIndex, kapalNama) {
+    function loadVoyagesForMeratusSection(sectionIndex, kapalNama, initialVoyage = null) {
         const section = document.querySelector(`.meratus-section[data-section-index="${sectionIndex}"]`);
         const voyageSelect = section.querySelector('.voyage-select-meratus');
         
@@ -481,9 +438,25 @@
                 voyageSelect.disabled = false;
                 let options = '<option value="">-- Pilih Voyage --</option><option value="DOCK">DOCK</option>';
                 if (data && data.success && data.voyages) {
-                    data.voyages.forEach(v => options += `<option value="${v}">${v}</option>`);
+                    data.voyages.forEach(v => {
+                        let selected = initialVoyage === v ? 'selected' : '';
+                        options += `<option value="${v}" ${selected}>${v}</option>`;
+                    });
                 }
                 voyageSelect.innerHTML = options;
+                
+                // If initialVoyage is set but not in list, it might be a manual input
+                if (initialVoyage && !options.includes('selected')) {
+                    const voyageInput = section.querySelector('.voyage-input-meratus');
+                    const voyageManualBtn = section.querySelector('.voyage-manual-btn-meratus');
+                    voyageSelect.classList.add('hidden');
+                    voyageSelect.disabled = true;
+                    voyageInput.classList.remove('hidden');
+                    voyageInput.disabled = false;
+                    voyageInput.value = initialVoyage;
+                    voyageManualBtn.classList.add('bg-blue-200', 'text-blue-700');
+                    voyageManualBtn.innerHTML = '<i class="fas fa-list"></i>';
+                }
             })
             .catch(() => {
                 voyageSelect.disabled = false;
@@ -520,7 +493,6 @@
             pphValue.value = pph;
         }
 
-        // PPN Calculation
         const ppnActive = section.querySelector('.ppn-active-meratus').checked;
         const ppnDisplay = section.querySelector('.ppn-display-meratus');
         const ppnValue = section.querySelector('.ppn-value-meratus');
@@ -534,22 +506,11 @@
             ppnValue.value = ppn;
         }
 
-        // Update Styling based on active state
-        if (pphActive) {
-            pphDisplay.classList.remove('bg-gray-100', 'text-gray-400');
-            pphDisplay.classList.add('bg-white');
-        } else {
-            pphDisplay.classList.add('bg-gray-100', 'text-gray-400');
-            pphDisplay.classList.remove('bg-white');
-        }
+        if (pphActive) pphDisplay.classList.remove('bg-gray-100', 'text-gray-400');
+        else pphDisplay.classList.add('bg-gray-100', 'text-gray-400');
 
-        if (ppnActive) {
-            ppnDisplay.classList.remove('bg-gray-100', 'text-gray-400');
-            ppnDisplay.classList.add('bg-white');
-        } else {
-            ppnDisplay.classList.add('bg-gray-100', 'text-gray-400');
-            ppnDisplay.classList.remove('bg-white');
-        }
+        if (ppnActive) ppnDisplay.classList.remove('bg-gray-100', 'text-gray-400');
+        else ppnDisplay.classList.add('bg-gray-100', 'text-gray-400');
         
         const pphForCalculation = pphActive ? pph : 0;
         const ppnForCalculation = ppnActive ? ppn : 0;
@@ -570,7 +531,8 @@
             grandTotalAll += parseFloat(section.querySelector('.grand-total-value-meratus').value) || 0;
         });
         
-        if (nominalInput) {
+        if (typeof nominalInput !== 'undefined' && nominalInput) {
             nominalInput.value = grandTotalAll > 0 ? grandTotalAll.toLocaleString('id-ID') : '';
         }
     }
+</script>

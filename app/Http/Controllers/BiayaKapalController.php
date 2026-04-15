@@ -665,6 +665,8 @@ class BiayaKapalController extends Controller
             'meratus.*.quantities' => 'nullable|array',
             'meratus.*.lokasi_items' => 'nullable|array',
             'meratus.*.size_items' => 'nullable|array',
+            'meratus.*.is_muat' => 'nullable|array',
+            'meratus.*.is_bongkar' => 'nullable|array',
             'meratus.*.sub_total' => 'nullable|numeric|min:0',
             'meratus.*.pph' => 'nullable|numeric|min:0',
             'meratus.*.ppn' => 'nullable|numeric|min:0',
@@ -1078,6 +1080,8 @@ class BiayaKapalController extends Controller
                             $qty = floatval($section['quantities'][$typeIndex] ?? 0);
                             $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
                             $sizeItem = $section['size_items'][$typeIndex] ?? null;
+                            $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
+                            $isBongkar = isset($section['is_bongkar'][$typeIndex]) && $section['is_bongkar'][$typeIndex] == '1';
                             
                             $pricelistId = null;
                             if ($typeId === 'MANUAL') {
@@ -1128,6 +1132,8 @@ class BiayaKapalController extends Controller
                                 'jenis_biaya' => $jenisBiaya,
                                 'lokasi' => $lokasiItem,
                                 'size' => $sizeItem,
+                                'is_muat' => $isMuat,
+                                'is_bongkar' => $isBongkar,
                                 'harga' => $price,
                                 'kuantitas' => $qty,
                                 'sub_total' => $subTotal,
@@ -2237,7 +2243,8 @@ class BiayaKapalController extends Controller
             'thcDetails',
             'loloDetails',
             'storageDetails',
-            'perijinanDetails.details'
+            'perijinanDetails.details',
+            'meratusDetails'
         ]);
 
         // Get list of ships for dropdown
@@ -2634,6 +2641,28 @@ class BiayaKapalController extends Controller
             'labuh_tambat.*.nomor_rekening' => 'nullable|string|max:100',
             'labuh_tambat.*.nomor_referensi' => 'nullable|string|max:100',
             'labuh_tambat.*.tanggal_invoice_vendor' => 'nullable|date',
+
+            // Biaya Meratus sections validation
+            'meratus' => 'nullable|array',
+            'meratus.*.kapal' => 'nullable|string|max:255',
+            'meratus.*.voyage' => 'nullable|string|max:255',
+            'meratus.*.types' => 'nullable|array',
+            'meratus.*.manual_names' => 'nullable|array',
+            'meratus.*.custom_prices' => 'nullable|array',
+            'meratus.*.quantities' => 'nullable|array',
+            'meratus.*.lokasi_items' => 'nullable|array',
+            'meratus.*.size_items' => 'nullable|array',
+            'meratus.*.is_muat' => 'nullable|array',
+            'meratus.*.is_bongkar' => 'nullable|array',
+            'meratus.*.sub_total' => 'nullable|numeric|min:0',
+            'meratus.*.pph' => 'nullable|numeric|min:0',
+            'meratus.*.biaya_materai' => 'nullable|numeric',
+            'meratus.*.grand_total' => 'nullable|numeric',
+            'meratus.*.nomor_referensi' => 'nullable|string|max:100',
+            'meratus.*.penerima' => 'nullable|string|max:255',
+            'meratus.*.nomor_rekening' => 'nullable|string|max:100',
+            'meratus.*.tanggal_invoice_vendor' => 'nullable|date',
+            'meratus.*.keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -3183,6 +3212,8 @@ class BiayaKapalController extends Controller
                                 $qty = floatval($section['quantities'][$typeIndex] ?? 0);
                                 $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
                                 $sizeItem = $section['size_items'][$typeIndex] ?? null;
+                                $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
+                                $isBongkar = isset($section['is_bongkar'][$typeIndex]) && $section['is_bongkar'][$typeIndex] == '1';
                                 
                                 $pricelistId = null;
                                 if ($typeId === 'MANUAL') {
@@ -3197,17 +3228,33 @@ class BiayaKapalController extends Controller
                                 
                                 // Extract section-level values (only for the first item)
                                 $pph = 0;
+                                $ppn = 0;
+                                $pphActive = false;
+                                $ppnActive = false;
                                 $biayaMaterai = 0;
+                                $adjustment = 0;
                                 
                                 if ($typeIndex == 0) {
                                     $pphRaw = $section['pph'] ?? 0;
-                                    $pph = floatval(str_replace(['.', ','], ['', '.'], (string)$pphRaw));
+                                    $pph = floatval($pphRaw);
+                                    
+                                    $ppnRaw = $section['ppn'] ?? 0;
+                                    $ppn = floatval($ppnRaw);
+
+                                    $pphActive = isset($section['pph_active']);
+                                    $ppnActive = isset($section['ppn_active']);
                                     
                                     $biayaMateraiRaw = $section['biaya_materai'] ?? 0;
-                                    $biayaMaterai = floatval(str_replace(['.', ','], ['', '.'], (string)$biayaMateraiRaw));
+                                    $biayaMaterai = floatval($biayaMateraiRaw);
+
+                                    $adjustmentRaw = $section['adjustment'] ?? 0;
+                                    $adjustment = floatval($adjustmentRaw);
                                 }
                                 
-                                $grandTotal = $subTotal - $pph + $biayaMaterai;
+                                $pphForCalc = $pphActive ? $pph : 0;
+                                $ppnForCalc = $ppnActive ? $ppn : 0;
+                                
+                                $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
 
                                 BiayaKapalMeratus::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
@@ -3217,11 +3264,17 @@ class BiayaKapalController extends Controller
                                     'jenis_biaya' => $jenisBiaya,
                                     'lokasi' => $lokasiItem,
                                     'size' => $sizeItem,
+                                    'is_muat' => $isMuat,
+                                    'is_bongkar' => $isBongkar,
                                     'harga' => $price,
                                     'kuantitas' => $qty,
                                     'sub_total' => $subTotal,
                                     'pph' => $pph,
-                                    'biaya_materai' => $biayaMaterai,
+                                    'ppn' => $ppn,
+                                    'pph_active' => $pphActive,
+                                    'ppn_active' => $ppnActive,
+                                    'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
+                                    'adjustment' => $typeIndex == 0 ? $adjustment : 0,
                                     'grand_total' => $grandTotal,
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,
