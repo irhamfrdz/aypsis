@@ -309,17 +309,24 @@
                         const checkbox = row.querySelector('.demurrage-kontainer-checkbox');
                         const hariInput = row.querySelector('.demurrage-kontainer-hari');
 
+                        const normalizeDemurrageSize = (val) => {
+                            const raw = (val || '').toString();
+                            if (raw.includes('40')) return '40ft';
+                            return '20ft'; 
+                        };
+
                         checkbox.addEventListener('change', function() {
                             const blId = this.dataset.blId;
                             const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"]`);
                             if (this.checked) {
                                 if (!existingInput) {
+                                    const normSize = normalizeDemurrageSize(this.dataset.size);
                                     const hiddenGroup = document.createElement('div');
                                     hiddenGroup.setAttribute('data-bl-id', blId);
                                     hiddenGroup.innerHTML = `
                                         <input type="hidden" name="demurrage_sections[${sectionIndex}][kontainer][${blId}][bl_id]" value="${blId}">
                                         <input type="hidden" name="demurrage_sections[${sectionIndex}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
-                                        <input type="hidden" name="demurrage_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">
+                                        <input type="hidden" name="demurrage_sections[${sectionIndex}][kontainer][${blId}][size]" value="${normSize}">
                                         <input type="hidden" name="demurrage_sections[${sectionIndex}][kontainer][${blId}][hari]" class="hari-hidden" value="${hariInput.value}">`;
                                     hiddenInputsContainer.appendChild(hiddenGroup);
                                 }
