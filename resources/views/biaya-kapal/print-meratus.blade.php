@@ -236,8 +236,14 @@
             $totalGrandTotal = 0;
             
             foreach($meratusDetails as $detail) {
-                // Group by Type (Jenis Biaya)
-                $typeKey = $detail->jenis_biaya ?? 'BIAYA MERATUS';
+                // Group by Type (Jenis Biaya) and include Muat/Bongkar status
+                $status = '';
+                if ($detail->is_muat && $detail->is_bongkar) $status = ' (MUAT/BONGKAR)';
+                elseif ($detail->is_muat) $status = ' (MUAT)';
+                elseif ($detail->is_bongkar) $status = ' (BONGKAR)';
+
+                $typeKey = ($detail->jenis_biaya ?? 'BIAYA MERATUS') . $status;
+                
                 if (!isset($meratusByType[$typeKey])) {
                     $meratusByType[$typeKey] = [
                         'qty' => 0, 
