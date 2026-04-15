@@ -350,34 +350,35 @@
             const lokManual = sec.querySelector('.demurrage-lokasi-manual');
             const lokasi = !lokSelect.disabled ? lokSelect.value : lokManual.value;
 
-            if (!lokasi) return;
-
             let currentSubtotal = 0;
             const checkboxes = sec.querySelectorAll('.demurrage-kontainer-checkbox:checked');
             
-            checkboxes.forEach(cb => {
-                const blId = cb.dataset.blId;
-                const size = cb.dataset.size; // usually 20 or 40
-                const hari = parseFloat(sec.querySelector(`.demurrage-kontainer-hari[data-bl-id="${blId}"]`).value) || 0;
-                
-                // Find price from pricelistMeratusData
-                // Example p.size: '20ft'
-                const normSize = size + 'ft';
-                const pricelist = demurragePricelistData.find(p => 
-                    p.lokasi.toLowerCase() === lokasi.toLowerCase() && 
-                    p.size === normSize
-                );
-                
-                if (pricelist) {
-                    currentSubtotal += parseFloat(pricelist.harga) * hari;
-                }
-            });
+            if (lokasi) {
+                checkboxes.forEach(cb => {
+                    const blId = cb.dataset.blId;
+                    const sizeNum = cb.dataset.size; // usually 20 or 40
+                    const hari = parseFloat(sec.querySelector(`.demurrage-kontainer-hari[data-bl-id="${blId}"]`).value) || 0;
+                    
+                    // Match normalized size (e.g., '20ft')
+                    const normSize = (sizeNum + 'ft').toLowerCase();
+                    
+                    const pricelist = demurragePricelistData.find(p => {
+                        const pLokasi = (p.lokasi || '').toString().toLowerCase();
+                        const pSize   = (p.size || '').toString().toLowerCase();
+                        return pLokasi === lokasi.toLowerCase() && pSize === normSize;
+                    });
+                    
+                    if (pricelist) {
+                        currentSubtotal += parseFloat(pricelist.harga) * hari;
+                    }
+                });
+            }
 
             const subField = sec.querySelector('.demurrage-subtotal-input');
-            if (currentSubtotal > 0) {
-                subField.value = new Intl.NumberFormat('id-ID').format(currentSubtotal);
-                recalcDemurrageTotal(true);
-            }
+            subField.value = currentSubtotal > 0 ? new Intl.NumberFormat('id-ID').format(currentSubtotal) : '0';
+            
+            // Always trigger total recalculation even if 0
+            recalcDemurrageTotal(true);
         }
 
         function recalcDemurrageTotal(updatePph = false) {
