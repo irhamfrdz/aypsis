@@ -91,7 +91,7 @@
                         <select name="demurrage_sections[${sectionIndex}][lokasi]" class="demurrage-lokasi-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500" ${uniqueLocations.length > 0 ? 'required' : 'disabled'}>
                             ${lokasiOptions}
                         </select>
-                        <input type="text" name="demurrage_sections[${sectionIndex}][lokasi_manual]" class="demurrage-lokasi-manual w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 hidden" placeholder="Ketik Lokasi" required>
+                        <input type="text" name="demurrage_sections[${sectionIndex}][lokasi_manual]" class="demurrage-lokasi-manual w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 hidden" placeholder="Ketik Lokasi" required disabled>
                         <button type="button" class="demurrage-lokasi-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
                             <i class="fas fa-keyboard"></i>
                         </button>
