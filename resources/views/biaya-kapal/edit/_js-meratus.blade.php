@@ -1,4 +1,3 @@
-<script>
     // ============= MERATUS SECTIONS MANAGEMENT =============
     let meratusSectionCounter = 0;
     const meratusSectionsContainer = document.getElementById('meratus_sections_container');
@@ -535,4 +534,3 @@
             nominalInput.value = grandTotalAll > 0 ? grandTotalAll.toLocaleString('id-ID') : '';
         }
     }
-</script>
