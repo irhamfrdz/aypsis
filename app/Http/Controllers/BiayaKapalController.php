@@ -1036,6 +1036,8 @@ class BiayaKapalController extends Controller
                         'voyage'         => $section['voyage'] ?? null,
                         'lokasi'         => $section['lokasi'] ?? null,
                         'vendor'         => $section['vendor'] ?? null,
+                        'penerima'       => $section['penerima'] ?? null,
+                        'rekening'       => $section['rekening'] ?? null,
                         'kontainer_ids'  => $kontainerIds,
                         'subtotal'       => $cleanNum($section['subtotal'] ?? 0),
                         'biaya_materai'  => $cleanNum($section['biaya_materai'] ?? 0),

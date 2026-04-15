@@ -17,6 +17,8 @@ class BiayaKapalDemurrage extends Model
         'voyage',
         'lokasi',
         'vendor',
+        'penerima',
+        'rekening',
         'kontainer_ids',
         'subtotal',
         'biaya_materai',
