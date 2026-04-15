@@ -1070,13 +1070,22 @@
             // Hide other standard fields
             if(nominalWrapper) nominalWrapper.classList.add('hidden');
             if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
-            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
-            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            if(namaVendorWrapper) {
+                namaVendorWrapper.classList.add('hidden');
+                const vendorInput = document.getElementById('nama_vendor');
+                if (vendorInput) vendorInput.value = '';
+            }
+            if(nomorRekeningWrapper) {
+                nomorRekeningWrapper.classList.add('hidden');
+                const rekInput = document.getElementById('nomor_rekening');
+                if (rekInput) rekInput.value = '';
+            }
 
             // Remove required attributes
             if(nominalInput) nominalInput.removeAttribute('required');
             if(penerimaInput) {
                 penerimaInput.removeAttribute('required');
+                penerimaInput.value = '';
                 if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             }
 

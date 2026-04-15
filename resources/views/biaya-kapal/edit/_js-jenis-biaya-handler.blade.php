@@ -904,8 +904,25 @@
             clearVoyageSelections();
             clearBlSelections();
 
-            // Hide normal nominal
+            // Hide other standard fields
             if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) {
+                penerimaWrapper.classList.add('hidden');
+                if(penerimaInput) {
+                    penerimaInput.removeAttribute('required');
+                    penerimaInput.value = ''; // Clear value to avoid confusion
+                }
+            }
+            if(namaVendorWrapper) {
+                namaVendorWrapper.classList.add('hidden');
+                const vendorInput = document.getElementById('nama_vendor');
+                if (vendorInput) vendorInput.value = '';
+            }
+            if(nomorRekeningWrapper) {
+                nomorRekeningWrapper.classList.add('hidden');
+                const rekInput = document.getElementById('nomor_rekening');
+                if (rekInput) rekInput.value = '';
+            }
             if(nominalInput) nominalInput.removeAttribute('required');
             
             // Hide other type-specific fields
