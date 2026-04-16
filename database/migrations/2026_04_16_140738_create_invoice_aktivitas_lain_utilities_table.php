@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('invoice_aktivitas_lain_utilities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_aktivitas_lain_id')->constrained('invoice_aktivitas_lain')->onDelete('cascade');
-            $table->foreignId('alat_berat_id')->nullable()->constrained('alat_berats')->onDelete('set null');
+            $table->foreignId('invoice_aktivitas_lain_id')->constrained('invoice_aktivitas_lain', 'id', 'ial_util_ial_id_fk')->onDelete('cascade');
+            $table->foreignId('alat_berat_id')->nullable()->constrained('alat_berats', 'id', 'ial_util_ab_id_fk')->onDelete('set null');
             $table->string('referensi')->nullable();
             $table->string('penerima')->nullable();
             $table->date('tanggal')->nullable();
