@@ -25,6 +25,25 @@ class StockAmprahanController extends Controller
             ->withSum('usages', 'jumlah')
             ->latest();
             
+        // Filter based on Karyawan Cabang (Branch)
+        $user = Auth::user();
+        $isBatamUser = false;
+        $isJakartaUser = false;
+        
+        // Admin or users with specific roles might see everything
+        $isRestricted = $user && $user->karyawan && !empty($user->karyawan->cabang) && !$user->hasRole('Super Admin') && !$user->hasRole('Admin');
+        
+        if ($isRestricted) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $isBatamUser = true;
+                $query->where('lokasi', 'like', '%BATAM%');
+            } elseif ($cabang === 'JAKARTA') {
+                $isJakartaUser = true;
+                $query->where('lokasi', 'like', '%JAKARTA%');
+            }
+        }
+            
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('nama_barang', 'like', '%' . $search . '%')
@@ -54,13 +73,20 @@ class StockAmprahanController extends Controller
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
-        // Stats for Cards
+        // Stats for Cards (Respect branch filtering)
+        $statsQuery = StockAmprahan::query();
+        if ($isBatamUser) {
+            $statsQuery->where('lokasi', 'like', '%BATAM%');
+        } elseif ($isJakartaUser) {
+            $statsQuery->where('lokasi', 'like', '%JAKARTA%');
+        }
+
         $stats = [
-            'total_qty' => StockAmprahan::sum('jumlah'),
-            'total_jenis' => StockAmprahan::count(),
-            'jakarta' => StockAmprahan::where('lokasi', 'KANTOR AYP JAKARTA')->sum('jumlah'),
-            'batam' => StockAmprahan::where('lokasi', 'KANTOR AYP BATAM')->sum('jumlah'),
-            'lainnya' => StockAmprahan::where(function($q) {
+            'total_qty' => (clone $statsQuery)->sum('jumlah'),
+            'total_jenis' => (clone $statsQuery)->count(),
+            'jakarta' => (clone $statsQuery)->where('lokasi', 'KANTOR AYP JAKARTA')->sum('jumlah'),
+            'batam' => (clone $statsQuery)->where('lokasi', 'KANTOR AYP BATAM')->sum('jumlah'),
+            'lainnya' => (clone $statsQuery)->where(function($q) {
                 $q->whereNotIn('lokasi', ['KANTOR AYP JAKARTA', 'KANTOR AYP BATAM'])
                   ->orWhereNull('lokasi');
             })->sum('jumlah'),
@@ -378,6 +404,17 @@ class StockAmprahanController extends Controller
     {
         $item = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'usages'])->findOrFail($id);
         
+        // Authorization check
+        $user = Auth::user();
+        if ($user && $user->karyawan && !empty($user->karyawan->cabang) && !$user->hasRole('Super Admin') && !$user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM' && strpos(strtoupper($item->lokasi ?? ''), 'BATAM') === false) {
+                abort(403, 'Unauthorized access to this branch data.');
+            } elseif ($cabang === 'JAKARTA' && strpos(strtoupper($item->lokasi ?? ''), 'JAKARTA') === false) {
+                abort(403, 'Unauthorized access to this branch data.');
+            }
+        }
+        
         // Calculate initial stock (current amount + all usages)
         $totalUsage = $item->usages->sum('jumlah');
         $initialStock = $item->jumlah + $totalUsage;
@@ -480,6 +517,19 @@ class StockAmprahanController extends Controller
         // Additions query
         $additionsQuery = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'usages']);
         
+        // Filter based on Karyawan Cabang (Branch)
+        $user = Auth::user();
+        $isRestricted = $user && $user->karyawan && !empty($user->karyawan->cabang) && !$user->hasRole('Super Admin') && !$user->hasRole('Admin');
+        
+        if ($isRestricted) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $additionsQuery->where('lokasi', 'like', '%BATAM%');
+            } elseif ($cabang === 'JAKARTA') {
+                $additionsQuery->where('lokasi', 'like', '%JAKARTA%');
+            }
+        }
+        
         if ($request->filled('from_date')) {
             $additionsQuery->where(function($q) use ($request) {
                 $q->whereDate('tanggal_beli', '>=', $request->from_date)
@@ -526,6 +576,20 @@ class StockAmprahanController extends Controller
 
         // Usages query
         $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
+        
+        // Filter based on Karyawan Cabang (Branch)
+        if ($isRestricted) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $usagesQuery->whereHas('stockAmprahan', function($q) {
+                    $q->where('lokasi', 'like', '%BATAM%');
+                });
+            } elseif ($cabang === 'JAKARTA') {
+                $usagesQuery->whereHas('stockAmprahan', function($q) {
+                    $q->where('lokasi', 'like', '%JAKARTA%');
+                });
+            }
+        }
         
         if ($request->filled('from_date')) {
             $usagesQuery->whereDate('tanggal_pengambilan', '>=', $request->from_date);
@@ -576,6 +640,17 @@ class StockAmprahanController extends Controller
         if ($id) {
             $item = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'usages'])->findOrFail($id);
             
+            // Authorization check
+            $user = Auth::user();
+            if ($user && $user->karyawan && !empty($user->karyawan->cabang) && !$user->hasRole('Super Admin') && !$user->hasRole('Admin')) {
+                $cabang = strtoupper($user->karyawan->cabang);
+                if ($cabang === 'BATAM' && strpos(strtoupper($item->lokasi ?? ''), 'BATAM') === false) {
+                    abort(403, 'Unauthorized access to this branch data.');
+                } elseif ($cabang === 'JAKARTA' && strpos(strtoupper($item->lokasi ?? ''), 'JAKARTA') === false) {
+                    abort(403, 'Unauthorized access to this branch data.');
+                }
+            }
+            
             // Calculate initial stock
             $totalUsage = $item->usages->sum('jumlah');
             $initialStock = $item->jumlah + $totalUsage;
@@ -602,6 +677,18 @@ class StockAmprahanController extends Controller
         } else {
             // All History Logic
             $additionsQuery = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'usages']);
+            
+            // Filter based on Karyawan Cabang (Branch)
+            $user = Auth::user();
+            if ($user && $user->karyawan && !empty($user->karyawan->cabang) && !$user->hasRole('Super Admin') && !$user->hasRole('Admin')) {
+                $cabang = strtoupper($user->karyawan->cabang);
+                if ($cabang === 'BATAM') {
+                    $additionsQuery->where('lokasi', 'like', '%BATAM%');
+                } elseif ($cabang === 'JAKARTA') {
+                    $additionsQuery->where('lokasi', 'like', '%JAKARTA%');
+                }
+            }
+            
             if ($request->filled('from_date')) {
                 $additionsQuery->where(function($q) use ($request) {
                     $q->whereDate('tanggal_beli', '>=', $request->from_date)
@@ -656,6 +743,20 @@ class StockAmprahanController extends Controller
             $usagesQuery->whereHas('stockAmprahan', function($q) use ($request) {
                 $q->where('lokasi', $request->lokasi);
             });
+        }
+        
+        // Filter based on Karyawan Cabang (Branch)
+        if ($user && $user->karyawan && !empty($user->karyawan->cabang) && !$user->hasRole('Super Admin') && !$user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $usagesQuery->whereHas('stockAmprahan', function($q) {
+                    $q->where('lokasi', 'like', '%BATAM%');
+                });
+            } elseif ($cabang === 'JAKARTA') {
+                $usagesQuery->whereHas('stockAmprahan', function($q) {
+                    $q->where('lokasi', 'like', '%JAKARTA%');
+                });
+            }
         }
 
         $usages = $usagesQuery->get()->map(function($usage) {
