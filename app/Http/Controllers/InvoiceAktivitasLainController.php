@@ -444,10 +444,11 @@ class InvoiceAktivitasLainController extends Controller
             $biayaUtilitiesEntries = $validated['biaya_utilities_detail'];
             unset($validated['biaya_utilities_detail']);
             
-            // Set main penerima if not set
-            if (empty($validated['penerima']) && !empty($biayaUtilitiesEntries)) {
+            // Set main penerima and referensi if not set
+            if (!empty($biayaUtilitiesEntries)) {
                 $firstEntry = reset($biayaUtilitiesEntries);
-                $validated['penerima'] = $firstEntry['penerima'] ?? null;
+                if (empty($validated['penerima'])) $validated['penerima'] = $firstEntry['penerima'] ?? null;
+                if (empty($validated['referensi'])) $validated['referensi'] = $firstEntry['referensi'] ?? null;
             }
         }
 
@@ -981,10 +982,11 @@ class InvoiceAktivitasLainController extends Controller
             $utilityEntries = $validated['biaya_utilities_detail'];
             unset($validated['biaya_utilities_detail']);
 
-            // Set main penerima from the first entry if empty
-            if (empty($validated['penerima']) && !empty($utilityEntries)) {
+            // Set main penerima and referensi from the first entry if empty
+            if (!empty($utilityEntries)) {
                 $firstEntry = reset($utilityEntries);
-                $validated['penerima'] = $firstEntry['penerima'] ?? null;
+                if (empty($validated['penerima'])) $validated['penerima'] = $firstEntry['penerima'] ?? null;
+                if (empty($validated['referensi'])) $validated['referensi'] = $firstEntry['referensi'] ?? null;
             }
         }
 

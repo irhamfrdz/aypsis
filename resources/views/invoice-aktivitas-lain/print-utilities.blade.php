@@ -258,7 +258,15 @@
                         {{ $kodeBayar ?? '-' }}
                     </td>
                     <td>Referensi</td>
-                    <td>: {{ $invoice->referensi ?? '-' }}</td>
+                    <td>: 
+                        @php
+                            $referensi = $invoice->referensi;
+                            if (empty($referensi) && $invoice->biayaUtility->isNotEmpty()) {
+                                $referensi = $invoice->biayaUtility->first()->referensi;
+                            }
+                        @endphp
+                        {{ $referensi ?? '-' }}
+                    </td>
                 </tr>
             </table>
         </div>

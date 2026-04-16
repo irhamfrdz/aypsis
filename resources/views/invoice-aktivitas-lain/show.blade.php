@@ -100,6 +100,10 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
                             <p class="text-gray-900">{{ $invoice->penerima ?? '-' }}</p>
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Referensi</label>
+                            <p class="text-gray-900">{{ $invoice->referensi ?? '-' }}</p>
+                        </div>
                         @if($invoice->vendor_labuh_tambat)
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Vendor Labuh Tambat</label>
