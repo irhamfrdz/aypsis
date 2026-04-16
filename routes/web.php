@@ -3641,56 +3641,6 @@ Route::middleware(['auth'])->group(function () {
          ->name('gate-in.update-status')
          ->middleware('can:gate-in-update');
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // 🚚 CHECKPOINT KONTAINER KELUAR ROUTES
-    // ═══════════════════════════════════════════════════════════════════════
-    Route::get('checkpoint-kontainer-keluar', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'index'])
-         ->name('checkpoint-kontainer-keluar.index')
-         ->middleware('can:checkpoint-kontainer-keluar-view');
-
-    Route::get('checkpoint-kontainer-keluar/history', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'history'])
-         ->name('checkpoint-kontainer-keluar.history')
-         ->middleware('can:checkpoint-kontainer-keluar-view');
-
-    Route::get('checkpoint-kontainer-keluar/export-excel', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'exportExcel'])
-         ->name('checkpoint-kontainer-keluar.export-excel')
-         ->middleware('can:checkpoint-kontainer-keluar-view');
-
-    Route::get('checkpoint-kontainer-keluar/{cabangSlug}', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'checkpoint'])
-         ->name('checkpoint-kontainer-keluar.checkpoint')
-         ->middleware('can:checkpoint-kontainer-keluar-view');
-
-    Route::get('checkpoint-kontainer-keluar/{cabangSlug}/gudang/{gudangId}', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'showSuratJalan'])
-         ->name('checkpoint-kontainer-keluar.surat-jalan')
-         ->middleware('can:checkpoint-kontainer-keluar-view');
-
-    Route::get('checkpoint-kontainer-keluar/export-gudang-excel/{gudangId}', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'exportGudangExcel'])
-         ->name('checkpoint-kontainer-keluar.export-gudang-excel')
-         ->middleware('can:checkpoint-kontainer-keluar-view');
-
-    Route::get('checkpoint-kontainer-keluar/{cabangSlug}/export-all-gudang-excel', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'exportBranchGudangExcel'])
-         ->name('checkpoint-kontainer-keluar.export-all-gudang-excel')
-         ->middleware('can:checkpoint-kontainer-keluar-view');
-
-    Route::post('checkpoint-kontainer-keluar/{suratJalan}/keluar', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'processKeluar'])
-         ->name('checkpoint-kontainer-keluar.keluar')
-         ->middleware('can:checkpoint-kontainer-keluar-create');
-
-    Route::post('checkpoint-kontainer-keluar/bulk-keluar', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'bulkKeluar'])
-         ->name('checkpoint-kontainer-keluar.bulk-keluar')
-         ->middleware('can:checkpoint-kontainer-keluar-create');
-
-    Route::post('checkpoint-kontainer-keluar/{suratJalan}/cancel', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'cancelKeluar'])
-         ->name('checkpoint-kontainer-keluar.cancel')
-         ->middleware('can:checkpoint-kontainer-keluar-delete');
-
-    Route::post('checkpoint-kontainer-keluar/kirim-kontainer', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'kirimKontainer'])
-         ->name('checkpoint-kontainer-keluar.kirim')
-         ->middleware('can:checkpoint-kontainer-keluar-create');
-
-    Route::post('pengembalian-kontainer', [\App\Http\Controllers\CheckpointKontainerKeluarController::class, 'storePengembalian'])
-         ->name('pengembalian-kontainer.store')
-         ->middleware('can:checkpoint-kontainer-keluar-create');
 
     // 📦 KONTAINER DALAM PERJALANAN ROUTES
     // ═══════════════════════════════════════════════════════════════════════
@@ -3698,39 +3648,6 @@ Route::middleware(['auth'])->group(function () {
          ->name('kontainer-perjalanan.index')
          ->middleware('can:checkpoint-kontainer-keluar-view');
 
-    // 📥 CHECKPOINT KONTAINER MASUK ROUTES
-    // ═══════════════════════════════════════════════════════════════════════
-    Route::get('checkpoint-kontainer-masuk', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'index'])
-         ->name('checkpoint-kontainer-masuk.index')
-         ->middleware('can:checkpoint-kontainer-masuk-view');
-
-    Route::get('checkpoint-kontainer-masuk/history', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'history'])
-         ->name('checkpoint-kontainer-masuk.history')
-         ->middleware('can:checkpoint-kontainer-masuk-view');
-
-    Route::get('checkpoint-kontainer-masuk/{cabangSlug}', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'checkpoint'])
-         ->name('checkpoint-kontainer-masuk.checkpoint')
-         ->middleware('can:checkpoint-kontainer-masuk-view');
-
-    Route::get('checkpoint-kontainer-masuk/{cabangSlug}/gudang/{gudangId}', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'showKontainer'])
-         ->name('checkpoint-kontainer-masuk.kontainer')
-         ->middleware('can:checkpoint-kontainer-masuk-view');
-
-    Route::post('checkpoint-kontainer-masuk/{cabangSlug}/gudang/{gudangId}/manual-masuk', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'manualMasuk'])
-         ->name('checkpoint-kontainer-masuk.manual-masuk')
-         ->middleware('can:checkpoint-kontainer-masuk-create');
-
-    Route::post('checkpoint-kontainer-masuk/{kontainerPerjalananId}/masuk', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'processMasuk'])
-         ->name('checkpoint-kontainer-masuk.masuk')
-         ->middleware('can:checkpoint-kontainer-masuk-create');
-
-    Route::post('checkpoint-kontainer-masuk/bulk-masuk', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'bulkMasuk'])
-         ->name('checkpoint-kontainer-masuk.bulk-masuk')
-         ->middleware('can:checkpoint-kontainer-masuk-create');
-
-    Route::post('checkpoint-kontainer-masuk/{kontainerPerjalananId}/cancel', [\App\Http\Controllers\CheckpointKontainerMasukController::class, 'cancelMasuk'])
-         ->name('checkpoint-kontainer-masuk.cancel')
-         ->middleware('can:checkpoint-kontainer-masuk-delete');
 
 });
 

@@ -1840,8 +1840,8 @@
 
         {{-- Aktivitas Pelabuhan Sub-Dropdown --}}
         @php
-            $isAktivitasPelabuhanRoute = Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan-batam.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('checkpoint-kontainer-keluar.*') || Request::routeIs('checkpoint-kontainer-masuk.*') || Request::routeIs('kontainer-perjalanan.*') || Request::routeIs('prospek-batam.*');
-            $hasAktivitasPelabuhanPermissions = $user && (($user->can('tanda-terima-view') || $user->can('tanda-terima-batam-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete') || $user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete') || $user->can('tanda-terima-tanpa-surat-jalan-batam-view') || $user->can('tanda-terima-tanpa-surat-jalan-batam-create') || $user->can('tanda-terima-tanpa-surat-jalan-batam-update') || $user->can('tanda-terima-tanpa-surat-jalan-batam-delete') || $user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete') || $user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete') || $user->can('checkpoint-kontainer-masuk-view') || $user->can('checkpoint-kontainer-masuk-create') || $user->can('checkpoint-kontainer-masuk-delete')) || $user->can('prospek-batam-view') || $user->can('prospek-batam-edit'));
+            $isAktivitasPelabuhanRoute = Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan-batam.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('kontainer-perjalanan.*') || Request::routeIs('prospek-batam.*');
+            $hasAktivitasPelabuhanPermissions = $user && (($user->can('tanda-terima-view') || $user->can('tanda-terima-batam-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete') || $user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete') || $user->can('tanda-terima-tanpa-surat-jalan-batam-view') || $user->can('tanda-terima-tanpa-surat-jalan-batam-create') || $user->can('tanda-terima-tanpa-surat-jalan-batam-update') || $user->can('tanda-terima-tanpa-surat-jalan-batam-delete') || $user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete') || $user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete')) || $user->can('prospek-batam-view') || $user->can('prospek-batam-edit'));
         @endphp
 
         @if($hasAktivitasPelabuhanPermissions)
@@ -1902,12 +1902,6 @@
                     </a>
                 @endif
 
-                {{-- Checkpoint Kontainer Keluar --}}
-                @if($user && ($user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete')))
-                    <a href="{{ route('checkpoint-kontainer-keluar.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('checkpoint-kontainer-keluar.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Checkpoint Kontainer Keluar</span>
-                    </a>
-                @endif
 
                 {{-- Kontainer Dalam Perjalanan --}}
                 @if($user && ($user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete')))
@@ -1919,15 +1913,7 @@
                     </a>
                 @endif
 
-                {{-- Checkpoint Kontainer Masuk --}}
-                @if($user && ($user->can('checkpoint-kontainer-masuk-view') || $user->can('checkpoint-kontainer-masuk-create') || $user->can('checkpoint-kontainer-masuk-delete')))
-                    <a href="{{ route('checkpoint-kontainer-masuk.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('checkpoint-kontainer-masuk.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-                        </svg>
-                        <span class="text-xs">Checkpoint Kontainer Masuk</span>
-                    </a>
-                @endif
+
             </div>
         </div>
         @endif
