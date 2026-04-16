@@ -225,7 +225,17 @@
                     <td>: {{ $invoice->tanggal_invoice->format('d/M/Y') }}</td>
                 </tr>
                 <tr>
-                    <td>Vendor/Penerima</td>
+                    <td>Vendor</td>
+                    <td>: 
+                        @php
+                            $vendor = null;
+                            if ($invoice->biayaUtility->isNotEmpty()) {
+                                $vendor = $invoice->biayaUtility->first()->vendor;
+                            }
+                        @endphp
+                        {{ $vendor ?? '-' }}
+                    </td>
+                    <td>Penerima</td>
                     <td>: 
                         @php
                             $penerima = $invoice->penerima;
@@ -234,6 +244,18 @@
                             }
                         @endphp
                         {{ $penerima ?? '-' }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Kode Bayar</td>
+                    <td>: 
+                        @php
+                            $kodeBayar = null;
+                            if ($invoice->biayaUtility->isNotEmpty()) {
+                                $kodeBayar = $invoice->biayaUtility->first()->kode_bayar;
+                            }
+                        @endphp
+                        {{ $kodeBayar ?? '-' }}
                     </td>
                     <td>Referensi</td>
                     <td>: {{ $invoice->referensi ?? '-' }}</td>
@@ -271,7 +293,12 @@
                         <td class="text-center">{{ $utility->tanggal ? \Carbon\Carbon::parse($utility->tanggal)->format('d/M/Y') : '-' }}</td>
                         <td>
                             <div>{{ $utility->alatBerat->nama ?? '-' }}</div>
-                            <small style="font-size: 8px; font-weight: normal;">{{ $utility->alatBerat->merk ?? '' }} {{ $utility->referensi ? '| Ref: ' . $utility->referensi : '' }}</small>
+                            <div style="font-size: 8px; font-weight: normal; color: #444;">
+                                {{ $utility->alatBerat->merk ?? '' }}
+                                @if($utility->vendor) | Vendor: {{ $utility->vendor }} @endif
+                                @if($utility->kode_bayar) | Kode: {{ $utility->kode_bayar }} @endif
+                                @if($utility->referensi) | Ref: {{ $utility->referensi }} @endif
+                            </div>
                         </td>
                         <td class="text-center">
                             {{ $utility->jumlah_periode }} {{ ucfirst($utility->jenis_tarif == 'harian' ? 'Hari' : 'Bulan') }}

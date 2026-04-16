@@ -310,6 +310,18 @@
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Penerima</label>
                                         <p class="text-gray-900 font-semibold">{{ $utility->penerima }}</p>
                                     </div>
+                                    @if($utility->vendor)
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Vendor</label>
+                                        <p class="text-gray-900 font-semibold">{{ $utility->vendor }}</p>
+                                    </div>
+                                    @endif
+                                    @if($utility->kode_bayar)
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Kode Bayar</label>
+                                        <p class="text-gray-900 font-semibold">{{ $utility->kode_bayar }}</p>
+                                    </div>
+                                    @endif
                                     <div class="md:col-span-1">
                                         <label class="block text-xs font-medium text-gray-600 mb-1">DPP</label>
                                         <p class="text-gray-900 font-bold text-right">Rp {{ number_format($utility->dpp, 0, ',', '.') }}</p>
@@ -327,7 +339,7 @@
                                         <p class="text-green-700 font-bold text-right text-lg">Rp {{ number_format($utility->grand_total, 0, ',', '.') }}</p>
                                     </div>
                                     @if($utility->referensi)
-                                    <div class="md:col-span-2">
+                                    <div>
                                         <label class="block text-xs font-medium text-gray-600 mb-1">Referensi</label>
                                         <p class="text-gray-900 text-sm">{{ $utility->referensi }}</p>
                                     </div>

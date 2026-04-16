@@ -11,6 +11,8 @@ class InvoiceAktivitasLainUtility extends Model
     protected $fillable = [
         'invoice_aktivitas_lain_id',
         'alat_berat_id',
+        'vendor',
+        'kode_bayar',
         'referensi',
         'penerima',
         'tanggal',

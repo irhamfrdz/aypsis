@@ -655,18 +655,26 @@
                     <div class="bg-white rounded-2xl border-2 border-yellow-200 shadow-sm overflow-hidden">
                         <!-- Shared Header -->
                         <div class="p-5 bg-yellow-50/50 border-b-2 border-yellow-100">
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
-                                <div class="md:col-span-3">
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                <div>
                                     <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Tanggal <span class="text-red-500">*</span></label>
                                     <input type="date" id="bu_shared_tanggal" class="w-full pl-3 pr-3 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all">
                                 </div>
-                                <div class="md:col-span-5">
-                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Penerima Pembayaran <span class="text-red-500">*</span></label>
-                                    <input type="text" id="bu_shared_penerima" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="Nama perusahaan atau perorangan">
+                                <div>
+                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Penerima <span class="text-red-500">*</span></label>
+                                    <input type="text" id="bu_shared_penerima" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="...">
                                 </div>
-                                <div class="md:col-span-4">
-                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Referensi <small class="text-yellow-600 font-medium"> (Opsional)</small></label>
-                                    <input type="text" id="bu_shared_referensi" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="No. Kontrak / Referensi">
+                                <div>
+                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Vendor</label>
+                                    <input type="text" id="bu_shared_vendor" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="Nama Vendor">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Kode Bayar</label>
+                                    <input type="text" id="bu_shared_kode_bayar" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="Kode ...">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Referensi</label>
+                                    <input type="text" id="bu_shared_referensi" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="...">
                                 </div>
                             </div>
                         </div>
@@ -3010,6 +3018,8 @@ console.log('Akun COAs data:', akunCoasData);
             // Clear shared fields
             document.getElementById('bu_shared_tanggal').value = '';
             document.getElementById('bu_shared_penerima').value = '';
+            document.getElementById('bu_shared_vendor').value = '';
+            document.getElementById('bu_shared_kode_bayar').value = '';
             document.getElementById('bu_shared_referensi').value = '';
             
             // Check if there's existing utility data
@@ -3033,15 +3043,19 @@ console.log('Akun COAs data:', akunCoasData);
         function syncSharedUtilitiesFields() {
             const tanggal = document.getElementById('bu_shared_tanggal').value;
             const penerima = document.getElementById('bu_shared_penerima').value;
+            const vendor = document.getElementById('bu_shared_vendor').value;
+            const kodeBayar = document.getElementById('bu_shared_kode_bayar').value;
             const referensi = document.getElementById('bu_shared_referensi').value;
             
             document.querySelectorAll('.bu-hidden-tanggal').forEach(input => input.value = tanggal);
             document.querySelectorAll('.bu-hidden-penerima').forEach(input => input.value = penerima);
+            document.querySelectorAll('.bu-hidden-vendor').forEach(input => input.value = vendor);
+            document.querySelectorAll('.bu-hidden-kode-bayar').forEach(input => input.value = kodeBayar);
             document.querySelectorAll('.bu-hidden-referensi').forEach(input => input.value = referensi);
         }
 
         // Add listeners for shared fields
-        const buSharedFields = ['bu_shared_tanggal', 'bu_shared_penerima', 'bu_shared_referensi'];
+        const buSharedFields = ['bu_shared_tanggal', 'bu_shared_penerima', 'bu_shared_vendor', 'bu_shared_kode_bayar', 'bu_shared_referensi'];
         buSharedFields.forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener('input', syncSharedUtilitiesFields);
@@ -3052,9 +3066,11 @@ console.log('Akun COAs data:', akunCoasData);
             const index = container.children.length;
             
             // Populate shared fields if this is the first entry and we have existing data
-            if (index === 0 && existingData.penerima) {
+            if (index === 0 && (existingData.penerima || existingData.vendor || existingData.kode_bayar)) {
                 document.getElementById('bu_shared_tanggal').value = existingData.tanggal || '';
                 document.getElementById('bu_shared_penerima').value = existingData.penerima || '';
+                document.getElementById('bu_shared_vendor').value = existingData.vendor || '';
+                document.getElementById('bu_shared_kode_bayar').value = existingData.kode_bayar || '';
                 document.getElementById('bu_shared_referensi').value = existingData.referensi || '';
             }
 
@@ -3081,12 +3097,16 @@ console.log('Akun COAs data:', akunCoasData);
             
             const sharedTanggal = document.getElementById('bu_shared_tanggal').value;
             const sharedPenerima = document.getElementById('bu_shared_penerima').value;
+            const sharedVendor = document.getElementById('bu_shared_vendor').value;
+            const sharedKodeBayar = document.getElementById('bu_shared_kode_bayar').value;
             const sharedReferensi = document.getElementById('bu_shared_referensi').value;
 
             inputGroup.innerHTML = `
                 <!-- Hidden Shared Fields (Synced) -->
                 <input type="hidden" name="biaya_utilities_detail[${index}][tanggal]" class="bu-hidden-tanggal" value="${existingData.tanggal || sharedTanggal}">
                 <input type="hidden" name="biaya_utilities_detail[${index}][penerima]" class="bu-hidden-penerima" value="${existingData.penerima || sharedPenerima}">
+                <input type="hidden" name="biaya_utilities_detail[${index}][vendor]" class="bu-hidden-vendor" value="${existingData.vendor || sharedVendor}">
+                <input type="hidden" name="biaya_utilities_detail[${index}][kode_bayar]" class="bu-hidden-kode-bayar" value="${existingData.kode_bayar || sharedKodeBayar}">
                 <input type="hidden" name="biaya_utilities_detail[${index}][referensi]" class="bu-hidden-referensi" value="${existingData.referensi || sharedReferensi}">
 
                 <div class="flex items-center gap-4">

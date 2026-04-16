@@ -369,6 +369,8 @@ class InvoiceAktivitasLainController extends Controller
             // Biaya Utilities fields
             'biaya_utilities_detail' => 'nullable|array',
             'biaya_utilities_detail.*.alat_berat_id' => 'required_with:biaya_utilities_detail|exists:alat_berats,id',
+            'biaya_utilities_detail.*.vendor' => 'nullable|string',
+            'biaya_utilities_detail.*.kode_bayar' => 'nullable|string',
             'biaya_utilities_detail.*.referensi' => 'nullable|string',
             'biaya_utilities_detail.*.penerima' => 'nullable|string',
             'biaya_utilities_detail.*.tanggal' => 'nullable|date',
