@@ -1114,6 +1114,15 @@ class InvoiceAktivitasLainController extends Controller
             }
             return view('invoice-aktivitas-lain.print-listrik', compact('invoice', 'biayaListrikEntries'));
         }
+
+        // check for utilities
+        if ($invoice->klasifikasiBiayaUmum && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama), 'utilities')) {
+            if ($invoice->biayaUtility->isEmpty()) {
+                return redirect()->route('invoice-aktivitas-lain.show', $id)
+                    ->with('error', 'Data biaya utilities tidak ditemukan untuk invoice ini.');
+            }
+            return view('invoice-aktivitas-lain.print-utilities', compact('invoice'));
+        }
         
         return view('invoice-aktivitas-lain.print', compact('invoice'));
     }

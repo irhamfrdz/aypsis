@@ -619,9 +619,9 @@
                 <!-- Biaya Utilities Multiple Entries -->
                 <div id="biaya_utilities_wrapper" class="hidden md:col-span-2">
                     <div class="flex justify-between items-center mb-4">
-                        <label class="flex items-center text-lg font-bold text-yellow-800">
-                            <span class="bg-yellow-100 p-2 rounded-lg mr-3">
-                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <label class="flex items-center text-lg font-bold text-blue-800">
+                            <span class="bg-blue-100 p-2 rounded-lg mr-3">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
                             </span>
@@ -629,7 +629,7 @@
                         </label>
                         <button type="button" 
                                 id="add_biaya_utilities_btn"
-                                class="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg transform active:scale-95">
+                                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg transform active:scale-95">
                             <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                             </svg>
@@ -638,51 +638,56 @@
                     </div>
 
                     <!-- Main Section Container -->
-                    <div class="bg-white rounded-2xl border-2 border-yellow-200 shadow-sm overflow-hidden">
+                    <div class="bg-white rounded-2xl border-2 border-blue-200 shadow-sm overflow-hidden">
                         <!-- Shared Info Header -->
-                        <div class="p-5 bg-yellow-50/50 border-b-2 border-yellow-100">
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
-                                <div class="md:col-span-3">
-                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Tanggal <span class="text-red-500">*</span></label>
-                                    <div class="relative">
-                                        <input type="date" id="bu_shared_tanggal" class="w-full pl-3 pr-3 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" required>
-                                    </div>
+                        <div class="p-6 bg-blue-50/50 border-b-2 border-blue-100">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="flex flex-col">
+                                    <label for="bu_shared_tanggal" class="text-xs font-bold text-blue-700 mb-1.5 flex items-center">
+                                        Tanggal <span class="text-red-500 ml-1">*</span>
+                                    </label>
+                                    <input type="date" id="bu_shared_tanggal" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all shadow-sm" required>
                                 </div>
-                                <div class="md:col-span-5">
-                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Penerima Pembayaran <span class="text-red-500">*</span></label>
-                                    <input type="text" id="bu_shared_penerima" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="Nama perusahaan atau perorangan" required>
+                                <div class="flex flex-col">
+                                    <label for="bu_shared_penerima" class="text-xs font-bold text-blue-700 mb-1.5 flex items-center">
+                                        Penerima Pembayaran <span class="text-red-500 ml-1">*</span>
+                                    </label>
+                                    <input type="text" id="bu_shared_penerima" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all shadow-sm" placeholder="Nama perusahaan atau perorangan" required>
                                 </div>
-                                <div class="md:col-span-4">
-                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Referensi <small class="text-yellow-600 font-medium"> (Opsional)</small></label>
-                                    <input type="text" id="bu_shared_referensi" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="No. Kontrak / Referensi">
+                                <div class="flex flex-col">
+                                    <label for="bu_shared_referensi" class="text-xs font-bold text-blue-700 mb-1.5 flex items-center">
+                                        Referensi <span class="text-gray-400 font-normal text-[10px] ml-1">(Opsional)</span>
+                                    </label>
+                                    <input type="text" id="bu_shared_referensi" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all shadow-sm" placeholder="No. Kontrak / Referensi">
                                 </div>
                             </div>
                         </div>
 
                         <!-- Equipment List -->
-                        <div id="biaya_utilities_container" class="divide-y divide-yellow-100">
+                        <div id="biaya_utilities_container" class="divide-y divide-blue-100">
                             <!-- Rows will be injected here -->
                         </div>
 
                         <!-- Summary Footer -->
-                        <div class="p-5 bg-yellow-50/30 border-t-2 border-yellow-100">
+                        <div class="p-5 bg-blue-50/30 border-t-2 border-blue-100">
                             <div class="flex flex-col md:flex-row justify-end items-center gap-6">
                                 <div class="text-right">
-                                    <span class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Total DPP</span>
+                                    <span class="block text-xs font-bold text-gray-500 mb-1">Total DPP</span>
                                     <span id="bu_total_dpp_display" class="text-lg font-bold text-gray-800">Rp 0</span>
                                 </div>
                                 <div class="text-right">
-                                    <span class="block text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Total PPh 2%</span>
+                                    <span class="block text-xs font-bold text-orange-500 mb-1">Total PPh 2%</span>
                                     <span id="bu_total_pph_display" class="text-lg font-bold text-orange-600">Rp 0</span>
                                 </div>
-                                <div class="bg-yellow-600 px-6 py-3 rounded-2xl text-right shadow-md">
-                                    <span class="block text-[10px] font-bold text-yellow-100 uppercase tracking-widest mb-0.5">Grand Total Utilities</span>
+                                <div class="bg-blue-600 px-6 py-3 rounded-2xl text-right shadow-md">
+                                    <span class="block text-xs font-bold text-blue-100 mb-0.5">Grand Total Utilities</span>
                                     <span id="bu_total_grand_display" class="text-xl font-black text-white">Rp 0</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
 
                 <!-- LWBP Baru (for Biaya Listrik) -->
                 <div id="lwbp_baru_wrapper" class="hidden">
@@ -3099,7 +3104,7 @@ console.log('Akun COAs data:', akunCoasData);
             }
 
             const inputGroup = document.createElement('div');
-            inputGroup.className = 'bu-entry-row relative p-6 transition-colors hover:bg-yellow-50/30';
+            inputGroup.className = 'bu-entry-row relative p-6 transition-colors hover:bg-blue-50/30';
             inputGroup.setAttribute('data-bu-index', index);
             
             const removeBtnHtml = index > 0 ? `
@@ -3131,54 +3136,54 @@ console.log('Akun COAs data:', akunCoasData);
 
                 <div class="flex items-center gap-4">
                     <!-- Row Number -->
-                    <div class="flex-none bg-yellow-100 text-yellow-700 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shadow-inner">
+                    <div class="flex-none bg-blue-100 text-blue-700 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shadow-inner">
                         ${index + 1}
                     </div>
 
                     <div class="flex-grow grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                         <div class="md:col-span-3">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Alat Berat</label>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Alat Berat</label>
                             <select name="biaya_utilities_detail[${index}][alat_berat_id]" 
-                                    class="bu-alat-berat w-full border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm h-10 transition-all" required>
+                                    class="bu-alat-berat w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm h-10 transition-all" required>
                                 ${alatBeratOptions}
                             </select>
                         </div>
                         
                         <div class="md:col-span-2">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tarif</label>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Tarif</label>
                             <select name="biaya_utilities_detail[${index}][jenis_tarif]" 
-                                    class="bu-jenis-tarif w-full border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm h-10 transition-all" required>
+                                    class="bu-jenis-tarif w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm h-10 transition-all" required>
                                 <option value="harian" ${existingData.jenis_tarif === 'harian' ? 'selected' : ''}>Harian</option>
                                 <option value="bulanan" ${existingData.jenis_tarif === 'bulanan' ? 'selected' : ''}>Bulanan</option>
                             </select>
                         </div>
 
                         <div class="md:col-span-1">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 text-center">Qty</label>
+                            <label class="block text-xs font-medium text-gray-700 mb-1 text-center">Hari</label>
                             <input type="number" name="biaya_utilities_detail[${index}][jumlah_periode]" 
-                                   class="bu-jumlah-periode w-full border-2 border-gray-100 rounded-xl text-center text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 h-10 transition-all font-bold"
+                                   class="bu-jumlah-periode w-full border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10 transition-all font-bold"
                                    min="0" step="0.01" value="${existingData.jumlah_periode || '1'}" required>
                         </div>
 
                         <div class="md:col-span-2">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tarif Satuan</label>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Tarif Satuan</label>
                             <input type="number" name="biaya_utilities_detail[${index}][tarif_satuan]" 
-                                   class="bu-tarif-satuan w-full border-2 border-gray-100 rounded-xl text-sm px-3 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 h-10 transition-all font-bold text-gray-700"
+                                   class="bu-tarif-satuan w-full border border-gray-300 rounded-lg text-sm px-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10 transition-all font-bold text-gray-700"
                                    placeholder="0" step="0.01" value="${existingData.tarif_satuan || ''}" required>
                         </div>
 
                         <div class="md:col-span-2">
-                            <label class="block text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Subtotal DPP</label>
+                            <label class="block text-xs font-medium text-blue-700 mb-1">Subtotal DPP</label>
                             <input type="number" name="biaya_utilities_detail[${index}][dpp]" 
-                                   class="bu-dpp w-full bg-blue-50/50 border-2 border-blue-100 rounded-xl px-3 text-sm h-10 font-bold text-blue-600 text-right"
+                                   class="bu-dpp w-full bg-blue-50 border border-blue-200 rounded-lg px-3 text-sm h-10 font-bold text-blue-600 text-right"
                                    placeholder="0" step="0.01" readonly value="${existingData.dpp || ''}">
                         </div>
 
                         <div class="md:col-span-2 flex items-center gap-2">
                             <div class="flex-grow">
-                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Catatan</label>
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
                                 <input type="text" name="biaya_utilities_detail[${index}][keterangan]"
-                                       class="bu-keterangan w-full border-2 border-gray-100 rounded-xl px-3 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm h-10 transition-all"
+                                       class="bu-keterangan w-full border border-gray-300 rounded-lg px-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm h-10 transition-all"
                                        placeholder="..." value="${existingData.keterangan || ''}">
                             </div>
                             <div class="flex-none pt-4">
@@ -3187,6 +3192,7 @@ console.log('Akun COAs data:', akunCoasData);
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Hidden Financial Fields (Keep individual for DB) -->
                 <input type="hidden" name="biaya_utilities_detail[${index}][pph]" class="bu-pph" value="${existingData.pph || '0'}">
@@ -3220,7 +3226,7 @@ console.log('Akun COAs data:', akunCoasData);
                     entry.setAttribute('data-bu-index', index);
                     
                     // Update index label
-                    const label = entry.querySelector('.bg-yellow-500');
+                    const label = entry.querySelector('.bg-blue-100');
                     if (label) label.textContent = index + 1;
                     
                     // Update input names and internal references
