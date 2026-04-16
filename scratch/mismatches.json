@@ -1,0 +1,1416 @@
+[
+    {
+        "type": "kontainer",
+        "nomor": "APLS2972932",
+        "current_gudang_id": 10,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "BPLU1210002",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CAIU2744385",
+        "current_gudang_id": 10,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CBHU3665634",
+        "current_gudang_id": 13,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CBHU5700122",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CLHU3586854",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CRXU1143128",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CSLU1059942",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CXDU1107648",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "DNAU2622206",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "GATU1056446",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "GESU1041971",
+        "current_gudang_id": 4,
+        "last_history_id": 2514,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "kontainer",
+        "nomor": "GESU2615101",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "GLDU9703366",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MAEU6957872",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "OOLU1375333",
+        "current_gudang_id": 10,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "OOLU1536654",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TEMU2815815",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TEMU2863449",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TGHU0115584",
+        "current_gudang_id": 10,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TGHU1246275",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TGHU1501998",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TGHU2371292",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TGHU2740169",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TGHU3067258",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "BMOU4857328",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MEDU1231882",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MSKU2085390",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TGHU2978820",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CXDU1284155",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "DFSU2284255",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "OOLU1386050",
+        "current_gudang_id": 10,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TEMU2711087",
+        "current_gudang_id": 14,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "BMOU2992442",
+        "current_gudang_id": 10,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CXDU1232341",
+        "current_gudang_id": 10,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MAGU2140855",
+        "current_gudang_id": 4,
+        "last_history_id": 5402,
+        "last_history_gudang_id": 1
+    },
+    {
+        "type": "kontainer",
+        "nomor": "FSCU9984410",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TCNU9609518",
+        "current_gudang_id": 4,
+        "last_history_id": 2544,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2145786",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2012021",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "HPCU2228145",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2092752",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2162762",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2195302",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2250760",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2181572",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2169854",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2162839",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2201468",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2199695",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2271640",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "FCIU6090336",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2174779",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2139947",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2263109",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TCKU1018350",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2158612",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "FCIU6080282",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "CRXU1529743",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2167975",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2005465",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TGHU1758327",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "GESU3539979",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2098616",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2083982",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2165458",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2014940",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2037225",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "FCIU6082541",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2199680",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2196084",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "FCIU6091522",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MCCU1029067",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2226785",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2278876",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2179169",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "TRHU3118824",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "kontainer",
+        "nomor": "MRTU2139720",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU0033860",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU0334785",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU1156108",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU1161172",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU1237110",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2048105",
+        "current_gudang_id": 6,
+        "last_history_id": 1511,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2100235",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2105767",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2106341",
+        "current_gudang_id": 6,
+        "last_history_id": 3875,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2142285",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2190148",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU0220578",
+        "current_gudang_id": 6,
+        "last_history_id": 4529,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2235624",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2254520",
+        "current_gudang_id": 6,
+        "last_history_id": 4716,
+        "last_history_gudang_id": 15
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2263033",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2273725",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2279889",
+        "current_gudang_id": 17,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2299611",
+        "current_gudang_id": 2,
+        "last_history_id": 4611,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2313685",
+        "current_gudang_id": 6,
+        "last_history_id": 4684,
+        "last_history_gudang_id": 15
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2337250",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2346159",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2401261",
+        "current_gudang_id": 6,
+        "last_history_id": 4389,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2407399",
+        "current_gudang_id": 6,
+        "last_history_id": 3847,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2416030",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2419194",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2419912",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2436329",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2440250",
+        "current_gudang_id": 6,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2443776",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2454908",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2458990",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2468028",
+        "current_gudang_id": 6,
+        "last_history_id": 3906,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2474695",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2475644",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2486629",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2517781",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2522284",
+        "current_gudang_id": 6,
+        "last_history_id": 2809,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2528364",
+        "current_gudang_id": 17,
+        "last_history_id": 174,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2531735",
+        "current_gudang_id": 17,
+        "last_history_id": 176,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2565096",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2565136",
+        "current_gudang_id": 6,
+        "last_history_id": 2512,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2572429",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2577353",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2585180",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2591916",
+        "current_gudang_id": 2,
+        "last_history_id": 4608,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2598125",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2658429",
+        "current_gudang_id": 6,
+        "last_history_id": 4649,
+        "last_history_gudang_id": 15
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2665984",
+        "current_gudang_id": 17,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2901263",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2907775",
+        "current_gudang_id": 17,
+        "last_history_id": 127,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2932415",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3020649",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3094440",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3117761",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3120169",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3185390",
+        "current_gudang_id": 17,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3206213",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3246290",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3294554",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3380331",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3411125",
+        "current_gudang_id": 4,
+        "last_history_id": 2894,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3467146",
+        "current_gudang_id": 10,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3468245",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3473243",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3507906",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3615212",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3688173",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3713635",
+        "current_gudang_id": 4,
+        "last_history_id": 2634,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3743028",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3745240",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3785160",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3827224",
+        "current_gudang_id": 4,
+        "last_history_id": 2860,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3845845",
+        "current_gudang_id": 6,
+        "last_history_id": 3922,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3864401",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3868454",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3948910",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU4240048",
+        "current_gudang_id": 6,
+        "last_history_id": 2970,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU4547767",
+        "current_gudang_id": 6,
+        "last_history_id": 4325,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU4587810",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU5328312",
+        "current_gudang_id": 4,
+        "last_history_id": 1183,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU5410647",
+        "current_gudang_id": 17,
+        "last_history_id": 126,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU5637686",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU5749942",
+        "current_gudang_id": 6,
+        "last_history_id": 4633,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU6008609",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU6021110",
+        "current_gudang_id": 4,
+        "last_history_id": 1156,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU6056169",
+        "current_gudang_id": 4,
+        "last_history_id": 3850,
+        "last_history_gudang_id": 7
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU6339490",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU0309259",
+        "current_gudang_id": 6,
+        "last_history_id": 4511,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU7098936",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU7497421",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU7515762",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU7785384",
+        "current_gudang_id": 4,
+        "last_history_id": 2874,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU8004560",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU8337285",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU8805827",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU8829773",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU8901040",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU8947009",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU8955766",
+        "current_gudang_id": 6,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU9298714",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU9526838",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU0312270",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2976698",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU0235243",
+        "current_gudang_id": 3,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU3100334",
+        "current_gudang_id": 7,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU0332691",
+        "current_gudang_id": 6,
+        "last_history_id": 3880,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU2553189",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU6221177",
+        "current_gudang_id": 4,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU6828284",
+        "current_gudang_id": 4,
+        "last_history_id": 3103,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU6509353",
+        "current_gudang_id": 4,
+        "last_history_id": 1184,
+        "last_history_gudang_id": 3
+    },
+    {
+        "type": "stock",
+        "nomor": "AYPU0384592",
+        "current_gudang_id": 6,
+        "last_history_id": 4583,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "TEMU2863449",
+        "current_gudang_id": 15,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "MAGU5226741",
+        "current_gudang_id": 3,
+        "last_history_id": 4141,
+        "last_history_gudang_id": 4
+    },
+    {
+        "type": "stock",
+        "nomor": "FCIU6080512",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "FCIU6092909",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "MRTU2054705",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "MRTU2167701",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "MRTU2125157",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "MRTU2045909",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "MRTU2128840",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "MRTU2025610",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "MRTU2107446",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "MRTU2106239",
+        "current_gudang_id": 9,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    },
+    {
+        "type": "stock",
+        "nomor": "TAKU2231112",
+        "current_gudang_id": 8,
+        "last_history_id": null,
+        "last_history_gudang_id": null
+    }
+]

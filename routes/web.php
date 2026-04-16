@@ -5124,6 +5124,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('pranota-stock', [\App\Http\Controllers\StockAmprahanController::class, 'pranotaIndex'])->name('pranota-stock.index')->middleware('can:pranota-stock-view');
     Route::get('pranota-stock/{id}/edit', [\App\Http\Controllers\StockAmprahanController::class, 'pranotaEdit'])->name('pranota-stock.edit')->middleware('can:pranota-stock-create');
     Route::put('pranota-stock/{id}', [\App\Http\Controllers\StockAmprahanController::class, 'pranotaUpdate'])->name('pranota-stock.update')->middleware('can:pranota-stock-create');
+    Route::post('pranota-stock/{id}/sync', [\App\Http\Controllers\StockAmprahanController::class, 'pranotaSync'])->name('pranota-stock.sync')->middleware('can:pranota-stock-create');
     Route::get('pranota-stock/{id}/print', [\App\Http\Controllers\StockAmprahanController::class, 'pranotaPrint'])->name('pranota-stock.print')->middleware('can:pranota-stock-print');
     Route::delete('pranota-stock/{id}', [\App\Http\Controllers\StockAmprahanController::class, 'pranotaDestroy'])->name('pranota-stock.destroy')->middleware('can:pranota-stock-delete');
     Route::post('stock-amprahan/{id}/usage', [\App\Http\Controllers\StockAmprahanController::class, 'storeUsage'])

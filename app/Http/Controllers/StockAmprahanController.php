@@ -1078,4 +1078,51 @@ class StockAmprahanController extends Controller
             ], 500);
         }
     }
+    public function pranotaSync($id)
+    {
+        try {
+            $pranota = \App\Models\PranotaStock::findOrFail($id);
+            
+            if (!is_array($pranota->items)) {
+                return redirect()->back()->with('error', 'Item pranota tidak valid');
+            }
+
+            $itemIds = collect($pranota->items)->pluck('id')->filter()->toArray();
+            $stockItems = \App\Models\StockAmprahan::with(['masterNamaBarangAmprahan', 'usages'])
+                ->whereIn('id', $itemIds)
+                ->get()
+                ->keyBy('id');
+
+            $updatedItems = array_map(function($it) use ($stockItems) {
+                $id = $it['id'] ?? null;
+                if ($id && isset($stockItems[$id])) {
+                    $item = $stockItems[$id];
+                    
+                    // We sync basic info that might have changed
+                    // Note: 'jumlah' is tricky because StockAmprahan->jumlah is 'sisa stock'
+                    // but many pranotas are made for the TOTAL purchase.
+                    // If this item has direct usages, we should probably add them back to get the 'pembelian' amount
+                    $totalPurchase = $item->jumlah + $item->usages->sum('jumlah');
+
+                    return array_merge($it, [
+                        'nama_barang' => $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? ($it['nama_barang'] ?? '-')),
+                        'harga' => $item->harga_satuan ?? ($it['harga'] ?? 0),
+                        'adjustment' => $item->adjustment ?? ($it['adjustment'] ?? 0),
+                        'satuan' => $item->satuan ?? ($it['satuan'] ?? '-'),
+                        'jumlah' => $totalPurchase, // Sync total purchase quantity
+                    ]);
+                }
+                return $it;
+            }, $pranota->items);
+
+            $pranota->update([
+                'items' => $updatedItems,
+                'updated_by' => Auth::id()
+            ]);
+
+            return redirect()->route('pranota-stock.index')->with('success', 'Data pranota berhasil diperbarui sesuai data stock terbaru.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
+        }
+    }
 }

@@ -78,6 +78,12 @@
                         </a>
                         @endcan
                         @can('pranota-stock-create')
+                        <form action="{{ route('pranota-stock.sync', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Update data pranota sesuai data stock terbaru?')">
+                            @csrf
+                            <button type="submit" class="text-blue-600 hover:text-blue-900 mr-3" title="Perbarui Data dari Stock">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </form>
                         <a href="{{ route('pranota-stock.edit', $item->id) }}" class="text-yellow-600 hover:text-yellow-900 mr-3">
                             <i class="fas fa-edit"></i> Edit
                         </a>
