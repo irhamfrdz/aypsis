@@ -658,11 +658,11 @@
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
                                 <div class="md:col-span-3">
                                     <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Tanggal <span class="text-red-500">*</span></label>
-                                    <input type="date" id="bu_shared_tanggal" class="w-full pl-3 pr-3 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" required>
+                                    <input type="date" id="bu_shared_tanggal" class="w-full pl-3 pr-3 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all">
                                 </div>
                                 <div class="md:col-span-5">
                                     <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Penerima Pembayaran <span class="text-red-500">*</span></label>
-                                    <input type="text" id="bu_shared_penerima" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="Nama perusahaan atau perorangan" required>
+                                    <input type="text" id="bu_shared_penerima" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="Nama perusahaan atau perorangan">
                                 </div>
                                 <div class="md:col-span-4">
                                     <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Referensi <small class="text-yellow-600 font-medium"> (Opsional)</small></label>
@@ -1646,6 +1646,10 @@ console.log('Akun COAs data:', akunCoasData);
                             biayaUtilitiesWrapper.classList.remove('hidden');
                             initializeBiayaUtilitiesInputs();
                         }
+                        
+                        // Set required for shared fields when visible
+                        if (document.getElementById('bu_shared_tanggal')) document.getElementById('bu_shared_tanggal').setAttribute('required', 'required');
+                        if (document.getElementById('bu_shared_penerima')) document.getElementById('bu_shared_penerima').setAttribute('required', 'required');
                     }
                     
                     // HIDE other dynamic sections
@@ -1688,11 +1692,21 @@ console.log('Akun COAs data:', akunCoasData);
                     if (biayaUtilitiesWrapper) {
                         biayaUtilitiesWrapper.classList.add('hidden');
                         clearBiayaUtilitiesInputs();
+                        
+                        // Remove required when hidden
+                        if (document.getElementById('bu_shared_tanggal')) document.getElementById('bu_shared_tanggal').removeAttribute('required');
+                        if (document.getElementById('bu_shared_penerima')) document.getElementById('bu_shared_penerima').removeAttribute('required');
                     }
                     
                     // Hide vendor listrik field for other jenis biaya
                     if (vendorListrikWrapper) {
                         vendorListrikWrapper.classList.add('hidden');
+                        if (vendorListrikInput) {
+                            vendorListrikInput.value = '';
+                            vendorListrikInput.removeAttribute('required');
+                        }
+                    }
+                    
                     // Show penerima field for other jenis biaya
                     if (penerimaWrapper) {
                         penerimaWrapper.classList.remove('hidden');
@@ -1779,6 +1793,14 @@ console.log('Akun COAs data:', akunCoasData);
             if (biayaBebanWrapper) biayaBebanWrapper.classList.add('hidden');
             if (ppjuWrapper) ppjuWrapper.classList.add('hidden');
             if (dppWrapper) dppWrapper.classList.add('hidden');
+            if (biayaUtilitiesWrapper) {
+                biayaUtilitiesWrapper.classList.add('hidden');
+                clearBiayaUtilitiesInputs();
+                
+                // Remove required when hidden
+                if (document.getElementById('bu_shared_tanggal')) document.getElementById('bu_shared_tanggal').removeAttribute('required');
+                if (document.getElementById('bu_shared_penerima')) document.getElementById('bu_shared_penerima').removeAttribute('required');
+            }
             if (totalInput) totalInput.value = '';
             if (lwbpBaruInput) lwbpBaruInput.value = '';
             if (lwbpLamaInput) lwbpLamaInput.value = '';

@@ -646,13 +646,13 @@
                                     <label for="bu_shared_tanggal" class="text-xs font-bold text-blue-700 mb-1.5 flex items-center">
                                         Tanggal <span class="text-red-500 ml-1">*</span>
                                     </label>
-                                    <input type="date" id="bu_shared_tanggal" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all shadow-sm" required>
+                                    <input type="date" id="bu_shared_tanggal" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all shadow-sm">
                                 </div>
                                 <div class="flex flex-col">
                                     <label for="bu_shared_penerima" class="text-xs font-bold text-blue-700 mb-1.5 flex items-center">
                                         Penerima Pembayaran <span class="text-red-500 ml-1">*</span>
                                     </label>
-                                    <input type="text" id="bu_shared_penerima" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all shadow-sm" placeholder="Nama perusahaan atau perorangan" required>
+                                    <input type="text" id="bu_shared_penerima" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all shadow-sm" placeholder="Nama perusahaan atau perorangan">
                                 </div>
                                 <div class="flex flex-col">
                                     <label for="bu_shared_referensi" class="text-xs font-bold text-blue-700 mb-1.5 flex items-center">
@@ -1662,9 +1662,14 @@ console.log('Akun COAs data:', akunCoasData);
                     }
                     } else if (namaJenisBiaya.includes('utilities') || namaJenisBiaya.includes('utility')) {
                         if (biayaUtilitiesWrapper) {
-                            if (biayaUtilitiesWrapper.classList.contains('hidden')) {
-                                biayaUtilitiesWrapper.classList.remove('hidden');
-                                initializeBiayaUtilitiesInputs();
+                                if (biayaUtilitiesWrapper.classList.contains('hidden')) {
+                                    biayaUtilitiesWrapper.classList.remove('hidden');
+                                    initializeBiayaUtilitiesInputs();
+                                }
+                                
+                                // Set required for shared fields when visible
+                                if (document.getElementById('bu_shared_tanggal')) document.getElementById('bu_shared_tanggal').setAttribute('required', 'required');
+                                if (document.getElementById('bu_shared_penerima')) document.getElementById('bu_shared_penerima').setAttribute('required', 'required');
                             }
                         }
                         if (biayaListrikWrapper) {
@@ -1719,6 +1724,10 @@ console.log('Akun COAs data:', akunCoasData);
                     if (biayaUtilitiesWrapper) {
                         biayaUtilitiesWrapper.classList.add('hidden');
                         clearBiayaUtilitiesInputs();
+                        
+                        // Remove required when hidden
+                        if (document.getElementById('bu_shared_tanggal')) document.getElementById('bu_shared_tanggal').removeAttribute('required');
+                        if (document.getElementById('bu_shared_penerima')) document.getElementById('bu_shared_penerima').removeAttribute('required');
                     }
                     
                     // Hide vendor listrik field for other jenis biaya
@@ -1817,6 +1826,10 @@ console.log('Akun COAs data:', akunCoasData);
             if (biayaUtilitiesWrapper) {
                 biayaUtilitiesWrapper.classList.add('hidden');
                 clearBiayaUtilitiesInputs();
+                
+                // Remove required when hidden
+                if (document.getElementById('bu_shared_tanggal')) document.getElementById('bu_shared_tanggal').removeAttribute('required');
+                if (document.getElementById('bu_shared_penerima')) document.getElementById('bu_shared_penerima').removeAttribute('required');
             }
             if (totalInput) totalInput.value = '';
             if (lwbpBaruInput) lwbpBaruInput.value = '';
