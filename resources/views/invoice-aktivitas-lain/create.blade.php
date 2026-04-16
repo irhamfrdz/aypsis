@@ -1660,19 +1660,19 @@ console.log('Akun COAs data:', akunCoasData);
                         dppWrapper.classList.add('hidden');
                         if (dppInput) dppInput.value = '';
                     }
-                    } else if (namaJenisBiaya.includes('utilities') || namaJenisBiaya.includes('utility')) {
-                        if (biayaUtilitiesWrapper) {
-                                if (biayaUtilitiesWrapper.classList.contains('hidden')) {
-                                    biayaUtilitiesWrapper.classList.remove('hidden');
-                                    initializeBiayaUtilitiesInputs();
-                                }
-                                
-                                // Set required for shared fields when visible
-                                if (document.getElementById('bu_shared_tanggal')) document.getElementById('bu_shared_tanggal').setAttribute('required', 'required');
-                                if (document.getElementById('bu_shared_penerima')) document.getElementById('bu_shared_penerima').setAttribute('required', 'required');
-                            }
+                } else if (namaJenisBiaya.includes('utilities') || namaJenisBiaya.includes('utility')) {
+                    if (biayaUtilitiesWrapper) {
+                        if (biayaUtilitiesWrapper.classList.contains('hidden')) {
+                            biayaUtilitiesWrapper.classList.remove('hidden');
+                            initializeBiayaUtilitiesInputs();
                         }
-                        if (biayaListrikWrapper) {
+                        
+                        // Set required for shared fields when visible
+                        if (document.getElementById('bu_shared_tanggal')) document.getElementById('bu_shared_tanggal').setAttribute('required', 'required');
+                        if (document.getElementById('bu_shared_penerima')) document.getElementById('bu_shared_penerima').setAttribute('required', 'required');
+                    }
+                    
+                    if (biayaListrikWrapper) {
                         biayaListrikWrapper.classList.add('hidden');
                         clearBiayaListrikInputs();
                     }
