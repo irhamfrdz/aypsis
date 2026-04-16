@@ -177,7 +177,7 @@
                                 @foreach($pranotas as $pranota)
                                 <tr class="pranota-row hover:bg-gray-50 transition-colors">
                                     <td class="px-3 py-3 whitespace-nowrap text-xs">
-                                        <input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded" data-total="{{ $pranota->total_nominal }}">
+                                        <input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded" data-total="{{ $pranota->grand_total ?? $pranota->total_nominal }}">
                                     </td>
                                     <td class="px-3 py-3 whitespace-nowrap text-xs font-medium text-indigo-600">
                                         {{ $pranota->no_pranota }}
@@ -186,10 +186,10 @@
                                         {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') }}
                                     </td>
                                     <td class="px-3 py-3 whitespace-nowrap text-right text-xs font-semibold">
-                                        Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}
+                                        Rp {{ number_format($pranota->grand_total ?? $pranota->total_nominal, 0, ',', '.') }}
                                     </td>
                                     <td class="px-3 py-3 whitespace-nowrap text-right">
-                                        <input type="number" name="nominal_bayar[{{ $pranota->id }}]" value="{{ (int)$pranota->total_nominal }}" class="nominal-input block w-full text-right border-gray-300 rounded-md text-sm py-1.5 focus:border-indigo-500 focus:ring-indigo-500" step="0.01">
+                                        <input type="number" name="nominal_bayar[{{ $pranota->id }}]" value="{{ (int)($pranota->grand_total ?? $pranota->total_nominal) }}" class="nominal-input block w-full text-right border-gray-300 rounded-md text-sm py-1.5 focus:border-indigo-500 focus:ring-indigo-500" step="0.01">
                                     </td>
                                 </tr>
                                 @endforeach

@@ -114,7 +114,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                     $pranota = PranotaInvoiceVendorSupir::find($pranotaId);
                     $totalTelahDibayar = PembayaranPranotaVendorSupirItem::where('pranota_id', $pranotaId)->sum('nominal');
                     
-                    if ($totalTelahDibayar >= $pranota->total_nominal) {
+                    if ($totalTelahDibayar >= ($pranota->grand_total ?? $pranota->total_nominal)) {
                         $pranota->status_pembayaran = 'lunas';
                     } else {
                         $pranota->status_pembayaran = 'sebagian';
@@ -154,7 +154,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                 
                 if ($totalTelahDibayar <= 0) {
                     $pranota->status_pembayaran = 'belum_dibayar';
-                } elseif ($totalTelahDibayar < $pranota->total_nominal) {
+                } elseif ($totalTelahDibayar < ($pranota->grand_total ?? $pranota->total_nominal)) {
                     $pranota->status_pembayaran = 'sebagian';
                 } else {
                     $pranota->status_pembayaran = 'lunas';
