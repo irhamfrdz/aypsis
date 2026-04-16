@@ -668,6 +668,9 @@ class PembayaranAktivitasLainController extends Controller
     public function destroy(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
         try {
+            // Delete associated COA transactions
+            \App\Models\CoaTransaction::where('nomor_referensi', $pembayaranAktivitasLain->nomor)->delete();
+            
             $pembayaranAktivitasLain->delete();
             return redirect()->route('pembayaran-aktivitas-lain.index')
                 ->with('success', 'Data berhasil dihapus');
