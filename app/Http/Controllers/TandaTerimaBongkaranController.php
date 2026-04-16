@@ -268,14 +268,44 @@ class TandaTerimaBongkaranController extends Controller
 
             // Update gudangs_id pada table kontainers berdasarkan no_kontainer
             if ($suratJalan->no_kontainer) {
-                Kontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)
-                    ->update(['gudangs_id' => $validated['gudang_id']]);
+                $kontainer = Kontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)->first();
+                if ($kontainer) {
+                    $asalGudangId = $kontainer->gudangs_id;
+                    $kontainer->update(['gudangs_id' => $validated['gudang_id']]);
+
+                    // Log to HistoryKontainer
+                    \App\Models\HistoryKontainer::create([
+                        'nomor_kontainer' => $kontainer->nomor_seri_gabungan,
+                        'tipe_kontainer' => $kontainer->tipe_kontainer,
+                        'jenis_kegiatan' => 'Pindahan Gudang',
+                        'tanggal_kegiatan' => $validated['tanggal_tanda_terima'],
+                        'asal_gudang_id' => $asalGudangId,
+                        'gudang_id' => $validated['gudang_id'],
+                        'keterangan' => 'Masuk via Tanda Terima Bongkaran: ' . $validated['nomor_tanda_terima'],
+                        'created_by' => \Illuminate\Support\Facades\Auth::id()
+                    ]);
+                }
             }
 
             // Update gudangs_id pada table stock_kontainers berdasarkan no_kontainer
             if ($suratJalan->no_kontainer) {
-                StockKontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)
-                    ->update(['gudangs_id' => $validated['gudang_id']]);
+                $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)->first();
+                if ($stockKontainer) {
+                    $asalGudangId = $stockKontainer->gudangs_id;
+                    $stockKontainer->update(['gudangs_id' => $validated['gudang_id']]);
+
+                    // Log to HistoryKontainer
+                    \App\Models\HistoryKontainer::create([
+                        'nomor_kontainer' => $stockKontainer->nomor_seri_gabungan,
+                        'tipe_kontainer' => $stockKontainer->tipe_kontainer,
+                        'jenis_kegiatan' => 'Pindahan Gudang',
+                        'tanggal_kegiatan' => $validated['tanggal_tanda_terima'],
+                        'asal_gudang_id' => $asalGudangId,
+                        'gudang_id' => $validated['gudang_id'],
+                        'keterangan' => 'Masuk via Tanda Terima Bongkaran (Stock): ' . $validated['nomor_tanda_terima'],
+                        'created_by' => \Illuminate\Support\Facades\Auth::id()
+                    ]);
+                }
             }
 
             DB::commit();

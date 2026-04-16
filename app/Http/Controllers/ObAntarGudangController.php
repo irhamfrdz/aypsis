@@ -191,19 +191,51 @@ class ObAntarGudangController extends Controller
 
             // Update gudang_id pada kontainer terkait (pindahkan ke gudang tujuan)
             if ($validated['source'] === 'stock') {
-                StockKontainer::where('gudangs_id', $validated['gudang_id'])
+                $stockModel = StockKontainer::where('gudangs_id', $validated['gudang_id'])
                     ->where(function($q) use ($validated) {
                         $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
                           ->orWhere(DB::raw("CONCAT(awalan_kontainer, nomor_seri_kontainer)"), $validated['nomor_kontainer']);
-                    })
-                    ->update(['gudangs_id' => $validated['gudang_tujuan_id']]);
+                    })->first();
+
+                if ($stockModel) {
+                    $asalGudangId = $stockModel->gudangs_id;
+                    $stockModel->update(['gudangs_id' => $validated['gudang_tujuan_id']]);
+
+                    // Record history
+                    \App\Models\HistoryKontainer::create([
+                        'nomor_kontainer' => $validated['nomor_kontainer'],
+                        'tipe_kontainer' => 'stock',
+                        'jenis_kegiatan' => 'Pindahan Gudang',
+                        'tanggal_kegiatan' => now(),
+                        'asal_gudang_id' => $asalGudangId,
+                        'gudang_id' => $validated['gudang_tujuan_id'],
+                        'keterangan' => 'OB Antar Gudang: ' . ($gudangAsal->nama_gudang ?? '-') . ' -> ' . ($gudangTujuan->nama_gudang ?? '-'),
+                        'created_by' => Auth::id(),
+                    ]);
+                }
             } else {
-                Kontainer::where('gudangs_id', $validated['gudang_id'])
+                $kontainerModel = Kontainer::where('gudangs_id', $validated['gudang_id'])
                     ->where(function($q) use ($validated) {
                         $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
                           ->orWhere(DB::raw("CONCAT(awalan_kontainer, nomor_seri_kontainer)"), $validated['nomor_kontainer']);
-                    })
-                    ->update(['gudangs_id' => $validated['gudang_tujuan_id']]);
+                    })->first();
+
+                if ($kontainerModel) {
+                    $asalGudangId = $kontainerModel->gudangs_id;
+                    $kontainerModel->update(['gudangs_id' => $validated['gudang_tujuan_id']]);
+
+                    // Record history
+                    \App\Models\HistoryKontainer::create([
+                        'nomor_kontainer' => $validated['nomor_kontainer'],
+                        'tipe_kontainer' => 'kontainer',
+                        'jenis_kegiatan' => 'Pindahan Gudang',
+                        'tanggal_kegiatan' => now(),
+                        'asal_gudang_id' => $asalGudangId,
+                        'gudang_id' => $validated['gudang_tujuan_id'],
+                        'keterangan' => 'OB Antar Gudang: ' . ($gudangAsal->nama_gudang ?? '-') . ' -> ' . ($gudangTujuan->nama_gudang ?? '-'),
+                        'created_by' => Auth::id(),
+                    ]);
+                }
             }
 
             DB::commit();

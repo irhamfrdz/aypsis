@@ -195,7 +195,20 @@ class StockKontainerPergudangController extends Controller
         $sewasInWarehouse = \App\Models\Kontainer::where('gudangs_id', $gudangId)->get();
         foreach ($sewasInWarehouse as $sewa) {
             if (!in_array($sewa->nomor_seri_gabungan, $inputNumbers)) {
+                $oldGudangId = $sewa->gudangs_id;
                 $sewa->update(['gudangs_id' => null]);
+
+                // Log History
+                \App\Models\HistoryKontainer::create([
+                    'nomor_kontainer' => $sewa->nomor_seri_gabungan,
+                    'tipe_kontainer' => $sewa->tipe_kontainer,
+                    'jenis_kegiatan' => 'Perpindahan Kontainer',
+                    'tanggal_kegiatan' => now(),
+                    'asal_gudang_id' => $oldGudangId,
+                    'gudang_id' => null,
+                    'keterangan' => 'Sync Kontainer: Dihapus dari gudang (tidak ada dalam list sync)',
+                    'created_by' => \Illuminate\Support\Facades\Auth::id()
+                ]);
             }
         }
 
@@ -203,30 +216,71 @@ class StockKontainerPergudangController extends Controller
         $stocksInWarehouse = \App\Models\StockKontainer::where('gudangs_id', $gudangId)->get();
         foreach ($stocksInWarehouse as $stock) {
             if (!in_array($stock->nomor_seri_gabungan, $inputNumbers)) {
+                $oldGudangId = $stock->gudangs_id;
                 $stock->update(['gudangs_id' => null]);
+
+                // Log History
+                \App\Models\HistoryKontainer::create([
+                    'nomor_kontainer' => $stock->nomor_seri_gabungan,
+                    'tipe_kontainer' => $stock->tipe_kontainer,
+                    'jenis_kegiatan' => 'Perpindahan Kontainer',
+                    'tanggal_kegiatan' => now(),
+                    'asal_gudang_id' => $oldGudangId,
+                    'gudang_id' => null,
+                    'keterangan' => 'Sync Kontainer (Stock): Dihapus dari gudang (tidak ada dalam list sync)',
+                    'created_by' => \Illuminate\Support\Facades\Auth::id()
+                ]);
             }
         }
 
         // 2. Add/Move containers from the list to this warehouse (Optional, but usually expected for a sync)
-        // If the user only wants to DELETE excess, step 1 is enough. 
-        // But usually "upload to warehouse" means ensuring these ARE the containers in the warehouse.
         if ($gudangId !== null) {
             foreach ($inputNumbers as $number) {
                 // Try Sewa first
                 $sewa = \App\Models\Kontainer::where('nomor_seri_gabungan', 'like', "%$number%")->first();
                 if ($sewa) {
-                    $sewa->update(['gudangs_id' => $gudangId]);
+                    if ($sewa->gudangs_id != $gudangId) {
+                        $oldGudangId = $sewa->gudangs_id;
+                        $sewa->update(['gudangs_id' => $gudangId]);
+
+                        // Log History
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $sewa->nomor_seri_gabungan,
+                            'tipe_kontainer' => $sewa->tipe_kontainer,
+                            'jenis_kegiatan' => 'Perpindahan Kontainer',
+                            'tanggal_kegiatan' => now(),
+                            'asal_gudang_id' => $oldGudangId,
+                            'gudang_id' => $gudangId,
+                            'keterangan' => 'Sync Kontainer: Dipindahkan ke gudang via Sync',
+                            'created_by' => \Illuminate\Support\Facades\Auth::id()
+                        ]);
+                    }
                     continue;
                 }
                 
                 // Then Stock
                 $stock = \App\Models\StockKontainer::where('nomor_seri_gabungan', 'like', "%$number%")->first();
                 if ($stock) {
-                    $stock->update(['gudangs_id' => $gudangId]);
+                    if ($stock->gudangs_id != $gudangId) {
+                        $oldGudangId = $stock->gudangs_id;
+                        $stock->update(['gudangs_id' => $gudangId]);
+
+                        // Log History
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $stock->nomor_seri_gabungan,
+                            'tipe_kontainer' => $stock->tipe_kontainer,
+                            'jenis_kegiatan' => 'Perpindahan Kontainer',
+                            'tanggal_kegiatan' => now(),
+                            'asal_gudang_id' => $oldGudangId,
+                            'gudang_id' => $gudangId,
+                            'keterangan' => 'Sync Kontainer (Stock): Dipindahkan ke gudang via Sync',
+                            'created_by' => \Illuminate\Support\Facades\Auth::id()
+                        ]);
+                    }
                 }
             }
         }
 
-        return redirect()->back()->with('success', 'Sinkronisasi kontainer gudang berhasil. Kontainer yang tidak ada dalam daftar telah dihapus lokasinya dari gudang ini.');
+        return redirect()->back()->with('success', 'Sinkronisasi kontainer gudang berhasil. Kontainer yang tidak ada dalam daftar telah dihapus lokasinya dari gudang ini, dan pergerakan telah dicatat di history.');
     }
 }

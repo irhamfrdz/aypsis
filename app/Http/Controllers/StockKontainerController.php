@@ -403,8 +403,8 @@ class StockKontainerController extends Controller
                     // Check if exists
                     $existing = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
 
-                    if ($existing) {
                         // Update existing
+                        $asalGudangId = $existing->gudangs_id;
                         $existing->update([
                             'awalan_kontainer' => $awalan,
                             'nomor_seri_kontainer' => $nomorSeri,
@@ -416,6 +416,19 @@ class StockKontainerController extends Controller
                             'tahun_pembuatan' => $tahunPembuatanValue,
                             'keterangan' => $keterangan ?: $existing->keterangan,
                         ]);
+                        
+                        if ($asalGudangId != $gudangId) {
+                            \App\Models\HistoryKontainer::create([
+                                'nomor_kontainer' => $nomorKontainer,
+                                'tipe_kontainer' => 'stock',
+                                'jenis_kegiatan' => 'Update via Import',
+                                'tanggal_kegiatan' => now(),
+                                'asal_gudang_id' => $asalGudangId,
+                                'gudang_id' => $gudangId,
+                                'keterangan' => 'Import CSV Stock Kontainer',
+                                'created_by' => Auth::id(),
+                            ]);
+                        }
                         $updated++;
                     } else {
                         // Create new
@@ -431,6 +444,19 @@ class StockKontainerController extends Controller
                             'tahun_pembuatan' => $tahunPembuatanValue,
                             'keterangan' => $keterangan,
                         ]);
+
+                        if ($gudangId) {
+                            \App\Models\HistoryKontainer::create([
+                                'nomor_kontainer' => $nomorKontainer,
+                                'tipe_kontainer' => 'stock',
+                                'jenis_kegiatan' => 'Masuk (Import)',
+                                'tanggal_kegiatan' => now(),
+                                'asal_gudang_id' => null,
+                                'gudang_id' => $gudangId,
+                                'keterangan' => 'Import CSV Stock Kontainer baru',
+                                'created_by' => Auth::id(),
+                            ]);
+                        }
                         $imported++;
                     }
 
@@ -596,7 +622,21 @@ class StockKontainerController extends Controller
                 }
 
                 // Update gudangs_id
+                $asalGudangId = $stockKontainer->gudangs_id;
                 $stockKontainer->update(['gudangs_id' => $gudangId]);
+                
+                if ($asalGudangId != $gudangId) {
+                    \App\Models\HistoryKontainer::create([
+                        'nomor_kontainer' => $nomorKontainer,
+                        'tipe_kontainer' => 'stock',
+                        'jenis_kegiatan' => 'Update via Import Gudang',
+                        'tanggal_kegiatan' => now(),
+                        'asal_gudang_id' => $asalGudangId,
+                        'gudang_id' => $gudangId,
+                        'keterangan' => 'Update Gudang via CSV/Excel',
+                        'created_by' => Auth::id(),
+                    ]);
+                }
                 $updated++;
 
             } catch (\Exception $e) {
@@ -715,7 +755,21 @@ class StockKontainerController extends Controller
                     }
 
                     // Update gudangs_id
+                    $asalGudangId = $stockKontainer->gudangs_id;
                     $stockKontainer->update(['gudangs_id' => $gudangId]);
+                    
+                    if ($asalGudangId != $gudangId) {
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $nomorKontainer,
+                            'tipe_kontainer' => 'stock',
+                            'jenis_kegiatan' => 'Update via Import Gudang',
+                            'tanggal_kegiatan' => now(),
+                            'asal_gudang_id' => $asalGudangId,
+                            'gudang_id' => $gudangId,
+                            'keterangan' => 'Update Gudang via Excel (XLSX)',
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
                     $updated++;
 
                 } catch (\Exception $e) {

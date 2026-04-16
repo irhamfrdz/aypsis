@@ -237,13 +237,39 @@ class CheckpointController extends Controller
 
                         // Set gudangs_id to null (kontainer dalam perjalanan)
                         if ($kontainer) {
+                            $oldGudangId = $kontainer->gudangs_id;
                             $kontainer->update(['gudangs_id' => null]);
                             Log::info("Kontainer {$nomorRaw} gudangs_id set to null - dalam perjalanan");
+                            
+                            // Log history
+                            \App\Models\HistoryKontainer::create([
+                                'nomor_kontainer' => $nomorRaw,
+                                'tipe_kontainer' => 'kontainer',
+                                'jenis_kegiatan' => 'Keluar (Checkpoint)',
+                                'tanggal_kegiatan' => $request->input('tanggal_checkpoint') ?? now(),
+                                'asal_gudang_id' => $oldGudangId,
+                                'gudang_id' => null,
+                                'keterangan' => 'Dalam Perjalanan (Checkpoint)',
+                                'created_by' => Auth::id(),
+                            ]);
                         }
                         
                         if ($stockKontainer) {
+                            $oldGudangId = $stockKontainer->gudangs_id;
                             $stockKontainer->update(['gudangs_id' => null]);
                             Log::info("Stock kontainer {$nomorRaw} gudangs_id set to null - dalam perjalanan");
+
+                            // Log history
+                            \App\Models\HistoryKontainer::create([
+                                'nomor_kontainer' => $nomorRaw,
+                                'tipe_kontainer' => 'stock',
+                                'jenis_kegiatan' => 'Keluar (Checkpoint)',
+                                'tanggal_kegiatan' => $request->input('tanggal_checkpoint') ?? now(),
+                                'asal_gudang_id' => $oldGudangId,
+                                'gudang_id' => null,
+                                'keterangan' => 'Dalam Perjalanan (Checkpoint)',
+                                'created_by' => Auth::id(),
+                            ]);
                             
                             if ($isAntarKontainerPerbaikan) {
                                 // Untuk antar kontainer perbaikan, status menjadi maintenance
@@ -490,15 +516,41 @@ class CheckpointController extends Controller
                     // Update kontainer
                     $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
                     if ($kontainer) {
+                        $oldGudangId = $kontainer->gudangs_id;
                         $kontainer->update(['gudangs_id' => null]);
                         Log::info("Kontainer {$nomorRaw} gudangs_id set to null - surat jalan checkpoint");
+
+                        // Log history
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $nomorRaw,
+                            'tipe_kontainer' => 'kontainer',
+                            'jenis_kegiatan' => 'Keluar (Checkpoint SJ)',
+                            'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
+                            'asal_gudang_id' => $oldGudangId,
+                            'gudang_id' => null,
+                            'keterangan' => 'Dalam Perjalanan (Checkpoint SJ: ' . $suratJalan->no_surat_jalan . ')',
+                            'created_by' => Auth::id(),
+                        ]);
                     }
                     
                     // Update stock kontainer
                     $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
                     if ($stockKontainer) {
+                        $oldGudangId = $stockKontainer->gudangs_id;
                         $stockKontainer->update(['gudangs_id' => null]);
                         Log::info("Stock kontainer {$nomorRaw} gudangs_id set to null - surat jalan checkpoint");
+
+                        // Log history
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $nomorRaw,
+                            'tipe_kontainer' => 'stock',
+                            'jenis_kegiatan' => 'Keluar (Checkpoint SJ)',
+                            'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
+                            'asal_gudang_id' => $oldGudangId,
+                            'gudang_id' => null,
+                            'keterangan' => 'Dalam Perjalanan (Checkpoint SJ: ' . $suratJalan->no_surat_jalan . ')',
+                            'created_by' => Auth::id(),
+                        ]);
                     }
                     
                     // Create kontainer_perjalanans record
@@ -880,15 +932,41 @@ class CheckpointController extends Controller
                     // Update kontainer
                     $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
                     if ($kontainer) {
+                        $oldGudangId = $kontainer->gudangs_id;
                         $kontainer->update(['gudangs_id' => null]);
                         Log::info("Kontainer {$nomorRaw} gudangs_id set to null - surat jalan bongkaran checkpoint");
+
+                        // Log history
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $nomorRaw,
+                            'tipe_kontainer' => 'kontainer',
+                            'jenis_kegiatan' => 'Keluar (Checkpoint Bongkaran)',
+                            'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
+                            'asal_gudang_id' => $oldGudangId,
+                            'gudang_id' => null,
+                            'keterangan' => 'Dalam Perjalanan (Checkpoint Bongkaran ID: ' . $id . ')',
+                            'created_by' => Auth::id(),
+                        ]);
                     }
                     
                     // Update stock kontainer
                     $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
                     if ($stockKontainer) {
+                        $oldGudangId = $stockKontainer->gudangs_id;
                         $stockKontainer->update(['gudangs_id' => null]);
                         Log::info("Stock kontainer {$nomorRaw} gudangs_id set to null - surat jalan bongkaran checkpoint");
+
+                        // Log history
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $nomorRaw,
+                            'tipe_kontainer' => 'stock',
+                            'jenis_kegiatan' => 'Keluar (Checkpoint Bongkaran)',
+                            'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
+                            'asal_gudang_id' => $oldGudangId,
+                            'gudang_id' => null,
+                            'keterangan' => 'Dalam Perjalanan (Checkpoint Bongkaran ID: ' . $id . ')',
+                            'created_by' => Auth::id(),
+                        ]);
                     }
                     
                     // Note: For surat_jalan_bongkaran, we don't have a direct surat_jalan_id

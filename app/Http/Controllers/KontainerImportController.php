@@ -304,6 +304,7 @@ class KontainerImportController extends Controller
                         $kontainer->status = $status;
                     }
 
+                    $asalGudangId = $kontainer->gudangs_id;
                     // Gudang (opsional, kolom 9)
                     if (isset($data[8]) && !empty(trim($data[8]))) {
                         $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . trim($data[8]) . '%')->first();
@@ -313,6 +314,18 @@ class KontainerImportController extends Controller
                     }
                     
                     $kontainer->save();
+                    if ($asalGudangId != $kontainer->gudangs_id) {
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $nomorSeriGabungan,
+                            'tipe_kontainer' => 'kontainer',
+                            'jenis_kegiatan' => 'Update via Import',
+                            'tanggal_kegiatan' => now(),
+                            'asal_gudang_id' => $asalGudangId,
+                            'gudang_id' => $kontainer->gudangs_id,
+                            'keterangan' => 'Import CSV Master Kontainer (Update)',
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
                     $updated++;
                 } else {
                     // Buat kontainer baru
@@ -374,6 +387,18 @@ class KontainerImportController extends Controller
                     }
                     
                     $newKontainer->save();
+                    if ($newKontainer->gudangs_id) {
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $nomorSeriGabungan,
+                            'tipe_kontainer' => 'kontainer',
+                            'jenis_kegiatan' => 'Masuk (Import)',
+                            'tanggal_kegiatan' => now(),
+                            'asal_gudang_id' => null,
+                            'gudang_id' => $newKontainer->gudangs_id,
+                            'keterangan' => 'Import CSV Master Kontainer baru',
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
                     $created++;
                 }
             }
@@ -510,6 +535,7 @@ class KontainerImportController extends Controller
 
                 $existing = Kontainer::where('nomor_seri_gabungan', $unitNumber)->first();
                 if ($existing) {
+                    $asalGudangId = $existing->gudangs_id;
                     $existing->fill($payload);
                     // Preserve existing status if already set by business process.
                     if (!empty($existing->status)) {
@@ -517,11 +543,37 @@ class KontainerImportController extends Controller
                         $existing->fill($payload);
                     }
                     $existing->save();
+                    
+                    if ($asalGudangId != $existing->gudangs_id) {
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $unitNumber,
+                            'tipe_kontainer' => 'kontainer',
+                            'jenis_kegiatan' => 'Update via Import (Master Unit)',
+                            'tanggal_kegiatan' => now(),
+                            'asal_gudang_id' => $asalGudangId,
+                            'gudang_id' => $existing->gudangs_id,
+                            'keterangan' => 'Import Master Unit (Update)',
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
                     $updated++;
                 } else {
-                    Kontainer::create(array_merge($payload, [
+                    $newKontainer = Kontainer::create(array_merge($payload, [
                         'nomor_seri_gabungan' => $unitNumber,
                     ]));
+                    
+                    if ($newKontainer->gudangs_id) {
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $unitNumber,
+                            'tipe_kontainer' => 'kontainer',
+                            'jenis_kegiatan' => 'Masuk (Import Master Unit)',
+                            'tanggal_kegiatan' => now(),
+                            'asal_gudang_id' => null,
+                            'gudang_id' => $newKontainer->gudangs_id,
+                            'keterangan' => 'Import Master Unit baru',
+                            'created_by' => Auth::id(),
+                        ]);
+                    }
                     $created++;
                 }
             }
@@ -857,7 +909,21 @@ class KontainerImportController extends Controller
                             $updateData['gudangs_id'] = $gudangsId;
                         }
                         
+                        $asalGudangId = $existingKontainer->gudangs_id;
                         $existingKontainer->update($updateData);
+                        
+                        if (isset($updateData['gudangs_id']) && $asalGudangId != $updateData['gudangs_id']) {
+                            \App\Models\HistoryKontainer::create([
+                                'nomor_kontainer' => $nomorSeriGabungan,
+                                'tipe_kontainer' => 'kontainer',
+                                'jenis_kegiatan' => 'Update via Import Bulk',
+                                'tanggal_kegiatan' => now(),
+                                'asal_gudang_id' => $asalGudangId,
+                                'gudang_id' => $updateData['gudangs_id'],
+                                'keterangan' => 'Import Bulk Master Kontainer (Update)',
+                                'created_by' => Auth::id(),
+                            ]);
+                        }
                         $stats['updated']++;
                     } else {
                         // Create new
@@ -888,7 +954,20 @@ class KontainerImportController extends Controller
                             $createData['gudangs_id'] = $gudangsId;
                         }
                         
-                        Kontainer::create($createData);
+                        $newKontainer = Kontainer::create($createData);
+                        
+                        if (isset($createData['gudangs_id'])) {
+                            \App\Models\HistoryKontainer::create([
+                                'nomor_kontainer' => $nomorSeriGabungan,
+                                'tipe_kontainer' => 'kontainer',
+                                'jenis_kegiatan' => 'Masuk (Import Bulk)',
+                                'tanggal_kegiatan' => now(),
+                                'asal_gudang_id' => null,
+                                'gudang_id' => $createData['gudangs_id'],
+                                'keterangan' => 'Import Bulk Master Kontainer baru',
+                                'created_by' => Auth::id(),
+                            ]);
+                        }
                         $stats['success']++;
                     }
 

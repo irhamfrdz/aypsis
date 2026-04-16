@@ -641,12 +641,44 @@ class TandaTerimaTanpaSuratJalanBatamController extends Controller
                 $noKontainer = $request->input('no_kontainer');
                 
                 // Update Kontainer
-                Kontainer::where('nomor_seri_gabungan', $noKontainer)
-                    ->update(['gudangs_id' => $gudangId]);
+                $kontainerModel = Kontainer::where('nomor_seri_gabungan', $noKontainer)->first();
+                if ($kontainerModel) {
+                    $asalGudangId = $kontainerModel->gudangs_id;
+                    $kontainerModel->update(['gudangs_id' => $gudangId]);
+
+                    // Log to HistoryKontainer
+                    \App\Models\HistoryKontainer::create([
+                        'nomor_kontainer' => $noKontainer,
+                        'tipe_kontainer' => $kontainerModel->tipe_kontainer ?? 'fcl',
+                        'jenis_kegiatan' => 'Pindahan Gudang',
+                        'tanggal_kegiatan' => $validated['tanggal_tanda_terima'],
+                        'asal_gudang_id' => $asalGudangId,
+                        'gudang_id' => $gudangId,
+                        'keterangan' => 'Masuk via Tanda Terima Tanpa Surat Jalan Batam: ' . $validated['no_tanda_terima'],
+                        'created_by' => \Illuminate\Support\Facades\Auth::id()
+                    ]);
+                }
                     
                 // Update StockKontainer
-                StockKontainer::where('nomor_seri_gabungan', $noKontainer)
-                    ->update(['gudangs_id' => $gudangId]);
+                $stockKontainerModel = StockKontainer::where('nomor_seri_gabungan', $noKontainer)->first();
+                if ($stockKontainerModel) {
+                    $asalGudangId = $stockKontainerModel->gudangs_id;
+                    $stockKontainerModel->update(['gudangs_id' => $gudangId]);
+
+                    // Log to HistoryKontainer (only if not already logged by Kontainer model)
+                    if (!$kontainerModel) {
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $noKontainer,
+                            'tipe_kontainer' => $stockKontainerModel->tipe_kontainer ?? 'fcl',
+                            'jenis_kegiatan' => 'Pindahan Gudang',
+                            'tanggal_kegiatan' => $validated['tanggal_tanda_terima'],
+                            'asal_gudang_id' => $asalGudangId,
+                            'gudang_id' => $gudangId,
+                            'keterangan' => 'Masuk via Tanda Terima Tanpa Surat Jalan Batam (Stock): ' . $validated['no_tanda_terima'],
+                            'created_by' => \Illuminate\Support\Facades\Auth::id()
+                        ]);
+                    }
+                }
             }
 
             // Auto-create prospek for all tanda terima (sesuai permintaan user)
