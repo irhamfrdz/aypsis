@@ -5480,6 +5480,18 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->name('stock-ban.destroy')
                ->middleware('can:stock-ban-delete');
 
+          // Other Stock Items Edit/Update/Delete Routes
+          Route::get('stock-ban/edit-lain/{type}/{id}', [\App\Http\Controllers\StockBanController::class, 'editStockLain'])
+               ->name('stock-ban.edit-lain')
+               ->middleware('can:stock-ban-update');
+          Route::put('stock-ban/update-lain/{type}/{id}', [\App\Http\Controllers\StockBanController::class, 'updateStockLain'])
+               ->name('stock-ban.update-lain')
+               ->middleware('can:stock-ban-update');
+          Route::delete('stock-ban/destroy-lain/{type}/{id}', [\App\Http\Controllers\StockBanController::class, 'destroyStockLain'])
+               ->name('stock-ban.destroy-lain')
+               ->middleware('can:stock-ban-delete');
+
+
           // Invoice Kanisir Ban
           Route::get('invoice-kanisir-ban/{invoice_kanisir_ban}/print', [\App\Http\Controllers\InvoiceKanisirBanController::class, 'print'])->name('invoice-kanisir-ban.print');
           Route::resource('invoice-kanisir-ban', \App\Http\Controllers\InvoiceKanisirBanController::class);

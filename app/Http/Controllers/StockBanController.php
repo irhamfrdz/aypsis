@@ -261,6 +261,89 @@ class StockBanController extends Controller
     }
 
     /**
+     * Show the form for editing other stock items.
+     */
+    public function editStockLain($type, $id)
+    {
+        $model = $this->getModelByType($type);
+        $item = $model::with('namaStockBan')->findOrFail($id);
+        
+        $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
+        $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
+        
+        return view('stock-ban.edit-stock-lain', compact('item', 'type', 'namaStockBans', 'masterGudangBans'));
+    }
+
+    /**
+     * Update the specified other stock item in storage.
+     */
+    public function updateStockLain(Request $request, $type, $id)
+    {
+        $model = $this->getModelByType($type);
+        $item = $model::findOrFail($id);
+        
+        $request->validate([
+            'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
+            'qty' => 'required|integer|min:0',
+            'harga_beli' => 'nullable|numeric|min:0',
+            'ukuran' => 'nullable|string|max:255',
+            'type' => 'nullable|string|max:50',
+            'tanggal_masuk' => 'required|date',
+            'lokasi' => 'nullable|string|max:255',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        $item->update([
+            'nama_stock_ban_id' => $request->nama_stock_ban_id,
+            'qty' => $request->qty,
+            'harga_beli' => $request->harga_beli,
+            'ukuran' => $request->ukuran,
+            'type' => $request->type ?? $item->type,
+            'tanggal_masuk' => $request->tanggal_masuk,
+            'lokasi' => $request->lokasi,
+            'keterangan' => $request->keterangan,
+            'updated_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('stock-ban.index', ['tab' => 'barang-lainnya'])->with('success', 'Data stock ' . ucwords(str_replace('-', ' ', $type)) . ' berhasil diperbarui');
+    }
+
+    /**
+     * Remove the specified other stock item from storage.
+     */
+    public function destroyStockLain($type, $id)
+    {
+        $model = $this->getModelByType($type);
+        $item = $model::findOrFail($id);
+        $item->delete();
+
+        return redirect()->route('stock-ban.index', ['tab' => 'barang-lainnya'])->with('success', 'Data stock ' . ucwords(str_replace('-', ' ', $type)) . ' berhasil dihapus');
+    }
+
+    /**
+     * Helper to get model class by type string.
+     */
+    private function getModelByType($type)
+    {
+        switch ($type) {
+            case 'ban-dalam':
+            case 'ban-perut':
+            case 'lock-kontainer':
+            case 'lainnya':
+            case 'cat':
+            case 'majun':
+                return \App\Models\StockBanDalam::class;
+            case 'ring-velg':
+                return \App\Models\StockRingVelg::class;
+            case 'velg':
+                return \App\Models\StockVelg::class;
+            default:
+                abort(404);
+        }
+    }
+
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
