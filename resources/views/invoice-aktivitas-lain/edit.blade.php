@@ -2974,7 +2974,7 @@ console.log('Akun COAs data:', akunCoasData);
             let alatBeratOptions = '<option value="">Pilih Alat Berat</option>';
             alatBeratsData.forEach(alat => {
                 const selected = existingData.alat_berat_id == alat.id ? 'selected' : '';
-                alatBeratOptions += `<option value="${alat.id}" data-harian="${alat.tarif_harian || 0}" data-bulanan="${alat.tarif_bulanan || 0}" ${selected}>${alat.nama} - ${alat.merek}</option>`;
+                alatBeratOptions += `<option value="${alat.id}" data-harian="${alat.tarif_harian || 0}" data-bulanan="${alat.tarif_bulanan || 0}" ${selected}>${alat.nama} - ${alat.merk}</option>`;
             });
             
             inputGroup.innerHTML = `
