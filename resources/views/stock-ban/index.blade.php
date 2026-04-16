@@ -1198,11 +1198,14 @@
                             // Add Lain-lain (Cat, Majun, etc)
                             foreach($stockLainLains as $item) {
                                 $jenisDisplay = 'Lainnya';
+                                $modelType = 'lainnya';
                                 $nama = $item->namaStockBan->nama ?? '';
                                 if (stripos($nama, 'cat') !== false) {
                                     $jenisDisplay = 'Cat';
+                                    $modelType = 'cat';
                                 } elseif (stripos($nama, 'majun') !== false) {
                                     $jenisDisplay = 'Majun';
+                                    $modelType = 'majun';
                                 }
 
                                 $allItems->push((object)[
