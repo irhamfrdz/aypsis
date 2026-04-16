@@ -682,7 +682,11 @@
                                     <span id="bu_total_dpp_display" class="text-lg font-bold text-gray-800">Rp 0</span>
                                 </div>
                                 <div class="text-right">
-                                    <span class="block text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Total PPh 2%</span>
+                                    <span class="block text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-1">Total PPN 11%</span>
+                                    <span id="bu_total_ppn_display" class="text-lg font-bold text-blue-600">Rp 0</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="block text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Total PPh 10%</span>
                                     <span id="bu_total_pph_display" class="text-lg font-bold text-orange-600">Rp 0</span>
                                 </div>
                                 <div class="bg-yellow-600 px-6 py-3 rounded-2xl text-right shadow-md">
@@ -3124,6 +3128,7 @@ console.log('Akun COAs data:', akunCoasData);
 
                 <!-- Hidden Financial Fields (Keep individual for DB) -->
                 <input type="hidden" name="biaya_utilities_detail[${index}][pph]" class="bu-pph" value="${existingData.pph || '0'}">
+                <input type="hidden" name="biaya_utilities_detail[${index}][ppn]" class="bu-ppn" value="${existingData.ppn || '0'}">
                 <input type="hidden" name="biaya_utilities_detail[${index}][grand_total]" class="bu-grand-total" value="${existingData.grand_total || ''}">
             `;
             
@@ -3178,6 +3183,7 @@ console.log('Akun COAs data:', akunCoasData);
             const tarifSatuanInput = entry.querySelector('.bu-tarif-satuan');
             const dppInput = entry.querySelector('.bu-dpp');
             const pphInput = entry.querySelector('.bu-pph');
+            const ppnInput = entry.querySelector('.bu-ppn');
             const grandTotalInput = entry.querySelector('.bu-grand-total');
 
             function applyTarifFromAlat() {
@@ -3201,16 +3207,22 @@ console.log('Akun COAs data:', akunCoasData);
                 const dpp = jumlah * tarif;
                 dppInput.value = dpp;
                 
-                // Base PPh is 2% by default
-                let pph = Math.round(dpp * 0.02);
+                // PPh is 10%
+                let pph = Math.round(dpp * 0.10);
+                // PPN is 11%
+                let ppn = Math.round(dpp * 0.11);
+                
                 // Allow manual override for pph
-                if (pphInput.value === '') {
+                if (pphInput.value === '' || pphInput.value == 0) {
                     pphInput.value = pph;
                 } else {
                     pph = parseFloat(pphInput.value) || 0;
                 }
 
-                const grandTotal = dpp - pph;
+                // Set PPN
+                ppnInput.value = ppn;
+
+                const grandTotal = dpp + ppn - pph;
                 grandTotalInput.value = grandTotal;
                 
                 updateTotalFromBiayaUtilities();
@@ -3231,29 +3243,35 @@ console.log('Akun COAs data:', akunCoasData);
             const entries = document.querySelectorAll('.bu-entry-row');
             let totalDPP = 0;
             let totalPPH = 0;
+            let totalPPN = 0;
             let totalGrand = 0;
             
             document.querySelectorAll('.bu-entry-row').forEach(row => {
                 const dppInput = row.querySelector('.bu-dpp');
                 const pphInput = row.querySelector('.bu-pph');
+                const ppnInput = row.querySelector('.bu-ppn');
                 const grandInput = row.querySelector('.bu-grand-total');
                 
                 const dpp = dppInput ? parseFloat(dppInput.value) || 0 : 0;
                 const pph = pphInput ? parseFloat(pphInput.value) || 0 : 0;
+                const ppn = ppnInput ? parseFloat(ppnInput.value) || 0 : 0;
                 const grand = grandInput ? parseFloat(grandInput.value) || 0 : 0;
                 
                 totalDPP += dpp;
                 totalPPH += pph;
+                totalPPN += ppn;
                 totalGrand += grand;
             });
             
             // Update Utilities Section Footer Display
             const dppDisplay = document.getElementById('bu_total_dpp_display');
             const pphDisplay = document.getElementById('bu_total_pph_display');
+            const ppnDisplay = document.getElementById('bu_total_ppn_display');
             const grandDisplay = document.getElementById('bu_total_grand_display');
             
             if (dppDisplay) dppDisplay.textContent = 'Rp ' + Math.round(totalDPP).toLocaleString('id-ID');
             if (pphDisplay) pphDisplay.textContent = 'Rp ' + Math.round(totalPPH).toLocaleString('id-ID');
+            if (ppnDisplay) ppnDisplay.textContent = 'Rp ' + Math.round(totalPPN).toLocaleString('id-ID');
             if (grandDisplay) grandDisplay.textContent = 'Rp ' + Math.round(totalGrand).toLocaleString('id-ID');
             
             // Only update main totals if utilities wrapper is not hidden

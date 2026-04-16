@@ -19,6 +19,7 @@ class InvoiceAktivitasLainUtility extends Model
         'tarif_satuan',
         'dpp',
         'pph',
+        'ppn',
         'grand_total',
         'keterangan'
     ];

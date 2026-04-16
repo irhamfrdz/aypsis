@@ -227,6 +227,7 @@ class InvoiceAktivitasLainController extends Controller
             'pph_labuh', 
             'total', 
             'pph', 
+            'ppn',
             'grand_total',
             'subtotal',
             'lwbp_baru',
@@ -259,7 +260,17 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
         }
-        
+
+        if (isset($inputs['biaya_utilities_detail']) && is_array($inputs['biaya_utilities_detail'])) {
+            foreach ($inputs['biaya_utilities_detail'] as &$item) {
+                foreach ($item as $key => $value) {
+                    if (is_string($value) && in_array($key, ['jumlah_periode', 'tarif_satuan', 'dpp', 'pph', 'ppn', 'grand_total'])) {
+                        $item[$key] = str_replace(['.', ','], '', $value);
+                    }
+                }
+            }
+        }
+
         $request->merge($inputs);
         // Check if this is utilities or listrik invoice
         $isUtilities = false;
@@ -364,9 +375,10 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_utilities_detail.*.jenis_tarif' => 'nullable|in:harian,bulanan',
             'biaya_utilities_detail.*.jumlah_periode' => 'nullable|numeric|min:0',
             'biaya_utilities_detail.*.tarif_satuan' => 'nullable|numeric|min:0',
-            'biaya_utilities_detail.*.dpp' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.dpp' => 'required_with:biaya_utilities_detail|numeric|min:0',
             'biaya_utilities_detail.*.pph' => 'nullable|numeric|min:0',
-            'biaya_utilities_detail.*.grand_total' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.ppn' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.grand_total' => 'required_with:biaya_utilities_detail|numeric|min:0',
             'biaya_utilities_detail.*.keterangan' => 'nullable|string',
         ]);
         
@@ -758,6 +770,7 @@ class InvoiceAktivitasLainController extends Controller
             'pph_labuh', 
             'total', 
             'pph', 
+            'ppn',
             'grand_total',
             'subtotal',
             'lwbp_baru',
@@ -794,7 +807,7 @@ class InvoiceAktivitasLainController extends Controller
         if (isset($inputs['biaya_utilities_detail']) && is_array($inputs['biaya_utilities_detail'])) {
             foreach ($inputs['biaya_utilities_detail'] as &$item) {
                 foreach ($item as $key => $value) {
-                    if (is_string($value) && in_array($key, ['jumlah_periode', 'tarif_satuan', 'dpp', 'pph', 'grand_total'])) {
+                    if (is_string($value) && in_array($key, ['jumlah_periode', 'tarif_satuan', 'dpp', 'pph', 'ppn', 'grand_total'])) {
                         $item[$key] = str_replace(['.', ','], '', $value);
                     }
                 }
@@ -908,6 +921,7 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_utilities_detail.*.referensi' => 'nullable|string|max:255',
             'biaya_utilities_detail.*.dpp' => 'required_with:biaya_utilities_detail|numeric|min:0',
             'biaya_utilities_detail.*.pph' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.ppn' => 'nullable|numeric|min:0',
             'biaya_utilities_detail.*.grand_total' => 'required_with:biaya_utilities_detail|numeric|min:0',
             'biaya_utilities_detail.*.keterangan' => 'nullable|string',
         ]);

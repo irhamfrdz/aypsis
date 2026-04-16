@@ -315,10 +315,14 @@
                                         <p class="text-gray-900 font-bold text-right">Rp {{ number_format($utility->dpp, 0, ',', '.') }}</p>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-red-600 mb-1">PPh 2%</label>
+                                        <label class="block text-xs font-medium text-blue-600 mb-1">PPN 11%</label>
+                                        <p class="text-blue-700 font-bold text-right">+ Rp {{ number_format($utility->ppn, 0, ',', '.') }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-red-600 mb-1">PPh 10%</label>
                                         <p class="text-red-700 font-bold text-right">- Rp {{ number_format($utility->pph, 0, ',', '.') }}</p>
                                     </div>
-                                    <div class="md:col-span-2">
+                                    <div>
                                         <label class="block text-xs font-medium text-green-600 mb-1">Total</label>
                                         <p class="text-green-700 font-bold text-right text-lg">Rp {{ number_format($utility->grand_total, 0, ',', '.') }}</p>
                                     </div>

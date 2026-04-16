@@ -244,6 +244,7 @@
         @php
             $totalDPP = 0;
             $totalPPH = 0;
+            $totalPPN = 0;
             $totalGrandTotal = 0;
         @endphp
 
@@ -253,13 +254,14 @@
             <thead>
                 <tr>
                     <th style="width: 4%;">No</th>
-                    <th style="width: 12%;">Tanggal</th>
-                    <th style="width: 20%;">Alat Berat</th>
+                    <th style="width: 10%;">Tanggal</th>
+                    <th style="width: 18%;">Alat Berat</th>
                     <th style="width: 10%;">Periode</th>
-                    <th style="width: 14%;">Tarif Satuan</th>
-                    <th style="width: 13%;">DPP</th>
-                    <th style="width: 12%;">PPH</th>
-                    <th style="width: 15%;">Total</th>
+                    <th style="width: 13%;">Tarif Satuan</th>
+                    <th style="width: 12%;">DPP</th>
+                    <th style="width: 10%;">PPN (11%)</th>
+                    <th style="width: 10%;">PPH (10%)</th>
+                    <th style="width: 13%;">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -276,12 +278,14 @@
                         </td>
                         <td class="text-right">Rp {{ number_format($utility->tarif_satuan, 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format($utility->dpp, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format($utility->ppn, 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format($utility->pph, 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format($utility->grand_total, 0, ',', '.') }}</td>
                     </tr>
                     @php
                         $totalDPP += $utility->dpp;
                         $totalPPH += $utility->pph;
+                        $totalPPN += $utility->ppn;
                         $totalGrandTotal += $utility->grand_total;
                     @endphp
                 @endforeach
@@ -289,6 +293,7 @@
                 <tr class="total-row">
                     <td colspan="5" class="text-right">TOTAL KESELURUHAN</td>
                     <td class="text-right">Rp {{ number_format($totalDPP, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($totalPPN, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
                 </tr>
