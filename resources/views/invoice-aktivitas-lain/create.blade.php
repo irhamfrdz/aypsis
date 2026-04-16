@@ -618,21 +618,69 @@
 
                 <!-- Biaya Utilities Multiple Entries -->
                 <div id="biaya_utilities_wrapper" class="hidden md:col-span-2">
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="block text-sm font-medium text-gray-700">
-                            Detail Biaya Utilities (Alat Berat) <span class="text-red-500">*</span>
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="flex items-center text-lg font-bold text-yellow-800">
+                            <span class="bg-yellow-100 p-2 rounded-lg mr-3">
+                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                            </span>
+                            Detail Biaya Utilities (Alat Berat)
                         </label>
                         <button type="button" 
                                 id="add_biaya_utilities_btn"
-                                class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition inline-flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg transform active:scale-95">
+                            <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                             </svg>
-                            Tambah Utilities
+                            Tambah Alat Berat
                         </button>
                     </div>
-                    <div id="biaya_utilities_container" class="space-y-4">
-                        <!-- Biaya utilities entries will be added here dynamically -->
+
+                    <!-- Main Section Container -->
+                    <div class="bg-white rounded-2xl border-2 border-yellow-200 shadow-sm overflow-hidden">
+                        <!-- Shared Info Header -->
+                        <div class="p-5 bg-yellow-50/50 border-b-2 border-yellow-100">
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                                <div class="md:col-span-3">
+                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Tanggal <span class="text-red-500">*</span></label>
+                                    <div class="relative">
+                                        <input type="date" id="bu_shared_tanggal" class="w-full pl-3 pr-3 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" required>
+                                    </div>
+                                </div>
+                                <div class="md:col-span-5">
+                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Penerima Pembayaran <span class="text-red-500">*</span></label>
+                                    <input type="text" id="bu_shared_penerima" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="Nama perusahaan atau perorangan" required>
+                                </div>
+                                <div class="md:col-span-4">
+                                    <label class="block text-[11px] font-black text-yellow-700 uppercase tracking-widest mb-1.5">Referensi <small class="text-yellow-600 font-medium"> (Opsional)</small></label>
+                                    <input type="text" id="bu_shared_referensi" class="w-full px-4 py-2.5 bg-white border-2 border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm transition-all" placeholder="No. Kontrak / Referensi">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Equipment List -->
+                        <div id="biaya_utilities_container" class="divide-y divide-yellow-100">
+                            <!-- Rows will be injected here -->
+                        </div>
+
+                        <!-- Summary Footer -->
+                        <div class="p-5 bg-yellow-50/30 border-t-2 border-yellow-100">
+                            <div class="flex flex-col md:flex-row justify-end items-center gap-6">
+                                <div class="text-right">
+                                    <span class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Total DPP</span>
+                                    <span id="bu_total_dpp_display" class="text-lg font-bold text-gray-800">Rp 0</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="block text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Total PPh 2%</span>
+                                    <span id="bu_total_pph_display" class="text-lg font-bold text-orange-600">Rp 0</span>
+                                </div>
+                                <div class="bg-yellow-600 px-6 py-3 rounded-2xl text-right shadow-md">
+                                    <span class="block text-[10px] font-bold text-yellow-100 uppercase tracking-widest mb-0.5">Grand Total Utilities</span>
+                                    <span id="bu_total_grand_display" class="text-xl font-black text-white">Rp 0</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1603,12 +1651,14 @@ console.log('Akun COAs data:', akunCoasData);
                         dppWrapper.classList.add('hidden');
                         if (dppInput) dppInput.value = '';
                     }
-                } else if (namaJenisBiaya.includes('utilities') || namaJenisBiaya.includes('utility')) {
-                    if (biayaUtilitiesWrapper) {
-                        biayaUtilitiesWrapper.classList.remove('hidden');
-                        initializeBiayaUtilitiesInputs();
-                    }
-                    if (biayaListrikWrapper) {
+                    } else if (namaJenisBiaya.includes('utilities') || namaJenisBiaya.includes('utility')) {
+                        if (biayaUtilitiesWrapper) {
+                            if (biayaUtilitiesWrapper.classList.contains('hidden')) {
+                                biayaUtilitiesWrapper.classList.remove('hidden');
+                                initializeBiayaUtilitiesInputs();
+                            }
+                        }
+                        if (biayaListrikWrapper) {
                         biayaListrikWrapper.classList.add('hidden');
                         clearBiayaListrikInputs();
                     }
@@ -2999,10 +3049,19 @@ console.log('Akun COAs data:', akunCoasData);
             });
         }
         
-        // Biaya Utilities Management Functions
+        // Biaya Utilities Management
         function initializeBiayaUtilitiesInputs() {
             const container = document.getElementById('biaya_utilities_container');
             container.innerHTML = '';
+            
+            // Clear shared fields
+            document.getElementById('bu_shared_tanggal').value = '';
+            document.getElementById('bu_shared_penerima').value = '';
+            document.getElementById('bu_shared_referensi').value = '';
+            
+            // Reset summary display
+            updateTotalFromBiayaUtilities();
+            
             addBiayaUtilitiesInput();
         }
         
@@ -3010,19 +3069,44 @@ console.log('Akun COAs data:', akunCoasData);
             const container = document.getElementById('biaya_utilities_container');
             if (container) container.innerHTML = '';
         }
-        
-        function addBiayaUtilitiesInput(existingData = {}) {
+
+        // Shared fields sync logic
+        function syncSharedUtilitiesFields() {
+            const tanggal = document.getElementById('bu_shared_tanggal').value;
+            const penerima = document.getElementById('bu_shared_penerima').value;
+            const referensi = document.getElementById('bu_shared_referensi').value;
+            
+            document.querySelectorAll('.bu-hidden-tanggal').forEach(input => input.value = tanggal);
+            document.querySelectorAll('.bu-hidden-penerima').forEach(input => input.value = penerima);
+            document.querySelectorAll('.bu-hidden-referensi').forEach(input => input.value = referensi);
+        }
+
+        // Add listeners for shared fields
+        const buSharedFields = ['bu_shared_tanggal', 'bu_shared_penerima', 'bu_shared_referensi'];
+        buSharedFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', syncSharedUtilitiesFields);
+        });
+
+        window.addBiayaUtilitiesInput = function(existingData = {}) {
             const container = document.getElementById('biaya_utilities_container');
             const index = container.children.length;
             
+            if (index === 0 && existingData.penerima) {
+                document.getElementById('bu_shared_tanggal').value = existingData.tanggal || '';
+                document.getElementById('bu_shared_penerima').value = existingData.penerima || '';
+                document.getElementById('bu_shared_referensi').value = existingData.referensi || '';
+            }
+
             const inputGroup = document.createElement('div');
-            inputGroup.className = 'grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-yellow-50 rounded-lg border-2 border-yellow-200';
+            inputGroup.className = 'bu-entry-row relative p-6 transition-colors hover:bg-yellow-50/30';
             inputGroup.setAttribute('data-bu-index', index);
             
-            const removeButton = container.children.length > 0 ? `
+            const removeBtnHtml = index > 0 ? `
                 <button type="button" 
                         onclick="removeBiayaUtilitiesInput(this)"
-                        class="text-red-600 hover:text-red-800 transition">
+                        class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                        title="Hapus baris ini">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>
@@ -3035,150 +3119,78 @@ console.log('Akun COAs data:', akunCoasData);
                 alatBeratOptions += `<option value="${alat.id}" data-harian="${alat.tarif_harian || 0}" data-bulanan="${alat.tarif_bulanan || 0}" ${selected}>${alat.nama} - ${alat.merk}</option>`;
             });
             
+            const sharedTanggal = document.getElementById('bu_shared_tanggal').value;
+            const sharedPenerima = document.getElementById('bu_shared_penerima').value;
+            const sharedReferensi = document.getElementById('bu_shared_referensi').value;
+
             inputGroup.innerHTML = `
-                <div class="md:col-span-3 flex justify-between items-center border-b-2 border-yellow-300 pb-2 mb-2">
-                    <span class="text-sm font-bold text-yellow-700">Utilities / Alat Berat #${index + 1}</span>
-                    ${removeButton}
+                <!-- Hidden Shared Fields (Synced) -->
+                <input type="hidden" name="biaya_utilities_detail[${index}][tanggal]" class="bu-hidden-tanggal" value="${existingData.tanggal || sharedTanggal}">
+                <input type="hidden" name="biaya_utilities_detail[${index}][penerima]" class="bu-hidden-penerima" value="${existingData.penerima || sharedPenerima}">
+                <input type="hidden" name="biaya_utilities_detail[${index}][referensi]" class="bu-hidden-referensi" value="${existingData.referensi || sharedReferensi}">
+
+                <div class="flex items-center gap-4">
+                    <!-- Row Number -->
+                    <div class="flex-none bg-yellow-100 text-yellow-700 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shadow-inner">
+                        ${index + 1}
+                    </div>
+
+                    <div class="flex-grow grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                        <div class="md:col-span-3">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Alat Berat</label>
+                            <select name="biaya_utilities_detail[${index}][alat_berat_id]" 
+                                    class="bu-alat-berat w-full border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm h-10 transition-all" required>
+                                ${alatBeratOptions}
+                            </select>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tarif</label>
+                            <select name="biaya_utilities_detail[${index}][jenis_tarif]" 
+                                    class="bu-jenis-tarif w-full border-2 border-gray-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm h-10 transition-all" required>
+                                <option value="harian" ${existingData.jenis_tarif === 'harian' ? 'selected' : ''}>Harian</option>
+                                <option value="bulanan" ${existingData.jenis_tarif === 'bulanan' ? 'selected' : ''}>Bulanan</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 text-center">Qty</label>
+                            <input type="number" name="biaya_utilities_detail[${index}][jumlah_periode]" 
+                                   class="bu-jumlah-periode w-full border-2 border-gray-100 rounded-xl text-center text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 h-10 transition-all font-bold"
+                                   min="0" step="0.01" value="${existingData.jumlah_periode || '1'}" required>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Tarif Satuan</label>
+                            <input type="number" name="biaya_utilities_detail[${index}][tarif_satuan]" 
+                                   class="bu-tarif-satuan w-full border-2 border-gray-100 rounded-xl text-sm px-3 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 h-10 transition-all font-bold text-gray-700"
+                                   placeholder="0" step="0.01" value="${existingData.tarif_satuan || ''}" required>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Subtotal DPP</label>
+                            <input type="number" name="biaya_utilities_detail[${index}][dpp]" 
+                                   class="bu-dpp w-full bg-blue-50/50 border-2 border-blue-100 rounded-xl px-3 text-sm h-10 font-bold text-blue-600 text-right"
+                                   placeholder="0" step="0.01" readonly value="${existingData.dpp || ''}">
+                        </div>
+
+                        <div class="md:col-span-2 flex items-center gap-2">
+                            <div class="flex-grow">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Catatan</label>
+                                <input type="text" name="biaya_utilities_detail[${index}][keterangan]"
+                                       class="bu-keterangan w-full border-2 border-gray-100 rounded-xl px-3 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm h-10 transition-all"
+                                       placeholder="..." value="${existingData.keterangan || ''}">
+                            </div>
+                            <div class="flex-none pt-4">
+                                ${removeBtnHtml}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Alat Berat -->
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Alat Berat <span class="text-red-500">*</span>
-                    </label>
-                    <select name="biaya_utilities_detail[${index}][alat_berat_id]" 
-                            class="bu-alat-berat w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
-                            style="height: 38px; padding: 4px 12px; font-size: 14px; border: 1px solid #d1d5db;" required>
-                        ${alatBeratOptions}
-                    </select>
-                </div>
-                
-                <!-- Tanggal -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Tanggal <span class="text-red-500">*</span>
-                    </label>
-                    <input type="date" 
-                           name="biaya_utilities_detail[${index}][tanggal]" 
-                           class="bu-tanggal w-full border border-gray-300 rounded-md shadow-sm focus:ring-yellow-500"
-                           style="height: 38px; padding: 4px 12px; font-size: 14px; border: 1px solid #d1d5db;"
-                           value="${existingData.tanggal || ''}" required>
-                </div>
-
-                <!-- Jenis Tarif -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Jenis Tarif <span class="text-red-500">*</span>
-                    </label>
-                    <select name="biaya_utilities_detail[${index}][jenis_tarif]" 
-                            class="bu-jenis-tarif w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500"
-                            style="height: 38px; padding: 4px 12px; font-size: 14px; border: 1px solid #d1d5db;" required>
-                        <option value="harian" ${existingData.jenis_tarif === 'harian' ? 'selected' : ''}>Harian</option>
-                        <option value="bulanan" ${existingData.jenis_tarif === 'bulanan' ? 'selected' : ''}>Bulanan</option>
-                    </select>
-                </div>
-                
-                <!-- Jumlah Periode -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Jumlah (Hari/Bulan) <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" 
-                           name="biaya_utilities_detail[${index}][jumlah_periode]" 
-                           class="bu-jumlah-periode w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
-                           style="height: 38px; padding: 6px 12px;"
-                           min="0" step="0.01" placeholder="Ex: 1"
-                           value="${existingData.jumlah_periode || '1'}" required>
-                </div>
-                
-                <!-- Tarif Satuan (Auto/Manual) -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Tarif Satuan <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" 
-                           name="biaya_utilities_detail[${index}][tarif_satuan]" 
-                           class="bu-tarif-satuan w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
-                           style="height: 38px; padding: 6px 12px;"
-                           placeholder="0" step="0.01"
-                           value="${existingData.tarif_satuan || ''}" required>
-                </div>
-
-                <!-- Referensi -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Referensi <small class="text-gray-500">(Opsional)</small>
-                    </label>
-                    <input type="text" 
-                           name="biaya_utilities_detail[${index}][referensi]" 
-                           class="bu-referensi w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
-                           style="height: 38px; padding: 6px 12px;"
-                           placeholder="Opsional"
-                           value="${existingData.referensi || ''}">
-                </div>
-
-                <!-- Penerima -->
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Penerima <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" 
-                           name="biaya_utilities_detail[${index}][penerima]" 
-                           class="bu-penerima w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
-                           style="height: 38px; padding: 6px 12px;"
-                           placeholder="Nama penerima pembayaran"
-                           value="${existingData.penerima || ''}" required>
-                </div>
-
-                <!-- DPP (Auto) -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        DPP <small class="text-gray-500">(Auto)</small>
-                    </label>
-                    <input type="number" 
-                           name="biaya_utilities_detail[${index}][dpp]" 
-                           class="bu-dpp w-full bg-gray-100 border border-gray-300 rounded-md shadow-sm text-sm p-2"
-                           style="height: 38px; padding: 6px 12px;"
-                           placeholder="0" step="0.01" readonly
-                           value="${existingData.dpp || ''}">
-                </div>
-                
-                <!-- PPH 2% (Optional/Auto) -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        PPH 2% <small class="text-gray-500">(Auto)</small>
-                    </label>
-                    <input type="number" 
-                           name="biaya_utilities_detail[${index}][pph]" 
-                           class="bu-pph w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
-                           style="height: 38px; padding: 6px 12px;"
-                           placeholder="0" step="0.01"
-                           value="${existingData.pph || '0'}">
-                </div>
-
-                <!-- Grand Total -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Grand Total <small class="text-gray-500">(DPP - PPh)</small>
-                    </label>
-                    <input type="number" 
-                           name="biaya_utilities_detail[${index}][grand_total]" 
-                           class="bu-grand-total w-full bg-green-50 border-2 border-green-400 rounded-md text-sm p-2 font-bold"
-                           style="height: 38px; padding: 6px 12px;"
-                           placeholder="0" step="0.01" readonly
-                           value="${existingData.grand_total || ''}">
-                </div>
-
-                <div class="md:col-span-3">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Keterangan <small class="text-gray-500">(Opsional)</small>
-                    </label>
-                    <input type="text"
-                           name="biaya_utilities_detail[${index}][keterangan]"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500"
-                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db;"
-                           value="${existingData.keterangan || ''}">
-                </div>
+                <!-- Hidden Financial Fields (Keep individual for DB) -->
+                <input type="hidden" name="biaya_utilities_detail[${index}][pph]" class="bu-pph" value="${existingData.pph || '0'}">
+                <input type="hidden" name="biaya_utilities_detail[${index}][grand_total]" class="bu-grand-total" value="${existingData.grand_total || ''}">
             `;
             
             container.appendChild(inputGroup);
@@ -3194,21 +3206,24 @@ console.log('Akun COAs data:', akunCoasData);
 
             setupBiayaUtilitiesCalculations(inputGroup);
             updateTotalFromBiayaUtilities();
-        }
+        };
 
         window.removeBiayaUtilitiesInput = function(button) {
             const container = document.getElementById('biaya_utilities_container');
             if (container.children.length > 1) {
-                button.closest('.grid').remove();
+                const entry = button.closest('.bu-entry-row');
+                entry.remove();
                 
                 // Reindex entries
-                const entries = container.querySelectorAll('.grid');
+                const entries = container.querySelectorAll('.bu-entry-row');
                 entries.forEach((entry, index) => {
                     entry.setAttribute('data-bu-index', index);
-                    const label = entry.querySelector('span.text-yellow-700');
-                    if (label) label.textContent = `Utilities / Alat Berat #${index + 1}`;
                     
-                    // Update input names
+                    // Update index label
+                    const label = entry.querySelector('.bg-yellow-500');
+                    if (label) label.textContent = index + 1;
+                    
+                    // Update input names and internal references
                     entry.querySelectorAll('input, select').forEach(input => {
                         const name = input.getAttribute('name');
                         if (name && name.startsWith('biaya_utilities_detail[')) {
@@ -3218,7 +3233,6 @@ console.log('Akun COAs data:', akunCoasData);
                     });
                 });
                 
-                // Update total
                 updateTotalFromBiayaUtilities();
             }
         };
@@ -3277,17 +3291,33 @@ console.log('Akun COAs data:', akunCoasData);
         }
 
         function updateTotalFromBiayaUtilities() {
-            const container = document.getElementById('biaya_utilities_container');
-            const entries = container.querySelectorAll('.grid');
-            let totalGrand = 0;
+            const entries = document.querySelectorAll('.bu-entry-row');
+            let totalDPP = 0;
             let totalPPH = 0;
+            let totalGrand = 0;
             
-            entries.forEach(entry => {
-                const grandTotal = parseFloat(entry.querySelector('.bu-grand-total').value) || 0;
-                const pph = parseFloat(entry.querySelector('.bu-pph').value) || 0;
-                totalGrand += grandTotal;
+            document.querySelectorAll('.bu-entry-row').forEach(row => {
+                const dppInput = row.querySelector('.bu-dpp');
+                const pphInput = row.querySelector('.bu-pph');
+                const grandInput = row.querySelector('.bu-grand-total');
+                
+                const dpp = dppInput ? parseFloat(dppInput.value) || 0 : 0;
+                const pph = pphInput ? parseFloat(pphInput.value) || 0 : 0;
+                const grand = grandInput ? parseFloat(grandInput.value) || 0 : 0;
+                
+                totalDPP += dpp;
                 totalPPH += pph;
+                totalGrand += grand;
             });
+            
+            // Update Utilities Section Footer Display
+            const dppDisplay = document.getElementById('bu_total_dpp_display');
+            const pphDisplay = document.getElementById('bu_total_pph_display');
+            const grandDisplay = document.getElementById('bu_total_grand_display');
+            
+            if (dppDisplay) dppDisplay.textContent = 'Rp ' + Math.round(totalDPP).toLocaleString('id-ID');
+            if (pphDisplay) pphDisplay.textContent = 'Rp ' + Math.round(totalPPH).toLocaleString('id-ID');
+            if (grandDisplay) grandDisplay.textContent = 'Rp ' + Math.round(totalGrand).toLocaleString('id-ID');
             
             // Only update main totals if utilities wrapper is not hidden
             const utilitiesWrapper = document.getElementById('biaya_utilities_wrapper');
