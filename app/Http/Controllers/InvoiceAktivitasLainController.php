@@ -261,12 +261,18 @@ class InvoiceAktivitasLainController extends Controller
         }
         
         $request->merge($inputs);
-        // Check if this is utilities invoice
+        // Check if this is utilities or listrik invoice
         $isUtilities = false;
+        $isBiayaListrik = false;
         if ($request->has('klasifikasi_biaya_umum_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
-            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'utilities') !== false) {
-                $isUtilities = true;
+            if ($klasifikasiBiaya) {
+                if (stripos($klasifikasiBiaya->nama, 'utilities') !== false) {
+                    $isUtilities = true;
+                }
+                if (stripos($klasifikasiBiaya->nama, 'listrik') !== false) {
+                    $isBiayaListrik = true;
+                }
             }
         }
         
@@ -797,12 +803,18 @@ class InvoiceAktivitasLainController extends Controller
         
         $request->merge($inputs);
 
-        // Check if this is utilities invoice
+        // Check if this is utilities or listrik invoice
         $isUtilities = false;
+        $isBiayaListrik = false;
         if ($request->has('klasifikasi_biaya_umum_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
-            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'utilities') !== false) {
-                $isUtilities = true;
+            if ($klasifikasiBiaya) {
+                if (stripos($klasifikasiBiaya->nama, 'utilities') !== false) {
+                    $isUtilities = true;
+                }
+                if (stripos($klasifikasiBiaya->nama, 'listrik') !== false) {
+                    $isBiayaListrik = true;
+                }
             }
         }
         
