@@ -272,6 +272,72 @@
                     </div>
                     @endif
 
+                    <!-- Utilities / Alat Berat Detail -->
+                    @if($invoice->biayaUtility->count() > 0)
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-4">Detail Biaya Utilities / Alat Berat</h3>
+                        <div class="space-y-4">
+                            @foreach($invoice->biayaUtility as $index => $utility)
+                            <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                                <div class="flex justify-between items-center border-b border-yellow-200 pb-2 mb-3">
+                                    <span class="text-sm font-bold text-yellow-700">Utility #{{ $index + 1 }}: {{ $utility->alatBerat->nama ?? 'N/A' }}</span>
+                                    <span class="text-xs text-gray-500 font-medium">Tanggal: {{ $utility->tanggal ? \Carbon\Carbon::parse($utility->tanggal)->format('d/m/Y') : '-' }}</span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Jenis Tarif</label>
+                                        <p class="text-gray-900 font-semibold">{{ ucfirst($utility->jenis_tarif) }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Jumlah ({{ $utility->jenis_tarif == 'harian' ? 'Hari' : 'Bulan' }})</label>
+                                        <p class="text-gray-900 font-semibold">{{ $utility->jumlah_periode }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Tarif Satuan</label>
+                                        <p class="text-gray-900 font-semibold text-right">Rp {{ number_format($utility->tarif_satuan, 0, ',', '.') }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Penerima</label>
+                                        <p class="text-gray-900 font-semibold">{{ $utility->penerima }}</p>
+                                    </div>
+                                    <div class="md:col-span-1">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">DPP</label>
+                                        <p class="text-gray-900 font-bold text-right">Rp {{ number_format($utility->dpp, 0, ',', '.') }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-red-600 mb-1">PPh 2%</label>
+                                        <p class="text-red-700 font-bold text-right">- Rp {{ number_format($utility->pph, 0, ',', '.') }}</p>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-xs font-medium text-green-600 mb-1">Total</label>
+                                        <p class="text-green-700 font-bold text-right text-lg">Rp {{ number_format($utility->grand_total, 0, ',', '.') }}</p>
+                                    </div>
+                                    @if($utility->referensi)
+                                    <div class="md:col-span-2">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Referensi</label>
+                                        <p class="text-gray-900 text-sm">{{ $utility->referensi }}</p>
+                                    </div>
+                                    @endif
+                                    @if($utility->keterangan)
+                                    <div class="md:col-span-2">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Keterangan</label>
+                                        <p class="text-gray-900 text-sm">{{ $utility->keterangan }}</p>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endforeach
+                            
+                            <div class="flex justify-end p-4 bg-gray-100 rounded-lg">
+                                <div class="text-right">
+                                    <span class="text-sm font-semibold text-gray-700 block">Total Utilities (Grand Total):</span>
+                                    <span class="text-xl font-bold text-blue-700 block">Rp {{ number_format($invoice->biayaUtility->sum('grand_total'), 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Detail Pembayaran -->
                     @php
                         $detailPembayaran = $invoice->detail_pembayaran_array;

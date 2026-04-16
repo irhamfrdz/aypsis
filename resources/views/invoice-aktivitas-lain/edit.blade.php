@@ -631,6 +631,26 @@
                     </div>
                 </div>
 
+                <!-- Biaya Utilities / Alat Berat -->
+                <div id="biaya_utilities_wrapper" class="hidden md:col-span-2">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Detail Pembayaran Utilities / Alat Berat <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" 
+                                id="add_biaya_utilities_btn"
+                                class="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-semibold rounded-lg transition inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Tambah Utilities
+                        </button>
+                    </div>
+                    <div id="biaya_utilities_container" class="space-y-4">
+                        <!-- Dynamic content for Utilities -->
+                    </div>
+                </div>
+
                 <!-- LWBP Baru (for Biaya Listrik) -->
                 <div id="lwbp_baru_wrapper" class="hidden">
                     <label for="lwbp_baru" class="block text-sm font-medium text-gray-700 mb-2">
@@ -1068,6 +1088,7 @@ const pricelistBuruhData = @json($pricelistBuruh);
 const pricelistBiayaDokumenData = @json($pricelistBiayaDokumen);
 const blsData = @json($bls);
 const akunCoasData = @json($akunCoas);
+const alatBeratsData = @json($alatBerats);
 
 // Debug: Check for duplicates
 console.log('Total pricelist buruh:', pricelistBuruhData.length);
@@ -1452,6 +1473,7 @@ console.log('Akun COAs data:', akunCoasData);
         const referensiInput = document.getElementById('referensi');
         const penerimaWrapper = document.getElementById('penerima_wrapper');
         const penerimaInput = document.getElementById('penerima');
+        const biayaUtilitiesWrapper = document.getElementById('biaya_utilities_wrapper');
 
         // Toggle PPh fields based on jenis biaya selection
         if (jenisBiayaDropdown) {
@@ -1567,22 +1589,61 @@ console.log('Akun COAs data:', akunCoasData);
                         dppWrapper.classList.add('hidden');
                         if (dppInput) dppInput.value = '';
                     }
-                } else {
-                    // Hide biaya listrik wrapper for other jenis biaya
+                             // Show/Hide summary fields (PPH and Grand Total)
+                    if (pphWrapper) pphWrapper.classList.add('hidden');
+                    if (grandTotalWrapper) grandTotalWrapper.classList.add('hidden');
+                } else if (namaJenisBiaya.includes('utilities')) {
+                    // SHOW utilities wrapper
+                    if (biayaUtilitiesWrapper) {
+                        biayaUtilitiesWrapper.classList.remove('hidden');
+                        initializeBiayaUtilitiesInputs();
+                    }
+                    
+                    // HIDE other dynamic sections
                     if (biayaListrikWrapper) {
                         biayaListrikWrapper.classList.add('hidden');
                         clearBiayaListrikInputs();
+                    }
+                    if (vendorListrikWrapper) {
+                        vendorListrikWrapper.classList.add('hidden');
+                        if (vendorListrikInput) vendorListrikInput.removeAttribute('required');
+                    }
+                    
+                    // HIDE common fields replaced by utilities
+                    if (penerimaWrapper) {
+                        penerimaWrapper.classList.add('hidden');
+                        if (penerimaInput) {
+                            penerimaInput.value = '';
+                            penerimaInput.removeAttribute('required');
+                        }
+                    }
+                    if (referensiWrapper) {
+                        referensiWrapper.classList.add('hidden');
+                        if (referensiInput) referensiInput.value = '';
+                    }
+                    if (totalWrapper) {
+                        totalWrapper.classList.add('hidden');
+                        if (totalInput) {
+                            totalInput.value = '';
+                            totalInput.removeAttribute('required');
+                        }
+                    }
+                    if (pphWrapper) pphWrapper.classList.add('hidden');
+                    if (grandTotalWrapper) grandTotalWrapper.classList.add('hidden');
+                } else {
+                    // Hide both for other jenis biaya
+                    if (biayaListrikWrapper) {
+                        biayaListrikWrapper.classList.add('hidden');
+                        clearBiayaListrikInputs();
+                    }
+                    if (biayaUtilitiesWrapper) {
+                        biayaUtilitiesWrapper.classList.add('hidden');
+                        clearBiayaUtilitiesInputs();
                     }
                     
                     // Hide vendor listrik field for other jenis biaya
                     if (vendorListrikWrapper) {
                         vendorListrikWrapper.classList.add('hidden');
-                        if (vendorListrikInput) {
-                            vendorListrikInput.value = '';
-                            vendorListrikInput.removeAttribute('required');
-                        }
-                    }
-                    
                     // Show penerima field for other jenis biaya
                     if (penerimaWrapper) {
                         penerimaWrapper.classList.remove('hidden');
@@ -2870,6 +2931,336 @@ console.log('Akun COAs data:', akunCoasData);
             });
         }
         
+        // Biaya Utilities Management Functions
+        function initializeBiayaUtilitiesInputs() {
+            const container = document.getElementById('biaya_utilities_container');
+            container.innerHTML = '';
+            
+            // Check if there's existing utility data
+            const existingUtilities = @json($invoice->biayaUtility);
+            
+            if (existingUtilities && existingUtilities.length > 0) {
+                existingUtilities.forEach(utility => {
+                    addBiayaUtilitiesInput(utility);
+                });
+            } else {
+                addBiayaUtilitiesInput();
+            }
+        }
+        
+        function clearBiayaUtilitiesInputs() {
+            const container = document.getElementById('biaya_utilities_container');
+            if (container) container.innerHTML = '';
+        }
+        
+        function addBiayaUtilitiesInput(existingData = {}) {
+            const container = document.getElementById('biaya_utilities_container');
+            const index = container.children.length;
+            
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-yellow-50 rounded-lg border-2 border-yellow-200';
+            inputGroup.setAttribute('data-bu-index', index);
+            
+            const removeButton = container.children.length > 0 ? `
+                <button type="button" 
+                        onclick="removeBiayaUtilitiesInput(this)"
+                        class="text-red-600 hover:text-red-800 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            ` : '';
+
+            let alatBeratOptions = '<option value="">Pilih Alat Berat</option>';
+            alatBeratsData.forEach(alat => {
+                const selected = existingData.alat_berat_id == alat.id ? 'selected' : '';
+                alatBeratOptions += `<option value="${alat.id}" data-harian="${alat.tarif_harian || 0}" data-bulanan="${alat.tarif_bulanan || 0}" ${selected}>${alat.nama} - ${alat.merek}</option>`;
+            });
+            
+            inputGroup.innerHTML = `
+                <div class="md:col-span-3 flex justify-between items-center border-b-2 border-yellow-300 pb-2 mb-2">
+                    <span class="text-sm font-bold text-yellow-700">Utilities / Alat Berat #${index + 1}</span>
+                    ${removeButton}
+                </div>
+
+                <!-- Alat Berat -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Alat Berat <span class="text-red-500">*</span>
+                    </label>
+                    <select name="biaya_utilities_detail[${index}][alat_berat_id]" 
+                            class="bu-alat-berat w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
+                            style="height: 38px; padding: 4px 12px; font-size: 14px; border: 1px solid #d1d5db;" required>
+                        ${alatBeratOptions}
+                    </select>
+                </div>
+                
+                <!-- Tanggal -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tanggal <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" 
+                           name="biaya_utilities_detail[${index}][tanggal]" 
+                           class="bu-tanggal w-full border border-gray-300 rounded-md shadow-sm focus:ring-yellow-500"
+                           style="height: 38px; padding: 4px 12px; font-size: 14px; border: 1px solid #d1d5db;"
+                           value="${existingData.tanggal || ''}" required>
+                </div>
+
+                <!-- Jenis Tarif -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Jenis Tarif <span class="text-red-500">*</span>
+                    </label>
+                    <select name="biaya_utilities_detail[${index}][jenis_tarif]" 
+                            class="bu-jenis-tarif w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500"
+                            style="height: 38px; padding: 4px 12px; font-size: 14px; border: 1px solid #d1d5db;" required>
+                        <option value="harian" ${existingData.jenis_tarif === 'harian' ? 'selected' : ''}>Harian</option>
+                        <option value="bulanan" ${existingData.jenis_tarif === 'bulanan' ? 'selected' : ''}>Bulanan</option>
+                    </select>
+                </div>
+                
+                <!-- Jumlah Periode -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Jumlah (Hari/Bulan) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_utilities_detail[${index}][jumlah_periode]" 
+                           class="bu-jumlah-periode w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
+                           style="height: 38px; padding: 6px 12px;"
+                           min="0" step="0.01" placeholder="Ex: 1"
+                           value="${existingData.jumlah_periode || '1'}" required>
+                </div>
+                
+                <!-- Tarif Satuan (Auto/Manual) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Tarif Satuan <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" 
+                           name="biaya_utilities_detail[${index}][tarif_satuan]" 
+                           class="bu-tarif-satuan w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
+                           style="height: 38px; padding: 6px 12px;"
+                           placeholder="0" step="0.01"
+                           value="${existingData.tarif_satuan || ''}" required>
+                </div>
+
+                <!-- Referensi -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Referensi <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <input type="text" 
+                           name="biaya_utilities_detail[${index}][referensi]" 
+                           class="bu-referensi w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
+                           style="height: 38px; padding: 6px 12px;"
+                           placeholder="Opsional"
+                           value="${existingData.referensi || ''}">
+                </div>
+
+                <!-- Penerima -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Penerima <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="biaya_utilities_detail[${index}][penerima]" 
+                           class="bu-penerima w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
+                           style="height: 38px; padding: 6px 12px;"
+                           placeholder="Nama penerima pembayaran"
+                           value="${existingData.penerima || ''}" required>
+                </div>
+
+                <!-- DPP (Auto) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        DPP <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_utilities_detail[${index}][dpp]" 
+                           class="bu-dpp w-full bg-gray-100 border border-gray-300 rounded-md shadow-sm text-sm p-2"
+                           style="height: 38px; padding: 6px 12px;"
+                           placeholder="0" step="0.01" readonly
+                           value="${existingData.dpp || ''}">
+                </div>
+                
+                <!-- PPH 2% (Optional/Auto) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        PPH 2% <small class="text-gray-500">(Auto)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_utilities_detail[${index}][pph]" 
+                           class="bu-pph w-full border border-gray-300 rounded-md shadow-sm text-sm p-2 focus:ring-yellow-500"
+                           style="height: 38px; padding: 6px 12px;"
+                           placeholder="0" step="0.01"
+                           value="${existingData.pph || '0'}">
+                </div>
+
+                <!-- Grand Total -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Grand Total <small class="text-gray-500">(DPP - PPh)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_utilities_detail[${index}][grand_total]" 
+                           class="bu-grand-total w-full bg-green-50 border-2 border-green-400 rounded-md text-sm p-2 font-bold"
+                           style="height: 38px; padding: 6px 12px;"
+                           placeholder="0" step="0.01" readonly
+                           value="${existingData.grand_total || ''}">
+                </div>
+
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Keterangan <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <input type="text"
+                           name="biaya_utilities_detail[${index}][keterangan]"
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-yellow-500"
+                           style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db;"
+                           value="${existingData.keterangan || ''}">
+                </div>
+            `;
+            
+            container.appendChild(inputGroup);
+
+            // Initialize select2
+            setTimeout(() => {
+                $(inputGroup).find('.bu-alat-berat').select2({
+                    placeholder: 'Pilih Alat Berat',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }, 100);
+
+            setupBiayaUtilitiesCalculations(inputGroup);
+            updateTotalFromBiayaUtilities();
+        }
+
+        window.removeBiayaUtilitiesInput = function(button) {
+            const container = document.getElementById('biaya_utilities_container');
+            if (container.children.length > 1) {
+                button.closest('.grid').remove();
+                
+                // Reindex entries
+                const entries = container.querySelectorAll('.grid');
+                entries.forEach((entry, index) => {
+                    entry.setAttribute('data-bu-index', index);
+                    const label = entry.querySelector('span.text-yellow-700');
+                    if (label) label.textContent = `Utilities / Alat Berat #${index + 1}`;
+                    
+                    // Update input names
+                    entry.querySelectorAll('input, select').forEach(input => {
+                        const name = input.getAttribute('name');
+                        if (name && name.startsWith('biaya_utilities_detail[')) {
+                            const fieldName = name.substring(name.indexOf('][') + 2, name.lastIndexOf(']'));
+                            input.setAttribute('name', `biaya_utilities_detail[${index}][${fieldName}]`);
+                        }
+                    });
+                });
+                
+                // Update total
+                updateTotalFromBiayaUtilities();
+            }
+        };
+
+        function setupBiayaUtilitiesCalculations(entry) {
+            const alatBeratSelect = entry.querySelector('.bu-alat-berat');
+            const jenisTarifSelect = entry.querySelector('.bu-jenis-tarif');
+            const jumlahPeriodeInput = entry.querySelector('.bu-jumlah-periode');
+            const tarifSatuanInput = entry.querySelector('.bu-tarif-satuan');
+            const dppInput = entry.querySelector('.bu-dpp');
+            const pphInput = entry.querySelector('.bu-pph');
+            const grandTotalInput = entry.querySelector('.bu-grand-total');
+
+            function applyTarifFromAlat() {
+                const selectedOption = $(alatBeratSelect).find('option:selected');
+                const jenisTarif = jenisTarifSelect.value;
+                let tarif = 0;
+                if (selectedOption.length) {
+                    if (jenisTarif === 'harian') {
+                        tarif = parseFloat(selectedOption.data('harian')) || 0;
+                    } else if (jenisTarif === 'bulanan') {
+                        tarif = parseFloat(selectedOption.data('bulanan')) || 0;
+                    }
+                }
+                tarifSatuanInput.value = tarif;
+                calculateAll();
+            }
+
+            function calculateAll() {
+                const jumlah = parseFloat(jumlahPeriodeInput.value) || 0;
+                const tarif = parseFloat(tarifSatuanInput.value) || 0;
+                const dpp = jumlah * tarif;
+                dppInput.value = dpp;
+                
+                // Base PPh is 2% by default
+                let pph = Math.round(dpp * 0.02);
+                // Allow manual override for pph
+                if (pphInput.value === '') {
+                    pphInput.value = pph;
+                } else {
+                    pph = parseFloat(pphInput.value) || 0;
+                }
+
+                const grandTotal = dpp - pph;
+                grandTotalInput.value = grandTotal;
+                
+                updateTotalFromBiayaUtilities();
+            }
+
+            $(alatBeratSelect).on('select2:select', applyTarifFromAlat);
+            jenisTarifSelect.addEventListener('change', applyTarifFromAlat);
+            
+            jumlahPeriodeInput.addEventListener('input', calculateAll);
+            tarifSatuanInput.addEventListener('input', calculateAll);
+            pphInput.addEventListener('input', calculateAll); // Manual pph updates grand total
+            
+            // Initial calculation if data loaded
+            if (dppInput.value === '') calculateAll();
+        }
+
+        function updateTotalFromBiayaUtilities() {
+            const container = document.getElementById('biaya_utilities_container');
+            const entries = container.querySelectorAll('.grid');
+            let totalGrand = 0;
+            let totalPPH = 0;
+            
+            entries.forEach(entry => {
+                const grandTotal = parseFloat(entry.querySelector('.bu-grand-total').value) || 0;
+                const pph = parseFloat(entry.querySelector('.bu-pph').value) || 0;
+                totalGrand += grandTotal;
+                totalPPH += pph;
+            });
+            
+            // Only update main totals if utilities wrapper is not hidden
+            const utilitiesWrapper = document.getElementById('biaya_utilities_wrapper');
+            if (utilitiesWrapper && !utilitiesWrapper.classList.contains('hidden')) {
+                const totalInput = document.getElementById('total');
+                const pphInputMain = document.getElementById('pph');
+                const grandTotalInputMain = document.getElementById('grand_total');
+
+                if (totalInput) {
+                    totalInput.value = totalGrand > 0 ? Math.round(totalGrand).toLocaleString('id-ID') : '';
+                }
+                if (pphInputMain) {
+                    pphInputMain.value = totalPPH > 0 ? Math.round(totalPPH).toLocaleString('id-ID') : '0';
+                }
+                if (grandTotalInputMain) {
+                    grandTotalInputMain.value = totalGrand > 0 ? Math.round(totalGrand).toLocaleString('id-ID') : '0';
+                }
+            }
+        }
+
+        // Add button listener
+        const addBiayaUtilitiesBtn = document.getElementById('add_biaya_utilities_btn');
+        if (addBiayaUtilitiesBtn) {
+            addBiayaUtilitiesBtn.addEventListener('click', function() {
+                addBiayaUtilitiesInput();
+            });
+        }
+        
         // Detail Pembayaran management functions
         function addDetailPembayaranInput(existingData = {}) {
             const container = document.getElementById('detail_pembayaran_container');
@@ -3114,7 +3505,7 @@ console.log('Akun COAs data:', akunCoasData);
                     if (noPol) $('#nomor_polisi').val(noPol).trigger('change');
                 @endif
 
-                // Handle Lain-lain / Biaya Listrik
+                // Handle Lain-lain / Biaya Listrik / Utilities
                 @if($invoice->klasifikasi_biaya_umum_id)
                     const umumId = '{{ $invoice->klasifikasi_biaya_umum_id }}';
                     $('#jenis_biaya_dropdown').val(umumId).trigger('change');
@@ -3122,6 +3513,11 @@ console.log('Akun COAs data:', akunCoasData);
                     // Handle Biaya Listrik
                     @if($invoice->jenis_aktivitas == 'Pembayaran Lain-lain' && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik'))
                         initializeBiayaListrikInputs(@json($invoice->biayaListrik));
+                    @endif
+
+                    // Handle Utilities
+                    @if($invoice->jenis_aktivitas == 'Pembayaran Lain-lain' && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'utilities'))
+                        initializeBiayaUtilitiesInputs();
                     @endif
                 @endif
 

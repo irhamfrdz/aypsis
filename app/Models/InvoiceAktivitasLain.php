@@ -184,6 +184,14 @@ class InvoiceAktivitasLain extends Model
     }
 
     /**
+     * Relationship dengan Biaya Utilities (Alat Berat dll)
+     */
+    public function biayaUtility()
+    {
+        return $this->hasMany(InvoiceAktivitasLainUtility::class, 'invoice_aktivitas_lain_id');
+    }
+
+    /**
      * Accessor untuk barang detail dengan join pricelist_buruh
      */
     public function getBarangDetailArrayAttribute()

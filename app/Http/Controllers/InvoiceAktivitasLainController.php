@@ -170,7 +170,10 @@ class InvoiceAktivitasLainController extends Controller
         $latestLwbpLama = \App\Models\MasterLwbpLama::where('status', 'active')->orderBy('created_at', 'desc')->first();
         $latestLwbpValue = $latestLwbpLama ? $latestLwbpLama->biaya : 0;
 
-        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue'));
+        // Get alat berat for utilities
+        $alatBerats = \App\Models\AlatBerat::where('status', 'active')->orderBy('nama')->get();
+
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue', 'alatBerats'));
     }
 
     /**
@@ -258,17 +261,17 @@ class InvoiceAktivitasLainController extends Controller
         }
         
         $request->merge($inputs);
-        // Check if this is biaya listrik invoice
-        $isBiayaListrik = false;
+        // Check if this is utilities invoice
+        $isUtilities = false;
         if ($request->has('klasifikasi_biaya_umum_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
-            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'listrik') !== false) {
-                $isBiayaListrik = true;
+            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'utilities') !== false) {
+                $isUtilities = true;
             }
         }
         
         // Conditional validation rules
-        $totalValidation = $isBiayaListrik ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
+        $totalValidation = ($isBiayaListrik || $isUtilities) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
         
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {
@@ -346,6 +349,19 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_listrik.*.dpp' => 'nullable|numeric',
             'biaya_listrik.*.pph' => 'nullable|numeric',
             'biaya_listrik.*.grand_total' => 'nullable|numeric',
+            // Biaya Utilities fields
+            'biaya_utilities_detail' => 'nullable|array',
+            'biaya_utilities_detail.*.alat_berat_id' => 'required_with:biaya_utilities_detail|exists:alat_berats,id',
+            'biaya_utilities_detail.*.referensi' => 'nullable|string',
+            'biaya_utilities_detail.*.penerima' => 'nullable|string',
+            'biaya_utilities_detail.*.tanggal' => 'nullable|date',
+            'biaya_utilities_detail.*.jenis_tarif' => 'nullable|in:harian,bulanan',
+            'biaya_utilities_detail.*.jumlah_periode' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.tarif_satuan' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.dpp' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.pph' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.grand_total' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.keterangan' => 'nullable|string',
         ]);
         
         // Convert bl_details array to JSON for storage
@@ -402,6 +418,19 @@ class InvoiceAktivitasLainController extends Controller
             }
         }
 
+        // Extract utilities data
+        $biayaUtilitiesEntries = [];
+        if (isset($validated['biaya_utilities_detail'])) {
+            $biayaUtilitiesEntries = $validated['biaya_utilities_detail'];
+            unset($validated['biaya_utilities_detail']);
+            
+            // Set main penerima if not set
+            if (empty($validated['penerima']) && !empty($biayaUtilitiesEntries)) {
+                $firstEntry = reset($biayaUtilitiesEntries);
+                $validated['penerima'] = $firstEntry['penerima'] ?? null;
+            }
+        }
+
         $invoice = InvoiceAktivitasLain::create($validated);
 
         // Create multiple biaya listrik records if data exists
@@ -425,6 +454,14 @@ class InvoiceAktivitasLainController extends Controller
                         'status' => 'active'
                     ]);
                 }
+            }
+        }
+
+        // Create multiple utilities records if data exists
+        if (!empty($biayaUtilitiesEntries)) {
+            foreach ($biayaUtilitiesEntries as $utilityData) {
+                $utilityData['invoice_aktivitas_lain_id'] = $invoice->id;
+                \App\Models\InvoiceAktivitasLainUtility::create($utilityData);
             }
         }
         
@@ -558,7 +595,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function show(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'klasifikasiBiayaUmum', 'pembayarans', 'creator', 'biayaListrik'])
+        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'klasifikasiBiayaUmum', 'pembayarans', 'creator', 'biayaListrik', 'biayaUtility'])
             ->findOrFail($id);
         
         return view('invoice-aktivitas-lain.show', compact('invoice'));
@@ -569,7 +606,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function edit(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'suratJalan'])->findOrFail($id);
+        $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'suratJalan', 'biayaListrik', 'biayaUtility'])->findOrFail($id);
         
         $karyawans = Karyawan::orderBy('nama_lengkap', 'asc')->get();
         $mobils = Mobil::orderBy('nomor_polisi', 'asc')->get();
@@ -694,8 +731,11 @@ class InvoiceAktivitasLainController extends Controller
         // Get latest LWBP Lama value
         $latestLwbpLama = \App\Models\MasterLwbpLama::where('status', 'active')->orderBy('created_at', 'desc')->first();
         $latestLwbpValue = $latestLwbpLama ? $latestLwbpLama->biaya : 0;
+
+        // Get alat berat for utilities
+        $alatBerats = \App\Models\AlatBerat::where('status', 'active')->orderBy('nama')->get();
         
-        return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue'));
+        return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue', 'alatBerats'));
     }
 
     /**
@@ -744,20 +784,30 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
         }
+
+        if (isset($inputs['biaya_utilities_detail']) && is_array($inputs['biaya_utilities_detail'])) {
+            foreach ($inputs['biaya_utilities_detail'] as &$item) {
+                foreach ($item as $key => $value) {
+                    if (is_string($value) && in_array($key, ['jumlah_periode', 'tarif_satuan', 'dpp', 'pph', 'grand_total'])) {
+                        $item[$key] = str_replace(['.', ','], '', $value);
+                    }
+                }
+            }
+        }
         
         $request->merge($inputs);
 
-        // Check if this is biaya listrik invoice
-        $isBiayaListrik = false;
+        // Check if this is utilities invoice
+        $isUtilities = false;
         if ($request->has('klasifikasi_biaya_umum_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
-            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'listrik') !== false) {
-                $isBiayaListrik = true;
+            if ($klasifikasiBiaya && stripos($klasifikasiBiaya->nama, 'utilities') !== false) {
+                $isUtilities = true;
             }
         }
         
         // Conditional validation rules
-        $totalValidation = $isBiayaListrik ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
+        $totalValidation = ($isBiayaListrik || $isUtilities) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
         
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {
@@ -835,6 +885,19 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_listrik.*.dpp' => 'nullable|numeric',
             'biaya_listrik.*.pph' => 'nullable|numeric',
             'biaya_listrik.*.grand_total' => 'nullable|numeric',
+            // Utilities fields
+            'biaya_utilities_detail' => 'nullable|array',
+            'biaya_utilities_detail.*.alat_berat_id' => 'required_with:biaya_utilities_detail|exists:alat_berats,id',
+            'biaya_utilities_detail.*.tanggal' => 'required_with:biaya_utilities_detail|date',
+            'biaya_utilities_detail.*.jenis_tarif' => 'required_with:biaya_utilities_detail|in:harian,bulanan',
+            'biaya_utilities_detail.*.jumlah_periode' => 'required_with:biaya_utilities_detail|numeric|min:0',
+            'biaya_utilities_detail.*.tarif_satuan' => 'required_with:biaya_utilities_detail|numeric|min:0',
+            'biaya_utilities_detail.*.penerima' => 'required_with:biaya_utilities_detail|string|max:255',
+            'biaya_utilities_detail.*.referensi' => 'nullable|string|max:255',
+            'biaya_utilities_detail.*.dpp' => 'required_with:biaya_utilities_detail|numeric|min:0',
+            'biaya_utilities_detail.*.pph' => 'nullable|numeric|min:0',
+            'biaya_utilities_detail.*.grand_total' => 'required_with:biaya_utilities_detail|numeric|min:0',
+            'biaya_utilities_detail.*.keterangan' => 'nullable|string',
         ]);
         
         // Convert arrays to JSON
@@ -884,6 +947,19 @@ class InvoiceAktivitasLainController extends Controller
             }
         }
 
+        // Extract utilities data array
+        $utilityEntries = [];
+        if (isset($validated['biaya_utilities_detail']) && is_array($validated['biaya_utilities_detail'])) {
+            $utilityEntries = $validated['biaya_utilities_detail'];
+            unset($validated['biaya_utilities_detail']);
+
+            // Set main penerima from the first entry if empty
+            if (empty($validated['penerima']) && !empty($utilityEntries)) {
+                $firstEntry = reset($utilityEntries);
+                $validated['penerima'] = $firstEntry['penerima'] ?? null;
+            }
+        }
+
         $invoice->update($validated);
 
         // Update biaya listrik records
@@ -907,6 +983,17 @@ class InvoiceAktivitasLainController extends Controller
                         'status' => 'active'
                     ]);
                 }
+            }
+        }
+
+        // Update utilities records
+        if (!empty($utilityEntries)) {
+            // Remove existing entries first
+            $invoice->biayaUtility()->delete();
+            
+            foreach ($utilityEntries as $utilityData) {
+                $utilityData['invoice_aktivitas_lain_id'] = $invoice->id;
+                \App\Models\InvoiceAktivitasLainUtility::create($utilityData);
             }
         }
 
@@ -1003,7 +1090,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function print(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['createdBy', 'klasifikasiBiaya', 'klasifikasiBiayaUmum', 'biayaListrik'])->findOrFail($id);
+        $invoice = InvoiceAktivitasLain::with(['createdBy', 'klasifikasiBiaya', 'klasifikasiBiayaUmum', 'biayaListrik', 'biayaUtility'])->findOrFail($id);
 
         // check for labuh tambat
         $isLabuhTambat = false;
@@ -1036,7 +1123,7 @@ class InvoiceAktivitasLainController extends Controller
      */
     public function printListrik(string $id)
     {
-        $invoice = InvoiceAktivitasLain::with(['creator', 'approver', 'klasifikasiBiayaUmum', 'biayaListrik'])->findOrFail($id);
+        $invoice = InvoiceAktivitasLain::with(['creator', 'approver', 'klasifikasiBiayaUmum', 'biayaListrik', 'biayaUtility'])->findOrFail($id);
         
         // Pastikan ini invoice biaya listrik
         if ($invoice->klasifikasiBiayaUmum && !str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama), 'listrik')) {
