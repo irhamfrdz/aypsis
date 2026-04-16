@@ -92,7 +92,7 @@
                                 <label for="type_amprahan" class="block text-sm font-semibold text-gray-700 mb-1">Type Amprahan <span class="text-red-500">*</span></label>
                                 <select name="type_amprahan" id="type_amprahan" required 
                                         class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
-                                    <option value="Stock" {{ old('type_amprahan', $item->type_amprahan) == 'Stock' ? 'selected' : '' }}>Stock</option>
+
                                     <option value="Pemakaian" {{ old('type_amprahan', $item->type_amprahan) == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
                                     <option value="Perbaikan" {{ old('type_amprahan', $item->type_amprahan) == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
                                     <option value="Perlengkapan" {{ old('type_amprahan', $item->type_amprahan) == 'Perlengkapan' ? 'selected' : '' }}>Perlengkapan</option>

@@ -81,7 +81,7 @@
                                 </label>
                                 <select name="type_amprahan" id="type_amprahan" required 
                                         class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
-                                    <option value="Stock" {{ old('type_amprahan') == 'Stock' ? 'selected' : '' }}>Stock</option>
+
                                     <option value="Pemakaian" {{ old('type_amprahan') == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
                                     <option value="Perbaikan" {{ old('type_amprahan') == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
                                     <option value="Perlengkapan" {{ old('type_amprahan') == 'Perlengkapan' ? 'selected' : '' }}>Perlengkapan</option>
