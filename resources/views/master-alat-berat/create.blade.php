@@ -84,6 +84,28 @@
                 <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Contoh: Gudang A, Site B">
             </div>
 
+            <!-- Tarif Harian -->
+            <div>
+                <label for="tarif_harian" class="block text-sm font-medium text-gray-700">Tarif Harian</label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm">Rp</span>
+                    </div>
+                    <input type="number" step="0.01" name="tarif_harian" id="tarif_harian" value="{{ old('tarif_harian') }}" class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="0.00">
+                </div>
+            </div>
+
+            <!-- Tarif Bulanan -->
+            <div>
+                <label for="tarif_bulanan" class="block text-sm font-medium text-gray-700">Tarif Bulanan</label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm">Rp</span>
+                    </div>
+                    <input type="number" step="0.01" name="tarif_bulanan" id="tarif_bulanan" value="{{ old('tarif_bulanan') }}" class="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="0.00">
+                </div>
+            </div>
+
             <!-- Status -->
             <div>
                 <label for="status" class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>

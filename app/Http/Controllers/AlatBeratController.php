@@ -63,6 +63,8 @@ class AlatBeratController extends Controller
             'lokasi' => 'nullable|string|max:255',
             'warna' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive,maintenance',
+            'tarif_harian' => 'nullable|numeric|min:0',
+            'tarif_bulanan' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -112,6 +114,8 @@ class AlatBeratController extends Controller
             'lokasi' => 'nullable|string|max:255',
             'warna' => 'nullable|string|max:255',
             'status' => 'required|in:active,inactive,maintenance',
+            'tarif_harian' => 'nullable|numeric|min:0',
+            'tarif_bulanan' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 

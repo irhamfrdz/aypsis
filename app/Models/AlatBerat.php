@@ -24,6 +24,8 @@ class AlatBerat extends Model
         'nomor_seri',
         'tahun_pembuatan',
         'lokasi',
+        'tarif_harian',
+        'tarif_bulanan',
         'keterangan',
         'status',
     ];

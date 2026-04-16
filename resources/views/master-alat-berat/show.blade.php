@@ -70,6 +70,14 @@
                         <dt class="text-sm font-medium text-gray-500">Lokasi</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ $alatBerat->lokasi ?? '-' }}</dd>
                     </div>
+                    <div class="sm:col-span-1">
+                        <dt class="text-sm font-medium text-gray-500">Tarif Harian</dt>
+                        <dd class="mt-1 text-sm text-gray-900 font-semibold text-green-600">{{ $alatBerat->tarif_harian ? 'Rp ' . number_format($alatBerat->tarif_harian, 0, ',', '.') : '-' }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                        <dt class="text-sm font-medium text-gray-500">Tarif Bulanan</dt>
+                        <dd class="mt-1 text-sm text-gray-900 font-semibold text-green-600">{{ $alatBerat->tarif_bulanan ? 'Rp ' . number_format($alatBerat->tarif_bulanan, 0, ',', '.') : '-' }}</dd>
+                    </div>
                 </dl>
             </div>
 

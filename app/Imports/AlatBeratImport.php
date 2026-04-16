@@ -48,6 +48,8 @@ class AlatBeratImport implements ToCollection, WithHeadingRow, WithValidation
                 'nomor_seri' => $row['nomor_seri'] ?? null,
                 'tahun_pembuatan' => $row['tahun_pembuatan'] ?? null,
                 'lokasi'     => $row['lokasi'] ?? null,
+                'tarif_harian'  => $row['tarif_harian'] ?? null,
+                'tarif_bulanan' => $row['tarif_bulanan'] ?? null,
                 'status'     => strtolower($row['status'] ?? 'active'),
                 'keterangan' => $row['keterangan'] ?? null,
             ]);
@@ -60,6 +62,8 @@ class AlatBeratImport implements ToCollection, WithHeadingRow, WithValidation
             'nama' => 'required|string',
             'status' => 'nullable|in:active,inactive,maintenance,Active,Inactive,Maintenance,ACTIVE,INACTIVE,MAINTENANCE',
             'nomor_seri' => 'nullable|unique:alat_berats,nomor_seri',
+            'tarif_harian' => 'nullable|numeric|min:0',
+            'tarif_bulanan' => 'nullable|numeric|min:0',
         ];
     }
 }

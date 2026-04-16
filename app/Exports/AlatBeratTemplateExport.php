@@ -23,6 +23,8 @@ class AlatBeratTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
             'nomor_seri',
             'tahun_pembuatan',
             'lokasi',
+            'tarif_harian',
+            'tarif_bulanan',
             'status',
             'keterangan',
         ];
@@ -42,6 +44,8 @@ class AlatBeratTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
                 'SN12345678', // nomor_seri
                 '2021', // tahun_pembuatan
                 'Gudang Utama', // lokasi
+                '500000', // tarif_harian example
+                '12000000', // tarif_bulanan example
                 'active', // status (active/inactive/maintenance)
                 'Kondisi baik', // keterangan
             ]
