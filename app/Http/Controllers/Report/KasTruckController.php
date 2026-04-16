@@ -106,12 +106,18 @@ class KasTruckController extends Controller
                 $tablesWithNomorPembayaran = [
                     'pembayaran_pranota_uang_jalans',
                     'pembayaran_pranota_uang_jalan_batams',
+                    'pembayaran_pranota_uang_jalan_bongkarans',
                     'pembayaran_pranota_obs',
                     'pembayaran_obs',
                     'pembayaran_pranota_kontainer',
                     'pembayaran_pranota_vendor_supirs',
                     'pembayaran_dp_obs',
                     'pembayaran_biaya_kapals',
+                    'pembayaran_pranota_lemburs',
+                    'pembayaran_pranota_cat',
+                    'pembayaran_pranota_perbaikan_kontainers',
+                    'pembayaran_pranota_rits',
+                    'pembayaran_pranota_stocks',
                 ];
                 foreach ($tablesWithNomorPembayaran as $tbl) {
                     try {
