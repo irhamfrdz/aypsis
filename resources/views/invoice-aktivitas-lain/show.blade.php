@@ -294,7 +294,7 @@
                             @foreach($invoice->biayaUtility as $index => $utility)
                             <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                                 <div class="flex justify-between items-center border-b border-yellow-200 pb-2 mb-3">
-                                    <span class="text-sm font-bold text-yellow-700">Utility #{{ $index + 1 }}: {{ $utility->alatBerat->nama ?? 'N/A' }}</span>
+                                    <span class="text-sm font-bold text-yellow-700">Utility #{{ $index + 1 }}: [{{ $utility->alatBerat->kode_alat ?? 'N/A' }}] {{ $utility->alatBerat->nama ?? 'N/A' }}</span>
                                     <span class="text-xs text-gray-500 font-medium">Tanggal: {{ $utility->tanggal ? \Carbon\Carbon::parse($utility->tanggal)->format('d/m/Y') : '-' }}</span>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">

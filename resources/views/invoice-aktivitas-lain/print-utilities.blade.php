@@ -300,7 +300,7 @@
                         <td class="text-center">{{ $loop->iteration }}</td>
                         <td class="text-center">{{ $utility->tanggal ? \Carbon\Carbon::parse($utility->tanggal)->format('d/M/Y') : '-' }}</td>
                         <td>
-                            <div>{{ $utility->alatBerat->nama ?? '-' }}</div>
+                            <div>[{{ $utility->alatBerat->kode_alat ?? '-' }}] {{ $utility->alatBerat->nama ?? '-' }}</div>
                             <div style="font-size: 8px; font-weight: normal; color: #444;">
                                 {{ $utility->alatBerat->merk ?? '' }}
                                 @if($utility->vendor) | Vendor: {{ $utility->vendor }} @endif

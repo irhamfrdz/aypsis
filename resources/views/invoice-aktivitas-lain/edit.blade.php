@@ -3092,7 +3092,7 @@ console.log('Akun COAs data:', akunCoasData);
             let alatBeratOptions = '<option value="">Pilih Alat Berat</option>';
             alatBeratsData.forEach(alat => {
                 const selected = existingData.alat_berat_id == alat.id ? 'selected' : '';
-                alatBeratOptions += `<option value="${alat.id}" data-harian="${alat.tarif_harian || 0}" data-bulanan="${alat.tarif_bulanan || 0}" ${selected}>${alat.nama} - ${alat.merk}</option>`;
+                alatBeratOptions += `<option value="${alat.id}" data-harian="${alat.tarif_harian || 0}" data-bulanan="${alat.tarif_bulanan || 0}" ${selected}>${alat.kode_alat} | ${alat.nama} - ${alat.merk}</option>`;
             });
             
             const sharedTanggal = document.getElementById('bu_shared_tanggal').value;
