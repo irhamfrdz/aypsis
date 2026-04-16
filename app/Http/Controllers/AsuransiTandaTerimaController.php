@@ -570,7 +570,10 @@ class AsuransiTandaTerimaController extends Controller
                 if (is_string($images)) $images = json_decode($images, true);
                 if (is_array($images)) {
                     foreach ($images as $img) {
-                        if ($img) $details['images'][] = Storage::disk('public')->url($img);
+                        if ($img) {
+                            $path = str_replace('public/', '', $img);
+                            $details['images'][] = '/storage/' . $path;
+                        }
                     }
                 }
                 
@@ -580,7 +583,10 @@ class AsuransiTandaTerimaController extends Controller
                     if (is_string($sjImages)) $sjImages = json_decode($sjImages, true);
                     if (is_array($sjImages)) {
                         foreach ($sjImages as $img) {
-                            if ($img) $details['images'][] = Storage::disk('public')->url($img);
+                            if ($img) {
+                                $path = str_replace('public/', '', $img);
+                                $details['images'][] = '/storage/' . $path;
+                            }
                         }
                     }
                 }
@@ -600,7 +606,10 @@ class AsuransiTandaTerimaController extends Controller
                 if (is_string($images)) $images = json_decode($images, true);
                 if (is_array($images)) {
                     foreach ($images as $img) {
-                        if ($img) $details['images'][] = Storage::disk('public')->url($img);
+                        if ($img) {
+                            $path = str_replace('public/', '', $img);
+                            $details['images'][] = '/storage/' . $path;
+                        }
                     }
                 }
             }
@@ -619,7 +628,10 @@ class AsuransiTandaTerimaController extends Controller
                 if (is_string($images)) $images = json_decode($images, true);
                 if (is_array($images)) {
                     foreach ($images as $img) {
-                        if ($img) $details['images'][] = Storage::disk('public')->url($img);
+                        if ($img) {
+                            $path = str_replace('public/', '', $img);
+                            $details['images'][] = '/storage/' . $path;
+                        }
                     }
                 }
             }

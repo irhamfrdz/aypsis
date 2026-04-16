@@ -199,26 +199,38 @@
                                     $images = $selectedReceipt->gambar_checkpoint;
                                     if (is_string($images)) $images = json_decode($images, true);
                                     if (is_array($images)) {
-                                        foreach ($images as $img) if ($img) $existingImages[] = Storage::disk('public')->url($img);
+                                        foreach ($images as $img) if ($img) {
+                                            $path = str_replace('public/', '', $img);
+                                            $existingImages[] = '/storage/' . $path;
+                                        }
                                     }
                                     if (empty($existingImages) && $selectedReceipt->suratJalan && $selectedReceipt->suratJalan->gambar_checkpoint) {
                                         $sjImages = $selectedReceipt->suratJalan->gambar_checkpoint;
                                         if (is_string($sjImages)) $sjImages = json_decode($sjImages, true);
                                         if (is_array($sjImages)) {
-                                            foreach ($sjImages as $img) if ($img) $existingImages[] = Storage::disk('public')->url($img);
+                                            foreach ($sjImages as $img) if ($img) {
+                                                $path = str_replace('public/', '', $img);
+                                                $existingImages[] = '/storage/' . $path;
+                                            }
                                         }
                                     }
                                 } elseif ($selectedType == 'tttsj') {
                                     $images = $selectedReceipt->gambar_tanda_terima;
                                     if (is_string($images)) $images = json_decode($images, true);
                                     if (is_array($images)) {
-                                         foreach ($images as $img) if ($img) $existingImages[] = Storage::disk('public')->url($img);
+                                         foreach ($images as $img) if ($img) {
+                                            $path = str_replace('public/', '', $img);
+                                            $existingImages[] = '/storage/' . $path;
+                                         }
                                     }
                                 } elseif ($selectedType == 'lcl') {
                                     $images = $selectedReceipt->gambar_surat_jalan;
                                     if (is_string($images)) $images = json_decode($images, true);
                                     if (is_array($images)) {
-                                         foreach ($images as $img) if ($img) $existingImages[] = Storage::disk('public')->url($img);
+                                         foreach ($images as $img) if ($img) {
+                                            $path = str_replace('public/', '', $img);
+                                            $existingImages[] = '/storage/' . $path;
+                                         }
                                     }
                                 }
                             }
