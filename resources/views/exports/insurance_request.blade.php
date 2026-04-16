@@ -23,18 +23,24 @@
                 <td align="left"><b>{{ $first->no_kontainer ?: $first->number }}</b></td>
                 <td align="right"><b>{{ number_format($first->kuantitas ?: 0) }}</b></td>
                 <td align="left"><b>{{ strtoupper($first->satuan ?: 'UNIT') }}</b></td>
-                <td colspan="2" align="left">{{ strtoupper($first->nama_barang) }}</td>
+                <td></td><td></td>
                 <td align="left">Rp</td>
                 <td align="right"><b>{{ number_format($items->sum('amount') ?: 0, 0, ',', '.') }}</b></td>
+            </tr>
+            <tr>
+                <td></td><td></td>
+                <td colspan="4" align="left">{{ strtoupper($first->nama_barang) }}</td>
             </tr>
             
             @if($items->count() > 1)
                 @foreach($items->slice(1) as $later)
                 <tr>
-                    <td></td>
-                    <td align="left"><b>{{ $later->no_kontainer ?: $later->number }}</b></td>
+                    <td></td><td></td>
                     <td align="right"><b>{{ number_format($later->kuantitas ?: 0) }}</b></td>
                     <td align="left"><b>{{ strtoupper($later->satuan ?: 'UNIT') }}</b></td>
+                </tr>
+                <tr>
+                    <td></td><td></td>
                     <td colspan="4" align="left">{{ strtoupper($later->nama_barang) }}</td>
                 </tr>
                 @endforeach
@@ -42,12 +48,12 @@
 
             <tr>
                 <td></td><td></td>
-                <td colspan="5" align="left" style="color: #666;">{{ $first->pengirim }} - JAKARTA</td>
+                <td colspan="5" align="left" style="color: #FF0000;">{{ $first->pengirim }} - JAKARTA</td>
                 <td align="right">@if($first->rate){{ number_format($first->rate, 2, ',', '.') }}%@else 0,30% @endif</td>
             </tr>
             <tr>
                 <td></td><td></td>
-                <td colspan="6" align="left" style="color: #666;">{{ $first->penerima }} - BATAM</td>
+                <td colspan="6" align="left" style="color: #FF0000;">{{ $first->penerima }} - BATAM</td>
             </tr>
             
             <tr><td colspan="8"></td></tr> <!-- Spacer -->

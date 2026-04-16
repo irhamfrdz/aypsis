@@ -20,7 +20,14 @@ class StockVelg extends Model
         'tanggal_masuk',
         'lokasi',
         'keterangan',
+        'created_by',
+        'updated_by',
     ];
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     protected $casts = [
         'tanggal_masuk' => 'date',

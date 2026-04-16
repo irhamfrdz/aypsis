@@ -11,6 +11,11 @@ class StockBanDalamUsage extends Model
 
     protected $guarded = ['id'];
 
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function stockBanDalam()
     {
         return $this->belongsTo(StockBanDalam::class);

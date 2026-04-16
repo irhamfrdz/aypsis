@@ -22,7 +22,14 @@ class StockBanDalam extends Model
         'tanggal_masuk',
         'lokasi',
         'keterangan',
+        'created_by',
+        'updated_by',
     ];
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     protected $casts = [
         'harga_beli' => 'decimal:2',

@@ -115,6 +115,7 @@ class StockBanController extends Controller
                 'tanggal_masuk' => $request->tanggal_masuk,
                 'lokasi' => $request->lokasi,
                 'keterangan' => $request->keterangan,
+                'created_by' => \Illuminate\Support\Facades\Auth::id(),
             ]);
 
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ring Velg berhasil ditambahkan');
@@ -148,6 +149,7 @@ class StockBanController extends Controller
                 'tanggal_masuk' => $request->tanggal_masuk,
                 'lokasi' => $request->lokasi,
                 'keterangan' => $request->keterangan,
+                'created_by' => \Illuminate\Support\Facades\Auth::id(),
             ]);
 
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock Velg berhasil ditambahkan');
@@ -185,6 +187,7 @@ class StockBanController extends Controller
                 'tanggal_masuk' => $request->tanggal_masuk,
                 'lokasi' => $request->lokasi,
                 'keterangan' => $request->keterangan,
+                'created_by' => \Illuminate\Support\Facades\Auth::id(),
             ]);
 
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock berhasil ditambahkan')->with('active_tab', 'tab-barang-lainnya');
@@ -795,6 +798,7 @@ class StockBanController extends Controller
                 'gudang_id' => $request->gudang_id,
                 'kapal_id' => $request->kapal_id,
                 'tanggal_keluar' => now(),
+                'created_by' => \Illuminate\Support\Facades\Auth::id(),
                 'keterangan' => ($tableName != 'stock_ban_dalams') 
                     ? "[$jenis ID: $itemId] " . $request->keterangan 
                     : $request->keterangan,
@@ -813,7 +817,7 @@ class StockBanController extends Controller
     public function allUsageHistory()
     {
         // 1. Get Inbound (Creation of StockBanDalam, RingVelg, Velg)
-        $inboundBan = \App\Models\StockBanDalam::with(['namaStockBan'])->get()->map(function($item) {
+        $inboundBan = \App\Models\StockBanDalam::with(['namaStockBan', 'createdBy'])->get()->map(function($item) {
             return (object)[
                 'tanggal' => $item->tanggal_masuk,
                 'created_at' => $item->created_at,
@@ -821,13 +825,14 @@ class StockBanController extends Controller
                 'nama' => ($item->namaStockBan->nama ?? 'Barang Lainnya'),
                 'qty' => $item->qty_awal ?? $item->qty,
                 'pelaku' => 'System / Purchase',
+                'updater' => $item->createdBy->username ?? '-',
                 'tujuan_penerima' => $item->lokasi ?? '-',
                 'keterangan' => $item->keterangan ?? '-',
                 'item_id' => $item->id
             ];
         });
 
-        $inboundRing = \App\Models\StockRingVelg::with(['namaStockBan'])->get()->map(function($item) {
+        $inboundRing = \App\Models\StockRingVelg::with(['namaStockBan', 'createdBy'])->get()->map(function($item) {
             return (object)[
                 'tanggal' => $item->tanggal_masuk,
                 'created_at' => $item->created_at,
@@ -835,13 +840,14 @@ class StockBanController extends Controller
                 'nama' => 'Ring Velg: ' . ($item->namaStockBan->nama ?? $item->ukuran),
                 'qty' => $item->qty,
                 'pelaku' => 'System / Purchase',
+                'updater' => $item->createdBy->username ?? '-',
                 'tujuan_penerima' => $item->lokasi ?? '-',
                 'keterangan' => $item->keterangan ?? '-',
                 'item_id' => $item->id
             ];
         });
 
-        $inboundVelg = \App\Models\StockVelg::with(['namaStockBan'])->get()->map(function($item) {
+        $inboundVelg = \App\Models\StockVelg::with(['namaStockBan', 'createdBy'])->get()->map(function($item) {
             return (object)[
                 'tanggal' => $item->tanggal_masuk,
                 'created_at' => $item->created_at,
@@ -849,6 +855,7 @@ class StockBanController extends Controller
                 'nama' => 'Velg: ' . ($item->namaStockBan->nama ?? $item->ukuran),
                 'qty' => $item->qty,
                 'pelaku' => 'System / Purchase',
+                'updater' => $item->createdBy->username ?? '-',
                 'tujuan_penerima' => $item->lokasi ?? '-',
                 'keterangan' => $item->keterangan ?? '-',
                 'item_id' => $item->id
@@ -858,7 +865,7 @@ class StockBanController extends Controller
         $inbound = $inboundBan->concat($inboundRing)->concat($inboundVelg);
 
         // 2. Get Outbound (Usage)
-        $outbound = \App\Models\StockBanDalamUsage::with(['stockBanDalam.namaStockBan', 'penerima', 'mobil', 'kapal', 'gudang'])->get()->map(function($item) {
+        $outbound = \App\Models\StockBanDalamUsage::with(['stockBanDalam.namaStockBan', 'penerima', 'mobil', 'kapal', 'gudang', 'createdBy'])->get()->map(function($item) {
             $tujuan = '-';
             if ($item->mobil) $tujuan = $item->mobil->nomor_polisi;
             elseif ($item->kapal) $tujuan = $item->kapal->nama_kapal;
@@ -878,6 +885,7 @@ class StockBanController extends Controller
                 'nama' => $nama,
                 'qty' => $item->qty,
                 'pelaku' => $item->penerima->nama_lengkap ?? '-',
+                'updater' => $item->createdBy->username ?? '-',
                 'tujuan_penerima' => $tujuan,
                 'keterangan' => $item->keterangan ?? '-',
                 'item_id' => $item->stock_ban_dalam_id ?? 'N/A'

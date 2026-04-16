@@ -26,6 +26,7 @@
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">QTY</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">TUJUAN / LOKASI</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">PIC / PENERIMA</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">SIAPA</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">KETERANGAN</th>
                 </tr>
             </thead>
@@ -59,13 +60,16 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {{ $item->pelaku }}
                     </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium italic">
+                        {{ $item->updater ?? '-' }}
+                    </td>
                     <td class="px-6 py-4 text-sm text-gray-500 italic max-w-xs truncate" title="{{ $item->keterangan }}">
                         {{ $item->keterangan }}
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="px-6 py-12 text-center text-gray-400 bg-gray-50/50">
+                    <td colspan="8" class="px-6 py-12 text-center text-gray-400 bg-gray-50/50">
                         <div class="flex flex-col items-center">
                             <i class="fas fa-history text-5xl mb-4 text-gray-200"></i>
                             <p class="font-medium">Belum ada data pergerakan stok.</p>
