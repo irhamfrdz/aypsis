@@ -60,8 +60,9 @@ class StockBanController extends Controller
             ->get();
         $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
         $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
+        $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
 
-        return view('stock-ban.index', compact('stockBans', 'stockBanLuarBatams', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockLainLains', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals', 'masterGudangBans'));
+        return view('stock-ban.index', compact('stockBans', 'stockBanLuarBatams', 'stockBanDalams', 'stockBanPeruts', 'stockLockKontainers', 'stockLainLains', 'stockRingVelgs', 'stockVelgs', 'mobils', 'alatBerats', 'karyawans', 'nextInvoice', 'pricelistKanisirBans', 'kapals', 'masterGudangBans', 'gudangs'));
     }
 
     /**
@@ -269,9 +270,9 @@ class StockBanController extends Controller
         $item = $model::with('namaStockBan')->findOrFail($id);
         
         $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
-        $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
+        $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
         
-        return view('stock-ban.edit-stock-lain', compact('item', 'type', 'namaStockBans', 'masterGudangBans'));
+        return view('stock-ban.edit-stock-lain', compact('item', 'type', 'namaStockBans', 'gudangs'));
     }
 
     /**
