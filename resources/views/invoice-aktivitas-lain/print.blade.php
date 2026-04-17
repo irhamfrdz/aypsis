@@ -362,6 +362,27 @@
         
         <!-- Total Section -->
         <div class="total-section">
+            @if($invoice->biaya_materai > 0 || $invoice->biaya_adjustment != 0)
+                <div class="total-row">
+                    <span class="total-label">Subtotal:</span>
+                    <span>Rp {{ number_format($invoice->total - $invoice->biaya_materai - $invoice->biaya_adjustment, 0, ',', '.') }}</span>
+                </div>
+            @endif
+            
+            @if($invoice->biaya_materai > 0)
+                <div class="total-row">
+                    <span class="total-label">Biaya Materai:</span>
+                    <span>Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</span>
+                </div>
+            @endif
+            
+            @if($invoice->biaya_adjustment != 0)
+                <div class="total-row">
+                    <span class="total-label">Biaya Adjustment:</span>
+                    <span>Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</span>
+                </div>
+            @endif
+            
             <div class="total-row grand-total">
                 <span class="total-label">TOTAL INVOICE:</span>
                 <span>Rp {{ number_format($invoice->total, 0, ',', '.') }}</span>

@@ -697,6 +697,20 @@
                                     <span class="block text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Total PPh 10%</span>
                                     <span id="bu_total_pph_display" class="text-lg font-bold text-orange-600">Rp 0</span>
                                 </div>
+                                <div class="text-right">
+                                    <span class="block text-[10px] font-bold text-teal-500 uppercase tracking-widest mb-1">Biaya Materai</span>
+                                    <input type="text" name="biaya_materai" id="bu_biaya_materai" 
+                                           class="w-32 bg-white border-2 border-teal-100 rounded-xl px-3 py-1 text-sm font-bold text-teal-600 text-right focus:ring-2 focus:ring-teal-500 transition-all"
+                                           value="{{ number_format($invoice->biaya_materai ?? 0, 0, ',', '.') }}"
+                                           placeholder="0">
+                                </div>
+                                <div class="text-right">
+                                    <span class="block text-[10px] font-bold text-pink-500 uppercase tracking-widest mb-1">Adjustment</span>
+                                    <input type="text" name="biaya_adjustment" id="bu_biaya_adjustment" 
+                                           class="w-32 bg-white border-2 border-pink-100 rounded-xl px-3 py-1 text-sm font-bold text-pink-600 text-right focus:ring-2 focus:ring-pink-500 transition-all"
+                                           value="{{ number_format($invoice->biaya_adjustment ?? 0, 0, ',', '.') }}"
+                                           placeholder="0">
+                                </div>
                                 <div class="bg-yellow-600 px-6 py-3 rounded-2xl text-right shadow-md">
                                     <span class="block text-[10px] font-bold text-yellow-100 uppercase tracking-widest mb-0.5">Grand Total Utilities</span>
                                     <span id="bu_total_grand_display" class="text-xl font-black text-white">Rp 0</span>
@@ -3305,6 +3319,14 @@ console.log('Akun COAs data:', akunCoasData);
                 totalGrand += grand;
             });
             
+            const materaiInput = document.getElementById('bu_biaya_materai');
+            const materai = materaiInput ? parseFloat(materaiInput.value.replace(/\./g, '')) || 0 : 0;
+            
+            const adjustmentInput = document.getElementById('bu_biaya_adjustment');
+            const adjustment = adjustmentInput ? parseFloat(adjustmentInput.value.replace(/\./g, '')) || 0 : 0;
+            
+            totalGrand += (materai + adjustment);
+            
             // Update Utilities Section Footer Display
             const dppDisplay = document.getElementById('bu_total_dpp_display');
             const pphDisplay = document.getElementById('bu_total_pph_display');
@@ -3340,6 +3362,35 @@ console.log('Akun COAs data:', akunCoasData);
         if (addBiayaUtilitiesBtn) {
             addBiayaUtilitiesBtn.addEventListener('click', function() {
                 addBiayaUtilitiesInput();
+            });
+        }
+
+        // Biaya Materai listener
+        const buMateraiInput = document.getElementById('bu_biaya_materai');
+        if (buMateraiInput) {
+            buMateraiInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value) {
+                    e.target.value = parseInt(value).toLocaleString('id-ID');
+                }
+                updateTotalFromBiayaUtilities();
+            });
+        }
+
+        // Biaya Adjustment listener
+        const buAdjustmentInput = document.getElementById('bu_biaya_adjustment');
+        if (buAdjustmentInput) {
+            buAdjustmentInput.addEventListener('input', function(e) {
+                // Allow negative sign and numbers
+                let value = e.target.value;
+                let isNegative = value.startsWith('-');
+                
+                let numericValue = value.replace(/\D/g, '');
+                if (numericValue) {
+                    let formatted = parseInt(numericValue).toLocaleString('id-ID');
+                    e.target.value = isNegative ? '-' + formatted : formatted;
+                }
+                updateTotalFromBiayaUtilities();
             });
         }
         

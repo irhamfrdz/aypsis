@@ -38,6 +38,8 @@ class InvoiceAktivitasLain extends Model
         'total',
         'pph',
         'grand_total',
+        'biaya_materai',
+        'biaya_adjustment',
         'status',
         'deskripsi',
         'catatan',
@@ -54,6 +56,8 @@ class InvoiceAktivitasLain extends Model
         'total' => 'decimal:2',
         'pph' => 'decimal:2',
         'grand_total' => 'decimal:2',
+        'biaya_materai' => 'decimal:2',
+        'biaya_adjustment' => 'decimal:2',
         'approved_at' => 'datetime'
     ];
 

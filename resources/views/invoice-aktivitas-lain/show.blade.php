@@ -358,12 +358,30 @@
                             </div>
                             @endforeach
                             
-                            <div class="flex justify-end p-4 bg-gray-100 rounded-lg">
-                                <div class="text-right">
-                                    <span class="text-sm font-semibold text-gray-700 block">Total Utilities (Grand Total):</span>
-                                    <span class="text-xl font-bold text-blue-700 block">Rp {{ number_format($invoice->biayaUtility->sum('grand_total'), 0, ',', '.') }}</span>
-                                </div>
-                            </div>
+                             <div class="flex justify-end p-4 bg-gray-100 rounded-lg">
+                                 <div class="text-right space-y-1">
+                                     <div class="flex justify-end items-center gap-4">
+                                         <span class="text-sm font-semibold text-gray-500">Subtotal Utilities:</span>
+                                         <span class="text-lg font-bold text-gray-800">Rp {{ number_format($invoice->biayaUtility->sum('grand_total'), 0, ',', '.') }}</span>
+                                     </div>
+                                     @if($invoice->biaya_materai > 0)
+                                     <div class="flex justify-end items-center gap-4">
+                                         <span class="text-sm font-semibold text-teal-600">Biaya Materai:</span>
+                                         <span class="text-lg font-bold text-teal-700">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</span>
+                                     </div>
+                                     @endif
+                                     @if($invoice->biaya_adjustment != 0)
+                                     <div class="flex justify-end items-center gap-4">
+                                         <span class="text-sm font-semibold text-pink-600">Biaya Adjustment:</span>
+                                         <span class="text-lg font-bold text-pink-700">Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</span>
+                                     </div>
+                                     @endif
+                                     <div class="flex justify-end items-center gap-4 pt-1 border-t border-gray-300">
+                                         <span class="text-sm font-black text-gray-700">Total Utilities (Grand Total):</span>
+                                         <span class="text-xl font-black text-blue-700">Rp {{ number_format($invoice->biayaUtility->sum('grand_total') + $invoice->biaya_materai + $invoice->biaya_adjustment, 0, ',', '.') }}</span>
+                                     </div>
+                                 </div>
+                             </div>
                         </div>
                     </div>
                     @endif

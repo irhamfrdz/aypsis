@@ -282,6 +282,18 @@
                 <td style="padding: 5px; font-weight: bold; border: 1px solid #ddd;">PPH 2%</td>
                 <td style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ddd;">Rp {{ number_format($invoice->pph, 0, ',', '.') }}</td>
             </tr>
+            @if($invoice->biaya_materai > 0)
+            <tr>
+                <td style="padding: 5px; font-weight: bold; border: 1px solid #ddd;">Biaya Materai</td>
+                <td style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ddd;">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            @if($invoice->biaya_adjustment != 0)
+            <tr>
+                <td style="padding: 5px; font-weight: bold; border: 1px solid #ddd;">Biaya Adjustment</td>
+                <td style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ddd;">Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</td>
+            </tr>
+            @endif
             <tr style="background-color: #d4edda;">
                 <td style="padding: 5px; font-weight: bold; border: 1px solid #ddd;">Total</td>
                 <td style="padding: 5px; text-align: right; font-weight: bold; border: 1px solid #ddd;">Rp {{ number_format($invoice->grand_total, 0, ',', '.') }}</td>

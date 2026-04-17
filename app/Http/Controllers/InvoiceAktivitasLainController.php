@@ -241,7 +241,9 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_beban',
             'ppju',
             'dpp',
-            'nominal'
+            'nominal',
+            'biaya_materai',
+            'biaya_adjustment'
         ];
         
         foreach ($fieldsToClean as $field) {
@@ -342,6 +344,8 @@ class InvoiceAktivitasLainController extends Controller
             'total' => $totalValidation, // Conditional: nullable for biaya listrik, required for others
             'pph' => 'nullable|numeric|min:0',
             'grand_total' => 'nullable|numeric|min:0',
+            'biaya_materai' => 'nullable|numeric|min:0',
+            'biaya_adjustment' => 'nullable|numeric',
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
             // Biaya Listrik fields - now accepts array for multiple entries
@@ -787,7 +791,9 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_beban',
             'ppju',
             'dpp',
-            'nominal'
+            'nominal',
+            'biaya_materai',
+            'biaya_adjustment'
         ];
         
         foreach ($fieldsToClean as $field) {
@@ -889,6 +895,8 @@ class InvoiceAktivitasLainController extends Controller
             'total' => $totalValidation,
             'pph' => 'nullable|numeric|min:0',
             'grand_total' => 'nullable|numeric|min:0',
+            'biaya_materai' => 'nullable|numeric|min:0',
+            'biaya_adjustment' => 'nullable|numeric',
             'deskripsi' => 'nullable|string',
             'catatan' => 'nullable|string',
             // Biaya Listrik fields
