@@ -851,7 +851,7 @@ class StockBanController extends Controller
             $item = null;
             $tableName = '';
             
-            if (in_array($jenis, ['Ban Dalam', 'Ban Perut', 'Lock Kontainer', 'Cat', 'Majun', 'Lainnya'])) {
+            if (in_array($jenis, ['Ban Dalam', 'Ban Perut', 'Lock Kontainer', 'Cat', 'Majun', 'Thinner', 'Lainnya'])) {
                 $item = \App\Models\StockBanDalam::findOrFail($itemId);
                 $tableName = 'stock_ban_dalams';
             } elseif ($jenis == 'Ring Velg') {
