@@ -297,7 +297,6 @@
                         <td class="text-center">{{ $loop->iteration }}</td>
                         <td class="text-center">{{ $utility->tanggal ? \Carbon\Carbon::parse($utility->tanggal)->format('d/M/Y') : '-' }}</td>
                         <td>
-                            <div style="font-weight: bold;">[{{ $utility->alatBerat->kode_alat ?? '-' }}]</div>
                             <div style="font-weight: bold;">{{ $utility->alatBerat->nama ?? '-' }}</div>
                         </td>
                         <td class="text-center">
