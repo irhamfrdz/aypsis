@@ -283,15 +283,12 @@
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th style="width: 4%;">No</th>
-                    <th style="width: 10%;">Tanggal</th>
-                    <th style="width: 18%;">Alat Berat</th>
-                    <th style="width: 10%;">Periode</th>
-                    <th style="width: 13%;">Tarif Satuan</th>
-                    <th style="width: 12%;">DPP</th>
-                    <th style="width: 10%;">PPN (11%)</th>
-                    <th style="width: 10%;">PPH (10%)</th>
-                    <th style="width: 13%;">Total</th>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 12%;">Tanggal</th>
+                    <th style="width: 40%;">Alat Berat</th>
+                    <th style="width: 13%;">Periode</th>
+                    <th style="width: 15%;">Tarif Satuan</th>
+                    <th style="width: 15%;">DPP</th>
                 </tr>
             </thead>
             <tbody>
@@ -308,9 +305,6 @@
                         </td>
                         <td class="text-right">Rp {{ number_format($utility->tarif_satuan, 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format($utility->dpp, 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format($utility->ppn, 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format($utility->pph, 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format($utility->grand_total, 0, ',', '.') }}</td>
                     </tr>
                     @php
                         $totalDPP += $utility->dpp;
@@ -331,33 +325,38 @@
                 @endphp
                 
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">TOTAL KESELURUHAN (ADJUSTED)</td>
+                    <td colspan="5" class="text-right">TOTAL KESELURUHAN (ADJUSTED DPP)</td>
                     <td class="text-right">Rp {{ number_format($totalDPP_Final, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp {{ number_format($totalPPN_Final, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp {{ number_format($totalPPH_Final, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp {{ number_format($totalDPP_Final + $totalPPN_Final - $totalPPH_Final, 0, ',', '.') }}</td>
                 </tr>
-                
+
+                <tr class="total-row">
+                    <td colspan="5" class="text-right">Total PPN 11%</td>
+                    <td class="text-right">Rp {{ number_format($totalPPN_Final, 0, ',', '.') }}</td>
+                </tr>
+
+                <tr class="total-row">
+                    <td colspan="5" class="text-right">Total PPh 10%</td>
+                    <td class="text-right">Rp {{ number_format($totalPPH_Final, 0, ',', '.') }}</td>
+                </tr>
+
                 @if($invoice->biaya_adjustment != 0)
                 <tr class="total-row">
-                    <td colspan="8" class="text-right text-xs">Biaya Adjustment (Adjusted to DPP)</td>
-                    <td class="text-right text-xs">Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</td>
+                    <td colspan="5" class="text-right">Biaya Adjustment (Adjusted to DPP)</td>
+                    <td class="text-right">Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</td>
                 </tr>
                 @endif
 
                 @if($invoice->biaya_materai > 0)
                 <tr class="total-row">
-                    <td colspan="8" class="text-right">Biaya Materai</td>
+                    <td colspan="5" class="text-right">Biaya Materai</td>
                     <td class="text-right">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</td>
                 </tr>
                 @endif
 
-                @if($invoice->biaya_materai > 0 || $invoice->biaya_adjustment != 0)
                 <tr class="total-row">
-                    <td colspan="8" class="text-right" style="font-size: 1.1em;">GRAND TOTAL</td>
-                    <td class="text-right" style="font-size: 1.1em;">Rp {{ number_format($totalGrand_Final, 0, ',', '.') }}</td>
+                    <td colspan="5" class="text-right" style="font-size: 1.1em; font-weight: 800; background-color: #f0f0f0;">GRAND TOTAL</td>
+                    <td class="text-right" style="font-size: 1.1em; font-weight: 800; background-color: #f0f0f0;">Rp {{ number_format($totalGrand_Final, 0, ',', '.') }}</td>
                 </tr>
-                @endif
             </tbody>
         </table>
 
