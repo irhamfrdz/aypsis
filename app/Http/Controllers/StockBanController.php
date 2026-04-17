@@ -156,7 +156,7 @@ class StockBanController extends Controller
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock Velg berhasil ditambahkan');
         }
 
-        $isBulkItem = $namaStockBan && (stripos($namaStockBan->nama, 'ban dalam') !== false || stripos($namaStockBan->nama, 'ban perut') !== false || stripos($namaStockBan->nama, 'lock kontainer') !== false || stripos($namaStockBan->nama, 'cat') !== false || stripos($namaStockBan->nama, 'majun') !== false);
+        $isBulkItem = $namaStockBan && (stripos($namaStockBan->nama, 'ban dalam') !== false || stripos($namaStockBan->nama, 'ban perut') !== false || stripos($namaStockBan->nama, 'lock kontainer') !== false || stripos($namaStockBan->nama, 'cat') !== false || stripos($namaStockBan->nama, 'majun') !== false || stripos($namaStockBan->nama, 'thinner') !== false);
 
         if ($isBulkItem) {
              $request->validate([
@@ -333,6 +333,7 @@ class StockBanController extends Controller
             case 'lainnya':
             case 'cat':
             case 'majun':
+            case 'thinner':
                 return \App\Models\StockBanDalam::class;
             case 'ring-velg':
                 return \App\Models\StockRingVelg::class;

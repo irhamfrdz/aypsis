@@ -980,7 +980,8 @@
                 const isVelg = selectedText.includes('velg'); // Covers 'velg' and 'ring velg', but keep distinct vars if needed
                 const isCat = selectedText.includes('cat');
                 const isMajun = selectedText.includes('majun');
-                const isBulk = isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun;
+                const isThinner = selectedText.includes('thinner');
+                const isBulk = isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun || isThinner;
                 const isBanLuar = selectedText.includes('ban luar');
                 const penerimaContainer = document.getElementById('penerima-container');
                 const penerimaSelect = document.getElementById('penerima_id');
@@ -1049,8 +1050,8 @@
                     nomorSeriContainer.classList.add('hidden');
                     mobilContainer.classList.add('hidden');
                     
-                    // Specific logic for Ban Dalam, Cat, and Majun: User requested no brand label
-                    if (isBanDalam || isCat || isMajun) {
+                    // Specific logic for Ban Dalam, Cat, Majun and Thinner: User requested no brand label
+                    if (isBanDalam || isCat || isMajun || isThinner) {
                         merkContainer.classList.add('hidden');
                     } else {
                         merkContainer.classList.remove('hidden');
@@ -1076,7 +1077,7 @@
                         const label = ukuranContainer.querySelector('label');
                         const input = ukuranContainer.querySelector('input');
                         
-                        if (isBanDalam || isBanPerut || isCat || isMajun) {
+                        if (isBanDalam || isBanPerut || isCat || isMajun || isThinner) {
                             ukuranContainer.classList.add('hidden');
                         } else {
                             ukuranContainer.classList.remove('hidden');
@@ -1097,8 +1098,8 @@
                         opt.text = 'Pcs';
                         opt.selected = true;
                         typeSelect.appendChild(opt);
-                    } else if (isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun) {
-                         // Ban Perut, Lock Kontainer, Velg, Cat, or Majun: Allow selection (Pcs, Set, Liter, etc)
+                    } else if (isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun || isThinner) {
+                         // Ban Perut, Lock Kontainer, Velg, Cat, Majun or Thinner: Allow selection (Pcs, Set, Liter, etc)
                          // Show all original options
                         originalTypeOptions.forEach(opt => {
                             const option = document.createElement('option');
@@ -1109,8 +1110,11 @@
                         });
                         // Set default to Pcs if no old value
                         if (!"{{ old('type') }}") {
+                             let defaultType = 'pcs';
+                             if (isThinner) defaultType = 'liter';
+                             
                              Array.from(typeSelect.options).forEach(opt => {
-                                 if (opt.value === 'pcs') opt.selected = true;
+                                 if (opt.value === defaultType) opt.selected = true;
                              });
                         }
                     }

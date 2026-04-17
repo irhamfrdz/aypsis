@@ -1034,9 +1034,13 @@
                 $majunQty = $stockLainLains->filter(function($item) {
                     return $item->namaStockBan && stripos($item->namaStockBan->nama, 'majun') !== false;
                 })->sum('qty');
+
+                $thinnerQty = $stockLainLains->filter(function($item) {
+                    return $item->namaStockBan && stripos($item->namaStockBan->nama, 'thinner') !== false;
+                })->sum('qty');
             @endphp
 
-            @if($paintStats->count() > 0 || $majunQty > 0)
+            @if($paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0)
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Summary</h3>
                 <div class="flex items-center gap-2">
@@ -1079,6 +1083,24 @@
                             <div class="flex items-baseline gap-1">
                                 <span class="text-xl font-black text-gray-800">{{ $majunQty }}</span>
                                 <span class="text-[10px] font-medium text-gray-400 uppercase">KG</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if($thinnerQty > 0)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-cyan-400 hover:bg-cyan-50/30"
+                     onclick="filterBarangLainnya('THINNER', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-cyan-50 text-cyan-600">
+                            <i class="fas fa-flask text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">THINNER</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-xl font-black text-gray-800">{{ $thinnerQty }}</span>
+                                <span class="text-[10px] font-medium text-gray-400 uppercase">Litter</span>
                             </div>
                         </div>
                     </div>
@@ -1206,6 +1228,9 @@
                                 } elseif (stripos($nama, 'majun') !== false) {
                                     $jenisDisplay = 'Majun';
                                     $modelType = 'majun';
+                                } elseif (stripos($nama, 'thinner') !== false) {
+                                    $jenisDisplay = 'Thinner';
+                                    $modelType = 'thinner';
                                 }
 
                                 $allItems->push((object)[
@@ -1236,6 +1261,7 @@
                                     {{ $item->jenis == 'Velg' ? 'bg-indigo-100 text-indigo-800' : '' }}
                                     {{ $item->jenis == 'Cat' ? 'bg-pink-100 text-pink-800' : '' }}
                                     {{ $item->jenis == 'Majun' ? 'bg-gray-100 text-gray-800' : '' }}
+                                    {{ $item->jenis == 'Thinner' ? 'bg-cyan-100 text-cyan-800' : '' }}
                                     {{ $item->jenis == 'Lainnya' ? 'bg-cyan-100 text-cyan-800' : '' }}">
                                     {{ $item->jenis }}
                                 </span>
