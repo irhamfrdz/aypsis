@@ -3208,7 +3208,7 @@
                                 </div>
                                 <div class="dropdown-list">
                                     <div class="dropdown-item" onclick="DropdownManager.select('usage_gudang', '', '-- Pilih Gudang --')">-- Pilih Gudang --</div>
-                                    @foreach($gudangs as $gudang)
+                                    @foreach($masterGudangBans as $gudang)
                                         <div class="dropdown-item" onclick="DropdownManager.select('usage_gudang', '{{ $gudang->id }}', '{{ $gudang->nama_gudang }}')" data-search="{{ strtolower($gudang->nama_gudang) }}">
                                             {{ $gudang->nama_gudang }}
                                         </div>
