@@ -330,8 +330,8 @@
                     $adjPPH = $invoice->biaya_adjustment * 0.10;
                     
                     $totalDPP_Final = $totalDPP + $invoice->biaya_adjustment;
-                    $totalPPN_Final = $totalPPN + $adjPPN;
-                    $totalPPH_Final = $totalPPH + $adjPPH;
+                    $totalPPN_Final = round($totalPPN + $adjPPN);
+                    $totalPPH_Final = round($totalPPH + $adjPPH);
                     $totalGrand_Final = $totalDPP_Final + $totalPPN_Final - $totalPPH_Final + $invoice->biaya_materai;
                 @endphp
                 

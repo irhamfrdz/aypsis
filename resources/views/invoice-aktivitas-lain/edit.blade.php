@@ -3268,14 +3268,8 @@ console.log('Akun COAs data:', akunCoasData);
                 // PPN is 11%
                 let ppn = Math.round(dpp * 0.11);
                 
-                // Allow manual override for pph
-                if (pphInput.value === '' || pphInput.value == 0) {
-                    pphInput.value = pph;
-                } else {
-                    pph = parseFloat(pphInput.value) || 0;
-                }
-
-                // Set PPN
+                // Set PPh and PPN
+                pphInput.value = pph;
                 ppnInput.value = ppn;
 
                 const grandTotal = dpp + ppn - pph;
@@ -3326,8 +3320,8 @@ console.log('Akun COAs data:', akunCoasData);
             const adjPPN = adjustment * 0.11;
             const adjPPH = adjustment * 0.10;
             
-            const totalPPN = basePPN + adjPPN;
-            const totalPPH = basePPH + adjPPH;
+            const totalPPN = Math.round(basePPN + adjPPN);
+            const totalPPH = Math.round(basePPH + adjPPH);
             
             const materaiInput = document.getElementById('bu_biaya_materai');
             const materai = materaiInput ? parseFloat(materaiInput.value.replace(/\./g, '')) || 0 : 0;

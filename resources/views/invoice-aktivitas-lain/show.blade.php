@@ -367,8 +367,8 @@
                                  $adjPPH = $invoice->biaya_adjustment * 0.10;
                                  
                                  $totalDPP = $baseDPP + $invoice->biaya_adjustment;
-                                 $totalPPN = $basePPN + $adjPPN;
-                                 $totalPPH = $basePPH + $adjPPH;
+                                 $totalPPN = round($basePPN + $adjPPN);
+                                 $totalPPH = round($basePPH + $adjPPH);
                              @endphp
                              <div class="flex justify-end p-4 bg-gray-100 rounded-lg">
                                  <div class="grid grid-cols-2 gap-x-8 gap-y-1 text-right">
