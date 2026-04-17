@@ -3297,35 +3297,42 @@ console.log('Akun COAs data:', akunCoasData);
 
         function updateTotalFromBiayaUtilities() {
             const entries = document.querySelectorAll('.bu-entry-row');
-            let totalDPP = 0;
-            let totalPPH = 0;
-            let totalPPN = 0;
-            let totalGrand = 0;
+            let baseDPP = 0;
+            let basePPH = 0;
+            let basePPN = 0;
             
             document.querySelectorAll('.bu-entry-row').forEach(row => {
                 const dppInput = row.querySelector('.bu-dpp');
                 const pphInput = row.querySelector('.bu-pph');
                 const ppnInput = row.querySelector('.bu-ppn');
-                const grandInput = row.querySelector('.bu-grand-total');
                 
                 const dpp = dppInput ? parseFloat(dppInput.value) || 0 : 0;
                 const pph = pphInput ? parseFloat(pphInput.value) || 0 : 0;
                 const ppn = ppnInput ? parseFloat(ppnInput.value) || 0 : 0;
-                const grand = grandInput ? parseFloat(grandInput.value) || 0 : 0;
                 
-                totalDPP += dpp;
-                totalPPH += pph;
-                totalPPN += ppn;
-                totalGrand += grand;
+                baseDPP += dpp;
+                basePPH += pph;
+                basePPN += ppn;
             });
+            
+            const adjustmentInput = document.getElementById('bu_biaya_adjustment');
+            let rawAdjValue = adjustmentInput ? adjustmentInput.value.replace(/\./g, '') : '0';
+            const adjustment = parseFloat(rawAdjValue) || 0;
+            
+            // Adjust DPP
+            const totalDPP = baseDPP + adjustment;
+            
+            // Recalculate taxes for adjustment (11% and 10%)
+            const adjPPN = adjustment * 0.11;
+            const adjPPH = adjustment * 0.10;
+            
+            const totalPPN = basePPN + adjPPN;
+            const totalPPH = basePPH + adjPPH;
             
             const materaiInput = document.getElementById('bu_biaya_materai');
             const materai = materaiInput ? parseFloat(materaiInput.value.replace(/\./g, '')) || 0 : 0;
             
-            const adjustmentInput = document.getElementById('bu_biaya_adjustment');
-            const adjustment = adjustmentInput ? parseFloat(adjustmentInput.value.replace(/\./g, '')) || 0 : 0;
-            
-            totalGrand += (materai + adjustment);
+            let totalGrand = totalDPP + totalPPN - totalPPH + materai;
             
             // Update Utilities Section Footer Display
             const dppDisplay = document.getElementById('bu_total_dpp_display');

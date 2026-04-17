@@ -325,29 +325,42 @@
                     @endphp
                 @endforeach
                 
+                @php
+                    $adjPPN = $invoice->biaya_adjustment * 0.11;
+                    $adjPPH = $invoice->biaya_adjustment * 0.10;
+                    
+                    $totalDPP_Final = $totalDPP + $invoice->biaya_adjustment;
+                    $totalPPN_Final = $totalPPN + $adjPPN;
+                    $totalPPH_Final = $totalPPH + $adjPPH;
+                    $totalGrand_Final = $totalDPP_Final + $totalPPN_Final - $totalPPH_Final + $invoice->biaya_materai;
+                @endphp
+                
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">{{ ($invoice->biaya_materai > 0 || $invoice->biaya_adjustment != 0) ? 'SUBTOTAL UTILITIES' : 'TOTAL KESELURUHAN' }}</td>
-                    <td class="text-right">Rp {{ number_format($totalDPP, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp {{ number_format($totalPPN, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
-                    <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
+                    <td colspan="5" class="text-right">TOTAL KESELURUHAN (ADJUSTED)</td>
+                    <td class="text-right">Rp {{ number_format($totalDPP_Final, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($totalPPN_Final, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($totalPPH_Final, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($totalDPP_Final + $totalPPN_Final - $totalPPH_Final, 0, ',', '.') }}</td>
                 </tr>
+                
+                @if($invoice->biaya_adjustment != 0)
+                <tr class="total-row">
+                    <td colspan="8" class="text-right text-xs">Biaya Adjustment (Adjusted to DPP)</td>
+                    <td class="text-right text-xs">Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+
                 @if($invoice->biaya_materai > 0)
                 <tr class="total-row">
                     <td colspan="8" class="text-right">Biaya Materai</td>
                     <td class="text-right">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</td>
                 </tr>
                 @endif
-                @if($invoice->biaya_adjustment != 0)
-                <tr class="total-row">
-                    <td colspan="8" class="text-right">Biaya Adjustment</td>
-                    <td class="text-right">Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</td>
-                </tr>
-                @endif
+
                 @if($invoice->biaya_materai > 0 || $invoice->biaya_adjustment != 0)
                 <tr class="total-row">
                     <td colspan="8" class="text-right" style="font-size: 1.1em;">GRAND TOTAL</td>
-                    <td class="text-right" style="font-size: 1.1em;">Rp {{ number_format($totalGrandTotal + $invoice->biaya_materai + $invoice->biaya_adjustment, 0, ',', '.') }}</td>
+                    <td class="text-right" style="font-size: 1.1em;">Rp {{ number_format($totalGrand_Final, 0, ',', '.') }}</td>
                 </tr>
                 @endif
             </tbody>

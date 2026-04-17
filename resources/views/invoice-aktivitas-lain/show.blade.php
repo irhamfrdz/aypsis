@@ -358,27 +358,42 @@
                             </div>
                             @endforeach
                             
+                             @php
+                                 $baseDPP = $invoice->biayaUtility->sum('dpp');
+                                 $basePPN = $invoice->biayaUtility->sum('ppn');
+                                 $basePPH = $invoice->biayaUtility->sum('pph');
+                                 
+                                 $adjPPN = $invoice->biaya_adjustment * 0.11;
+                                 $adjPPH = $invoice->biaya_adjustment * 0.10;
+                                 
+                                 $totalDPP = $baseDPP + $invoice->biaya_adjustment;
+                                 $totalPPN = $basePPN + $adjPPN;
+                                 $totalPPH = $basePPH + $adjPPH;
+                             @endphp
                              <div class="flex justify-end p-4 bg-gray-100 rounded-lg">
-                                 <div class="text-right space-y-1">
-                                     <div class="flex justify-end items-center gap-4">
-                                         <span class="text-sm font-semibold text-gray-500">Subtotal Utilities:</span>
-                                         <span class="text-lg font-bold text-gray-800">Rp {{ number_format($invoice->biayaUtility->sum('grand_total'), 0, ',', '.') }}</span>
-                                     </div>
-                                     @if($invoice->biaya_materai > 0)
-                                     <div class="flex justify-end items-center gap-4">
-                                         <span class="text-sm font-semibold text-teal-600">Biaya Materai:</span>
-                                         <span class="text-lg font-bold text-teal-700">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</span>
-                                     </div>
-                                     @endif
+                                 <div class="grid grid-cols-2 gap-x-8 gap-y-1 text-right">
+                                     <span class="text-sm font-semibold text-gray-500">Total DPP:</span>
+                                     <span class="text-base font-bold text-gray-800">Rp {{ number_format($totalDPP, 0, ',', '.') }}</span>
+                                     
+                                     <span class="text-sm font-semibold text-gray-500">Total PPN (11%):</span>
+                                     <span class="text-base font-bold text-gray-800">Rp {{ number_format($totalPPN, 0, ',', '.') }}</span>
+                                     
+                                     <span class="text-sm font-semibold text-gray-500">Total PPh (10%):</span>
+                                     <span class="text-base font-bold text-gray-800">Rp {{ number_format($totalPPH, 0, ',', '.') }}</span>
+
                                      @if($invoice->biaya_adjustment != 0)
-                                     <div class="flex justify-end items-center gap-4">
-                                         <span class="text-sm font-semibold text-pink-600">Biaya Adjustment:</span>
-                                         <span class="text-lg font-bold text-pink-700">Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</span>
-                                     </div>
+                                     <span class="text-sm font-semibold text-pink-600">Adjustment (to DPP):</span>
+                                     <span class="text-base font-bold text-pink-700">Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</span>
                                      @endif
-                                     <div class="flex justify-end items-center gap-4 pt-1 border-t border-gray-300">
+                                     
+                                     @if($invoice->biaya_materai > 0)
+                                     <span class="text-sm font-semibold text-teal-600">Biaya Materai:</span>
+                                     <span class="text-base font-bold text-teal-700">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</span>
+                                     @endif
+                                     
+                                     <div class="col-span-2 mt-1 pt-1 border-t border-gray-300 flex justify-end items-center gap-4">
                                          <span class="text-sm font-black text-gray-700">Total Utilities (Grand Total):</span>
-                                         <span class="text-xl font-black text-blue-700">Rp {{ number_format($invoice->biayaUtility->sum('grand_total') + $invoice->biaya_materai + $invoice->biaya_adjustment, 0, ',', '.') }}</span>
+                                         <span class="text-xl font-black text-blue-700">Rp {{ number_format($totalDPP + $totalPPN - $totalPPH + $invoice->biaya_materai, 0, ',', '.') }}</span>
                                      </div>
                                  </div>
                              </div>
