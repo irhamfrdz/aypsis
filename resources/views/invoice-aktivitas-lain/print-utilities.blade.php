@@ -300,13 +300,8 @@
                         <td class="text-center">{{ $loop->iteration }}</td>
                         <td class="text-center">{{ $utility->tanggal ? \Carbon\Carbon::parse($utility->tanggal)->format('d/M/Y') : '-' }}</td>
                         <td>
-                            <div>[{{ $utility->alatBerat->kode_alat ?? '-' }}] {{ $utility->alatBerat->nama ?? '-' }}</div>
-                            <div style="font-size: 8px; font-weight: normal; color: #444;">
-                                {{ $utility->alatBerat->merk ?? '' }}
-                                @if($utility->vendor) | Vendor: {{ $utility->vendor }} @endif
-                                @if($utility->kode_bayar) | Kode: {{ $utility->kode_bayar }} @endif
-                                @if($utility->referensi) | Ref: {{ $utility->referensi }} @endif
-                            </div>
+                            <div style="font-weight: bold;">[{{ $utility->alatBerat->kode_alat ?? '-' }}]</div>
+                            <div style="font-weight: bold;">{{ $utility->alatBerat->nama ?? '-' }}</div>
                         </td>
                         <td class="text-center">
                             {{ $utility->jumlah_periode }} {{ ucfirst($utility->jenis_tarif == 'harian' ? 'Hari' : 'Bulan') }}
