@@ -71,9 +71,11 @@
                     <tr class="bg-gray-50">
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">No</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Tanggal / No UJ</th>
+                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">No Bukti</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Surat Jalan / Tipe</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest text-amber-600 font-bold">Tujuan Ambil</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Supir & Plat</th>
+                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">NIK</th>
                         <th class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Uang Jalan</th>
                         <th class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Lain-lain</th>
                         <th class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest font-bold text-amber-600">Total</th>
@@ -88,8 +90,12 @@
                             $sjNumber = $uj->suratJalan ? $uj->suratJalan->no_surat_jalan : ($uj->suratJalanBongkaran ? $uj->suratJalanBongkaran->nomor_surat_jalan : '-');
                             $supir = $relatedSJ->supir ?? '-';
                             $plat = $relatedSJ->no_plat ?? '-';
+                            $nik = $relatedSJ->supirKaryawan->nik ?? '-';
                             $tujuanAmbil = $relatedSJ->tujuan_pengambilan ?? '-';
                             
+                            $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
+                            $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
+
                             $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
                         @endphp
                         <tr class="hover:bg-amber-50/30 transition duration-150">
@@ -97,6 +103,9 @@
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-gray-800">{{ $uj->tanggal_uang_jalan->format('d/m/Y') }}</div>
                                 <div class="text-xs text-gray-400 font-medium">{{ $uj->nomor_uang_jalan }}</div>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                                {{ $noBukti }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-blue-600">{{ $sjNumber }}</div>
@@ -110,6 +119,9 @@
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-gray-700">{{ $supir }}</div>
                                 <div class="text-xs text-gray-400">{{ $plat }}</div>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                                {{ $nik }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-700">
                                 {{ number_format($uj->jumlah_uang_jalan, 0, ',', '.') }}
@@ -126,7 +138,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-16 text-center">
+                            <td colspan="11" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center">
                                     <div class="p-4 bg-gray-50 rounded-full mb-3">
                                         <i class="fas fa-folder-open text-gray-300 text-4xl"></i>
@@ -141,7 +153,7 @@
                 @if($uangJalans->count() > 0)
                 <tfoot class="bg-gray-50 border-t-2 border-gray-100">
                     <tr>
-                        <th colspan="5" class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Summary Total</th>
+                        <th colspan="7" class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Summary Total</th>
                         <th class="px-4 py-4 text-right text-sm font-bold text-gray-700">
                             {{ number_format($uangJalans->sum('jumlah_uang_jalan'), 0, ',', '.') }}
                         </th>

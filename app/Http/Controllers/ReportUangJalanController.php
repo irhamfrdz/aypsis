@@ -38,7 +38,7 @@ class ReportUangJalanController extends Controller
         $search = $request->input('search');
 
         $query = UangJalan::query()
-            ->with(['suratJalan', 'suratJalanBongkaran', 'createdBy'])
+            ->with(['suratJalan.supirKaryawan', 'suratJalanBongkaran.supirKaryawan', 'createdBy', 'pranotaUangJalan.pembayaranPranotaUangJalans'])
             ->whereBetween('tanggal_uang_jalan', [$startDate, $endDate]);
 
         if ($search) {
@@ -80,7 +80,7 @@ class ReportUangJalanController extends Controller
         $search = $request->input('search');
 
         $query = UangJalan::query()
-            ->with(['suratJalan', 'suratJalanBongkaran', 'createdBy'])
+            ->with(['suratJalan.supirKaryawan', 'suratJalanBongkaran.supirKaryawan', 'createdBy', 'pranotaUangJalan.pembayaranPranotaUangJalans'])
             ->whereBetween('tanggal_uang_jalan', [$startDate, $endDate]);
 
         if ($search) {

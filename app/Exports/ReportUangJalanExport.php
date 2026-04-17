@@ -37,10 +37,12 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
                 'No',
                 'Tanggal',
                 'Nomor UJ',
+                'No. Bukti (Accurate)',
                 'No. Surat Jalan',
                 'Tipe',
                 'Tujuan Ambil',
                 'Supir',
+                'NIK',
                 'Plat Nomor',
                 'Uang Jalan (Nominal)',
                 'Mel',
@@ -64,18 +66,23 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
         $sjNumber = $uj->suratJalan ? $uj->suratJalan->no_surat_jalan : ($uj->suratJalanBongkaran ? $uj->suratJalanBongkaran->nomor_surat_jalan : '-');
         $supir = $relatedSJ->supir ?? '-';
         $plat = $relatedSJ->no_plat ?? '-';
+        $nik = $relatedSJ->supirKaryawan->nik ?? '-';
         $tujuanAmbil = $relatedSJ->tujuan_pengambilan ?? '-';
         
+        $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
+        $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
+
         $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
 
-        return [
             $index,
             $uj->tanggal_uang_jalan->format('d/m/Y'),
             $uj->nomor_uang_jalan,
+            $noBukti,
             $sjNumber,
             $typeLabel,
             $tujuanAmbil,
             $supir,
+            $nik,
             $plat,
             (float)($uj->jumlah_uang_jalan ?? 0),
             (float)($uj->jumlah_mel ?? 0),
@@ -90,8 +97,8 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->mergeCells('A1:P1');
-        $sheet->mergeCells('A2:P2');
+        $sheet->mergeCells('A1:R1');
+        $sheet->mergeCells('A2:R2');
         
         // Final Row
         $lastRow = $sheet->getHighestRow();
@@ -106,7 +113,7 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
                     'startColor' => ['rgb' => 'B45309'] // Amber 700
                 ]
             ],
-            'A1:P' . $lastRow => [
+            'A1:R' . $lastRow => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
