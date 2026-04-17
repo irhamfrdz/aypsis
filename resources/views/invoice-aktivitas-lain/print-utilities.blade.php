@@ -331,7 +331,7 @@
                     
                     $totalDPP_Final = $totalDPP + $invoice->biaya_adjustment;
                     $totalPPN_Final = round($totalPPN + $adjPPN);
-                    $totalPPH_Final = round($totalPPH + $adjPPH);
+                    $totalPPH_Final = ($invoice->pph > 0) ? $invoice->pph : round($totalPPH + $adjPPH);
                     $totalGrand_Final = $totalDPP_Final + $totalPPN_Final - $totalPPH_Final + $invoice->biaya_materai;
                 @endphp
                 

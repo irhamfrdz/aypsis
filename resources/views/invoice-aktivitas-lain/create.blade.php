@@ -693,7 +693,9 @@
                                 </div>
                                 <div class="text-right">
                                     <span class="block text-xs font-bold text-orange-500 mb-1">Total PPh 10%</span>
-                                    <span id="bu_total_pph_display" class="text-lg font-bold text-orange-600">Rp 0</span>
+                                    <input type="text" name="pph" id="bu_total_pph_display" 
+                                           class="w-32 bg-white border border-orange-200 rounded-lg px-2 py-1 text-sm font-bold text-orange-600 text-right focus:ring-2 focus:ring-orange-500"
+                                           placeholder="0" value="0">
                                 </div>
                                 <div class="text-right">
                                     <span class="block text-xs font-bold text-teal-500 mb-1">Biaya Materai</span>
@@ -3349,6 +3351,19 @@ console.log('Akun COAs data:', akunCoasData);
             jumlahPeriodeInput.addEventListener('input', calculateAll);
             tarifSatuanInput.addEventListener('input', calculateAll);
             pphInput.addEventListener('input', calculateAll); // Manual pph updates grand total
+            
+            // Add formatting and recalculation for global PPh
+            const globalPphDisplay = document.getElementById('bu_total_pph_display');
+            if (globalPphDisplay) {
+                globalPphDisplay.addEventListener('input', function(e) {
+                    let value = e.target.value;
+                    let numericValue = value.replace(/\D/g, '');
+                    if (numericValue) {
+                        e.target.value = parseInt(numericValue).toLocaleString('id-ID');
+                    }
+                    updateTotalFromBiayaUtilities();
+                });
+            }
         }
 
         function updateTotalFromBiayaUtilities() {
@@ -3402,7 +3417,16 @@ console.log('Akun COAs data:', akunCoasData);
             const grandDisplay = document.getElementById('bu_total_grand_display');
             
             if (dppDisplay) dppDisplay.textContent = 'Rp ' + Math.round(totalDPP).toLocaleString('id-ID');
-            if (pphDisplay) pphDisplay.textContent = 'Rp ' + Math.round(totalPPH).toLocaleString('id-ID');
+            
+            // For PPh, we check if it's currently focused to avoid overwriting user typing
+            if (pphDisplay && document.activeElement !== pphDisplay) {
+                pphDisplay.value = Math.round(totalPPH).toLocaleString('id-ID');
+            }
+            
+            // Recalculate totalGrand based on current (possibly manual) pphDisplay value
+            const currentPPH = pphDisplay ? parseFloat(pphDisplay.value.replace(/\./g, '')) || 0 : totalPPH;
+            totalGrand = totalDPP + totalPPN - currentPPH + materai;
+            
             if (ppnDisplay) ppnDisplay.textContent = 'Rp ' + Math.round(totalPPN).toLocaleString('id-ID');
             if (grandDisplay) grandDisplay.textContent = 'Rp ' + Math.round(totalGrand).toLocaleString('id-ID');
             

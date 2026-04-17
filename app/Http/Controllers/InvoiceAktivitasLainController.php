@@ -242,6 +242,7 @@ class InvoiceAktivitasLainController extends Controller
             'ppju',
             'dpp',
             'nominal',
+            'pph',
             'biaya_materai',
             'biaya_adjustment'
         ];
