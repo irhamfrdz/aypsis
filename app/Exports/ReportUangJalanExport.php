@@ -73,7 +73,7 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
         $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
 
         $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
-
+        return [
             $index,
             $uj->tanggal_uang_jalan->format('d/m/Y'),
             $uj->nomor_uang_jalan,
