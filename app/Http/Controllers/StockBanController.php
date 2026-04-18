@@ -919,7 +919,9 @@ class StockBanController extends Controller
                 'updater' => $item->createdBy->username ?? '-',
                 'tujuan_penerima' => $item->lokasi ?? '-',
                 'keterangan' => $item->keterangan ?? '-',
-                'item_id' => $item->id
+                'item_id' => $item->id,
+                'source_table' => 'stock_ban_dalams',
+                'original_id' => $item->id,
             ];
         });
 
@@ -934,7 +936,9 @@ class StockBanController extends Controller
                 'updater' => $item->createdBy->username ?? '-',
                 'tujuan_penerima' => $item->lokasi ?? '-',
                 'keterangan' => $item->keterangan ?? '-',
-                'item_id' => $item->id
+                'item_id' => $item->id,
+                'source_table' => 'stock_ring_velgs',
+                'original_id' => $item->id,
             ];
         });
 
@@ -949,7 +953,9 @@ class StockBanController extends Controller
                 'updater' => $item->createdBy->username ?? '-',
                 'tujuan_penerima' => $item->lokasi ?? '-',
                 'keterangan' => $item->keterangan ?? '-',
-                'item_id' => $item->id
+                'item_id' => $item->id,
+                'source_table' => 'stock_velgs',
+                'original_id' => $item->id,
             ];
         });
 
@@ -979,7 +985,9 @@ class StockBanController extends Controller
                 'updater' => $item->createdBy->username ?? '-',
                 'tujuan_penerima' => $tujuan,
                 'keterangan' => $item->keterangan ?? '-',
-                'item_id' => $item->stock_ban_dalam_id ?? 'N/A'
+                'item_id' => $item->stock_ban_dalam_id ?? 'N/A',
+                'source_table' => 'stock_ban_dalam_usages',
+                'original_id' => $item->id,
             ];
         });
 
@@ -989,5 +997,39 @@ class StockBanController extends Controller
         });
             
         return view('stock-ban.all-usage-history', compact('history'));
+    }
+
+    /**
+     * Update history date for any quantity-based stock item.
+     */
+    public function updateHistoryDate(Request $request)
+    {
+        $request->validate([
+            'source_table' => 'required',
+            'original_id' => 'required',
+            'new_date' => 'required|date',
+        ]);
+
+        $table = $request->source_table;
+        $id = $request->original_id;
+        $newDate = $request->new_date;
+
+        switch ($table) {
+            case 'stock_ban_dalams':
+            case 'stock_ring_velgs':
+            case 'stock_velgs':
+                DB::table($table)->where('id', $id)->update(['tanggal_masuk' => $newDate]);
+                break;
+            case 'stock_ban_dalam_usages':
+                DB::table($table)->where('id', $id)->update([
+                    'tanggal_keluar' => $newDate,
+                    'tanggal_digunakan' => $newDate
+                ]);
+                break;
+            default:
+                return response()->json(['success' => false, 'message' => 'Tabel tidak valid']);
+        }
+
+        return response()->json(['success' => true]);
     }
 }
