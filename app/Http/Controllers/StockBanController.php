@@ -1008,11 +1008,13 @@ class StockBanController extends Controller
             'source_table' => 'required',
             'original_id' => 'required',
             'new_date' => 'required|date',
+            'field' => 'nullable|string', // Optional field name for tables with multiple dates
         ]);
 
         $table = $request->source_table;
         $id = $request->original_id;
         $newDate = $request->new_date;
+        $field = $request->field;
 
         switch ($table) {
             case 'stock_ban_dalams':
@@ -1025,6 +1027,14 @@ class StockBanController extends Controller
                     'tanggal_keluar' => $newDate,
                     'tanggal_digunakan' => $newDate
                 ]);
+                break;
+            case 'stock_bans':
+                $updateField = $field ?? 'tanggal_masuk';
+                // Security check for field name
+                if (!in_array($updateField, ['tanggal_masuk', 'tanggal_keluar', 'tanggal_digunakan', 'tanggal_kirim', 'tanggal_jual'])) {
+                    return response()->json(['success' => false, 'message' => 'Field tidak valid']);
+                }
+                DB::table($table)->where('id', $id)->update([$updateField => $newDate]);
                 break;
             default:
                 return response()->json(['success' => false, 'message' => 'Tabel tidak valid']);

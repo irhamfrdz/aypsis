@@ -89,18 +89,24 @@
             <!-- Tanggal Masuk -->
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Tanggal Masuk</label>
-                <p class="text-base font-medium text-gray-900">
-                    {{ $stockBan->tanggal_masuk ? \Carbon\Carbon::parse($stockBan->tanggal_masuk)->format('d M Y') : '-' }}
-                </p>
+                <input type="date" 
+                       value="{{ $stockBan->tanggal_masuk ? $stockBan->tanggal_masuk->format('Y-m-d') : '' }}" 
+                       class="bg-transparent border-none p-0 text-base font-medium text-gray-900 focus:ring-0 date-history-editor"
+                       data-table="stock_bans"
+                       data-id="{{ $stockBan->id }}"
+                       data-field="tanggal_masuk">
             </div>
 
             <!-- Tanggal Keluar/Pasang -->
             @if($stockBan->tanggal_keluar)
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Tanggal Pasang</label>
-                <p class="text-base font-medium text-gray-900">
-                    {{ \Carbon\Carbon::parse($stockBan->tanggal_keluar)->format('d M Y') }}
-                </p>
+                <input type="date" 
+                       value="{{ $stockBan->tanggal_keluar ? $stockBan->tanggal_keluar->format('Y-m-d') : '' }}" 
+                       class="bg-transparent border-none p-0 text-base font-medium text-gray-900 focus:ring-0 date-history-editor"
+                       data-table="stock_bans"
+                       data-id="{{ $stockBan->id }}"
+                       data-field="tanggal_keluar">
             </div>
             @endif
 
@@ -108,9 +114,12 @@
             @if($stockBan->tanggal_digunakan)
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Tanggal Digunakan</label>
-                <p class="text-base font-medium text-gray-900">
-                    {{ \Carbon\Carbon::parse($stockBan->tanggal_digunakan)->format('d M Y') }}
-                </p>
+                <input type="date" 
+                       value="{{ $stockBan->tanggal_digunakan ? $stockBan->tanggal_digunakan->format('Y-m-d') : '' }}" 
+                       class="bg-transparent border-none p-0 text-base font-medium text-gray-900 focus:ring-0 date-history-editor"
+                       data-table="stock_bans"
+                       data-id="{{ $stockBan->id }}"
+                       data-field="tanggal_digunakan">
             </div>
             @endif
 
@@ -236,4 +245,64 @@
         <span class="block sm:inline">{{ session('success') }}</span>
     </div>
 @endif
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    $('.date-history-editor').on('change', function() {
+        const input = $(this);
+        const sourceTable = input.data('table');
+        const originalId = input.data('id');
+        const field = input.data('field');
+        const newDate = input.val();
+
+        if (!newDate) return;
+
+        Swal.fire({
+            title: 'Memperbarui Tanggal...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: "{{ route('stock-ban.update-history-date') }}",
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                source_table: sourceTable,
+                original_id: originalId,
+                field: field,
+                new_date: newDate
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Tanggal berhasil diperbarui',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: response.message || 'Terjadi kesalahan saat memperbarui tanggal'
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Gagal menghubungi server.'
+                });
+            }
+        });
+    });
+});
+</script>
 @endsection

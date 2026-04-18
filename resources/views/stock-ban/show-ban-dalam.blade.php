@@ -87,7 +87,11 @@
                                     {{ $loop->iteration }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ \Carbon\Carbon::parse($usage->tanggal_keluar)->format('d/m/Y') }}
+                                    <input type="date" 
+                                           value="{{ \Carbon\Carbon::parse($usage->tanggal_keluar)->format('Y-m-d') }}" 
+                                           class="bg-gray-50 border border-gray-200 text-gray-900 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 date-history-editor"
+                                           data-table="stock_ban_dalam_usages"
+                                           data-id="{{ $usage->id }}">
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                                     @if($usage->mobil)
@@ -138,4 +142,62 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    $('.date-history-editor').on('change', function() {
+        const input = $(this);
+        const sourceTable = input.data('table');
+        const originalId = input.data('id');
+        const newDate = input.val();
+
+        if (!newDate) return;
+
+        Swal.fire({
+            title: 'Memperbarui Tanggal...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: "{{ route('stock-ban.update-history-date') }}",
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                source_table: sourceTable,
+                original_id: originalId,
+                new_date: newDate
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Tanggal berhasil diperbarui',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: response.message || 'Terjadi kesalahan saat memperbarui tanggal'
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Gagal menghubungi server.'
+                });
+            }
+        });
+    });
+});
+</script>
 @endsection
