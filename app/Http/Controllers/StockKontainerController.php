@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\StockKontainer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class StockKontainerController extends Controller
 {
@@ -403,6 +405,7 @@ class StockKontainerController extends Controller
                     // Check if exists
                     $existing = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
 
+                    if ($existing) {
                         // Update existing
                         $asalGudangId = $existing->gudangs_id;
                         $existing->update([
