@@ -96,6 +96,12 @@
                                 <span class="text-gray-600">Tanggal Masuk</span>
                                 <span class="font-medium text-gray-900">{{ $stockBan->tanggal_masuk ? $stockBan->tanggal_masuk->format('d F Y') : '-' }}</span>
                             </div>
+                            @if($stockBan->tanggal_digunakan)
+                            <div class="flex justify-between border-b border-gray-50 pb-2">
+                                <span class="text-gray-600">Tanggal Digunakan</span>
+                                <span class="font-medium text-gray-900 text-blue-600">{{ $stockBan->tanggal_digunakan->format('d F Y') }}</span>
+                            </div>
+                            @endif
                         </div>
                     </div>
 

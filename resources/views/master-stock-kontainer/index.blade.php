@@ -147,11 +147,12 @@
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
                     <div class="text-sm text-gray-500">
-                        @if($stockKontainer->gudang)
+                        @if ($stockKontainer->gudang)
                             <span class="font-medium text-gray-700">{{ $stockKontainer->gudang->nama_gudang }}</span>
                             <br>
                             <span class="text-xs text-gray-400">{{ $stockKontainer->gudang->lokasi }}</span>
-                        @else
+                        @endif
+                        @if (!$stockKontainer->gudang)
                             <span class="text-gray-400">-</span>
                         @endif
                     </div>

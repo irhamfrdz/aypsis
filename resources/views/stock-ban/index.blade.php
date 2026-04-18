@@ -415,6 +415,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit / Tujuan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-blue-600">Tgl Digunakan</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi / Posisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
@@ -506,6 +507,9 @@
                                     @else
                                         -
                                     @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold text-blue-600">
+                                    {{ $ban->tanggal_digunakan ? $ban->tanggal_digunakan->format('d-m-Y') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $ban->penerima->nama_lengkap ?? '-' }}
@@ -802,6 +806,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit / Tujuan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-blue-600">Tgl Digunakan</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi / Posisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
@@ -893,6 +898,9 @@
                                     @else
                                         -
                                     @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold text-blue-600">
+                                    {{ $ban->tanggal_digunakan ? $ban->tanggal_digunakan->format('d-m-Y') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $ban->penerima->nama_lengkap ?? '-' }}
@@ -1694,9 +1702,15 @@
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label-premium">Tanggal Pasang / Keluar</label>
-                        <input type="date" name="tanggal_keluar" required value="{{ date('Y-m-d') }}" class="form-input-premium">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="form-label-premium">Tanggal Pasang / Keluar</label>
+                            <input type="date" name="tanggal_keluar" required value="{{ date('Y-m-d') }}" class="form-input-premium">
+                        </div>
+                        <div>
+                            <label class="form-label-premium">Tanggal Digunakan</label>
+                            <input type="date" name="tanggal_digunakan" value="{{ date('Y-m-d') }}" class="form-input-premium">
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -3240,6 +3254,11 @@
                         </div>
 
                         <div>
+                            <label class="form-label-premium">Tanggal Digunakan <span class="text-red-500">*</span></label>
+                            <input type="date" name="tanggal_digunakan" id="usage_tanggal_digunakan" class="form-input-premium" value="{{ date('Y-m-d') }}" required>
+                        </div>
+
+                        <div>
                             <label for="usage_keterangan" class="form-label-premium">Keterangan</label>
                             <textarea name="keterangan" id="usage_keterangan" class="form-input-premium" rows="2" placeholder="Catatan pemakaian..."></textarea>
                         </div>
@@ -3276,6 +3295,7 @@
         document.getElementById('usage_kapal').value = '';
         document.getElementById('text-usage_kapal').textContent = '-- Pilih Kapal --';
         document.getElementById('usage_keterangan').value = '';
+        document.getElementById('usage_tanggal_digunakan').value = new Date().toISOString().split('T')[0];
 
         document.getElementById('stockUsageModal').classList.remove('hidden');
     }

@@ -104,6 +104,16 @@
             </div>
             @endif
 
+            <!-- Tanggal Digunakan -->
+            @if($stockBan->tanggal_digunakan)
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Tanggal Digunakan</label>
+                <p class="text-base font-medium text-gray-900">
+                    {{ \Carbon\Carbon::parse($stockBan->tanggal_digunakan)->format('d M Y') }}
+                </p>
+            </div>
+            @endif
+
             <!-- Kapal / Pengiriman -->
             @if($stockBan->status == 'Dikirim Ke Batam' || $stockBan->kapal)
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">

@@ -216,6 +216,7 @@ class StockBanController extends Controller
             'nomor_bukti' => 'nullable|string|max:255',
             'penerima_id' => 'nullable|exists:karyawans,id',
             'status_ban_luar' => 'nullable|string',
+            'tanggal_digunakan' => 'nullable|date',
         ]);
 
         $data = $request->all();
@@ -378,6 +379,7 @@ class StockBanController extends Controller
             'nomor_bukti' => 'nullable|string|max:255',
             'penerima_id' => 'nullable|exists:karyawans,id',
             'status_ban_luar' => 'nullable|string',
+            'tanggal_digunakan' => 'nullable|date',
         ]);
 
         $data = $request->all();
@@ -485,6 +487,7 @@ class StockBanController extends Controller
             'processed_unit_id' => $isAlatBerat ? 'exists:alat_berats,id' : 'exists:mobils,id',
             'penerima_id' => 'required|exists:karyawans,id',
             'tanggal_keluar' => 'required|date',
+            'tanggal_digunakan' => 'nullable|date',
             'keterangan' => 'nullable|string',
         ], [
             'mobil_id.required' => 'Wajib memilih Mobil atau Alat Berat.',
@@ -498,6 +501,7 @@ class StockBanController extends Controller
             'status' => 'Terpakai',
             'penerima_id' => $request->penerima_id,
             'tanggal_keluar' => $request->tanggal_keluar,
+            'tanggal_digunakan' => $request->tanggal_digunakan ?? $request->tanggal_keluar,
             'keterangan' => $request->keterangan ? ($stockBan->keterangan . "\n" . "[Pemakaian: " . $request->keterangan . "]") : $stockBan->keterangan,
         ];
 
@@ -839,6 +843,7 @@ class StockBanController extends Controller
             'penerima_id' => 'required|exists:karyawans,id',
             'gudang_id' => 'nullable|exists:master_gudang_bans,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
+            'tanggal_digunakan' => 'nullable|date',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -882,7 +887,8 @@ class StockBanController extends Controller
                 'penerima_id' => $request->penerima_id,
                 'gudang_id' => $request->gudang_id,
                 'kapal_id' => $request->kapal_id,
-                'tanggal_keluar' => now(),
+                'tanggal_keluar' => $request->tanggal_digunakan ?? now(),
+                'tanggal_digunakan' => $request->tanggal_digunakan ?? now(),
                 'created_by' => \Illuminate\Support\Facades\Auth::id(),
                 'keterangan' => ($tableName != 'stock_ban_dalams') 
                     ? "[$jenis ID: $itemId] " . $request->keterangan 
