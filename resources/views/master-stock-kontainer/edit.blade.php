@@ -140,6 +140,9 @@
                     @error('gudangs_id')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
+                    <div id="gudang-warning" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded hidden">
+                        ⚠️ Tidak diperbolehkan mengubah lokasi gudang di halaman ini. Silakan gunakan menu mutasi atau pemindahan untuk memindahkan kontainer.
+                    </div>
                 </div>
 
                 <div>
@@ -218,3 +221,22 @@
         </form>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const gudangSelect = document.getElementById('gudangs_id');
+        const warningDiv = document.getElementById('gudang-warning');
+        const initialGudang = gudangSelect.value;
+
+        gudangSelect.addEventListener('change', function() {
+            if (this.value !== initialGudang) {
+                alert('Peringatan: Tidak diperbolehkan mengubah gudang di halaman ini. Silakan gunakan menu mutasi atau pemindahan jika ingin memindahkan kontainer.');
+                warningDiv.classList.remove('hidden');
+            } else {
+                warningDiv.classList.add('hidden');
+            }
+        });
+    });
+</script>
+@endpush
