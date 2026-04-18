@@ -30,7 +30,9 @@
     </div>
 
     @php
-        $completedCount = $drivers->filter(fn($d) => $checksForDate->has($d->id))->count();
+        $completedCount = $drivers->filter(function($driver) use ($checksForDate) {
+            return $checksForDate->has($driver->id);
+        })->count();
         $totalDrivers = $drivers->count();
         $pendingCount = $totalDrivers - $completedCount;
         $completionRate = $totalDrivers > 0 ? round(($completedCount / $totalDrivers) * 100) : 0;
