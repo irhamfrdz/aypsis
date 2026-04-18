@@ -383,7 +383,7 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
-                                    <form id="delete-form-{{ $bl->id }}" action="{{ route('bl.destroy', $bl->id) }}" method="POST" class="hidden">
+                                    <form id="delete-form-{{ $bl->id }}" action="{{ route('bl.destroy', array_merge(['bl' => $bl->id], request()->query())) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
                                     </form>
@@ -489,7 +489,7 @@
                 </div>
             </div>
             
-            <form id="splitForm" action="{{ route('bl.bulk-split') }}" method="POST">
+            <form id="splitForm" action="{{ route('bl.bulk-split', request()->query()) }}" method="POST">
                 @csrf
                 <input type="hidden" name="bl_ids" id="splitBlIds">
                 

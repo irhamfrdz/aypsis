@@ -819,20 +819,20 @@ class BlController extends Controller
             DB::commit();
             
             if (empty($newBlNumbers)) {
-                return redirect()->route('bl.index')
+                return redirect()->route('bl.index', $request->query())
                     ->with('split_error', 'Tidak ada BL yang dapat dipecah.');
             }
             
             $successMessage = 'Berhasil memecah BL dengan data PT ' . $ptPengirim . ' ke BL baru dengan nomor ' . $newNomorBl . '.';
             
-            return redirect()->route('bl.index')
+            return redirect()->route('bl.index', $request->query())
                 ->with('split_success', $successMessage)
                 ->with('new_bl_numbers', $newBlNumbers);
             
         } catch (\Exception $e) {
             DB::rollBack();
             
-            return redirect()->route('bl.index')
+            return redirect()->route('bl.index', $request->query())
                 ->with('split_error', 'Terjadi kesalahan saat memecah BL: ' . $e->getMessage())
                 ->with('split_errors', [$e->getMessage()]);
         }
@@ -2288,7 +2288,7 @@ class BlController extends Controller
     /**
      * Remove the specified BL from storage.
      */
-    public function destroy(Bl $bl)
+    public function destroy(Request $request, Bl $bl)
     {
         $user = Auth::user();
         
@@ -2309,7 +2309,7 @@ class BlController extends Controller
             $nomorBl = $bl->nomor_bl ?? 'BL #' . $bl->id;
             $bl->delete();
             
-            return redirect()->route('bl.index')->with('success', "Data BL {$nomorBl} berhasil dihapus.");
+            return redirect()->route('bl.index', $request->query())->with('success', "Data BL {$nomorBl} berhasil dihapus.");
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menghapus data BL: ' . $e->getMessage());
         }
