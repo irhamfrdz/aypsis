@@ -66,6 +66,26 @@ class StockBanController extends Controller
     }
 
     /**
+     * Display input harian view for Stock Ban and Stock Ban Luar Batam.
+     */
+    public function inputHarian(Request $request)
+    {
+        $date = $request->input('date', date('Y-m-d'));
+        
+        $stockBans = StockBan::with(['mobil', 'alatBerat', 'penerima', 'kapal', 'namaStockBan', 'createdBy'])
+            ->whereDate('created_at', $date)
+            ->latest()
+            ->get();
+            
+        $stockBanLuarBatams = \App\Models\StockBanLuarBatam::with(['mobil', 'alatBerat', 'penerima', 'kapal', 'namaStockBan', 'createdBy'])
+            ->whereDate('created_at', $date)
+            ->latest()
+            ->get();
+
+        return view('stock-ban.input-harian', compact('stockBans', 'stockBanLuarBatams', 'date'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

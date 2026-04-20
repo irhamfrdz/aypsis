@@ -185,6 +185,12 @@
                 </button>
             </div>
             
+            <!-- Button Input Harian -->
+            <a href="{{ route('stock-ban.input-harian') }}" 
+               class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 whitespace-nowrap">
+                <i class="fas fa-calendar-day"></i> Input Harian
+            </a>
+
             <!-- Dropdown Tambah Stock -->
             <div class="relative inline-block text-left" id="add-stock-container">
                 <button type="button" 

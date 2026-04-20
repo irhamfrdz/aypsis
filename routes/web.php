@@ -1843,6 +1843,9 @@ Route::middleware([
     Route::get('stock-ban', [\App\Http\Controllers\StockBanController::class, 'index'])
          ->name('stock-ban.index')
          ->middleware('can:stock-ban-view');
+    Route::get('stock-ban/input-harian', [\App\Http\Controllers\StockBanController::class, 'inputHarian'])
+         ->name('stock-ban.input-harian')
+         ->middleware('can:stock-ban-view');
     Route::get('stock-ban/create', [\App\Http\Controllers\StockBanController::class, 'create'])
          ->name('stock-ban.create')
          ->middleware('can:stock-ban-create');
