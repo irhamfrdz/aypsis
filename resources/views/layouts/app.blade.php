@@ -1115,7 +1115,7 @@
 
 {{-- Aktivitas Dropdown --}}
 @php
-    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('ob.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('pembayaran-pranota-ob.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*') || Request::routeIs('pembayaran-aktivitas-lain.*') || Request::routeIs('invoice-aktivitas-lain.*') || Request::routeIs('realisasi-uang-muka.*');
+    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('ob.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('pembayaran-pranota-ob.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*') || Request::routeIs('pembayaran-aktivitas-lain.*') || Request::routeIs('invoice-aktivitas-lain.*') || Request::routeIs('realisasi-uang-muka.*');
     $hasAktivitasPermissions = $user && (
         $user->can('permohonan-memo-view') ||
         $user->can('pranota-supir-view') ||
@@ -1129,7 +1129,9 @@
         $user->can('pembayaran-pranota-uang-jalan-view') ||
         $user->can('pranota-rit-view') ||
         $user->can('pranota-uang-rit-view') ||
-        $user->can('pranota-uang-rit-view') ||
+        $user->can('pembayaran-pranota-rit-view') ||
+        $user->can('pranota-uang-rit-kenek-view') ||
+        $user->can('pembayaran-pranota-rit-kenek-view') ||
         $user->can('surat-jalan-view') ||
         $user->can('surat-jalan-create') ||
         $user->can('surat-jalan-update') ||
@@ -1212,8 +1214,19 @@
 
         {{-- Aktivitas Supir Sub-Dropdown --}}
         @php
-            $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('tagihan-supir-vendor.*') || Request::routeIs('invoice-tagihan-vendor.*') || Request::routeIs('pranota-invoice-vendor-supir.*') || Request::is('pranota-ongkos-truk*');
-            $hasAktivitasSupirPermissions = $user && ($user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pembayaran-pranota-supir-view') || $user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete') || $user->can('pranota-uang-jalan-view') || $user->can('uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view') || $user->can('pranota-rit-view') || $user->can('pranota-uang-rit-view') || $user->can('pembayaran-pranota-rit-view') || $user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete') || $user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete') || $user->can('uang-jalan-bongkaran-view') || $user->can('uang-jalan-bongkaran-create') || $user->can('uang-jalan-bongkaran-update') || $user->can('uang-jalan-bongkaran-delete') || $user->can('pranota-lembur-view') || $user->can('tagihan-supir-vendor-view') || $user->can('invoice-tagihan-vendor-view') || $user->can('pranota-invoice-vendor-supir-view') || true);
+            $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('tagihan-supir-vendor.*') || Request::routeIs('invoice-tagihan-vendor.*') || Request::routeIs('pranota-invoice-vendor-supir.*') || Request::is('pranota-ongkos-truk*');
+            $hasAktivitasSupirPermissions = $user && (
+                $user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pembayaran-pranota-supir-view') || 
+                $user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete') || 
+                $user->can('pranota-uang-jalan-view') || $user->can('uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view') || 
+                $user->can('pranota-rit-view') || $user->can('pranota-uang-rit-view') || $user->can('pembayaran-pranota-rit-view') || 
+                $user->can('pranota-uang-rit-kenek-view') || $user->can('pembayaran-pranota-rit-kenek-view') ||
+                $user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete') || 
+                $user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete') || 
+                $user->can('uang-jalan-bongkaran-view') || $user->can('uang-jalan-bongkaran-create') || $user->can('uang-jalan-bongkaran-update') || $user->can('uang-jalan-bongkaran-delete') || 
+                $user->can('pranota-lembur-view') || $user->can('tagihan-supir-vendor-view') || $user->can('invoice-tagihan-vendor-view') || $user->can('pranota-invoice-vendor-supir-view') || 
+                true
+            );
         @endphp
 
         @if($hasAktivitasSupirPermissions)
@@ -1287,8 +1300,19 @@
 
                 {{-- Rit Sub-Dropdown --}}
                 @php
-                    $isRitRoute = Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*');
-                    $hasRitPermissions = $user && ($user->can('pranota-rit-view') || $user->can('pranota-uang-rit-view'));
+                    $isRitRoute = Request::routeIs('pranota-rit.*') || 
+                                 Request::routeIs('pranota-uang-rit.*') || 
+                                 Request::routeIs('pembayaran-pranota-rit.*') || 
+                                 Request::routeIs('pranota-uang-rit-kenek.*') || 
+                                 Request::routeIs('pembayaran-pranota-rit-kenek.*');
+                    
+                    $hasRitPermissions = $user && (
+                        $user->can('pranota-rit-view') || 
+                        $user->can('pranota-uang-rit-view') || 
+                        $user->can('pembayaran-pranota-rit-view') || 
+                        $user->can('pranota-uang-rit-kenek-view') || 
+                        $user->can('pembayaran-pranota-rit-kenek-view')
+                    );
                 @endphp
 
                 @if($hasRitPermissions)
