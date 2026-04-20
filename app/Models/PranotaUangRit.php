@@ -156,14 +156,6 @@ class PranotaUangRit extends Model
             if (empty($model->no_pranota)) {
                 $model->no_pranota = $model->generateNoPranota();
             }
-            
-            // Auto-calculate total_uang (only uang_rit now)
-            $model->total_uang = $model->uang_rit;
-        });
-
-        static::updating(function (self $model) {
-            // Auto-calculate total_uang (only uang_rit now)
-            $model->total_uang = $model->uang_rit;
         });
     }
 

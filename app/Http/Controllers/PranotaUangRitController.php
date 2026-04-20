@@ -894,20 +894,22 @@ class PranotaUangRitController extends Controller
                         'hutang' => $hutang,
                         'tabungan' => $tabungan,
                         'bpjs' => $bpjs,
-                        // grand_total akan dihitung otomatis di model
-                    ]);
-                
-                $totalHutangKeseluruhan += $hutang;
-                $totalTabunganKeseluruhan += $tabungan;
-                $totalBpjsKeseluruhan += $bpjs;
+                ]);
             }
-            
-            // Calculate new grand total
-            $grandTotalBersih = $pranotaUangRit->total_uang - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
+                
+            // Recalculate totals from DB to ensure consistency
+            $allDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)->get();
+            $totalUangKeseluruhan = $allDetails->sum('total_uang_supir');
+            $totalHutangKeseluruhan = $allDetails->sum('hutang');
+            $totalTabunganKeseluruhan = $allDetails->sum('tabungan');
+            $totalBpjsKeseluruhan = $allDetails->sum('bpjs');
+            $grandTotalBersih = $totalUangKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
             
             // Update pranota
             $pranotaUangRit->update([
                 'tanggal' => $request->tanggal,
+                'total_uang' => $totalUangKeseluruhan, 
+                'total_rit' => $totalUangKeseluruhan, 
                 'total_hutang' => $totalHutangKeseluruhan,
                 'total_tabungan' => $totalTabunganKeseluruhan,
                 'total_bpjs' => $totalBpjsKeseluruhan,
