@@ -3140,59 +3140,59 @@ Route::middleware(['auth'])->group(function () {
         });
 
     // ═══════════════════════════════════════════════════════════════════════
-    // � PRANOTA UANG RIT KENEK MANAGEMENT
+    //  PRANOTA UANG RIT KENEK MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
 
     // Special routes must come BEFORE resource routes to avoid conflicts
     Route::get('pranota-uang-rit-kenek/select-uang-jalan', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'selectUangJalan'])
          ->name('pranota-uang-rit-kenek.select-uang-jalan')
-         ->middleware('can:pranota-uang-rit-create');
+         ->middleware('can:pranota-uang-rit-kenek-create');
 
     // Page for selecting the date range before creating a pranota
     Route::get('pranota-uang-rit-kenek/select-date', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'selectDate'])
          ->name('pranota-uang-rit-kenek.select-date')
-         ->middleware('can:pranota-uang-rit-create');
+         ->middleware('can:pranota-uang-rit-kenek-create');
 
     Route::post('pranota-uang-rit-kenek/from-selection', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'createFromSelection'])
          ->name('pranota-uang-rit-kenek.from-selection')
-         ->middleware('can:pranota-uang-rit-create');
+         ->middleware('can:pranota-uang-rit-kenek-create');
 
     // Pranota Uang Rit Kenek Management with permissions
     Route::resource('pranota-uang-rit-kenek', \App\Http\Controllers\PranotaUangRitKenekController::class)
          ->middleware([
-             'index' => 'can:pranota-uang-rit-view',
-             'create' => 'can:pranota-uang-rit-create',
-             'store' => 'can:pranota-uang-rit-create',
-             'show' => 'can:pranota-uang-rit-view',
-             'edit' => 'can:pranota-uang-rit-update',
-             'update' => 'can:pranota-uang-rit-update',
-             'destroy' => 'can:pranota-uang-rit-delete'
+             'index' => 'can:pranota-uang-rit-kenek-view',
+             'create' => 'can:pranota-uang-rit-kenek-create',
+             'store' => 'can:pranota-uang-rit-kenek-create',
+             'show' => 'can:pranota-uang-rit-kenek-view',
+             'edit' => 'can:pranota-uang-rit-kenek-update',
+             'update' => 'can:pranota-uang-rit-kenek-update',
+             'destroy' => 'can:pranota-uang-rit-kenek-delete'
          ]);
 
     // Additional Pranota Uang Rit Kenek routes for workflow
     Route::post('pranota-uang-rit-kenek/{pranotaUangRitKenek}/submit', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'submit'])
          ->name('pranota-uang-rit-kenek.submit')
-         ->middleware('can:pranota-uang-rit-update');
+         ->middleware('can:pranota-uang-rit-kenek-update');
 
     Route::post('pranota-uang-rit-kenek/{pranotaUangRitKenek}/approve', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'approve'])
          ->name('pranota-uang-rit-kenek.approve')
-         ->middleware('can:pranota-uang-rit-approve');
+         ->middleware('can:pranota-uang-rit-kenek-approve');
 
     Route::post('pranota-uang-rit-kenek/{pranotaUangRitKenek}/mark-as-paid', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'markAsPaid'])
          ->name('pranota-uang-rit-kenek.mark-as-paid')
-         ->middleware('can:pranota-uang-rit-mark-paid');
+         ->middleware('can:pranota-uang-rit-kenek-mark-paid');
 
     Route::get('pranota-uang-rit-kenek/{pranotaUangRitKenek}/print', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'print'])
          ->name('pranota-uang-rit-kenek.print')
-         ->middleware('can:pranota-uang-rit-view');
+         ->middleware('can:pranota-uang-rit-kenek-print');
 
     Route::get('pranota-uang-rit-kenek/{pranotaUangRitKenek}/export-surat-jalan', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'exportSuratJalan'])
          ->name('pranota-uang-rit-kenek.export-surat-jalan')
-         ->middleware('can:pranota-uang-rit-view');
+         ->middleware('can:pranota-uang-rit-kenek-export');
 
     Route::post('pranota-uang-rit-kenek/export-excel', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'exportExcel'])
          ->name('pranota-uang-rit-kenek.export-excel')
-         ->middleware('can:pranota-uang-rit-view');
+         ->middleware('can:pranota-uang-rit-kenek-export');
 
     // ═══════════════════════════════════════════════════════════════════════
     // �🚚 PRANOTA UANG KENEK MANAGEMENT

@@ -1323,7 +1323,7 @@
                         @endif
 
                         {{-- Pranota Uang Rit Kenek --}}
-                        @if($user && $user->can('pranota-uang-rit-view'))
+                        @if($user && $user->can('pranota-uang-rit-kenek-view'))
                             <a href="{{ route('pranota-uang-rit-kenek.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-rit-kenek.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pranota Uang Rit Kenek</span>
                             </a>

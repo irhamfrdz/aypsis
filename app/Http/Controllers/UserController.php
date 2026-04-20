@@ -645,6 +645,7 @@ class UserController extends Controller
                 'pembayaran-pranota-uang-jalan' => 'pembayaran-pranota-uang-jalan',
                 'pembayaran-pranota-lembur' => 'pembayaran-pranota-lembur',
                 'pembayaran-pranota-stock' => 'pembayaran-pranota-stock',
+                'pembayaran-pranota-rit-kenek' => 'pembayaran-pranota-rit-kenek',
                 'pembayaran-pranota-rit' => 'pembayaran-pranota-rit',
                 'pembayaran-uang-muka' => 'pembayaran-uang-muka',
                 'pergerakan-kapal' => 'pergerakan-kapal',
@@ -657,6 +658,7 @@ class UserController extends Controller
                 'pranota-rit-kenek' => 'pranota-rit-kenek',
                 'pranota-rit' => 'pranota-rit',
                 'pranota-supir' => 'pranota-supir',
+                'pranota-uang-rit-kenek' => 'pranota-uang-rit-kenek',
                 'pranota-uang-rit' => 'pranota-uang-rit',
                 'prospek-batam' => 'prospek-batam',
                 'prospek' => 'prospek',
@@ -1378,6 +1380,12 @@ class UserController extends Controller
                     if (strpos($permissionName, 'pembayaran-pranota-uang-jalan-bongkaran-') === 0) {
                         $module = 'pembayaran-pranota-uang-jalan-bongkaran';
                         $action = str_replace('pembayaran-pranota-uang-jalan-bongkaran-', '', $permissionName);
+                    }
+
+                    // Special handling for pranota-uang-rit-kenek-* permissions
+                    if (strpos($permissionName, 'pranota-uang-rit-kenek-') === 0) {
+                        $module = 'pranota-uang-rit-kenek';
+                        $action = str_replace('pranota-uang-rit-kenek-', '', $permissionName);
                     }
 
                     // Special handling for pranota-uang-rit-* permissions
@@ -3162,6 +3170,28 @@ class UserController extends Controller
                             }
                         }
                     }
+                    // Special handling for pembayaran-pranota-rit-kenek
+                    if ($module === 'pembayaran-pranota-rit-kenek') {
+                        $actionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'edit',
+                            'delete' => 'delete',
+                            'approve' => 'approve',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = 'pembayaran-pranota-rit-kenek-' . $actionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // Special handling for pembayaran-pranota-rit
                     if ($module === 'pembayaran-pranota-rit') {
                         $actionMap = [
@@ -3675,6 +3705,28 @@ class UserController extends Controller
                             'create' => 'invoice-aktivitas-lain-create',
                             'update' => 'invoice-aktivitas-lain-update',
                             'delete' => 'invoice-aktivitas-lain-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pranota-uang-rit-kenek module
+                    if ($module === 'pranota-uang-rit-kenek') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'pranota-uang-rit-kenek-view',
+                            'create' => 'pranota-uang-rit-kenek-create',
+                            'update' => 'pranota-uang-rit-kenek-update',
+                            'delete' => 'pranota-uang-rit-kenek-delete',
+                            'approve' => 'pranota-uang-rit-kenek-approve',
+                            'print' => 'pranota-uang-rit-kenek-print',
+                            'export' => 'pranota-uang-rit-kenek-export'
                         ];
 
                         if (isset($actionMap[$action])) {
