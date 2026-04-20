@@ -3,6 +3,34 @@
 @section('title', 'Form Pembayaran Pranota Stock')
 @section('page_title', 'Form Pembayaran Pranota Stock')
 
+@push('styles')
+    <style>
+        /* Custom Select2 styling to match Tailwind */
+        .select2-container--default .select2-selection--single {
+            height: 38px !important;
+            padding: 5px 12px;
+            border-color: #D1D5DB !important;
+            background-color: #F9FAFB !important;
+            border-radius: 0.375rem !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: normal !important;
+            padding: 0 !important;
+            font-size: 0.875rem !important;
+            color: #374151 !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
+            right: 6px !important;
+        }
+        .select2-dropdown {
+            border-color: #D1D5DB !important;
+            border-radius: 0.375rem !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="bg-white shadow-lg rounded-lg p-4 max-w-6xl mx-auto">
         @php
@@ -76,7 +104,7 @@
                     <div class="space-y-3">
                         <div>
                             <label class="{{ $labelClasses }}">Pilih Bank/Kas <span class="text-red-500">*</span></label>
-                            <select name="bank" id="bank" class="{{ $inputClasses }}" required>
+                            <select name="bank" id="bank" class="select2-bank {{ $inputClasses }}" required>
                                 <option value="">-- Pilih Bank --</option>
                                 @foreach($akunCoa as $akun)
                                     <option value="{{ $akun->nama_akun }}">{{ $akun->nama_akun }}</option>
@@ -188,77 +216,93 @@
         </form>
     </div>
 
+@push('scripts')
     <script>
-        function toggleRow(row) {
-            const cb = row.querySelector('.pranota-checkbox');
-            if(cb) {
-                cb.checked = !cb.checked;
-                calculateTotal();
+        $(document).ready(function() {
+            // Initialize Select2 for Bank
+            $('.select2-bank').select2({
+                placeholder: "-- Pilih Bank --",
+                allowClear: true,
+                width: '100%'
+            });
+
+            window.toggleRow = function(row) {
+                const cb = row.querySelector('.pranota-checkbox');
+                if(cb) {
+                    cb.checked = !cb.checked;
+                    calculateTotal();
+                }
             }
-        }
 
-        const checkboxes = document.querySelectorAll('.pranota-checkbox');
-        const selectAll = document.getElementById('selectAll');
-        const subtotalInput = document.getElementById('total_pembayaran');
-        const subtotalDisplay = document.getElementById('subtotal_display');
-        const penyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
-        const totalAkhirInput = document.getElementById('total_akhir');
-        const checkedCount = document.getElementById('checkedCount');
+            const checkboxes = document.querySelectorAll('.pranota-checkbox');
+            const selectAll = document.getElementById('selectAll');
+            const subtotalInput = document.getElementById('total_pembayaran');
+            const subtotalDisplay = document.getElementById('subtotal_display');
+            const penyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
+            const totalAkhirInput = document.getElementById('total_akhir');
+            const checkedCount = document.getElementById('checkedCount');
 
-        function calculateTotal() {
-            let subtotal = 0;
-            let count = 0;
+            window.calculateTotal = function() {
+                let subtotal = 0;
+                let count = 0;
+                checkboxes.forEach(cb => {
+                    if(cb.checked) {
+                        subtotal += parseFloat(cb.dataset.amount);
+                        count++;
+                    }
+                });
+
+                if(subtotalInput) subtotalInput.value = subtotal;
+                if(subtotalDisplay) subtotalDisplay.value = subtotal;
+                if(checkedCount) checkedCount.innerText = count + " Item Terpilih";
+                
+                const penyesuaian = parseFloat(penyesuaianInput.value) || 0;
+                if(totalAkhirInput) totalAkhirInput.value = subtotal + penyesuaian;
+            }
+
+            if(selectAll) {
+                selectAll.addEventListener('change', function() {
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                    calculateTotal();
+                });
+            }
+
             checkboxes.forEach(cb => {
-                if(cb.checked) {
-                    subtotal += parseFloat(cb.dataset.amount);
-                    count++;
+                cb.addEventListener('change', calculateTotal);
+            });
+
+            if(penyesuaianInput) {
+                penyesuaianInput.addEventListener('input', calculateTotal);
+            }
+
+            const generateBtn = document.getElementById('generateNomorBtn');
+            if(generateBtn) {
+                generateBtn.addEventListener('click', function() {
+                    const btn = this;
+                    btn.disabled = true;
+                    fetch('{{ route("pembayaran-pranota-stock.generate-nomor") }}')
+                        .then(r => r.json())
+                        .then(data => {
+                            if(data.success) {
+                                document.getElementById('nomor_pembayaran').value = data.nomor_pembayaran;
+                            }
+                        })
+                        .finally(() => btn.disabled = false);
+                });
+            }
+
+            document.getElementById('pembayaranForm').addEventListener('submit', function(e) {
+                const count = document.querySelectorAll('.pranota-checkbox:checked').length;
+                if(count === 0) {
+                    e.preventDefault();
+                    alert('Silakan pilih minimal satu pranota stock yang akan dibayar.');
+                    return;
+                }
+                if(!confirm('Konfirmasi simpan pembayaran ini?')) {
+                    e.preventDefault();
                 }
             });
-
-            subtotalInput.value = subtotal;
-            subtotalDisplay.value = subtotal;
-            checkedCount.innerText = count + " Item Terpilih";
-            
-            const penyesuaian = parseFloat(penyesuaianInput.value) || 0;
-            totalAkhirInput.value = subtotal + penyesuaian;
-        }
-
-        if(selectAll) {
-            selectAll.addEventListener('change', function() {
-                checkboxes.forEach(cb => cb.checked = this.checked);
-                calculateTotal();
-            });
-        }
-
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', calculateTotal);
-        });
-
-        penyesuaianInput.addEventListener('input', calculateTotal);
-
-        document.getElementById('generateNomorBtn').addEventListener('click', function() {
-            const btn = this;
-            btn.disabled = true;
-            fetch('{{ route("pembayaran-pranota-stock.generate-nomor") }}')
-                .then(r => r.json())
-                .then(data => {
-                    if(data.success) {
-                        document.getElementById('nomor_pembayaran').value = data.nomor_pembayaran;
-                    }
-                })
-                .finally(() => btn.disabled = false);
-        });
-
-        document.getElementById('pembayaranForm').addEventListener('submit', function(e) {
-            const count = document.querySelectorAll('.pranota-checkbox:checked').length;
-            if(count === 0) {
-                e.preventDefault();
-                alert('Silakan pilih minimal satu pranota stock yang akan dibayar.');
-                return;
-            }
-            if(!confirm('Konfirmasi simpan pembayaran ini?')) {
-                e.preventDefault();
-            }
         });
     </script>
+@endpush
 @endsection
