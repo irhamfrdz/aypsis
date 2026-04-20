@@ -137,6 +137,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::post('register/user', [AuthController::class, 'registerUser'])->name('register.user.store');
 });
 
+// Recruitment routes (Public)
+Route::get('recruitment', [App\Http\Controllers\PelamarKaryawanController::class, 'create'])->name('recruitment.create');
+Route::post('recruitment', [App\Http\Controllers\PelamarKaryawanController::class, 'store'])->name('recruitment.store');
+
 // Test Edit Payment Functionality
 // Route untuk copy permission (di luar middleware auth agar bisa digunakan di form create)
 Route::get('master/user/{user}/permissions-for-copy', [UserController::class, 'getUserPermissionsForCopy'])

@@ -86,10 +86,18 @@
                 </label>
             </div>
 
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-4">
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
                     Login
                 </button>
+                <div class="relative flex items-center py-2">
+                    <div class="flex-grow border-t border-gray-300"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 text-xs uppercase font-semibold">Atau</span>
+                    <div class="flex-grow border-t border-gray-300"></div>
+                </div>
+                <a href="{{ route('recruitment.create') }}" class="block text-center border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition duration-300">
+                    Melamar (Pelamar Karyawan)
+                </a>
             </div>
         </form>
 
