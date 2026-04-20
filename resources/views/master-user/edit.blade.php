@@ -3073,7 +3073,27 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
- 
+
+                            {{-- Pembayaran Pranota Rit --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span class="text-purple-600 font-bold">Pembayaran Pranota Rit</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-rit][view]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-rit.view') || (isset($userMatrixPermissions['pembayaran-pranota-rit']['view']) && $userMatrixPermissions['pembayaran-pranota-rit']['view']) || ($user && $user->can('pembayaran-pranota-rit-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-rit][create]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-rit.create') || (isset($userMatrixPermissions['pembayaran-pranota-rit']['create']) && $userMatrixPermissions['pembayaran-pranota-rit']['create']) || ($user && $user->can('pembayaran-pranota-rit-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-rit][update]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-rit.update') || (isset($userMatrixPermissions['pembayaran-pranota-rit']['update']) && $userMatrixPermissions['pembayaran-pranota-rit']['update']) || ($user && $user->can('pembayaran-pranota-rit-edit'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-rit][delete]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-rit.delete') || (isset($userMatrixPermissions['pembayaran-pranota-rit']['delete']) && $userMatrixPermissions['pembayaran-pranota-rit']['delete']) || ($user && $user->can('pembayaran-pranota-rit-delete'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-rit][approve]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-rit.approve') || (isset($userMatrixPermissions['pembayaran-pranota-rit']['approve']) && $userMatrixPermissions['pembayaran-pranota-rit']['approve']) || ($user && $user->can('pembayaran-pranota-rit-approve'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-rit][print]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-rit.print') || (isset($userMatrixPermissions['pembayaran-pranota-rit']['print']) && $userMatrixPermissions['pembayaran-pranota-rit']['print']) || ($user && $user->can('pembayaran-pranota-rit-print'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-rit][export]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-rit.export') || (isset($userMatrixPermissions['pembayaran-pranota-rit']['export']) && $userMatrixPermissions['pembayaran-pranota-rit']['export']) || ($user && $user->can('pembayaran-pranota-rit-export'))) checked @endif></td>
+                            </tr>
+
                             {{-- Pembayaran Uang Muka --}}
                             <tr class="submodule-row" data-parent="pembayaran">
                                 <td class="submodule">
