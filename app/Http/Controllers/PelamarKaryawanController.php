@@ -13,6 +13,17 @@ class PelamarKaryawanController extends Controller
         return view('pelamar-karyawan.create');
     }
 
+    public function index()
+    {
+        $pelamars = PelamarKaryawan::latest()->paginate(10);
+        return view('pelamar-karyawan.index', compact('pelamars'));
+    }
+
+    public function show(PelamarKaryawan $pelamar)
+    {
+        return view('pelamar-karyawan.show', compact('pelamar'));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AssetDashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PelamarKaryawanController;
 
 
 use App\Http\Controllers\KontainerController;
@@ -276,6 +277,15 @@ Route::middleware([
         Route::get('user', [UserController::class, 'index'])
              ->name('user.index')
              ->middleware('can:master-user-view');
+
+        // Recruitment Management
+        Route::get('pelamar-karyawan', [PelamarKaryawanController::class, 'index'])
+             ->name('pelamar-karyawan.index')
+             ->middleware('can:master-karyawan-view');
+        
+        Route::get('pelamar-karyawan/{pelamar}', [PelamarKaryawanController::class, 'show'])
+             ->name('pelamar-karyawan.show')
+             ->middleware('can:master-karyawan-view');
         
         Route::get('user/create', [UserController::class, 'create'])
              ->name('user.create')

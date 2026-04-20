@@ -860,6 +860,11 @@ class KaryawanController extends Controller
      */
     public function create()
     {
+        $pelamar = null;
+        if (request()->has('pelamar_id')) {
+            $pelamar = \App\Models\PelamarKaryawan::find(request()->pelamar_id);
+        }
+
         $divisis = Divisi::active()->orderBy('nama_divisi')->get();
         $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
         $pajaks = Pajak::orderBy('nama_status')->get();
@@ -879,7 +884,7 @@ class KaryawanController extends Controller
         // Generate next NIK for auto-fill (Optional, but user want to remove automatic feature)
         $nextNik = ''; // Karyawan::generateNextNik();
 
-        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik'));
+        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik', 'pelamar'));
     }
 
     /**

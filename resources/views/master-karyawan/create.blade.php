@@ -101,12 +101,18 @@
 
                     <div>
                         <label for="nama_lengkap" class="{{ $labelClasses }}">Nama Lengkap <span class="text-red-500">*</span></label>
-                        <input type="text" name="nama_lengkap" id="nama_lengkap" class="{{ $inputClasses }}" required placeholder="Masukkan nama lengkap">
+                        <input type="text" name="nama_lengkap" id="nama_lengkap" class="{{ $inputClasses }}" required placeholder="Masukkan nama lengkap" value="{{ old('nama_lengkap', $pelamar?->nama_lengkap) }}">
                     </div>
 
                     <div>
                         <label for="nama_panggilan" class="{{ $labelClasses }}">Nama Panggilan <span class="text-red-500">*</span></label>
-                        <input type="text" name="nama_panggilan" id="nama_panggilan" class="{{ $inputClasses }} @error('nama_panggilan') border-red-500 @enderror" required placeholder="Masukkan nama panggilan" value="{{ old('nama_panggilan') }}">
+                        @php
+                            $suggestedPanggilan = old('nama_panggilan');
+                            if (!$suggestedPanggilan && $pelamar) {
+                                $suggestedPanggilan = explode(' ', $pelamar->nama_lengkap)[0];
+                            }
+                        @endphp
+                        <input type="text" name="nama_panggilan" id="nama_panggilan" class="{{ $inputClasses }} @error('nama_panggilan') border-red-500 @enderror" required placeholder="Masukkan nama panggilan" value="{{ $suggestedPanggilan }}">
                         @error('nama_panggilan')
                             <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                         @enderror
@@ -114,25 +120,31 @@
 
                     <div>
                         <label for="email" class="{{ $labelClasses }}">Email</label>
-                        <input type="email" name="email" id="email" class="{{ $inputClasses }}" placeholder="contoh@email.com">
+                        <input type="email" name="email" id="email" class="{{ $inputClasses }}" placeholder="contoh@email.com" value="{{ old('email', $pelamar?->email) }}">
                     </div>
 
                 <div>
                     <label for="tanggal_lahir" class="{{ $labelClasses }}">Tanggal Lahir</label>
-                    <input type="date" name="tanggal_lahir" id="tanggal_lahir" class="{{ $inputClasses }}">
+                    <input type="date" name="tanggal_lahir" id="tanggal_lahir" class="{{ $inputClasses }}" value="{{ old('tanggal_lahir', $pelamar?->tanggal_lahir ? $pelamar->tanggal_lahir->format('Y-m-d') : '') }}">
                 </div>
 
                 <div>
                     <label for="tempat_lahir" class="{{ $labelClasses }}">Tempat Lahir</label>
-                    <input type="text" name="tempat_lahir" id="tempat_lahir" class="{{ $inputClasses }}" placeholder="Kota tempat lahir">
+                    <input type="text" name="tempat_lahir" id="tempat_lahir" class="{{ $inputClasses }}" placeholder="Kota tempat lahir" value="{{ old('tempat_lahir', $pelamar?->tempat_lahir) }}">
                 </div>
 
                 <div>
                     <label for="jenis_kelamin" class="{{ $labelClasses }}">Jenis Kelamin</label>
+                    @php
+                        $jkValue = old('jenis_kelamin');
+                        if (!$jkValue && $pelamar) {
+                            $jkValue = $pelamar->jenis_kelamin == 'Laki-laki' ? 'L' : ($pelamar->jenis_kelamin == 'Perempuan' ? 'P' : '');
+                        }
+                    @endphp
                     <select name="jenis_kelamin" id="jenis_kelamin" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Jenis Kelamin --</option>
-                        <option value="L">Laki-laki</option>
-                        <option value="P">Perempuan</option>
+                        <option value="L" {{ $jkValue == 'L' ? 'selected' : '' }}>Laki-laki</option>
+                        <option value="P" {{ $jkValue == 'P' ? 'selected' : '' }}>Perempuan</option>
                     </select>
                 </div>
 
@@ -163,13 +175,13 @@
 
                 <div>
                     <label for="no_hp" class="{{ $labelClasses }}">Nomor Handphone/Whatsapp</label>
-                    <input type="tel" name="no_hp" id="no_hp" class="{{ $inputClasses }}" placeholder="08xxxxxxxxxx" maxlength="20">
+                    <input type="tel" name="no_hp" id="no_hp" class="{{ $inputClasses }}" placeholder="08xxxxxxxxxx" maxlength="20" value="{{ old('no_hp', $pelamar?->no_handphone) }}">
                     <div id="noHpError" class="text-xs text-red-600 mt-1 hidden">Nomor handphone harus berupa angka saja, tidak boleh ada huruf (maksimal 20 digit)</div>
                 </div>
 
                 <div>
                     <label for="ktp" class="{{ $labelClasses }}">Nomor KTP <span class="text-red-500">*</span></label>
-                    <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" required>
+                    <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" required value="{{ old('ktp', $pelamar?->no_nik) }}">
                     <p class="text-xs text-gray-500 mt-1">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</p>
                     <div id="ktpError" class="text-xs text-red-600 mt-1 hidden">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
                     <div id="ktpWarning" class="text-xs mt-1 hidden"></div>
@@ -177,7 +189,7 @@
 
                 <div>
                     <label for="kk" class="{{ $labelClasses }}">Nomor KK <span class="text-red-500">*</span></label>
-                    <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="Masukkan nomor KK (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" required>
+                    <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="Masukkan nomor KK (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" required value="{{ old('kk', $pelamar?->no_kartu_keluarga) }}">
                     <p class="text-xs text-gray-500 mt-1">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf</p>
                     <div id="kkError" class="text-xs text-red-600 mt-1 hidden">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
                     <div id="kkWarning" class="text-xs mt-1 hidden"></div>
@@ -284,7 +296,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="alamat" class="{{ $labelClasses }}">Alamat</label>
-                        <input type="text" name="alamat" id="alamat" class="{{ $inputClasses }}" placeholder="Jalan, nomor rumah">
+                        <input type="text" name="alamat" id="alamat" class="{{ $inputClasses }}" placeholder="Jalan, nomor rumah" value="{{ old('alamat', $pelamar?->alamat_lengkap) }}">
                     </div>
 
                     <div>
@@ -294,32 +306,32 @@
 
                 <div>
                     <label for="kelurahan" class="{{ $labelClasses }}">Kelurahan</label>
-                    <input type="text" name="kelurahan" id="kelurahan" class="{{ $inputClasses }}" placeholder="Nama kelurahan">
+                    <input type="text" name="kelurahan" id="kelurahan" class="{{ $inputClasses }}" placeholder="Nama kelurahan" value="{{ old('kelurahan', $pelamar?->kelurahan) }}">
                 </div>
 
                 <div>
                     <label for="kecamatan" class="{{ $labelClasses }}">Kecamatan</label>
-                    <input type="text" name="kecamatan" id="kecamatan" class="{{ $inputClasses }}" placeholder="Nama kecamatan">
+                    <input type="text" name="kecamatan" id="kecamatan" class="{{ $inputClasses }}" placeholder="Nama kecamatan" value="{{ old('kecamatan', $pelamar?->kecamatan) }}">
                 </div>
 
                 <div>
                     <label for="kabupaten" class="{{ $labelClasses }}">Kabupaten</label>
-                    <input type="text" name="kabupaten" id="kabupaten" class="{{ $inputClasses }}" placeholder="Nama kabupaten/kota">
+                    <input type="text" name="kabupaten" id="kabupaten" class="{{ $inputClasses }}" placeholder="Nama kabupaten/kota" value="{{ old('kabupaten', $pelamar?->kota_kabupaten) }}">
                 </div>
 
                 <div>
                     <label for="provinsi" class="{{ $labelClasses }}">Provinsi</label>
-                    <input type="text" name="provinsi" id="provinsi" class="{{ $inputClasses }}" placeholder="Nama provinsi">
+                    <input type="text" name="provinsi" id="provinsi" class="{{ $inputClasses }}" placeholder="Nama provinsi" value="{{ old('provinsi', $pelamar?->provinsi) }}">
                 </div>
 
                 <div>
                     <label for="kode_pos" class="{{ $labelClasses }}">Kode Pos</label>
-                    <input type="text" name="kode_pos" id="kode_pos" class="{{ $inputClasses }}" placeholder="12345">
+                    <input type="text" name="kode_pos" id="kode_pos" class="{{ $inputClasses }}" placeholder="12345" value="{{ old('kode_pos', $pelamar?->kode_pos) }}">
                 </div>
 
                 <div class="lg:col-span-2">
                     <label for="alamat_lengkap" class="{{ $labelClasses }}">Alamat Lengkap</label>
-                    <textarea name="alamat_lengkap" id="alamat_lengkap" rows="3" class="{{ $readonlyInputClasses }}" readonly placeholder="Alamat lengkap akan muncul otomatis"></textarea>
+                    <textarea name="alamat_lengkap" id="alamat_lengkap" rows="3" class="{{ $readonlyInputClasses }}" readonly placeholder="Alamat lengkap akan muncul otomatis">{{ old('alamat_lengkap', $pelamar?->alamat_lengkap) }}</textarea>
                 </div>
             </div>
         </fieldset>
@@ -369,12 +381,12 @@
 
                 <div>
                     <label for="akun_bank" class="{{ $labelClasses }}">Nomor Rekening</label>
-                    <input type="text" name="akun_bank" id="akun_bank" class="{{ $inputClasses }}" placeholder="Nomor rekening bank">
+                    <input type="text" name="akun_bank" id="akun_bank" class="{{ $inputClasses }}" placeholder="Nomor rekening bank" value="{{ old('akun_bank', $pelamar?->nomor_rekening) }}">
                 </div>
 
                 <div class="lg:col-span-2">
                     <label for="atas_nama" class="{{ $labelClasses }}">Atas Nama</label>
-                    <input type="text" name="atas_nama" id="atas_nama" class="{{ $inputClasses }}" placeholder="Nama pemilik rekening">
+                    <input type="text" name="atas_nama" id="atas_nama" class="{{ $inputClasses }}" placeholder="Nama pemilik rekening" value="{{ old('atas_nama', $pelamar?->nama_lengkap) }}">
                     <p class="text-xs text-blue-600 mt-1 font-medium">💡 <strong>Auto-fill:</strong> Field ini akan terisi otomatis saat Anda mengetik "Nama Lengkap" di atas. Jika nama rekening berbeda, Anda bisa mengubahnya manual.</p>
                 </div>
             </div>
@@ -397,12 +409,12 @@
 
                     <div>
                         <label for="jkn" class="{{ $labelClasses }}">JKN</label>
-                        <input type="text" name="jkn" id="jkn" class="{{ $inputClasses }}" placeholder="Nomor JKN/BPJS">
+                        <input type="text" name="jkn" id="jkn" class="{{ $inputClasses }}" placeholder="Nomor JKN/BPJS" value="{{ old('jkn', $pelamar?->no_bpjs_kesehatan) }}">
                     </div>
 
                     <div>
                         <label for="no_ketenagakerjaan" class="{{ $labelClasses }}">BP Jamsostek</label>
-                        <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek">
+                        <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek" value="{{ old('no_ketenagakerjaan', $pelamar?->no_ketenagakerjaan) }}">
                     </div>
                 </div>
             </div>
