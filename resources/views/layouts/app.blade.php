@@ -151,6 +151,7 @@
                 <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">@yield('page_title', 'Dashboard')</h1>
             </div>
             <div class="flex items-center space-x-4">
+                @auth
                 <!-- Notification Bell -->
                 <div class="relative">
                     <a href="{{ route('notifications.index') }}" target="_blank" class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
@@ -188,6 +189,11 @@
                         </div>
                     </div>
                 </div>
+                @else
+                <a href="{{ route('login') }}" class="text-sm font-semibold text-gray-600 hover:text-indigo-600 transition-colors">
+                    Login
+                </a>
+                @endauth
             </div>
         </div>
     </header>
