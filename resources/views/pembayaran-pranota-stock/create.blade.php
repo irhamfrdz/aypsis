@@ -5,28 +5,16 @@
 
 @push('styles')
     <style>
-        /* Custom Select2 styling to match Tailwind */
-        .select2-container--default .select2-selection--single {
-            height: 38px !important;
-            padding: 5px 12px;
-            border-color: #D1D5DB !important;
-            background-color: #F9FAFB !important;
-            border-radius: 0.375rem !important;
+        .searchable-dropdown-items {
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 50;
         }
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: normal !important;
-            padding: 0 !important;
-            font-size: 0.875rem !important;
-            color: #374151 !important;
+        .searchable-dropdown-item {
+            transition: background-color 0.2s;
         }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 38px !important;
-            right: 6px !important;
-        }
-        .select2-dropdown {
-            border-color: #D1D5DB !important;
-            border-radius: 0.375rem !important;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        .searchable-dropdown-item:hover {
+            background-color: #f3f4f6;
         }
     </style>
 @endpush
@@ -102,14 +90,18 @@
                 <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <h4 class="text-sm font-semibold mb-3 border-b pb-2">Bank & Transaksi (Double Book)</h4>
                     <div class="space-y-3">
-                        <div>
+                        <div class="relative" id="bankDropdownContainer">
                             <label class="{{ $labelClasses }}">Pilih Bank/Kas <span class="text-red-500">*</span></label>
-                            <select name="bank" id="bank" class="select2-bank {{ $inputClasses }}" required>
-                                <option value="">-- Pilih Bank --</option>
+                            <input type="text" id="bankSearch" class="{{ $inputClasses }} bg-white" placeholder="Cari Bank/Kas..." autocomplete="off">
+                            <input type="hidden" name="bank" id="bankValue" required>
+                            
+                            <div id="bankList" class="hidden absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg searchable-dropdown-items z-50">
                                 @foreach($akunCoa as $akun)
-                                    <option value="{{ $akun->nama_akun }}">{{ $akun->nama_akun }}</option>
+                                    <div class="searchable-dropdown-item px-3 py-2 text-sm cursor-pointer hover:bg-gray-100" data-value="{{ $akun->nama_akun }}">
+                                        {{ $akun->nama_akun }}
+                                    </div>
                                 @endforeach
-                            </select>
+                            </div>
                         </div>
                         <div>
                             <label class="{{ $labelClasses }}">Jenis Transaksi <span class="text-red-500">*</span></label>
@@ -218,14 +210,46 @@
 
 @push('scripts')
     <script>
-        $(document).ready(function() {
-            // Initialize Select2 for Bank
-            $('.select2-bank').select2({
-                placeholder: "-- Pilih Bank --",
-                allowClear: true,
-                width: '100%'
+        document.addEventListener('DOMContentLoaded', function() {
+            // Searchable Dropdown Logic (Vanilla JS)
+            const bankSearch = document.getElementById('bankSearch');
+            const bankList = document.getElementById('bankList');
+            const bankValue = document.getElementById('bankValue');
+            const bankItems = document.querySelectorAll('.searchable-dropdown-item');
+
+            bankSearch.addEventListener('focus', () => bankList.classList.remove('hidden'));
+            
+            document.addEventListener('click', (e) => {
+                if (!document.getElementById('bankDropdownContainer').contains(e.target)) {
+                    bankList.classList.add('hidden');
+                }
             });
 
+            bankSearch.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                let hasVisible = false;
+                bankItems.forEach(item => {
+                    const text = item.innerText.toLowerCase();
+                    if (text.includes(term)) {
+                        item.classList.remove('hidden');
+                        hasVisible = true;
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+                bankList.classList.toggle('hidden', term === '' && !bankSearch.matches(':focus'));
+                if (term !== '') bankList.classList.remove('hidden');
+            });
+
+            bankItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    bankSearch.value = item.innerText.trim();
+                    bankValue.value = item.dataset.value;
+                    bankList.classList.add('hidden');
+                });
+            });
+
+            // Original logic for calculations
             window.toggleRow = function(row) {
                 const cb = row.querySelector('.pranota-checkbox');
                 if(cb) {
@@ -296,6 +320,12 @@
                 if(count === 0) {
                     e.preventDefault();
                     alert('Silakan pilih minimal satu pranota stock yang akan dibayar.');
+                    return;
+                }
+                if(!bankValue.value) {
+                    e.preventDefault();
+                    alert('Silakan pilih bank terlebih dahulu.');
+                    bankSearch.focus();
                     return;
                 }
                 if(!confirm('Konfirmasi simpan pembayaran ini?')) {
