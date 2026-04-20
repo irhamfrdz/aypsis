@@ -815,8 +815,8 @@
 
                         {{-- Master Pemasok Sub-Dropdown --}}
                         @php
-                            $isPemasokRoute = Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.vendor-supir.*') || Request::routeIs('master.vendor-asuransi.*');
-                            $hasPemasokPermissions = $user && ($user->can('master-vendor-bengkel.view') || $user->can('vendor-kontainer-sewa-view') || $user->can('master-vendor-supir-view') || $user->can('master-vendor-asuransi-view'));
+                            $isPemasokRoute = Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.vendor-supir.*') || Request::routeIs('master.vendor-asuransi.*') || Request::routeIs('master.vendor-amprahan.*');
+                            $hasPemasokPermissions = $user && ($user->can('master-vendor-bengkel.view') || $user->can('vendor-kontainer-sewa-view') || $user->can('master-vendor-supir-view') || $user->can('master-vendor-asuransi-view') || $user->can('master-vendor-amprahan-view'));
                         @endphp
 
                         @if($hasPemasokPermissions)
@@ -828,6 +828,11 @@
                                 </svg>
                             </button>
                             <div id="master-pemasok-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isPemasokRoute) style="display: block;" @endif>
+                                @if($user && $user->can('master-vendor-amprahan-view'))
+                                    <a href="{{ route('master.vendor-amprahan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('master.vendor-amprahan.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Vendor Amprahan</span>
+                                    </a>
+                                @endif
                                 @if($user && $user->can('master-vendor-bengkel.view'))
                                     <a href="{{ route('master.vendor-bengkel.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('master.vendor-bengkel.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Vendor/Bengkel</span>

@@ -1207,6 +1207,11 @@ class UserController extends Controller
                             $action = str_replace('vendor-asuransi-', '', $action);
                             $module = 'master-vendor-asuransi';
                         }
+                        // Special handling for master-vendor-amprahan permissions
+                        elseif (strpos($action, 'vendor-amprahan-') === 0) {
+                            $action = str_replace('vendor-amprahan-', '', $action);
+                            $module = 'master-vendor-amprahan';
+                        }
                         // Special handling for asuransi-tanda-terima-multi permissions
                         elseif (strpos($action, 'asuransi-tanda-terima-multi-') === 0) {
                             $action = str_replace('asuransi-tanda-terima-multi-', '', $action);
@@ -2579,6 +2584,26 @@ class UserController extends Controller
                             'create' => 'master-vendor-asuransi-create',
                             'update' => 'master-vendor-asuransi-update',
                             'delete' => 'master-vendor-asuransi-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-vendor-amprahan permissions explicitly
+                    if ($module === 'master-vendor-amprahan' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-vendor-amprahan-view',
+                            'create' => 'master-vendor-amprahan-create',
+                            'update' => 'master-vendor-amprahan-update',
+                            'delete' => 'master-vendor-amprahan-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

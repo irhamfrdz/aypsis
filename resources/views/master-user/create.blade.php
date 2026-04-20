@@ -642,7 +642,24 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
-                            {{-- Master Gudang Ban --}}
+                            {{-- Master Vendor Amprahan --}}
+                             <tr class="submodule-row" data-parent="master">
+                                 <td class="submodule">
+                                     <div class="flex items-center">
+                                         <span class="text-sm mr-2">└─</span>
+                                         <span>Master Vendor Amprahan</span>
+                                     </div>
+                                 </td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][view]" value="1" class="permission-checkbox"></td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][create]" value="1" class="permission-checkbox"></td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][update]" value="1" class="permission-checkbox"></td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][delete]" value="1" class="permission-checkbox"></td>
+                                 <td class="empty-cell"></td>
+                                 <td class="empty-cell"></td>
+                                 <td class="empty-cell"></td>
+                             </tr>
+
+                             {{-- Master Gudang Ban --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">

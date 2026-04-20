@@ -714,7 +714,24 @@
                                 <td><input type="checkbox" name="permissions[master-vendor-supir][export]" value="1" class="permission-checkbox master-vendor-supir-permission" @if(isset($userMatrixPermissions['master-vendor-supir']['export']) && $userMatrixPermissions['master-vendor-supir']['export']) checked @endif></td>
                             </tr>
 
-                            {{-- Karyawan Tidak Tetap --}}
+                            {{-- Master Vendor Amprahan --}}
+                             <tr class="submodule-row" data-parent="master">
+                                 <td class="submodule">
+                                     <div class="flex items-center">
+                                         <span class="text-sm mr-2">└─</span>
+                                         <span>Master Vendor Amprahan</span>
+                                     </div>
+                                 </td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-amprahan']['view']) && $userMatrixPermissions['master-vendor-amprahan']['view']) checked @endif></td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-amprahan']['create']) && $userMatrixPermissions['master-vendor-amprahan']['create']) checked @endif></td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-amprahan']['update']) && $userMatrixPermissions['master-vendor-amprahan']['update']) checked @endif></td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-amprahan']['delete']) && $userMatrixPermissions['master-vendor-amprahan']['delete']) checked @endif></td>
+                                 <td class="empty-cell"></td>
+                                 <td class="empty-cell"></td>
+                                 <td class="empty-cell"></td>
+                             </tr>
+
+                             {{-- Karyawan Tidak Tetap --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">
@@ -2119,6 +2136,23 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
+
+                             {{-- Master Vendor Amprahan --}}
+                             <tr class="submodule-row" data-parent="aktiva">
+                                 <td class="submodule">
+                                     <div class="flex items-center">
+                                         <span class="text-sm mr-2">└─</span>
+                                         <span>Master Vendor Amprahan</span>
+                                     </div>
+                                 </td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-amprahan']['view']) && $userMatrixPermissions['master-vendor-amprahan']['view']) checked @endif></td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-amprahan']['create']) && $userMatrixPermissions['master-vendor-amprahan']['create']) checked @endif></td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-amprahan']['update']) && $userMatrixPermissions['master-vendor-amprahan']['update']) checked @endif></td>
+                                 <td><input type="checkbox" name="permissions[master-vendor-amprahan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-amprahan']['delete']) && $userMatrixPermissions['master-vendor-amprahan']['delete']) checked @endif></td>
+                                 <td class="empty-cell"></td>
+                                 <td class="empty-cell"></td>
+                                 <td class="empty-cell"></td>
+                             </tr>
 
                              {{-- Asuransi Tanda Terima --}}
                              <tr class="submodule-row" data-parent="aktiva">

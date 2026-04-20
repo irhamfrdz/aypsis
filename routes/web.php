@@ -52,6 +52,7 @@ use App\Http\Controllers\PembayaranObController;
 use App\Http\Controllers\RealisasiUangMukaController;
 use App\Http\Controllers\VendorBengkelController;
 use App\Http\Controllers\VendorAsuransiController;
+use App\Http\Controllers\VendorAmprahanController;
 use App\Http\Controllers\VendorSupirController;
 use App\Http\Controllers\TipeAkunController;
 use App\Http\Controllers\PengirimController;
@@ -1517,6 +1518,19 @@ Route::middleware([
              'edit' => 'can:master-vendor-asuransi-update',
              'update' => 'can:master-vendor-asuransi-update',
              'destroy' => 'can:master-vendor-asuransi-delete'
+         ]);
+
+    // 🏬 Master Vendor Amprahan
+    Route::resource('master/vendor-amprahan', VendorAmprahanController::class)
+         ->names('master.vendor-amprahan')
+         ->middleware([
+             'index' => 'can:master-vendor-amprahan-view',
+             'show' => 'can:master-vendor-amprahan-view',
+             'create' => 'can:master-vendor-amprahan-create',
+             'store' => 'can:master-vendor-amprahan-create',
+             'edit' => 'can:master-vendor-amprahan-update',
+             'update' => 'can:master-vendor-amprahan-update',
+             'destroy' => 'can:master-vendor-amprahan-delete'
          ]);
 
     Route::get('asuransi-tanda-terima/get-receipt-details/{type}/{id}', [\App\Http\Controllers\AsuransiTandaTerimaController::class, 'getReceiptDetails'])
