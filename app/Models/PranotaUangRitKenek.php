@@ -104,6 +104,13 @@ class PranotaUangRitKenek extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function pembayaranUangRitKeneks()
+    {
+        return $this->belongsToMany(PembayaranPranotaRitKenek::class, 'pembayaran_pranota_rit_kenek_items', 'pranota_uang_rit_kenek_id', 'pembayaran_pranota_rit_kenek_id')
+                    ->withPivot('subtotal')
+                    ->withTimestamps();
+    }
+
     // Has many kenek details
     public function kenekDetails()
     {

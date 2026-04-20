@@ -4025,6 +4025,32 @@ Route::get('/test-gate-in-ajax', function () {
                 ->middleware('can:pembayaran-pranota-rit-delete');
         });
 
+    // 💰 PEMBAYARAN PRANOTA RIT KENEK
+    // ═══════════════════════════════════════════════════════════════════════
+    Route::prefix('pembayaran-pranota-rit-kenek')
+        ->name('pembayaran-pranota-rit-kenek.')
+        ->middleware(['auth'])
+        ->group(function() {
+            Route::get('/', [App\Http\Controllers\PembayaranPranotaRitKenekController::class, 'index'])
+                ->name('index')
+                ->middleware('can:pembayaran-pranota-rit-kenek-view');
+            Route::get('/create', [App\Http\Controllers\PembayaranPranotaRitKenekController::class, 'create'])
+                ->name('create')
+                ->middleware('can:pembayaran-pranota-rit-kenek-create');
+            Route::get('/generate-nomor', [App\Http\Controllers\PembayaranPranotaRitKenekController::class, 'generateNomor'])
+                ->name('generate-nomor')
+                ->middleware('can:pembayaran-pranota-rit-kenek-create');
+            Route::post('/', [App\Http\Controllers\PembayaranPranotaRitKenekController::class, 'store'])
+                ->name('store')
+                ->middleware('can:pembayaran-pranota-rit-kenek-create');
+            Route::get('/{id}', [App\Http\Controllers\PembayaranPranotaRitKenekController::class, 'show'])
+                ->name('show')
+                ->middleware('can:pembayaran-pranota-rit-kenek-view');
+            Route::delete('/{id}', [App\Http\Controllers\PembayaranPranotaRitKenekController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:pembayaran-pranota-rit-kenek-delete');
+        });
+
     // 💰 PEMBAYARAN PRANOTA STOCK
     Route::prefix('pembayaran-pranota-stock')
         ->name('pembayaran-pranota-stock.')

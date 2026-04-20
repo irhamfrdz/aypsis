@@ -33,7 +33,9 @@ class PranotaUangRit extends Model
         'grand_total_bersih',
         'keterangan',
         'status',
+        'status_pembayaran_kenek',
         'tanggal_bayar',
+        'tanggal_bayar_kenek',
         'created_by',
         'updated_by',
         'approved_by',
@@ -43,6 +45,7 @@ class PranotaUangRit extends Model
     protected $casts = [
         'tanggal' => 'date',
         'tanggal_bayar' => 'date',
+        'tanggal_bayar_kenek' => 'date',
         'approved_at' => 'datetime',
         'uang_jalan' => 'decimal:2',
         'uang_rit' => 'decimal:2',
@@ -55,6 +58,20 @@ class PranotaUangRit extends Model
         'total_bpjs' => 'decimal:2',
         'grand_total_bersih' => 'decimal:2',
     ];
+
+    // Status constants for kenek payment
+    const KENEK_UNPAID = 'unpaid';
+    const KENEK_PAID = 'paid';
+
+    public function pembayaranUangRitKeneks(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            PembayaranPranotaRitKenek::class,
+            'pembayaran_pranota_rit_kenek_items',
+            'pranota_uang_rit_id',
+            'pembayaran_pranota_rit_kenek_id'
+        )->withPivot('subtotal')->withTimestamps();
+    }
 
     // Status constants
     const STATUS_DRAFT = 'draft';

@@ -1328,6 +1328,14 @@
                                 <span class="text-xs">Pranota Uang Rit Kenek</span>
                             </a>
                         @endif
+
+                        {{-- Pembayaran Pranota Rit Kenek --}}
+                        @if($user && $user->can('pembayaran-pranota-rit-kenek-view'))
+                            <a href="{{ route('pembayaran-pranota-rit-kenek.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-rit-kenek.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <div class="w-1.5 h-1.5 rounded-full bg-green-400 mr-2 flex-shrink-0"></div>
+                                <span class="text-xs">Bayar Pranota Rit Kenek</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
                 @endif
