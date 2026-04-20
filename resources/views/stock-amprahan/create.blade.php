@@ -47,7 +47,7 @@
                     @csrf
                     
                     <div class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {{-- Nomor Bukti --}}
                             <div class="group">
                                 <label for="nomor_bukti" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
@@ -55,36 +55,6 @@
                                 </label>
                                 <input type="text" name="nomor_bukti" id="nomor_bukti" value="{{ old('nomor_bukti') }}" placeholder="Contoh: BUKTI-001" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
                                 @error('nomor_bukti')
-                                    <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
-                                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                                    </p>
-                                @enderror
-                            </div>
-
-                            {{-- Nama Toko --}}
-                            <div class="group">
-                                <label for="vendor_amprahan_id" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
-                                    <i class="fas fa-store mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Nama Toko
-                                </label>
-                                <div class="relative">
-                                    <div class="dropdown-container-vendor">
-                                        <input type="text" id="search_vendor" placeholder="Pilih atau cari toko..." autocomplete="off"
-                                               class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
-                                        <select name="vendor_amprahan_id" id="vendor_amprahan_id" 
-                                                class="hidden w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
-                                            <option value="">Pilih Toko</option>
-                                            @foreach($vendorAmprahans as $vendor)
-                                                <option value="{{ $vendor->id }}" {{ old('vendor_amprahan_id') == $vendor->id ? 'selected' : '' }}>
-                                                    {{ $vendor->nama_toko }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <div id="dropdown_options_vendor" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
-                                            {{-- Options will be populated by JavaScript --}}
-                                        </div>
-                                    </div>
-                                </div>
-                                @error('vendor_amprahan_id')
                                     <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
                                         <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                     </p>
@@ -132,6 +102,36 @@
                             </label>
                             <input type="text" name="nama_barang" id="nama_barang" value="{{ old('nama_barang') }}" class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm" required>
                             @error('nama_barang')
+                                <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        {{-- Nama Toko --}}
+                        <div class="group">
+                            <label for="vendor_amprahan_id" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                <i class="fas fa-store mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Nama Toko
+                            </label>
+                            <div class="relative">
+                                <div class="dropdown-container-vendor">
+                                    <input type="text" id="search_vendor" placeholder="Pilih atau cari toko..." autocomplete="off"
+                                           class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
+                                    <select name="vendor_amprahan_id" id="vendor_amprahan_id" 
+                                            class="hidden w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
+                                        <option value="">Pilih Toko</option>
+                                        @foreach($vendorAmprahans as $vendor)
+                                            <option value="{{ $vendor->id }}" {{ old('vendor_amprahan_id') == $vendor->id ? 'selected' : '' }}>
+                                                {{ $vendor->nama_toko }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_vendor" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        {{-- Options will be populated by JavaScript --}}
+                                    </div>
+                                </div>
+                            </div>
+                            @error('vendor_amprahan_id')
                                 <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
                                     <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                 </p>
