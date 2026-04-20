@@ -45,6 +45,7 @@ use App\Http\Controllers\PembayaranPranotaPerbaikanController;
 use App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController;
 use App\Http\Controllers\PembayaranPranotaSuratJalanController;
 use App\Http\Controllers\PembayaranPranotaUangJalanController;
+use App\Http\Controllers\PembayaranPranotaRitController;
 use App\Http\Controllers\AktivitasLainnyaController;
 use App\Http\Controllers\PembayaranAktivitasLainController;
 use App\Http\Controllers\PembayaranAktivitasLainnyaController;
@@ -3996,6 +3997,32 @@ Route::get('/test-gate-in-ajax', function () {
             Route::delete('/{pembayaranPranotaLembur}', [\App\Http\Controllers\PembayaranPranotaLemburController::class, 'destroy'])
                 ->name('destroy')
                 ->middleware('can:pembayaran-pranota-lembur-delete');
+        });
+
+    // 💰 PEMBAYARAN PRANOTA RIT (Rit Payment)
+    // ═══════════════════════════════════════════════════════════════════════
+    Route::prefix('pembayaran-pranota-rit')
+        ->name('pembayaran-pranota-rit.')
+        ->middleware(['auth'])
+        ->group(function() {
+            Route::get('/', [PembayaranPranotaRitController::class, 'index'])
+                ->name('index')
+                ->middleware('can:pembayaran-pranota-rit-view');
+            Route::get('/create', [PembayaranPranotaRitController::class, 'create'])
+                ->name('create')
+                ->middleware('can:pembayaran-pranota-rit-create');
+            Route::get('/generate-nomor', [PembayaranPranotaRitController::class, 'generateNomor'])
+                ->name('generate-nomor')
+                ->middleware('can:pembayaran-pranota-rit-create');
+            Route::post('/', [PembayaranPranotaRitController::class, 'store'])
+                ->name('store')
+                ->middleware('can:pembayaran-pranota-rit-create');
+            Route::get('/{pembayaranPranotaRit}', [PembayaranPranotaRitController::class, 'show'])
+                ->name('show')
+                ->middleware('can:pembayaran-pranota-rit-view');
+            Route::delete('/{pembayaranPranotaRit}', [PembayaranPranotaRitController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:pembayaran-pranota-rit-delete');
         });
 
     // 💰 PEMBAYARAN PRANOTA STOCK

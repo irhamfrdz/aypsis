@@ -29,18 +29,32 @@ class PembayaranPranotaRitController extends Controller
 
     public function index(Request $request)
     {
-        $query = PembayaranPranotaRit::with(['pranotaUangRits', 'createdBy']);
+        $query = PranotaUangRit::with(['pembayaranUangRits', 'creator', 'updater']);
 
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search by no_pranota or supir/kenek name
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nomor_pembayaran', 'like', "%{$search}%")
-                  ->orWhere('nomor_accurate', 'like', "%{$search}%");
+                $q->where('no_pranota', 'like', "%{$search}%")
+                  ->orWhere('supir_nama', 'like', "%{$search}%")
+                  ->orWhere('kenek_nama', 'like', "%{$search}%");
             });
         }
 
-        $items = $query->orderBy('tanggal_pembayaran', 'desc')->paginate(20);
-        return view('pembayaran-pranota-rit.index', compact('items'));
+        $pranotaList = $query->orderBy('tanggal', 'desc')->paginate(15);
+
+        $statuses = [
+            'approved' => 'Approved',
+            'paid' => 'Sudah Dibayar',
+            'cancelled' => 'Dibatalkan'
+        ];
+
+        return view('pembayaran-pranota-rit.index', compact('pranotaList', 'statuses'));
     }
 
     public function create(Request $request)

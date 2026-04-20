@@ -1317,6 +1317,7 @@
                         {{-- Pembayaran Pranota Rit --}}
                         @if($user && $user->can('pembayaran-pranota-rit-view'))
                             <a href="{{ route('pembayaran-pranota-rit.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <div class="w-1.5 h-1.5 rounded-full bg-purple-400 mr-2 flex-shrink-0"></div>
                                 <span class="text-xs">Bayar Pranota Rit</span>
                             </a>
                         @endif
