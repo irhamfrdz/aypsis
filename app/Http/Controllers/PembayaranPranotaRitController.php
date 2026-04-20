@@ -29,7 +29,7 @@ class PembayaranPranotaRitController extends Controller
 
     public function index(Request $request)
     {
-        $query = PranotaUangRit::with(['pembayaranUangRits', 'creator', 'updater']);
+        $query = PranotaUangRit::with(['pembayaranPranotaRits', 'creator', 'updater']);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -42,7 +42,10 @@ class PembayaranPranotaRitController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('no_pranota', 'like', "%{$search}%")
                   ->orWhere('supir_nama', 'like', "%{$search}%")
-                  ->orWhere('kenek_nama', 'like', "%{$search}%");
+                  ->orWhere('kenek_nama', 'like', "%{$search}%")
+                  ->orWhereHas('pembayaranPranotaRits', function($pq) use ($search) {
+                      $pq->where('nomor_accurate', 'like', "%{$search}%");
+                  });
             });
         }
 

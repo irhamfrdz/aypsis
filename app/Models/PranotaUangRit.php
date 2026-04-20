@@ -229,4 +229,16 @@ class PranotaUangRit extends Model
             ->where('status', PembayaranUangRit::STATUS_PAID)
             ->sum('pembayaran_pranota_uang_rit.uang_rit_dibayar');
     }
+    /**
+     * Get the payments (PembayaranPranotaRit) for this pranota
+     */
+    public function pembayaranPranotaRits(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            PembayaranPranotaRit::class,
+            'pembayaran_pranota_rit_items',
+            'pranota_uang_rit_id',
+            'pembayaran_pranota_rit_id'
+        )->withPivot('subtotal')->withTimestamps();
+    }
 }
