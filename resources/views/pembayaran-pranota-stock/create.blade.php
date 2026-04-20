@@ -119,9 +119,19 @@
 
             <!-- Table Pranota Selection -->
             <div class="border rounded-lg overflow-hidden">
-                <div class="bg-gray-100 px-4 py-2 border-b flex justify-between items-center">
-                    <h4 class="text-sm font-semibold">Pilih Pranota Stock</h4>
-                    <span id="checkedCount" class="text-xs font-medium text-blue-600">0 Item Terpilih</span>
+                <div class="bg-gray-100 px-4 py-2 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-1">
+                        <h4 class="text-sm font-semibold">Pilih Pranota Stock</h4>
+                        <div class="relative w-full sm:w-80">
+                            <input type="text" id="pranotaSearch" placeholder="Cari No. Pranota atau Vendor..." class="w-full text-xs border border-gray-300 rounded-md pl-8 pr-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" autocomplete="off">
+                            <div class="absolute left-2.5 top-2 text-gray-400">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <span id="checkedCount" class="text-xs font-medium text-blue-600 whitespace-nowrap">0 Item Terpilih</span>
                 </div>
                 <div class="overflow-x-auto max-h-72">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -136,7 +146,7 @@
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total Bill</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody id="pranotaTableBody" class="bg-white divide-y divide-gray-200">
                             @forelse($pranotaStocks as $pranota)
                                 @php
                                     $totalBill = 0;
@@ -147,7 +157,7 @@
                                     }
                                     $totalBill += $pranota->adjustment ?? 0;
                                 @endphp
-                                <tr class="hover:bg-gray-50 cursor-pointer" onclick="toggleRow(this)">
+                                <tr class="pranota-row hover:bg-gray-50 cursor-pointer" onclick="toggleRow(this)">
                                     <td class="px-4 py-2" onclick="event.stopPropagation()">
                                         <input type="checkbox" name="pranota_stock_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox rounded border-gray-300" data-amount="{{ $totalBill }}">
                                     </td>
@@ -240,6 +250,25 @@
                 bankList.classList.toggle('hidden', term === '' && !bankSearch.matches(':focus'));
                 if (term !== '') bankList.classList.remove('hidden');
             });
+
+            // Search Pranota Logic
+            const pranotaSearch = document.getElementById('pranotaSearch');
+            const pranotaRows = document.querySelectorAll('.pranota-row');
+
+            if (pranotaSearch) {
+                pranotaSearch.addEventListener('input', function() {
+                    const term = this.value.toLowerCase();
+                    pranotaRows.forEach(row => {
+                        const noPranota = row.cells[1].innerText.toLowerCase();
+                        const vendor = row.cells[3].innerText.toLowerCase();
+                        if (noPranota.includes(term) || vendor.includes(term)) {
+                            row.classList.remove('hidden');
+                        } else {
+                            row.classList.add('hidden');
+                        }
+                    });
+                });
+            }
 
             bankItems.forEach(item => {
                 item.addEventListener('click', () => {
