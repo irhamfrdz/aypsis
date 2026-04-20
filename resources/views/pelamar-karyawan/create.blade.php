@@ -43,7 +43,7 @@
             </a>
         </div>
 
-        <form action="{{ route('recruitment.store') }}" method="POST">
+        <form action="{{ route('recruitment.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             @php
@@ -210,6 +210,18 @@
                             <textarea name="alamat_lengkap" id="alamat_lengkap" rows="3" class="{{ $inputClasses }} @error('alamat_lengkap') border-red-500 @enderror" required placeholder="Jalan, No. Rumah, RT/RW">{{ old('alamat_lengkap') }}</textarea>
                             @error('alamat_lengkap')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                         </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            {{-- Upload CV / Resume --}}
+            <fieldset class="border p-4 rounded-md mb-4">
+                <legend class="text-lg font-semibold text-gray-800 px-2">Dokumen Pendukung</legend>
+                <div class="form-section pt-4">
+                    <div>
+                        <label for="cv" class="{{ $labelClasses }}">Upload CV / Resume (PDF, DOC, DOCX - Maks 2MB)</label>
+                        <input type="file" name="cv" id="cv" class="{{ $inputClasses }} @error('cv') border-red-500 @enderror">
+                        @error('cv')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                     </div>
                 </div>
             </fieldset>

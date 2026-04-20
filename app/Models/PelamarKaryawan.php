@@ -32,6 +32,7 @@ class PelamarKaryawan extends Model
         'kode_pos',
         'email',
         'kontak_darurat',
+        'cv_path',
         'status'
     ];
 

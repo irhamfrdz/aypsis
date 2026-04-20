@@ -38,7 +38,13 @@ class PelamarKaryawanController extends Controller
             'kode_pos' => 'nullable|string|max:10',
             'email' => 'nullable|email|max:255',
             'kontak_darurat' => 'nullable|string|max:255',
+            'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
         ]);
+
+        if ($request->hasFile('cv')) {
+            $path = $request->file('cv')->store('recruitment/cvs', 'public');
+            $validated['cv_path'] = $path;
+        }
 
         PelamarKaryawan::create($validated);
 
