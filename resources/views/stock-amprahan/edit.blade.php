@@ -115,7 +115,14 @@
 
                         {{-- Nama Toko --}}
                         <div>
-                            <label for="vendor_amprahan_id" class="block text-sm font-semibold text-gray-700 mb-1">Nama Toko</label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="vendor_amprahan_id" class="text-sm font-semibold text-gray-700">Nama Toko</label>
+                                <a href="{{ route('master.vendor-amprahan.create') }}" id="add_vendor_link"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
                             <div class="relative">
                                 <div class="dropdown-container-vendor">
                                     <input type="text" id="search_vendor" placeholder="Pilih atau cari toko..." autocomplete="off"
@@ -737,6 +744,36 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     })();
+
+    // Handle Vendor "Tambah" link to pass search parameter
+    const addVendorLink = document.getElementById('add_vendor_link');
+    const searchVendorInput = document.getElementById('search_vendor');
+    if (addVendorLink && searchVendorInput) {
+        addVendorLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchVendorInput.value.trim();
+            let url = "{{ route('master.vendor-amprahan.create', [], false) }}";
+
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            url += '?' + params.toString();
+
+            const popup = window.open(
+                url,
+                'addVendor',
+                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+            );
+
+            if (popup) {
+                popup.focus();
+            }
+        });
+    }
 
     // Handle Type Barang "Tambah" link to pass search parameter
     const addTypeBarangLink = document.getElementById('add_type_barang_link');

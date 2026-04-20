@@ -28,9 +28,11 @@ class VendorAmprahanController extends Controller
         return view('master.vendor-amprahan.index', compact('vendorAmprahans'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('master.vendor-amprahan.create');
+        $search = $request->get('search');
+        $isPopup = $request->get('popup');
+        return view('master.vendor-amprahan.create', compact('search', 'isPopup'));
     }
 
     public function store(Request $request)
@@ -44,6 +46,23 @@ class VendorAmprahanController extends Controller
         $validated['updated_by'] = auth()->id();
 
         VendorAmprahan::create($validated);
+
+        if ($request->has('popup')) {
+            return "
+                <script>
+                    if (window.opener && !window.opener.closed) {
+                        try {
+                            window.opener.location.reload();
+                        } catch (e) {
+                            console.error('Failed to reload opener:', e);
+                        }
+                        window.close();
+                    } else {
+                        window.location.href = '" . route('master.vendor-amprahan.index') . "';
+                    }
+                </script>
+            ";
+        }
 
         return redirect()->route('master.vendor-amprahan.index')
             ->with('success', 'Vendor Amprahan berhasil ditambahkan.');
