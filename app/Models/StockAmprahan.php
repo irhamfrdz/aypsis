@@ -22,6 +22,7 @@ class StockAmprahan extends Model
         'satuan',
         'lokasi',
         'keterangan',
+        'vendor_amprahan_id',
         'created_by',
         'updated_by',
     ];
@@ -36,6 +37,11 @@ class StockAmprahan extends Model
     public function masterNamaBarangAmprahan()
     {
         return $this->belongsTo(MasterNamaBarangAmprahan::class, 'master_nama_barang_amprahan_id');
+    }
+
+    public function vendorAmprahan()
+    {
+        return $this->belongsTo(VendorAmprahan::class, 'vendor_amprahan_id');
     }
 
     public function createdBy()

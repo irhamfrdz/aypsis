@@ -10,6 +10,7 @@ use App\Models\Karyawan;
 use App\Models\Mobil;
 use App\Models\AlatBerat;
 use App\Models\MasterKapal;
+use App\Models\VendorAmprahan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -21,7 +22,7 @@ class StockAmprahanController extends Controller
     {
         $search = $request->get('search');
         
-        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'updatedBy', 'usages.kendaraan', 'usages.truck', 'usages.buntut', 'usages.kapal', 'usages.alatBerat'])
+        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'vendorAmprahan', 'createdBy', 'updatedBy', 'usages.kendaraan', 'usages.truck', 'usages.buntut', 'usages.kapal', 'usages.alatBerat'])
             ->withSum('usages', 'jumlah')
             ->latest();
             
@@ -104,9 +105,10 @@ class StockAmprahanController extends Controller
         $kendaraans = Mobil::orderBy('nomor_polisi')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
+        $vendorAmprahans = VendorAmprahan::orderBy('nama_toko')->get();
 
         $mobils = $kendaraans;
-        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'mobils', 'kapals', 'alatBerats'));
+        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'mobils', 'kapals', 'alatBerats', 'vendorAmprahans'));
     }
 
     public function store(Request $request)
@@ -123,6 +125,7 @@ class StockAmprahanController extends Controller
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
+            'vendor_amprahan_id' => 'nullable|exists:vendor_amprahans,id',
             
             // Langsung Pakai Fields
             'is_langsung_pakai' => 'nullable',
@@ -160,6 +163,7 @@ class StockAmprahanController extends Controller
             'satuan' => $data['satuan'],
             'lokasi' => $data['lokasi'],
             'keterangan' => $data['keterangan'],
+            'vendor_amprahan_id' => $data['vendor_amprahan_id'],
             'created_by' => $data['created_by'],
         ];
 
@@ -194,7 +198,7 @@ class StockAmprahanController extends Controller
 
     public function show($id)
     {
-        $item = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'updatedBy'])->findOrFail($id);
+        $item = StockAmprahan::with(['masterNamaBarangAmprahan', 'vendorAmprahan', 'createdBy', 'updatedBy'])->findOrFail($id);
         return view('stock-amprahan.show', compact('item'));
     }
 
@@ -217,8 +221,9 @@ class StockAmprahanController extends Controller
         $kendaraans = Mobil::orderBy('nomor_polisi')->get();
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
+        $vendorAmprahans = VendorAmprahan::orderBy('nama_toko')->get();
 
-        return view('stock-amprahan.edit', compact('item', 'directUsage', 'masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats'));
+        return view('stock-amprahan.edit', compact('item', 'directUsage', 'masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats', 'vendorAmprahans'));
     }
 
     public function update(Request $request, $id)
@@ -237,6 +242,7 @@ class StockAmprahanController extends Controller
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
+            'vendor_amprahan_id' => 'nullable|exists:vendor_amprahans,id',
             'is_langsung_pakai' => 'nullable',
             'penerima_id' => 'nullable|required_if:is_langsung_pakai,1|exists:karyawans,id',
             'kendaraan_id' => 'nullable|exists:mobils,id',
@@ -281,6 +287,7 @@ class StockAmprahanController extends Controller
             'satuan' => $data['satuan'],
             'lokasi' => $data['lokasi'],
             'keterangan' => $data['keterangan'],
+            'vendor_amprahan_id' => $data['vendor_amprahan_id'],
             'updated_by' => $data['updated_by'],
         ];
 

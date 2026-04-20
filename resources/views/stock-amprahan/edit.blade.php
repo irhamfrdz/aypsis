@@ -78,6 +78,32 @@
                                 @enderror
                             </div>
 
+                            {{-- Nama Toko --}}
+                            <div>
+                                <label for="vendor_amprahan_id" class="block text-sm font-semibold text-gray-700 mb-1">Nama Toko</label>
+                                <div class="relative">
+                                    <div class="dropdown-container-vendor">
+                                        <input type="text" id="search_vendor" placeholder="Pilih atau cari toko..." autocomplete="off"
+                                               class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                        <select name="vendor_amprahan_id" id="vendor_amprahan_id" 
+                                                class="hidden w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                            <option value="">Pilih Toko</option>
+                                            @foreach($vendorAmprahans as $vendor)
+                                                <option value="{{ $vendor->id }}" {{ old('vendor_amprahan_id', $item->vendor_amprahan_id) == $vendor->id ? 'selected' : '' }}>
+                                                    {{ $vendor->nama_toko }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <div id="dropdown_options_vendor" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                            {{-- Options will be populated by JavaScript --}}
+                                        </div>
+                                    </div>
+                                </div>
+                                @error('vendor_amprahan_id')
+                                    <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             {{-- Tanggal Beli --}}
                             <div>
                                 <label for="tanggal_beli" class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Beli</label>
@@ -618,6 +644,14 @@ document.addEventListener('DOMContentLoaded', function() {
         searchId: 'search_alat_berat',
         dropdownId: 'dropdown_options_alat_berat',
         containerClass: 'dropdown-container-alat-berat'
+    });
+
+    // Initialize Vendor dropdown
+    createSearchableDropdown({
+        selectId: 'vendor_amprahan_id',
+        searchId: 'search_vendor',
+        dropdownId: 'dropdown_options_vendor',
+        containerClass: 'dropdown-container-vendor'
     });
 
     // Langsung Pakai Toggle Logic
