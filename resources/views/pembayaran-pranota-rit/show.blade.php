@@ -73,7 +73,6 @@
                         <thead class="bg-gray-100">
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">No. Pranota</th>
-                                <th class="px-4 py-2 text-left text-xs font-bold text-gray-600 uppercase">Supir</th>
                                 <th class="px-4 py-2 text-right text-xs font-bold text-gray-600 uppercase">Subtotal Item</th>
                             </tr>
                         </thead>
@@ -81,7 +80,6 @@
                             @foreach($item->pranotaUangRits as $pranota)
                             <tr>
                                 <td class="px-4 py-2 text-sm font-medium">{{ $pranota->no_pranota }}</td>
-                                <td class="px-4 py-2 text-sm text-gray-500">{{ $pranota->supir_nama ?? '-' }}</td>
                                 <td class="px-4 py-2 text-sm text-right font-bold">Rp {{ number_format($pranota->pivot->subtotal, 0, ',', '.') }}</td>
                             </tr>
                             @endforeach

@@ -52,7 +52,6 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Pranota</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir / Kenek</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Bersih</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -66,12 +65,6 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $pranota->tanggal ? $pranota->tanggal->format('d/m/Y') : '-' }}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">
-                            <div><span class="font-medium">S:</span> {{ $pranota->supir_nama ?? '-' }}</div>
-                            @if($pranota->kenek_nama)
-                            <div class="text-xs text-gray-400"><span class="font-medium">K:</span> {{ $pranota->kenek_nama }}</div>
-                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                             Rp {{ number_format($pranota->grand_total_bersih, 0, ',', '.') }}
@@ -92,7 +85,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex justify-end space-x-2">
-                                @if($pranota->status == 'approved')
+                                @if(in_array($pranota->status, ['draft', 'submitted', 'approved']))
                                     @can('pembayaran-pranota-rit-create')
                                     <a href="{{ route('pembayaran-pranota-rit.create', ['pranota_id' => $pranota->id]) }}" class="text-green-600 hover:text-green-800 text-xs bg-green-50 hover:bg-green-100 px-2 py-1 rounded transition-colors">Bayar</a>
                                     @endcan
@@ -116,7 +109,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>

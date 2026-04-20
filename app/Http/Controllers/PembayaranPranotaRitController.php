@@ -59,8 +59,8 @@ class PembayaranPranotaRitController extends Controller
 
     public function create(Request $request)
     {
-        // Only show approved pranota that hasn't been paid
-        $pranotaQuery = PranotaUangRit::where('status', 'approved');
+        // Show pranota that hasn't been paid (draft, submitted, approved)
+        $pranotaQuery = PranotaUangRit::whereIn('status', ['draft', 'submitted', 'approved']);
 
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $pranotaQuery->whereBetween('tanggal', [$request->start_date, $request->end_date]);

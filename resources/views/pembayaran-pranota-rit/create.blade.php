@@ -1,6 +1,27 @@
 @extends('layouts.app')
 
 @section('title', 'Form Pembayaran Pranota Rit')
+
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+    <style>
+        .choices__inner {
+            background-color: #f9fafb !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.375rem !important;
+            min-height: 38px !important;
+            padding: 4px 8px !important;
+            font-size: 0.875rem !important;
+            margin-top: 4px;
+        }
+        .choices__list--single {
+            padding: 0 !important;
+        }
+        .choices__item--selectable {
+            font-size: 0.875rem !important;
+        }
+    </style>
+@endpush
 @section('page_title', 'Form Pembayaran Pranota Rit')
 
 @section('content')
@@ -112,7 +133,6 @@
                                 </th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">No. Pranota</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supir</th>
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total Bill</th>
                             </tr>
                         </thead>
@@ -130,12 +150,11 @@
                                     </td>
                                     <td class="px-4 py-2 text-xs font-medium">{{ $pranota->no_pranota }}</td>
                                     <td class="px-4 py-2 text-xs">{{ $pranota->tanggal ? $pranota->tanggal->format('d/m/Y') : '-' }}</td>
-                                    <td class="px-4 py-2 text-xs text-gray-600">{{ $pranota->supir_nama ?? '-' }}</td>
                                     <td class="px-4 py-2 text-xs text-right font-bold">Rp {{ number_format($totalBill, 0, ',', '.') }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-4 py-8 text-center text-gray-500 text-sm">Tidak ada pranota yang dapat dibayar.</td>
+                                    <td colspan="4" class="px-4 py-8 text-center text-gray-500 text-sm">Tidak ada pranota yang dapat dibayar.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -282,4 +301,22 @@
             }
         });
     </script>
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bankSelect = document.getElementById('bank');
+            if (bankSelect) {
+                new Choices(bankSelect, {
+                    searchEnabled: true,
+                    placeholder: true,
+                    placeholderValue: '-- Pilih Bank --',
+                    itemSelectText: '',
+                    shouldSort: false,
+                    allowHTML: true,
+                });
+            }
+        });
+    </script>
+@endpush
 @endsection
