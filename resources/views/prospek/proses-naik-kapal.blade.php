@@ -132,97 +132,199 @@
                             @enderror
                         </div>
 
-                        {{-- No Kontainer dan Seal (Searchable Multi-Select) --}}
-                        <div>
-                            <label for="prospek_search" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{-- No Kontainer dan Seal (Modal Select) --}}
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
                                 No Kontainer dan Seal <span class="text-red-500">*</span>
                             </label>
                             
                             {{-- Hidden inputs for selected values --}}
                             <div id="hidden_inputs"></div>
                             
-                            {{-- Search input with dropdown --}}
-                            <div class="relative">
-                                <div class="w-full min-h-[42px] px-3 py-2 border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white cursor-text" 
-                                     id="prospek_container"
-                                     onclick="document.getElementById('prospek_search').focus()">
-                                     
-                                    {{-- Selected items (chips) --}}
-                                    <div id="selected_chips" class="flex flex-wrap gap-1 mb-1"></div>
-                                    
-                                    {{-- Search input --}}
-                                    <input type="text" 
-                                           id="prospek_search"
-                                           placeholder="--Pilih Kontainer - Seal--"
-                                           class="border-0 outline-none bg-transparent flex-1 min-w-[200px]"
-                                           autocomplete="off">
-                                </div>
-                                
-                                {{-- Dropdown list --}}
-                                <div id="prospek_dropdown" 
-                                     class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto hidden">
-                                    @foreach($prospeksAktif as $prospek)
-                                        @php
-                                            $suratJalanInfo = $prospek->no_surat_jalan ?? '';
-                                            
-                                            // For CARGO type, show no_surat_jalan as primary identifier
-                                            if (strtoupper($prospek->tipe ?? '') === 'CARGO') {
-                                                if ($suratJalanInfo) {
-                                                    $displayText = $suratJalanInfo;
-                                                } else {
-                                                    $displayText = 'CARGO #' . $prospek->id;
-                                                }
-                                            } elseif ($prospek->nomor_kontainer) {
-                                                $displayText = $prospek->no_seal 
-                                                    ? $prospek->nomor_kontainer . ' - ' . $prospek->no_seal 
-                                                    : $prospek->nomor_kontainer;
-                                            } else {
-                                                // Show alternative info when container number is empty
-                                                $displayText = 'ID #' . $prospek->id . ' - ' . strtoupper($prospek->tipe ?? 'N/A');
-                                                if ($suratJalanInfo) {
-                                                    $displayText .= ' (SJ: ' . $suratJalanInfo . ')';
-                                                }
-                                                if ($prospek->no_seal) {
-                                                    $displayText .= ' - Seal: ' . $prospek->no_seal;
-                                                }
-                                            }
-                                        @endphp
-                                        <div class="prospek-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
-                                             data-id="{{ $prospek->id }}"
-                                             data-text="{{ $displayText }}"
-                                             data-tipe="{{ $prospek->tipe }}"
-                                             data-supir="{{ $prospek->nama_supir }}"
-                                             data-tanggal="{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}"
-                                             data-pengirim="{{ $prospek->pt_pengirim ?? '-' }}"
-                                             data-barang="{{ $prospek->barang ?? '-' }}"
-                                             data-surat-jalan="{{ $suratJalanInfo }}">
-                                            <div class="font-medium text-gray-900 {{ !$prospek->nomor_kontainer ? 'text-orange-600' : '' }}">
-                                                {{ $displayText }}
-                                            </div>
-                                            <div class="text-sm text-gray-500 flex justify-between items-center">
-                                                <span>{{ strtoupper($prospek->tipe ?? 'N/A') }} - {{ $prospek->nama_supir }}</span>
-                                                <span class="text-blue-600 font-medium">{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}</span>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
+                            {{-- Modal Trigger Button --}}
+                            <div class="flex gap-2">
+                                <button type="button" 
+                                        onclick="openProspekModal()" 
+                                        id="prospek_trigger_btn"
+                                        class="flex-1 flex items-center justify-between px-4 py-2.5 border border-blue-300 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 transition duration-200 group focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <div class="flex items-center overflow-hidden">
+                                        <i class="fas fa-search mr-3 text-blue-500 group-hover:scale-110 transition-transform duration-200"></i>
+                                        <span id="pilihStatusText" class="truncate font-medium text-sm">-- Klik untuk Pilih Kontainer - Seal --</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-xs opacity-50"></i>
+                                </button>
+                                <button type="button" 
+                                        id="clearAllBtn"
+                                        title="Hapus semua pilihan"
+                                        class="bg-white hover:bg-red-50 text-gray-400 hover:text-red-600 px-3 py-2 rounded-md border border-gray-300 hover:border-red-300 transition duration-200">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </div>
                             
-                            <div class="mt-2 flex justify-between items-center">
-                                <span id="selectedCount" class="text-sm text-blue-600">
-                                    Terpilih: 0 dari {{ $prospeksAktif->where('tipe', '!=', 'CARGO')->count() }} prospek
+                            <div class="mt-2 flex justify-between items-center px-1">
+                                <span id="selectedCount" class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                    Terpilih: 0 prospek
                                 </span>
-                                <div class="flex gap-2">
-                                    <button type="button" 
-                                            id="selectAllBtn"
-                                            class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition duration-200">
-                                        Select All
-                                    </button>
-                                    <button type="button" 
-                                            id="clearAllBtn"
-                                            class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded transition duration-200">
-                                        Clear Semua
-                                    </button>
+                                <span class="text-[10px] text-gray-500 italic">Total tersedia: {{ $prospeksAktif->where('tipe', '!=', 'CARGO')->count() }}</span>
+                            </div>
+
+                            {{-- Modal Pilih Kontainer --}}
+                            <div id="prospekModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                                    <!-- Background overlay -->
+                                    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onclick="closeProspekModal()"></div>
+                                    
+                                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                    
+                                    <!-- Modal panel -->
+                                    <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full border-t-8 border-blue-600">
+                                        <!-- Modal Header -->
+                                        <div class="bg-blue-600 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-shipping-fast text-white mr-3 text-xl"></i>
+                                                <div>
+                                                    <h3 class="text-lg font-bold text-white" id="modal-title">Pilih Kontainer & Seal</h3>
+                                                    <p class="text-blue-100 text-xs">Pilih satu atau beberapa kontainer untuk diproses</p>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="text-white hover:text-blue-200 transition-colors p-2" onclick="closeProspekModal()">
+                                                <i class="fas fa-times text-xl"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Modal Content -->
+                                        <div class="bg-white p-6">
+                                            <!-- Bulk Input Textarea -->
+                                            <div class="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100 shadow-sm">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <label class="text-[10px] uppercase font-bold text-blue-600 flex items-center">
+                                                        <i class="fas fa-paste mr-2"></i>Input Massal (Salin/Tempel Daftar Kontainer)
+                                                    </label>
+                                                    <span class="text-[9px] text-gray-500 italic">Pisahkan dengan titik koma (;) atau baris baru</span>
+                                                </div>
+                                                <div class="flex flex-col sm:flex-row gap-3">
+                                                    <textarea id="bulkInputText" 
+                                                              rows="2" 
+                                                              placeholder="Contoh: AYPU1234567; AYPU7654321; ..." 
+                                                              class="flex-1 px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm placeholder:text-blue-200"></textarea>
+                                                    <button type="button" 
+                                                            onclick="processBulkInput()" 
+                                                            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold transition-all flex items-center justify-center min-h-[50px]">
+                                                        <i class="fas fa-check-circle mr-2"></i>Proses & Pilih
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div class="relative flex items-center py-2 mb-4">
+                                                <div class="flex-grow border-t border-gray-100"></div>
+                                                <span class="flex-shrink mx-4 text-[10px] text-gray-300 font-bold uppercase tracking-widest">Atau Pilih Manual</span>
+                                                <div class="flex-grow border-t border-gray-100"></div>
+                                            </div>
+
+                                            <!-- Filter and Search -->
+                                            <div class="flex flex-col sm:flex-row gap-3 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                                <div class="flex-1 relative">
+                                                    <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Cari Prospek</label>
+                                                    <input type="text" 
+                                                           id="modalSearch" 
+                                                           placeholder="Cari no kontainer, seal, supir, pengirim, atau barang..." 
+                                                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                                                    <i class="fas fa-search absolute left-3 top-[34px] text-gray-400"></i>
+                                                </div>
+                                                <div class="flex items-end gap-2">
+                                                    <button type="button" 
+                                                            onclick="toggleSelectAllInModal()" 
+                                                            id="modalSelectAllBtn"
+                                                            class="bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 whitespace-nowrap h-[42px] border border-blue-200">
+                                                        <i class="fas fa-check-double mr-2"></i>Select All Visible
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Table List -->
+                                            <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                                                <div class="overflow-y-auto max-h-[400px]">
+                                                    <table class="min-w-full divide-y divide-gray-200">
+                                                        <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
+                                                            <tr>
+                                                                <th class="px-4 py-3 text-left">
+                                                                    <div class="flex items-center">
+                                                                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Pilih</span>
+                                                                    </div>
+                                                                </th>
+                                                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No Kontainer - Seal</th>
+                                                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tipe</th>
+                                                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Supir</th>
+                                                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="modalTableBody" class="bg-white divide-y divide-gray-100">
+                                                            @foreach($prospeksAktif as $prospek)
+                                                                @php
+                                                                    $suratJalanInfo = $prospek->no_surat_jalan ?? '';
+                                                                    if (strtoupper($prospek->tipe ?? '') === 'CARGO') {
+                                                                        $displayText = $suratJalanInfo ?: 'CARGO #' . $prospek->id;
+                                                                    } elseif ($prospek->nomor_kontainer) {
+                                                                        $displayText = $prospek->no_seal 
+                                                                            ? $prospek->nomor_kontainer . ' - ' . $prospek->no_seal 
+                                                                            : $prospek->nomor_kontainer;
+                                                                    } else {
+                                                                        $displayText = 'ID #' . $prospek->id . ' - ' . strtoupper($prospek->tipe ?? 'N/A');
+                                                                    }
+                                                                @endphp
+                                                                <tr class="modal-prospek-row hover:bg-blue-50 cursor-pointer transition-colors"
+                                                                    data-id="{{ $prospek->id }}"
+                                                                    data-text="{{ $displayText }}"
+                                                                    data-tipe="{{ $prospek->tipe }}"
+                                                                    data-supir="{{ $prospek->nama_supir }}"
+                                                                    data-tanggal="{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}"
+                                                                    data-pengirim="{{ $prospek->pt_pengirim ?? '-' }}"
+                                                                    data-barang="{{ $prospek->barang ?? '-' }}"
+                                                                    onclick="toggleProspekSelection('{{ $prospek->id }}')">
+                                                                    <td class="px-4 py-3 whitespace-nowrap">
+                                                                        <div class="flex items-center">
+                                                                            <input type="checkbox" 
+                                                                                   id="checkbox_{{ $prospek->id }}" 
+                                                                                   class="prospek-checkbox w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                                                                   onclick="event.stopPropagation()">
+                                                                        </div>
+                                                                    </td>
+                                                                    <td class="px-4 py-3 whitespace-nowrap">
+                                                                        <div class="text-sm font-bold text-gray-900">{{ $displayText }}</div>
+                                                                        @if($suratJalanInfo)
+                                                                            <div class="text-[10px] text-gray-500 uppercase">SJ: {{ $suratJalanInfo }}</div>
+                                                                        @endif
+                                                                    </td>
+                                                                    <td class="px-4 py-3 whitespace-nowrap">
+                                                                        <span class="px-2 py-0.5 text-[10px] font-bold rounded-full {{ $prospek->tipe === 'CARGO' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800' }}">
+                                                                            {{ $prospek->tipe }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{{ $prospek->nama_supir }}</td>
+                                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-medium">{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}</td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Modal Footer -->
+                                        <div class="bg-gray-50 px-6 py-4 flex flex-col sm:flex-row justify-between items-center border-t gap-4">
+                                            <div class="flex items-center">
+                                                <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                                                    <i class="fas fa-info-circle text-blue-600"></i>
+                                                </div>
+                                                <span id="modalSelectedSummary" class="text-sm font-bold text-gray-700">0 kontainer terpilih</span>
+                                            </div>
+                                            <button type="button" 
+                                                    onclick="closeProspekModal()" 
+                                                    class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-lg font-bold shadow-lg shadow-blue-200 transform hover:scale-105 transition-all">
+                                                Simpan & Selesai
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -328,7 +430,7 @@
                         <i class="fas fa-arrow-left mr-2"></i>
                         Pilih Tujuan Lain
                     </a>
-                    <a href="{{ route('prospek.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md transition duration-200 inline-flex items-center">
+                    <a href="{{ route('prospek.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-home mr-2"></i>
                         Kembali ke Prospek
                     </a>
@@ -342,487 +444,321 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 @endpush
 
-            <style>
-                @keyframes fadeInDown {
-                    from {
-                        opacity: 0;
-                        transform: translate3d(0, -10px, 0);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translate3d(0, 0, 0);
-                    }
-                }
-                
-                .animate-fade-in-down {
-                    animation-name: fadeInDown;
-                    animation-duration: 0.3s;
-                    animation-fill-mode: both;
-                }
-
-                /* Searchable Multi-Select Styling */
-                #prospek_container {
-                    transition: all 0.15s ease;
-                }
-                
-                #prospek_container:focus-within {
-                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-                }
-                
-                .selected-chip {
-                    display: inline-flex;
-                    align-items: center;
-                    background-color: #3b82f6;
-                    color: white;
-                    font-size: 0.75rem;
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    margin: 1px;
-                    gap: 6px;
-                }
-                
-                .selected-chip .remove-chip {
-                    margin-left: 4px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    font-size: 0.875rem;
-                    opacity: 0.8;
-                }
-                
-                .selected-chip .remove-chip:hover {
-                    opacity: 1;
-                }
-                
-                .selected-chip .flex {
-                    line-height: 1.2;
-                }
-                
-                .selected-chip .text-xs {
-                    font-size: 0.65rem;
-                }
-                
-                .prospek-option {
-                    transition: background-color 0.15s ease;
-                }
-                
-                .prospek-option:hover {
-                    background-color: #eff6ff !important;
-                }
-                
-                .prospek-option.selected {
-                    background-color: #dbeafe;
-                    opacity: 0.6;
-                }
-                
-                #prospek_search::placeholder {
-                    color: #9ca3af;
-                }
-                
-                #prospek_dropdown {
-                    border-top: none;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                }
-                
-                /* Table Styling */
-                .table-row-prospek {
-                    transition: background-color 0.15s ease;
-                }
-                
-                .table-row-prospek:hover {
-                    background-color: #f9fafb;
-                }
-                
-                .table-row-prospek input[type="text"],
-                .table-row-prospek select {
-                    min-width: 150px;
-                }
-                
-                .table-row-prospek input[type="text"]:focus,
-                .table-row-prospek select:focus {
-                    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-                }
-            </style><script>
-            @push('scripts')
-                <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const kapalEl = document.getElementById('kapal_id');
-                        if (kapalEl && typeof Choices !== 'undefined') {
-                            // Initialize Choices for searchable dropdown while keeping native select behavior
-                            const choices = new Choices(kapalEl, {
-                                searchEnabled: true,
-                                shouldSort: false,
-                                searchPlaceholderValue: 'Cari nama kapal...'
-                            });
-                            // Keep the reference to underlying select for existing code
-                            kapalEl.choicesInstance = choices;
-                        }
-                    });
-                </script>
-            @endpush
-document.addEventListener('DOMContentLoaded', function() {
-    const kapalSelect = document.getElementById('kapal_id');
-    const voyageSelect = document.getElementById('no_voyage');
-    const selectedCount = document.getElementById('selectedCount');
-    
-    // Handle kapal selection change
-    kapalSelect.addEventListener('change', function() {
-        const kapalId = this.value;
-        
-        // Reset voyage dropdown
-        voyageSelect.innerHTML = '<option value="">Loading...</option>';
-        voyageSelect.disabled = true;
-        
-        if (!kapalId) {
-            voyageSelect.innerHTML = '<option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>';
-            return;
+<style>
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translate3d(0, -10px, 0);
         }
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+    
+    .animate-fade-in-down {
+        animation-name: fadeInDown;
+        animation-duration: 0.3s;
+        animation-fill-mode: both;
+    }
+
+    /* Table Styling */
+    .table-row-prospek {
+        transition: background-color 0.15s ease;
+    }
+    
+    .table-row-prospek:hover {
+        background-color: #f9fafb;
+    }
+    
+    .table-row-prospek input[type="text"],
+    .table-row-prospek select {
+        min-width: 150px;
+    }
+    
+    .table-row-prospek input[type="text"]:focus,
+    .table-row-prospek select:focus {
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+</style>
+
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Choices JS initialization
+        const kapalEl = document.getElementById('kapal_id');
+        if (kapalEl && typeof Choices !== 'undefined') {
+            const choices = new Choices(kapalEl, {
+                searchEnabled: true,
+                shouldSort: false,
+                searchPlaceholderValue: 'Cari nama kapal...'
+            });
+            kapalEl.choicesInstance = choices;
+        }
+
+        // Element references
+        const kapalSelect = document.getElementById('kapal_id');
+        const voyageSelect = document.getElementById('no_voyage');
+        const prospekModal = document.getElementById('prospekModal');
+        const modalSearch = document.getElementById('modalSearch');
+        const modalTableBody = document.getElementById('modalTableBody');
+        const modalRows = document.querySelectorAll('.modal-prospek-row');
+        const selectedCountEl = document.getElementById('selectedCount');
+        const modalSelectedSummary = document.getElementById('modalSelectedSummary');
+        const pilihStatusText = document.getElementById('pilihStatusText');
+        const hiddenInputs = document.getElementById('hidden_inputs');
+        const selectedProspeksTable = document.getElementById('selectedProspeksTable');
+        const selectedProspeksTableBody = document.getElementById('selectedProspeksTableBody');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
         
-        // Fetch voyage data for selected kapal
-        fetch(`{{ route('prospek.get-voyage-by-kapal') }}?kapal_id=${kapalId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                'Accept': 'application/json'
-            },
-            credentials: 'same-origin'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            voyageSelect.innerHTML = '';
-            
-            if (data.success && data.voyages && data.voyages.length > 0) {
-                // Add default option
-                voyageSelect.innerHTML += '<option value="">-PILIH VOYAGE-</option>';
+        let selectedProspeks = [];
+
+        // Kapal change listener
+        if (kapalSelect) {
+            kapalSelect.addEventListener('change', function() {
+                const kapalId = this.value;
+                voyageSelect.innerHTML = '<option value="">Loading...</option>';
+                voyageSelect.disabled = true;
                 
-                // Add voyage options
-                data.voyages.forEach(voyage => {
-                    voyageSelect.innerHTML += `<option value="${voyage}">${voyage}</option>`;
+                if (!kapalId) {
+                    voyageSelect.innerHTML = '<option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>';
+                    return;
+                }
+                
+                fetch(`{{ route('prospek.get-voyage-by-kapal') }}?kapal_id=${kapalId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    voyageSelect.innerHTML = '';
+                    if (data.success && data.voyages && data.voyages.length > 0) {
+                        voyageSelect.innerHTML += '<option value="">-PILIH VOYAGE-</option>';
+                        data.voyages.forEach(voyage => {
+                            voyageSelect.innerHTML += `<option value="${voyage}">${voyage}</option>`;
+                        });
+                    } else {
+                        voyageSelect.innerHTML = '<option value="">Belum ada voyage untuk kapal ini</option>';
+                    }
+                    voyageSelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    voyageSelect.innerHTML = '<option value="">Error loading</option>';
+                    voyageSelect.disabled = false;
                 });
+            });
+        }
+
+        // Modal functions
+        window.openProspekModal = function() {
+            prospekModal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            if(modalSearch) modalSearch.focus();
+            updateModalSummary();
+        };
+
+        window.closeProspekModal = function() {
+            prospekModal.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            syncToMainForm();
+        };
+
+        window.processBulkInput = function() {
+            const input = document.getElementById('bulkInputText').value;
+            if (!input) return;
+
+            const identifiers = input.split(/[;,\n\s]+/).map(s => s.trim().toLowerCase()).filter(s => s.length > 0);
+            let matchedCount = 0;
+            let notFound = [];
+
+            identifiers.forEach(idnt => {
+                let foundMatch = false;
+                modalRows.forEach(row => {
+                    const containerText = row.getAttribute('data-text').toLowerCase();
+                    const id = row.getAttribute('data-id');
+                    const checkbox = document.getElementById(`checkbox_${id}`);
+
+                    if (containerText.includes(idnt)) {
+                        if (!checkbox.checked) {
+                            checkbox.checked = true;
+                            row.classList.toggle('bg-blue-100', true);
+                            matchedCount++;
+                        }
+                        foundMatch = true;
+                    }
+                });
+                if (!foundMatch) notFound.push(idnt);
+            });
+
+            updateModalSummary();
+            if (notFound.length > 0) {
+                alert(`Berhasil memilih ${matchedCount} kontainer.\n\nTidak ditemukan: ${notFound.slice(0, 10).join(', ')}${notFound.length > 10 ? '...' : ''}`);
             } else {
-                voyageSelect.innerHTML = '<option value="">Belum ada voyage untuk kapal ini</option>';
+                alert(`Berhasil memilih ${matchedCount} kontainer.`);
             }
-            
-            voyageSelect.disabled = false;
-        })
-        .catch(error => {
-            console.error('Error fetching voyage data:', error);
-            voyageSelect.innerHTML = '<option value="">Error loading voyage data</option>';
-            voyageSelect.disabled = false;
-        });
-    });
-    
-    // Handle searchable multi-select
-    const prospekSearch = document.getElementById('prospek_search');
-    const prospekDropdown = document.getElementById('prospek_dropdown');
-    const selectedChips = document.getElementById('selected_chips');
-    const hiddenInputs = document.getElementById('hidden_inputs');
-    const clearAllBtn = document.getElementById('clearAllBtn');
-    const prospekOptions = document.querySelectorAll('.prospek-option');
-    const selectedProspeksTable = document.getElementById('selectedProspeksTable');
-    const selectedProspeksTableBody = document.getElementById('selectedProspeksTableBody');
-    
-    let selectedProspeks = [];
-    
-    // Show dropdown on focus
-    prospekSearch.addEventListener('focus', function() {
-        prospekDropdown.classList.remove('hidden');
-        filterOptions();
-    });
-    
-    // Hide dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('#prospek_container') && !e.target.closest('#prospek_dropdown')) {
-            prospekDropdown.classList.add('hidden');
-        }
-    });
-    
-    // Search/filter options
-    prospekSearch.addEventListener('input', function() {
-        filterOptions();
-    });
-    
-    function filterOptions() {
-        const searchTerm = prospekSearch.value.toLowerCase();
-        prospekOptions.forEach(option => {
-            const text = option.getAttribute('data-text').toLowerCase();
-            const supir = option.getAttribute('data-supir').toLowerCase();
-            const tanggal = option.getAttribute('data-tanggal').toLowerCase();
-            const pengirim = (option.getAttribute('data-pengirim') || '').toLowerCase();
-            const barang = (option.getAttribute('data-barang') || '').toLowerCase();
-            const suratJalan = (option.getAttribute('data-surat-jalan') || '').toLowerCase();
-            const shouldShow = text.includes(searchTerm) || supir.includes(searchTerm) || tanggal.includes(searchTerm) || pengirim.includes(searchTerm) || barang.includes(searchTerm) || suratJalan.includes(searchTerm);
-            option.style.display = shouldShow ? 'block' : 'none';
-        });
-    }
-    
-    // Handle option selection
-    prospekOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const text = this.getAttribute('data-text');
-            const tipe = this.getAttribute('data-tipe');
-            const supir = this.getAttribute('data-supir');
-            const tanggal = this.getAttribute('data-tanggal');
-            const pengirim = this.getAttribute('data-pengirim');
-            const barang = this.getAttribute('data-barang');
-            
-            if (!selectedProspeks.find(p => p.id === id)) {
-                selectedProspeks.push({ id, text, tipe, pengirim, barang, supir, tanggal });
-                addChip(id, text, tanggal);
-                addTableRow(id, text, tipe, pengirim, barang, supir, tanggal);
-                updateSelectedCount();
-                updateHiddenInputs();
-                updateTableVisibility();
-                this.classList.add('selected');
-            }
-            
-            prospekSearch.value = '';
-            prospekDropdown.classList.add('hidden');
-        });
-    });
-    
-    function addChip(id, text, tanggal) {
-        const chip = document.createElement('span');
-        chip.className = 'selected-chip';
-        chip.setAttribute('data-id', id);
-        chip.innerHTML = `
-            <div class="flex flex-col">
-                <span class="font-medium">${text}</span>
-                <span class="text-xs opacity-75">${tanggal}</span>
-            </div>
-            <span class="remove-chip" onclick="removeChip('${id}')">&times;</span>
-        `;
-        selectedChips.appendChild(chip);
-    }
-    
-    function addTableRow(id, text, tipe, pengirim, barang, supir, tanggal) {
-        const rowIndex = selectedProspeks.length;
-        const row = document.createElement('tr');
-        row.setAttribute('data-id', id);
-        row.className = 'table-row-prospek';
-        
-        row.innerHTML = `
-            <td class="px-4 py-3 text-sm text-gray-900">${rowIndex}</td>
-            <td class="px-4 py-3 text-sm text-gray-900 font-medium">${text}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">
-                <span class="px-2 py-1 text-xs font-medium rounded-full ${tipe === 'CARGO' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}">
-                    ${tipe}
-                </span>
-            </td>
-            <td class="px-4 py-3 text-sm text-gray-900">${pengirim}</td>
-            <td class="px-4 py-3 text-sm text-gray-900">${barang}</td>
-            <td class="px-4 py-3 text-sm text-gray-900">${supir}</td>
-            <td class="px-4 py-3 text-sm text-gray-600">${tanggal}</td>
-            <td class="px-4 py-3 text-sm">
-                <button type="button" 
-                        onclick="removeChip('${id}')"
-                        class="text-red-600 hover:text-red-800 transition duration-200">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </td>
-        `;
-        selectedProspeksTableBody.appendChild(row);
-    }
-    
-    // Remove chip function (global scope for onclick)
-    window.removeChip = function(id) {
-        selectedProspeks = selectedProspeks.filter(p => p.id !== id);
-        document.querySelector(`[data-id="${id}"].selected-chip`).remove();
-        document.querySelector(`[data-id="${id}"].table-row-prospek`).remove();
-        document.querySelector(`[data-id="${id}"].prospek-option`).classList.remove('selected');
-        updateSelectedCount();
-        updateHiddenInputs();
-        updateTableVisibility();
-        reorderTableRows();
-    };
-    
-    // Select All button
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    selectAllBtn.addEventListener('click', function() {
-        prospekOptions.forEach(option => {
-            const id = option.getAttribute('data-id');
-            const text = option.getAttribute('data-text');
-            const tipe = option.getAttribute('data-tipe');
-            const supir = option.getAttribute('data-supir');
-            const tanggal = option.getAttribute('data-tanggal');
-            const pengirim = option.getAttribute('data-pengirim');
-            const barang = option.getAttribute('data-barang');
-            
-            // Only add if not already selected
-            if (!selectedProspeks.find(p => p.id === id)) {
-                selectedProspeks.push({ id, text, tipe, pengirim, barang, supir, tanggal });
-                addChip(id, text, tanggal);
-                addTableRow(id, text, tipe, pengirim, barang, supir, tanggal);
-                option.classList.add('selected');
-            }
-        });
-        
-        updateSelectedCount();
-        updateHiddenInputs();
-        updateTableVisibility();
-    });
-    
-    // Clear All button  
-    clearAllBtn.addEventListener('click', function() {
-        selectedProspeks = [];
-        selectedChips.innerHTML = '';
-        selectedProspeksTableBody.innerHTML = '';
-        hiddenInputs.innerHTML = '';
-        prospekOptions.forEach(option => {
-            option.classList.remove('selected');
-        });
-        updateSelectedCount();
-        updateTableVisibility();
-    });
-    
-    function updateHiddenInputs() {
-        hiddenInputs.innerHTML = '';
-        selectedProspeks.forEach(prospek => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'prospek_ids[]';
-            input.value = prospek.id;
-            hiddenInputs.appendChild(input);
-        });
-    }
-    
-    function updateTableVisibility() {
-        if (selectedProspeks.length > 0) {
-            selectedProspeksTable.classList.remove('hidden');
-            // Enable export button when there are selected prospeks
-            document.getElementById('exportExcelBtn').disabled = false;
-        } else {
-            selectedProspeksTable.classList.add('hidden');
-            // Disable export button when no prospeks selected
-            document.getElementById('exportExcelBtn').disabled = true;
-        }
-    }
-    
-    function reorderTableRows() {
-        const rows = selectedProspeksTableBody.querySelectorAll('.table-row-prospek');
-        rows.forEach((row, index) => {
-            const numberCell = row.querySelector('td:first-child');
-            numberCell.textContent = index + 1;
-        });
-    }
-    
-    // Update selected count display
-    function updateSelectedCount() {
-        selectedCount.textContent = `Terpilih: ${selectedProspeks.length} dari {{ $prospeksAktif->where('tipe', '!=', 'CARGO')->count() }} prospek`;
-    }
-    
-    // Form validation
-    const form = document.getElementById('naikKapalForm');
-    
-    function showErrorMessage(message) {
-        // Clear previous JS errors
-        document.querySelectorAll('.js-error-alert').forEach(el => el.remove());
+        };
 
-        const container = document.getElementById('alert-container');
-        if (container) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 js-error-alert flex items-start animate-fade-in-down';
-            errorDiv.innerHTML = `
-                <div class="flex-shrink-0">
-                    <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
-                </div>
-                <div>
-                    <strong>Perhatian!</strong>
-                    <p>${message}</p>
-                </div>
-            `;
-            
-            // Insert at top of container
-            container.prepend(errorDiv);
-            
-            // Scroll to error
-            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            // Fallback if container not found
-            alert(message);
-        }
-    }
+        window.toggleProspekSelection = function(id) {
+            const checkbox = document.getElementById(`checkbox_${id}`);
+            const row = document.querySelector(`.modal-prospek-row[data-id="${id}"]`);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                row.classList.toggle('bg-blue-100', checkbox.checked);
+                updateModalSummary();
+            }
+        };
 
-    form.addEventListener('submit', function(e) {
-        const kapalId = kapalSelect.value;
-        const voyage = voyageSelect.value;
-        const pelabuhan = document.getElementById('pelabuhan_asal').value;
-        
-        // Clear previous errors
-        document.querySelectorAll('.js-error-alert').forEach(el => el.remove());
-        
-        if (selectedProspeks.length === 0) {
-            e.preventDefault();
-            showErrorMessage('Silakan pilih minimal 1 prospek untuk dimuat ke kapal. Gunakan kolom pencarian untuk memilih prospek.');
-            return;
+        function updateModalSummary() {
+            const count = Array.from(document.querySelectorAll('.prospek-checkbox')).filter(cb => cb.checked).length;
+            if(modalSelectedSummary) modalSelectedSummary.textContent = `${count} kontainer terpilih`;
         }
-        
-        if (!kapalId) {
-            e.preventDefault();
-            showErrorMessage('Silakan pilih Kapal terlebih dahulu.');
-            return;
+
+        function syncToMainForm() {
+            selectedProspeks = [];
+            const checkboxes = document.querySelectorAll('.prospek-checkbox:checked');
+            checkboxes.forEach(cb => {
+                const id = cb.id.replace('checkbox_', '');
+                const row = document.querySelector(`.modal-prospek-row[data-id="${id}"]`);
+                selectedProspeks.push({
+                    id: id, text: row.dataset.text, tipe: row.dataset.tipe,
+                    supir: row.dataset.supir, tanggal: row.dataset.tanggal,
+                    pengirim: row.dataset.pengirim, barang: row.dataset.barang
+                });
+            });
+            renderMainFormUI();
         }
-        
-        if (!voyage) {
-            e.preventDefault();
-            showErrorMessage('Silakan pilih Nomor Voyage.');
-            return;
+
+        function renderMainFormUI() {
+            if(selectedCountEl) selectedCountEl.textContent = `Terpilih: ${selectedProspeks.length} prospek`;
+            if(modalSelectedSummary) modalSelectedSummary.textContent = `${selectedProspeks.length} kontainer terpilih`;
+            
+            if(pilihStatusText) {
+                if(selectedProspeks.length === 0) {
+                    pilihStatusText.textContent = '-- Klik untuk Pilih Kontainer - Seal --';
+                    pilihStatusText.className = 'truncate font-medium text-sm text-blue-500';
+                } else {
+                    pilihStatusText.textContent = selectedProspeks.length === 1 ? selectedProspeks[0].text : `${selectedProspeks.length} kontainer terpilih`;
+                    pilihStatusText.className = 'truncate font-bold text-sm text-blue-700';
+                }
+            }
+
+            hiddenInputs.innerHTML = '';
+            selectedProspeks.forEach(p => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'prospek_ids[]';
+                input.value = p.id;
+                hiddenInputs.appendChild(input);
+            });
+
+            if(selectedProspeks.length > 0) {
+                selectedProspeksTable.classList.remove('hidden');
+                exportExcelBtn.disabled = false;
+            } else {
+                selectedProspeksTable.classList.add('hidden');
+                exportExcelBtn.disabled = true;
+            }
+
+            selectedProspeksTableBody.innerHTML = '';
+            selectedProspeks.forEach((p, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 font-medium';
+                tr.innerHTML = `
+                    <td class="px-4 py-2 text-xs font-medium text-gray-500">${index + 1}</td>
+                    <td class="px-4 py-2 text-xs font-bold text-gray-900">${p.text}</td>
+                    <td class="px-4 py-2 text-xs text-center"><span class="px-2 py-0.5 rounded-full ${p.tipe === 'CARGO' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'} text-[10px] font-bold">${p.tipe}</span></td>
+                    <td class="px-4 py-2 text-xs text-gray-600">${p.pengirim}</td>
+                    <td class="px-4 py-2 text-xs text-gray-600">${p.barang}</td>
+                    <td class="px-4 py-2 text-xs text-gray-600">${p.supir}</td>
+                    <td class="px-4 py-2 text-xs text-gray-500">${p.tanggal}</td>
+                    <td class="px-4 py-2 text-xs text-right"><button type="button" onclick="removeFromSelection('${p.id}')" class="text-red-500 hover:text-red-700 transition-colors"><i class="fas fa-trash-alt"></i></button></td>
+                `;
+                selectedProspeksTableBody.appendChild(tr);
+            });
         }
-        
-        if (!pelabuhan) {
-            e.preventDefault();
-            showErrorMessage('Silakan pilih Pelabuhan Asal.');
-            return;
+
+        window.removeFromSelection = function(id) {
+            const cb = document.getElementById(`checkbox_${id}`);
+            if(cb) cb.checked = false;
+            const row = document.querySelector(`.modal-prospek-row[data-id="${id}"]`);
+            if(row) row.classList.remove('bg-blue-100');
+            syncToMainForm();
+        };
+
+        if (modalSearch) {
+            modalSearch.addEventListener('input', function() {
+                const term = this.value.toLowerCase();
+                modalRows.forEach(row => {
+                    const text = row.getAttribute('data-text').toLowerCase();
+                    const supir = row.getAttribute('data-supir').toLowerCase();
+                    const pengirim = row.getAttribute('data-pengirim').toLowerCase();
+                    const barang = row.getAttribute('data-barang').toLowerCase();
+                    row.style.display = (text.includes(term) || supir.includes(term) || pengirim.includes(term) || barang.includes(term)) ? '' : 'none';
+                });
+            });
         }
-        
-        // Confirmation
-        if (!confirm(`Apakah Anda yakin ingin memproses ${selectedProspeks.length} prospek? Data akan disimpan sebagai muatan kapal.`)) {
-            e.preventDefault();
+
+        window.toggleSelectAllInModal = function() {
+            const visibleRows = Array.from(modalRows).filter(row => row.style.display !== 'none');
+            const allVisibleChecked = visibleRows.every(row => document.getElementById(`checkbox_${row.dataset.id}`).checked);
+            visibleRows.forEach(row => {
+                const id = row.dataset.id;
+                const checkbox = document.getElementById(`checkbox_${id}`);
+                checkbox.checked = !allVisibleChecked;
+                row.classList.toggle('bg-blue-100', checkbox.checked);
+            });
+            updateModalSummary();
+        };
+
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        if(clearAllBtn) {
+            clearAllBtn.addEventListener('click', function() {
+                if(!confirm('Hapus semua pilihan?')) return;
+                document.querySelectorAll('.prospek-checkbox').forEach(cb => cb.checked = false);
+                modalRows.forEach(row => row.classList.remove('bg-blue-100'));
+                syncToMainForm();
+            });
+        }
+
+        const form = document.getElementById('naikKapalForm');
+        if(form) {
+            form.addEventListener('submit', function(e) {
+                if (selectedProspeks.length === 0) { e.preventDefault(); alert('Pilih kontainer!'); return; }
+                if (!kapalSelect.value || !voyageSelect.value) { e.preventDefault(); alert('Kapal/Voyage belum diisi!'); return; }
+                if (!confirm(`Proses muat ${selectedProspeks.length} kontainer ke kapal ini?`)) e.preventDefault();
+            });
+        }
+
+        if(exportExcelBtn) {
+            exportExcelBtn.addEventListener('click', function() {
+                if (selectedProspeks.length === 0) return;
+                const exportForm = document.createElement('form');
+                exportForm.method = 'GET';
+                exportForm.action = '{{ route("prospek.export-excel") }}';
+                exportForm.target = '_blank';
+                selectedProspeks.forEach(p => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'prospek_ids[]';
+                    input.value = p.id;
+                    exportForm.appendChild(input);
+                });
+                const tInput = document.createElement('input');
+                tInput.type = 'hidden'; tInput.name = 'tujuan_id'; tInput.value = '{{ $tujuanId }}';
+                exportForm.appendChild(tInput);
+                document.body.appendChild(exportForm);
+                exportForm.submit();
+                document.body.removeChild(exportForm);
+            });
         }
     });
-    
-    // Handle Export Excel
-    const exportExcelBtn = document.getElementById('exportExcelBtn');
-    exportExcelBtn.addEventListener('click', function() {
-        if (selectedProspeks.length === 0) {
-            showErrorMessage('Silakan pilih minimal 1 prospek untuk di-export.');
-            return;
-        }
-        
-        // Create form to submit prospek IDs
-        const exportForm = document.createElement('form');
-        exportForm.method = 'GET';
-        exportForm.action = '{{ route("prospek.export-excel") }}';
-        exportForm.target = '_blank';
-        
-        // Add prospek IDs as hidden inputs
-        selectedProspeks.forEach(prospek => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'prospek_ids[]';
-            input.value = prospek.id;
-            exportForm.appendChild(input);
-        });
-        
-        // Add tujuan information
-        const tujuanInput = document.createElement('input');
-        tujuanInput.type = 'hidden';
-        tujuanInput.name = 'tujuan_id';
-        tujuanInput.value = '{{ $tujuanId }}';
-        exportForm.appendChild(tujuanInput);
-        
-        // Submit form
-        document.body.appendChild(exportForm);
-        exportForm.submit();
-        document.body.removeChild(exportForm);
-    });
-});
-</script>
+    </script>
+@endpush
 @endsection
