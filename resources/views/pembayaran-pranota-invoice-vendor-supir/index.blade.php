@@ -64,6 +64,14 @@
                             @endif
                             <div class="text-xs mt-1"><span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{{ $pembayaran->bank ?? 'Tidak ada bank' }}</span></div>
                             <div class="text-[11px] text-gray-500 mt-1 capitalize">{{ $pembayaran->metode_pembayaran }}</div>
+                            @if($pembayaran->is_synced)
+                                <div class="mt-2">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">
+                                        <svg class="w-2.5 h-2.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                        JURNAL COA
+                                    </span>
+                                </div>
+                            @endif
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                             {{ $pembayaran->tanggal_pembayaran ? $pembayaran->tanggal_pembayaran->format('d/m/Y') : '-' }}
@@ -98,8 +106,18 @@
                             <a href="{{ route('pembayaran-pranota-invoice-vendor-supir.show', $pembayaran->id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-colors" title="Lihat Detail">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                             </a>
+                            
+                            @if(!$pembayaran->is_synced)
+                            <form action="{{ route('pembayaran-pranota-invoice-vendor-supir.sync-to-coa', $pembayaran->id) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors" title="Sinkronkan ke COA">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                </button>
+                            </form>
+                            @endif
+
                             @if(auth()->check() && optional(auth()->user())->can('pembayaran-pranota-invoice-vendor-supir-delete'))
-                            <form action="{{ route('pembayaran-pranota-invoice-vendor-supir.destroy', $pembayaran->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembayaran ini?')">
+                            <form action="{{ route('pembayaran-pranota-invoice-vendor-supir.destroy', $pembayaran->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembayaran ini? Jurnal COA terkait juga akan dihapus.')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors" title="Hapus">

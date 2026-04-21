@@ -105,7 +105,7 @@
                 <!-- Bank & Transaksi -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Metode</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi (Double Book Accounting)</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div class="relative">
                                 <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
@@ -137,11 +137,23 @@
                                 </div>
                             </div>
                             <div>
-                                <label for="metode_pembayaran" class="{{ $labelClasses }}">Metode Pembayaran</label>
+                                <label for="metode_pembayaran" class="{{ $labelClasses }}">Jenis Transaksi</label>
                                 <select name="metode_pembayaran" id="metode_pembayaran" class="{{ $inputClasses }}" required>
-                                    <option value="debit" {{ old('metode_pembayaran') == 'debit' ? 'selected' : '' }}>Debit</option>
-                                    <option value="kredit" {{ old('metode_pembayaran') == 'kredit' ? 'selected' : '' }}>Kredit</option>
+                                    <option value="debit" {{ old('metode_pembayaran') == 'debit' ? 'selected' : '' }}>Debit (Bank bertambah, Biaya berkurang)</option>
+                                    <option value="kredit" {{ old('metode_pembayaran', 'kredit') == 'kredit' ? 'selected' : '' }}>Kredit (Biaya bertambah, Bank berkurang)</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                            <div class="flex items-start">
+                                <svg class="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div>
+                                    <strong>Jurnal Akuntansi:</strong><br>
+                                    • <strong>Debit:</strong> Bank bertambah (Dr), Biaya Uang Jalan Vendor berkurang (Cr)<br>
+                                    • <strong>Kredit:</strong> Biaya Uang Jalan Vendor bertambah (Dr), Bank berkurang (Cr)
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -158,6 +170,12 @@
                             <span id="searchCounter" class="text-xs text-gray-600"></span>
                         </div>
                     </div>
+                    <p class="text-xs text-blue-600">
+                        <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <strong>Info:</strong> Pembayaran akan otomatis dicatat ke akun "Biaya Uang Jalan Vendor" dan Bank yang dipilih menggunakan sistem double book accounting.
+                    </p>
                 </div>
                 <div class="overflow-x-auto max-h-80">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -216,6 +234,10 @@
                     <p class="text-xs text-gray-600">
                         * Centang pranota yang akan dibayar. Anda dapat mengubah nominal bayar sebagian jika diperlukan.
                     </p>
+                    <div class="mt-1 flex items-center gap-2">
+                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-600 rounded text-[10px] font-bold uppercase tracking-wider">📊 Double Book</span>
+                        <span class="text-[10px] text-gray-500 italic">Otomatis jurnal ke COA saat disimpan</span>
+                    </div>
                 </div>
             </div>
 

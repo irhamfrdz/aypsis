@@ -3299,6 +3299,10 @@ Route::middleware(['auth'])->group(function () {
              'destroy' => 'can:pembayaran-pranota-invoice-vendor-supir-delete'
          ]);
 
+    Route::post('pembayaran-pranota-invoice-vendor-supir/{pembayaran}/sync-to-coa', [\App\Http\Controllers\PembayaranPranotaInvoiceVendorSupirController::class, 'syncToCoa'])
+         ->name('pembayaran-pranota-invoice-vendor-supir.sync-to-coa')
+         ->middleware('can:pembayaran-pranota-invoice-vendor-supir-create');
+
     // Debug route untuk surat jalan
     Route::get('/debug-surat-jalan', function() {
         $data = [];
