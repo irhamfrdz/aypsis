@@ -3969,6 +3969,9 @@ Route::get('/test-gate-in-ajax', function () {
             Route::delete('/{pembayaranPranotaUangJalan}', [PembayaranPranotaUangJalanController::class, 'destroy'])
                 ->name('destroy')
                 ->middleware('can:pembayaran-pranota-uang-jalan-delete');
+            Route::post('/update-date', [PembayaranPranotaUangJalanController::class, 'updateDate'])
+                ->name('update-date')
+                ->middleware('can:pembayaran-pranota-uang-jalan-edit');
         });
 
     // 💰 PEMBAYARAN PRANOTA LEMBUR (Overtime Payment)

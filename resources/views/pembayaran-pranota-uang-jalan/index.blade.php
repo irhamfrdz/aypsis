@@ -116,6 +116,11 @@
                                         <a href="{{ route('pembayaran-pranota-uang-jalan.show', $pembayaran->id) }}" class="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded">Detail</a>
                                         @can('pembayaran-pranota-uang-jalan-edit')
                                         <a href="{{ route('pembayaran-pranota-uang-jalan.edit', $pembayaran->id) }}" class="text-yellow-600 hover:text-yellow-800 text-xs bg-yellow-50 hover:bg-yellow-100 px-2 py-1 rounded">Edit</a>
+                                        <button type="button" 
+                                                onclick="openUpdateDateModal('{{ $pembayaran->id }}', '{{ $pembayaran->nomor_pembayaran }}', '{{ $pembayaran->tanggal_pembayaran->format('Y-m-d') }}')" 
+                                                class="text-purple-600 hover:text-purple-800 text-xs bg-purple-50 hover:bg-purple-100 px-2 py-1 rounded">
+                                            Update Tanggal
+                                        </button>
                                         @endcan
                                     @endforeach
                                 @endif
@@ -168,7 +173,64 @@ setTimeout(function() {
     if (successAlert) successAlert.remove();
     if (errorAlert) errorAlert.remove();
 }, 3000);
+
+function openUpdateDateModal(id, nomor, tanggal) {
+    document.getElementById('update_pembayaran_id').value = id;
+    document.getElementById('modal_nomor_pembayaran').textContent = nomor;
+    document.getElementById('tanggal_baru').value = tanggal;
+    document.getElementById('updateDateModal').classList.remove('hidden');
+}
+
+function closeUpdateDateModal() {
+    document.getElementById('updateDateModal').classList.add('hidden');
+}
 </script>
+
+<!-- Update Date Modal -->
+<div id="updateDateModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="update-modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeUpdateDateModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+            <form action="{{ route('pembayaran-pranota-uang-jalan.update-date') }}" method="POST">
+                @csrf
+                <input type="hidden" name="pembayaran_id" id="update_pembayaran_id">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-purple-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="update-modal-title">
+                                Update Tanggal Pembayaran
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Memperbarui tanggal untuk pembayaran <span id="modal_nomor_pembayaran" class="font-bold"></span>. 
+                                    Tanggal ini akan disinkronkan dengan Laporan Kas Truck.
+                                </p>
+                            </div>
+                            <div class="mt-4">
+                                <label for="tanggal_baru" class="block text-sm font-medium text-gray-700">Tanggal Baru</label>
+                                <input type="date" name="tanggal_baru" id="tanggal_baru" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Simpan Perubahan
+                    </button>
+                    <button type="button" onclick="closeUpdateDateModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @include('components.resizable-table')

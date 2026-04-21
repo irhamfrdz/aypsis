@@ -360,10 +360,16 @@ class PembayaranPranotaUangJalanController extends Controller
                     'updated_by' => Auth::id(),
                 ]);
 
+                // Synchronize date to CoaTransactions
+                if ($request->filled('tanggal_pembayaran')) {
+                    CoaTransaction::where('nomor_referensi', $pembayaranPranotaUangJalan->nomor_pembayaran)
+                        ->update(['tanggal_transaksi' => $request->tanggal_pembayaran]);
+                }
+
                 DB::commit();
 
                 return redirect()->route('pembayaran-pranota-uang-jalan.index')
-                    ->with('success', 'Nomor Accurate berhasil diperbarui.');
+                    ->with('success', 'Nomor Accurate dan Tanggal berhasil diperbarui.');
 
             } catch (\Exception $e) {
                 DB::rollBack();
