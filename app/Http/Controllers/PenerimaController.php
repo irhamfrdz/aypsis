@@ -204,4 +204,46 @@ class PenerimaController extends Controller
         return redirect()->route('penerima.index')
             ->with('success', 'Penerima berhasil ditambahkan!');
     }
+
+    /**
+     * Show the form for creating from Tanda Terima form (popup mode)
+     */
+    public function createForTandaTerima()
+    {
+        return view('master-penerima.create-for-tanda-terima');
+    }
+
+    /**
+     * Store from Tanda Terima form (popup mode)
+     */
+    public function storeForTandaTerima(Request $request)
+    {
+        $validated = $request->validate([
+            'nama_penerima' => 'required|string|max:255',
+            'alamat' => 'nullable|string',
+            'npwp' => 'nullable|string|max:20',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $penerima = Penerima::create($validated);
+
+            DB::commit();
+            
+            // Store penerima data in session for popup to send to parent
+            session([
+                'penerima_nama' => $penerima->nama_penerima,
+                'penerima_alamat' => $penerima->alamat,
+            ]);
+
+            return redirect()->back()
+                           ->with('success', 'Penerima berhasil ditambahkan')
+                           ->with('popup', true);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput()
+                           ->with('error', 'Gagal menambahkan penerima: ' . $e->getMessage());
+        }
+    }
 }
