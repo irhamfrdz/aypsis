@@ -18,31 +18,27 @@
         @php $itemCount = 1; $grandTotal = 0; @endphp
         @foreach($grouped as $key => $groupItems)
             @php 
-                $groupFirst = $groupItems->first(); 
                 // Sub-group by container (type and id)
                 $byContainer = $groupItems->groupBy(function($item) {
                     return $item->type . '_' . $item->id;
                 });
-                $isFirstInGroup = true;
             @endphp
             
             @foreach($byContainer as $containerItems)
                 @php $first = $containerItems->first(); @endphp
                 <tr>
                     <td align="left">
-                        @if($isFirstInGroup)
-                            @if($first->numbering)
-                                {{ str_pad($first->numbering, 2, '0', STR_PAD_LEFT) }}.
-                            @else
-                                {{ str_pad($itemCount++, 2, '0', STR_PAD_LEFT) }}.
-                            @endif
+                        @if($first->numbering)
+                            {{ str_pad($first->numbering, 2, '0', STR_PAD_LEFT) }}.
+                        @else
+                            {{ str_pad($itemCount++, 2, '0', STR_PAD_LEFT) }}.
                         @endif
                     </td>
                     <td align="left"><b>{{ $first->no_kontainer ?: $first->number }}</b></td>
                     <td align="right"><b>{{ number_format($first->kuantitas ?: 0) }}</b></td>
                     <td align="left"><b>{{ strtoupper($first->satuan ?: 'UNIT') }}</b></td>
                     <td></td><td></td>
-                    <td align="left">Rp.</td>
+                    <td align="left">Rp</td>
                     <td align="right"><b>{{ number_format($containerItems->sum('amount') ?: 0, 0, ',', '.') }}</b></td>
                 </tr>
                 <tr>
@@ -63,20 +59,19 @@
                     </tr>
                     @endforeach
                 @endif
-                @php $isFirstInGroup = false; @endphp
+                
+                <tr>
+                    <td></td><td></td>
+                    <td colspan="5" align="left" style="color: #FF0000;">{{ $first->pengirim }} - JAKARTA</td>
+                    <td align="right">@if($first->rate){{ number_format($first->rate, 2, ',', '.') }}%@else 0,30% @endif</td>
+                </tr>
+                <tr>
+                    <td></td><td></td>
+                    <td colspan="6" align="left" style="color: #FF0000;">{{ $first->penerima }} - BATAM</td>
+                </tr>
+                
+                <tr><td colspan="8"></td></tr> <!-- Spacer -->
             @endforeach
-
-            <tr>
-                <td></td><td></td>
-                <td colspan="5" align="left" style="color: #FF0000;">{{ $groupFirst->pengirim }} - JAKARTA</td>
-                <td align="right">@if($groupFirst->rate){{ number_format($groupFirst->rate, 2, ',', '.') }}%@else 0,30% @endif</td>
-            </tr>
-            <tr>
-                <td></td><td></td>
-                <td colspan="6" align="left" style="color: #FF0000;">{{ $groupFirst->penerima }} - BATAM</td>
-            </tr>
-            
-            <tr><td colspan="8"></td></tr> <!-- Spacer -->
             @php $grandTotal += $groupItems->sum('amount'); @endphp
         @endforeach
     </tbody>
