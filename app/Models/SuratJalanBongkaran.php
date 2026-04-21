@@ -73,7 +73,8 @@ class SuratJalanBongkaran extends Model
         'bl_id',
         'manifest_id',
         'jenis_pengiriman',
-        'tanggal_ambil_barang'
+        'tanggal_ambil_barang',
+        'lokasi'
     ];
 
     protected $casts = [

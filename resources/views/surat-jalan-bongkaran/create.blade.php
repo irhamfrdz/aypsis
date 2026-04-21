@@ -164,6 +164,22 @@
                         @enderror
                     </div>
 
+                    <!-- Lokasi -->
+                    <div>
+                        <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">
+                            Lokasi <span class="text-red-500">*</span>
+                        </label>
+                        <select name="lokasi" id="lokasi" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('lokasi') border-red-300 @enderror">
+                            <option value="">Pilih Lokasi</option>
+                            <option value="jakarta" {{ old('lokasi') == 'jakarta' ? 'selected' : '' }}>Jakarta</option>
+                            <option value="batam" {{ old('lokasi') == 'batam' ? 'selected' : '' }}>Batam</option>
+                        </select>
+                        @error('lokasi')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Lanjut Muat -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Lanjut Muat</label>

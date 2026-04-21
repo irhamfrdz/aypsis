@@ -107,6 +107,18 @@
                             </select>
                         </div>
 
+                        <!-- Lokasi Filter -->
+                        <div class="flex items-center gap-3">
+                            <label for="lokasi" class="text-sm font-medium text-gray-700 whitespace-nowrap">Lokasi:</label>
+                            <select name="lokasi" id="lokasi" 
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    onchange="this.form.submit()">
+                                <option value="">Semua Lokasi</option>
+                                <option value="jakarta" {{ request('lokasi') == 'jakarta' ? 'selected' : '' }}>Jakarta</option>
+                                <option value="batam" {{ request('lokasi') == 'batam' ? 'selected' : '' }}>Batam</option>
+                            </select>
+                        </div>
+
                         <!-- Type Multi-select Filter -->
                         <div class="flex items-center gap-4">
                             <span class="text-sm font-medium text-gray-700">Tipe Kontainer:</span>
@@ -185,6 +197,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type (Manifest)</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
                             </tr>
                         </thead>
@@ -239,6 +252,9 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->no_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">
                                         {{ $sj->jenis_pengiriman ?: ($sj->tipe_kontainer ?: ($sj->manifest->tipe_kontainer ?? '-')) }}
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                        {{ $sj->lokasi ? ucfirst($sj->lokasi) : '-' }}
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ Str::limit($sj->jenis_barang, 30) ?: '-' }}</td>
                                 </tr>
@@ -450,6 +466,19 @@
                             </label>
                             <input type="date" name="tanggal_surat_jalan" id="modal_tanggal_surat_jalan" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Lokasi -->
+                        <div>
+                            <label for="modal_lokasi" class="block text-sm font-medium text-gray-700 mb-1">
+                                Lokasi <span class="text-red-500">*</span>
+                            </label>
+                            <select name="lokasi" id="modal_lokasi" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih Lokasi</option>
+                                <option value="jakarta">Jakarta</option>
+                                <option value="batam">Batam</option>
+                            </select>
                         </div>
 
                         <!-- Lanjut Muat -->
@@ -840,10 +869,9 @@
                             </label>
                             <select name="lokasi" id="edit_modal_lokasi" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">-- Pilih Lokasi --</option>
-                                <option value="Jakarta">Jakarta</option>
-                                <option value="Batam">Batam</option>
-                                <option value="Tanjung Pinang">Tanjung Pinang</option>
+                                <option value="">Pilih Lokasi</option>
+                                <option value="jakarta">Jakarta</option>
+                                <option value="batam">Batam</option>
                             </select>
                         </div>
 

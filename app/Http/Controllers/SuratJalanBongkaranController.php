@@ -129,6 +129,11 @@ class SuratJalanBongkaranController extends Controller
                 });
             }
 
+            // Filter by lokasi
+            if ($request->filled('lokasi')) {
+                $query->where('lokasi', $request->lokasi);
+            }
+
             // Search in surat jalan bongkaran (ignore punctuation)
             if ($request->filled('search')) {
                 $search = $request->search;
@@ -670,6 +675,7 @@ class SuratJalanBongkaranController extends Controller
             'keterangan' => 'nullable|string',
             'catatan_khusus' => 'nullable|string',
             'dokumentasi' => 'nullable|string',
+            'lokasi' => 'nullable|string|in:jakarta,batam',
             'uang_jalan_nominal' => 'nullable|numeric|min:0',
         ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -872,6 +878,7 @@ class SuratJalanBongkaranController extends Controller
             'keterangan' => 'nullable|string',
             'catatan_khusus' => 'nullable|string',
             'dokumentasi' => 'nullable|string',
+            'lokasi' => 'nullable|string|in:jakarta,batam',
         ]);
 
         // If manifest_id is present, ensure we store the actual BL number (nomor_bl) from manifest
@@ -1163,6 +1170,7 @@ class SuratJalanBongkaranController extends Controller
                 'rit' => $suratJalan->rit ?? 'menggunakan_rit',
                 'uang_jalan_type' => $suratJalan->uang_jalan_type ?? 'full',
                 'uang_jalan_nominal' => $suratJalan->uang_jalan_nominal ?? 0,
+                'lokasi' => $suratJalan->lokasi ?? '',
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching Surat Jalan by ID: ' . $e->getMessage(), [
