@@ -38,7 +38,7 @@
                     </td>
                     <td align="left"><b>{{ $first->no_kontainer ?: $first->number }}</b></td>
                     <td align="right"><b>{{ number_format($first->kuantitas ?: 0) }}</b></td>
-                    <td align="left"><b>{{ strtoupper($first->satuan ?: 'UNIT') }}</b></td>
+                    <td align="left"><b>{{ strtoupper($first->satuan ?: 'UNIT') }}{{ $first->size ? ' CONT ' . $first->size . 'FT' : '' }}</b></td>
                     <td></td><td></td>
                     <td align="left">@if($isFirstInGroup)Rp @endif</td>
                     <td align="right"><b>@if($isFirstInGroup){{ number_format($groupItems->sum('amount') ?: 0, 0, ',', '.') }} @endif</b></td>
