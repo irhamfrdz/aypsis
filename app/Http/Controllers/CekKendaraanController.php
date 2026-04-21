@@ -33,6 +33,7 @@ class CekKendaraanController extends Controller
                 $query->whereIn(DB::raw('UPPER(TRIM(divisi))'), ['SUPIR', 'DRIVER'])
                       ->orWhereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR', 'DRIVER']);
             })
+            ->whereNull('tanggal_berhenti')
             ->orderBy('nama_lengkap')
             ->get();
             
