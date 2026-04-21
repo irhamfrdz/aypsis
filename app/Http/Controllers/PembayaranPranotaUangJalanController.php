@@ -682,4 +682,40 @@ class PembayaranPranotaUangJalanController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update only the payment date and sync with COA.
+     */
+    public function updateDate(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'pembayaran_id' => 'required|exists:pembayaran_pranota_uang_jalans,id',
+            'tanggal_baru' => 'required|date',
+        ]);
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            $pembayaran = \App\Models\PembayaranPranotaUangJalan::findOrFail($request->pembayaran_id);
+            
+            // Update the payment record
+            $pembayaran->update([
+                'tanggal_pembayaran' => $request->tanggal_baru,
+                'updated_by' => \Illuminate\Support\Facades\Auth::id(),
+            ]);
+
+            // Sync with CoaTransactions
+            if ($pembayaran->nomor_pembayaran) {
+                \App\Models\CoaTransaction::where('nomor_referensi', $pembayaran->nomor_pembayaran)
+                    ->update(['tanggal_transaksi' => $request->tanggal_baru]);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return redirect()->back()->with('success', 'Tanggal pembayaran #' . $pembayaran->nomor_pembayaran . ' berhasil diperbarui.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Error updating Payment Date: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui tanggal: ' . $e->getMessage());
+        }
+    }
 }
