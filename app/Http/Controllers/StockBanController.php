@@ -1062,4 +1062,32 @@ class StockBanController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    /**
+     * Delete a usage record and restore stock.
+     */
+    public function destroyUsageBanDalam($id)
+    {
+        $usage = \App\Models\StockBanDalamUsage::findOrFail($id);
+        $stockBanDalam = \App\Models\StockBanDalam::findOrFail($usage->stock_ban_dalam_id);
+
+        try {
+            DB::transaction(function () use ($usage, $stockBanDalam) {
+                // Restore stock
+                $stockBanDalam->increment('qty', $usage->qty);
+                // Delete usage record
+                $usage->delete();
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Riwayat penggunaan berhasil dihapus dan stok telah dikembalikan.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus riwayat: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

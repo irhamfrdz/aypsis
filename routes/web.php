@@ -5487,6 +5487,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::get('stock-ban/ban-dalam/{id}', [\App\Http\Controllers\StockBanController::class, 'showBanDalam'])
                ->name('stock-ban.ban-dalam.show')
                ->middleware('can:stock-ban-view');
+          Route::delete('stock-ban/ban-dalam/usage/{id}', [\App\Http\Controllers\StockBanController::class, 'destroyUsageBanDalam'])
+               ->name('stock-ban.ban-dalam.destroy-usage')
+               ->middleware('can:stock-ban-delete');
 
           Route::get('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'show'])
                ->name('stock-ban.show')

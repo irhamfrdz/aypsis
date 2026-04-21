@@ -78,6 +78,7 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Pada</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -125,10 +126,20 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                                     {{ $usage->created_at->format('d/m/Y H:i') }}
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                    @can('stock-ban-delete')
+                                    <button type="button" 
+                                            class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors duration-200 delete-usage-btn"
+                                            data-id="{{ $usage->id }}"
+                                            data-qty="{{ $usage->qty }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    @endcan
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-gray-500 bg-gray-50">
+                                <td colspan="7" class="px-6 py-10 text-center text-gray-500 bg-gray-50">
                                     <i class="fas fa-history text-4xl mb-3 text-gray-300"></i>
                                     <p>Belum ada riwayat penggunaan untuk barang ini.</p>
                                 </td>
@@ -194,6 +205,69 @@ $(document).ready(function() {
                     icon: 'error',
                     title: 'Error',
                     text: 'Gagal menghubungi server.'
+                });
+            }
+        });
+    });
+    
+    // Usage deletion with confirmation
+    $('.delete-usage-btn').on('click', function() {
+        const btn = $(this);
+        const id = btn.data('id');
+        const qty = btn.data('qty');
+
+        Swal.fire({
+            title: 'Hapus riwayat ini?',
+            text: `Data riwayat akan dihapus dan stok akan dikembalikan sebanyak ${qty}. Tindakan ini tidak dapat dibatalkan.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6e7d88',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Menghapus...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: "{{ route('stock-ban.ban-dalam.destroy-usage', ['id' => ':id']) }}".replace(':id', id),
+                    type: "DELETE",
+                    data: {
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: response.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: response.message || 'Terjadi kesalahan saat menghapus data'
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Gagal menghubungi server. Hak akses Anda mungkin tidak mencukupi.'
+                        });
+                    }
                 });
             }
         });
