@@ -38,8 +38,7 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
         // Group receipts by 'numbering' (user-input sequence) if available.
         // If no numbering is set, use a unique key to keep them as separate individual entries.
         $grouped = $this->receipts->groupBy(function ($item) {
-            $prefix = $item->numbering ?: 'unassigned';
-            return $prefix . '_' . $item->type . '_' . $item->id;
+            return $item->numbering ?: 'unassigned_' . $item->type . '_' . $item->id;
         });
 
         return view('exports.insurance_request', [

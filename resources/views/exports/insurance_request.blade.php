@@ -20,7 +20,7 @@
             @php $first = $items->first(); @endphp
             <tr>
                 <td align="left">@if($first->numbering){{ str_pad($first->numbering, 2, '0', STR_PAD_LEFT) }}.@else{{ str_pad($itemCount++, 2, '0', STR_PAD_LEFT) }}.@endif</td>
-                <td align="left"><b>{{ $first->no_kontainer ?: $first->number }}</b></td>
+                <td align="left"><b>{{ $items->pluck('no_kontainer')->filter()->unique()->implode(', ') ?: $first->number }}</b></td>
                 <td align="right"><b>{{ number_format($first->kuantitas ?: 0) }}</b></td>
                 <td align="left"><b>{{ strtoupper($first->satuan ?: 'UNIT') }}</b></td>
                 <td></td><td></td>
