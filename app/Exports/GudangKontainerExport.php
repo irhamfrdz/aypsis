@@ -25,6 +25,8 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
     public function collection()
     {
         $kontainers = collect([]);
+        $gudangIdForHistory = ($this->gudangId === 'none' || $this->gudangId === '') ? null : $this->gudangId;
+
         if ($this->type === 'all' || $this->type === 'sewa') {
             // Get kontainers
             $queryK = Kontainer::orderBy('nomor_seri_gabungan');
@@ -34,11 +36,16 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
                 $queryK->where('gudangs_id', $this->gudangId);
             }
             
-            $kontainers = $queryK->get()->map(function($k) {
+            $kontainers = $queryK->get()->map(function($k) use ($gudangIdForHistory) {
+                    $tanggalMasuk = \App\Models\HistoryKontainer::where('nomor_kontainer', $k->nomor_seri_gabungan)
+                        ->where('gudang_id', $gudangIdForHistory)
+                        ->max('tanggal_kegiatan');
+
                     return [
                         $k->nomor_seri_gabungan,
                         $k->ukuran ?? '-',
                         $k->tipe_kontainer ?? '-',
+                        $tanggalMasuk ? \Carbon\Carbon::parse($tanggalMasuk)->format('d/m/Y') : '-',
                     ];
                 });
         }
@@ -53,11 +60,16 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
                 $queryS->where('gudangs_id', $this->gudangId);
             }
 
-            $stockKontainers = $queryS->get()->map(function($s) {
+            $stockKontainers = $queryS->get()->map(function($s) use ($gudangIdForHistory) {
+                    $tanggalMasuk = \App\Models\HistoryKontainer::where('nomor_kontainer', $s->nomor_seri_gabungan)
+                        ->where('gudang_id', $gudangIdForHistory)
+                        ->max('tanggal_kegiatan');
+
                     return [
                         $s->nomor_seri_gabungan,
                         $s->ukuran ?? '-',
                         $s->tipe_kontainer ?? '-',
+                        $tanggalMasuk ? \Carbon\Carbon::parse($tanggalMasuk)->format('d/m/Y') : '-',
                     ];
                 });
         }
@@ -71,6 +83,7 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
             'Nomor Kontainer',
             'Ukuran',
             'Tipe',
+            'Tanggal Masuk',
         ];
     }
 
@@ -79,8 +92,8 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->getStyle('A1:C1')->getFont()->setBold(true);
-                $sheet->getStyle('A1:C1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:D1')->getFont()->setBold(true);
+                $sheet->getStyle('A1:D1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
             }
         ];
     }

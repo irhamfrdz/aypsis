@@ -106,6 +106,20 @@ class StockKontainerPergudangController extends Controller
         // Merge lists together
         $allContainers = $sewas->concat($stocks);
 
+        // Fetch entry dates from HistoryKontainer
+        $containerNumbers = $allContainers->pluck('nomor_seri_gabungan')->toArray();
+        $gudangIdForHistory = ($id === 'none' || $id == '') ? null : $id;
+        
+        $historySub = \App\Models\HistoryKontainer::whereIn('nomor_kontainer', $containerNumbers)
+            ->where('gudang_id', $gudangIdForHistory)
+            ->select('nomor_kontainer', DB::raw('MAX(tanggal_kegiatan) as tanggal_masuk'))
+            ->groupBy('nomor_kontainer')
+            ->pluck('tanggal_masuk', 'nomor_kontainer');
+
+        foreach ($allContainers as $item) {
+            $item->tanggal_masuk = $historySub[$item->nomor_seri_gabungan] ?? null;
+        }
+
         return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id', 'type'));
     }
 
