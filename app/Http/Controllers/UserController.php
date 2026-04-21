@@ -596,6 +596,7 @@ class UserController extends Controller
                 'pembatalan-surat-jalan' => 'pembatalan-surat-jalan',
                 'tanda-terima-tanpa-surat-jalan-batam' => 'tanda-terima-tanpa-surat-jalan-batam',
                 'tanda-terima-tanpa-surat-jalan' => 'tanda-terima-tanpa-surat-jalan',
+                'tanda-terima-bongkaran-batam' => 'tanda-terima-bongkaran-batam',
                 'tanda-terima-bongkaran' => 'tanda-terima-bongkaran',
                 'tanda-terima-batam' => 'tanda-terima-batam',
                 'tanda-terima' => 'tanda-terima',
@@ -4382,6 +4383,27 @@ class UserController extends Controller
                             'view' => 'pembayaran-pranota-invoice-vendor-supir-view',
                             'create' => 'pembayaran-pranota-invoice-vendor-supir-create',
                             'delete' => 'pembayaran-pranota-invoice-vendor-supir-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle tanda-terima-bongkaran-batam permissions explicitly
+                    if ($module === 'tanda-terima-bongkaran-batam' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'tanda-terima-bongkaran-batam-view',
+                            'create' => 'tanda-terima-bongkaran-batam-create',
+                            'update' => 'tanda-terima-bongkaran-batam-update',
+                            'delete' => 'tanda-terima-bongkaran-batam-delete',
+                            'print' => 'tanda-terima-bongkaran-batam-print',
+                            'export' => 'tanda-terima-bongkaran-batam-export'
                         ];
 
                         if (isset($actionMap[$action])) {

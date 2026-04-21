@@ -1167,6 +1167,22 @@
                                 <td>-</td>
                                 <td>-</td>
                             </tr>
+                            {{-- Tanda Terima Bongkaran Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Tanda Terima Bongkaran Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.view')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.create')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.update')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.delete')) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][print]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.print')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.export')) checked @endif></td>
+                            </tr>
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">
                                     <div class="flex items-center text-teal-600 font-bold">

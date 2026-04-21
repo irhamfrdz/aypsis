@@ -1555,6 +1555,22 @@
                                 <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][print]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.print') || (isset($userMatrixPermissions['tanda-terima-bongkaran']['print']) && $userMatrixPermissions['tanda-terima-bongkaran']['print']) || ($user && $user->can('tanda-terima-bongkaran-print'))) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.export') || (isset($userMatrixPermissions['tanda-terima-bongkaran']['export']) && $userMatrixPermissions['tanda-terima-bongkaran']['export']) || ($user && $user->can('tanda-terima-bongkaran-export'))) checked @endif></td>
                             </tr>
+                            {{-- Tanda Terima Bongkaran Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Tanda Terima Bongkaran Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.view') || (isset($userMatrixPermissions['tanda-terima-bongkaran-batam']['view']) && $userMatrixPermissions['tanda-terima-bongkaran-batam']['view']) || ($user && $user->can('tanda-terima-bongkaran-batam-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.create') || (isset($userMatrixPermissions['tanda-terima-bongkaran-batam']['create']) && $userMatrixPermissions['tanda-terima-bongkaran-batam']['create']) || ($user && $user->can('tanda-terima-bongkaran-batam-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.update') || (isset($userMatrixPermissions['tanda-terima-bongkaran-batam']['update']) && $userMatrixPermissions['tanda-terima-bongkaran-batam']['update']) || ($user && $user->can('tanda-terima-bongkaran-batam-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.delete') || (isset($userMatrixPermissions['tanda-terima-bongkaran-batam']['delete']) && $userMatrixPermissions['tanda-terima-bongkaran-batam']['delete']) || ($user && $user->can('tanda-terima-bongkaran-batam-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][print]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.print') || (isset($userMatrixPermissions['tanda-terima-bongkaran-batam']['print']) && $userMatrixPermissions['tanda-terima-bongkaran-batam']['print']) || ($user && $user->can('tanda-terima-bongkaran-batam-print'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran-batam.export') || (isset($userMatrixPermissions['tanda-terima-bongkaran-batam']['export']) && $userMatrixPermissions['tanda-terima-bongkaran-batam']['export']) || ($user && $user->can('tanda-terima-bongkaran-batam-export'))) checked @endif></td>
+                            </tr>
 
                             {{-- Checkpoint Kontainer Keluar --}}
                             <tr class="submodule-row" data-parent="operational">
