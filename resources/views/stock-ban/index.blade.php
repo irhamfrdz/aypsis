@@ -2507,6 +2507,8 @@
             let visibleCount = 0;
             let rowNumber = 1;
 
+            const isBarangLainnya = activeTab.id === 'tab-barang-lainnya';
+
             tableRows.forEach(row => {
                 // Skip if row is "No data" message
                 if (row.querySelector('td[colspan]')) {
@@ -2514,21 +2516,35 @@
                     return;
                 }
 
-                // Get row data
-                const nomorSeri = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || ''; // No Seri is col 3
-                const merk = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || ''; // Merk & Ukuran is col 5
-                
-                // Get raw status text (Status is col 7)
-                const statusSpan = row.querySelector('td:nth-child(7) span');
-                const status = statusSpan ? statusSpan.textContent.trim().toLowerCase() : '';
+                let nomorSeri, merk, status, kondisi, mobil, tanggalDigunakan, penerima, lokasi;
 
-                // Get raw kondisi text (Kondisi is col 6)
-                const kondisiSpan = row.querySelector('td:nth-child(6) span');
-                const kondisi = kondisiSpan ? kondisiSpan.textContent.trim().toLowerCase() : '';
-                
-                const mobil = row.querySelector('td:nth-child(8)')?.textContent.toLowerCase() || ''; // Mobil is col 8
-                const penerima = row.querySelector('td:nth-child(9)')?.textContent.toLowerCase() || ''; // Penerima is col 9
-                const lokasi = row.querySelector('td:nth-child(10)')?.textContent.toLowerCase() || ''; // Lokasi is col 10
+                if (isBarangLainnya) {
+                    nomorSeri = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || ''; // Nama
+                    merk = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || ''; // Ukuran
+                    status = '';
+                    kondisi = '';
+                    mobil = '';
+                    tanggalDigunakan = '';
+                    penerima = '';
+                    lokasi = row.querySelector('td:nth-child(6)')?.textContent.toLowerCase() || ''; // Lokasi is col 6
+                } else {
+                    // Get row data for Ban Luar tabs
+                    nomorSeri = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || ''; // No Seri is col 3
+                    merk = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || ''; // Merk & Ukuran is col 5
+                    
+                    // Get raw status text (Status is col 7)
+                    const statusSpan = row.querySelector('td:nth-child(7) span');
+                    status = statusSpan ? statusSpan.textContent.trim().toLowerCase() : '';
+
+                    // Get raw kondisi text (Kondisi is col 6)
+                    const kondisiSpan = row.querySelector('td:nth-child(6) span');
+                    kondisi = kondisiSpan ? kondisiSpan.textContent.trim().toLowerCase() : '';
+                    
+                    mobil = row.querySelector('td:nth-child(8)')?.textContent.toLowerCase() || ''; // Mobil is col 8
+                    tanggalDigunakan = row.querySelector('td:nth-child(9)')?.textContent.toLowerCase() || '';
+                    penerima = row.querySelector('td:nth-child(10)')?.textContent.toLowerCase() || ''; // Penerima is col 10
+                    lokasi = row.querySelector('td:nth-child(11)')?.textContent.toLowerCase() || ''; // Lokasi is col 11
+                }
 
 
                 // Check Text Match
@@ -2536,6 +2552,7 @@
                                 merk.includes(searchTerm) || 
                                 lokasi.includes(searchTerm) ||
                                 mobil.includes(searchTerm) ||
+                                tanggalDigunakan.includes(searchTerm) ||
                                 penerima.includes(searchTerm);
 
                 // Check Card Filter Match
