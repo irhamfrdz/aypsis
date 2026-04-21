@@ -59,6 +59,9 @@ class PembayaranPranotaUangJalanController extends Controller
                 $q->where('nomor_pranota', 'like', "%{$search}%")
                   ->orWhereHas('uangJalans.suratJalan', function($sq) use ($search) {
                       $sq->where('supir', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('pembayaranPranotaUangJalans', function($pq) use ($search) {
+                      $pq->where('nomor_accurate', 'like', "%{$search}%");
                   });
             });
         }
