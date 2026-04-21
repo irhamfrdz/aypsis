@@ -30,18 +30,20 @@
                 @php $first = $containerItems->first(); @endphp
                 <tr>
                     <td align="left">
-                        @if($first->numbering)
-                            {{ str_pad($first->numbering, 2, '0', STR_PAD_LEFT) }}.
-                        @else
-                            {{ str_pad($itemCount++, 2, '0', STR_PAD_LEFT) }}.
+                        @if($isFirstInGroup)
+                            @if($first->numbering)
+                                {{ str_pad($first->numbering, 2, '0', STR_PAD_LEFT) }}.
+                            @else
+                                {{ str_pad($itemCount++, 2, '0', STR_PAD_LEFT) }}.
+                            @endif
                         @endif
                     </td>
                     <td align="left"><b>{{ $first->no_kontainer ?: $first->number }}</b></td>
                     <td align="right"><b>{{ number_format($first->kuantitas ?: 0) }}</b></td>
-                    <td align="left"><b>{{ strtoupper($first->satuan ?: 'UNIT') }}{{ $first->size ? ' CONT ' . $first->size . 'FT' : '' }}</b></td>
+                    <td align="left"><b>{{ strtoupper($first->satuan ?: 'UNIT') }}</b></td>
                     <td></td><td></td>
-                    <td align="left">@if($isFirstInGroup)Rp @endif</td>
-                    <td align="right"><b>@if($isFirstInGroup){{ number_format($groupItems->sum('amount') ?: 0, 0, ',', '.') }} @endif</b></td>
+                    <td align="left">Rp.</td>
+                    <td align="right"><b>{{ number_format($containerItems->sum('amount') ?: 0, 0, ',', '.') }}</b></td>
                 </tr>
                 <tr>
                     <td></td><td></td>
