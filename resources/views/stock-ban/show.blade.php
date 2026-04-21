@@ -247,7 +247,7 @@
 @endif
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 $(document).ready(function() {
     $('.date-history-editor').on('change', function() {
@@ -259,13 +259,10 @@ $(document).ready(function() {
 
         if (!newDate) return;
 
-        Swal.fire({
-            title: 'Memperbarui Tanggal...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+        if (!confirm('Apakah Anda yakin ingin memperbarui tanggal?')) {
+            window.location.reload();
+            return;
+        }
 
         $.ajax({
             url: "{{ route('stock-ban.update-history-date') }}",
@@ -279,30 +276,18 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Tanggal berhasil diperbarui',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                    alert('Tanggal berhasil diperbarui');
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: response.message || 'Terjadi kesalahan saat memperbarui tanggal'
-                    });
+                    alert(response.message || 'Terjadi kesalahan saat memperbarui tanggal');
+                    window.location.reload();
                 }
             },
             error: function(xhr) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Gagal menghubungi server.'
-                });
+                alert('Gagal menghubungi server.');
+                window.location.reload();
             }
         });
     });
 });
 </script>
-@endsection
+@endpush

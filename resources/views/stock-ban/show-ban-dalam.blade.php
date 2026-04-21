@@ -155,7 +155,7 @@
 </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 $(document).ready(function() {
     $('.date-history-editor').on('change', function() {
@@ -166,13 +166,10 @@ $(document).ready(function() {
 
         if (!newDate) return;
 
-        Swal.fire({
-            title: 'Memperbarui Tanggal...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+        if (!confirm('Apakah Anda yakin ingin memperbarui tanggal?')) {
+            window.location.reload();
+            return;
+        }
 
         $.ajax({
             url: "{{ route('stock-ban.update-history-date') }}",
@@ -185,27 +182,15 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Tanggal berhasil diperbarui',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                    alert('Tanggal berhasil diperbarui');
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: response.message || 'Terjadi kesalahan saat memperbarui tanggal'
-                    });
+                    alert(response.message || 'Terjadi kesalahan saat memperbarui tanggal');
+                    window.location.reload();
                 }
             },
             error: function(xhr) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Gagal menghubungi server.'
-                });
+                alert('Gagal menghubungi server.');
+                window.location.reload();
             }
         });
     });
@@ -216,62 +201,27 @@ $(document).ready(function() {
         const id = btn.data('id');
         const qty = btn.data('qty');
 
-        Swal.fire({
-            title: 'Hapus riwayat ini?',
-            text: `Data riwayat akan dihapus dan stok akan dikembalikan sebanyak ${qty}. Tindakan ini tidak dapat dibatalkan.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6e7d88',
-            confirmButtonText: 'Ya, Hapus!',
-            cancelButtonText: 'Batal',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Menghapus...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
+        if (confirm(`Hapus riwayat ini?\n\nData riwayat akan dihapus dan stok akan dikembalikan sebanyak ${qty}. Tindakan ini tidak dapat dibatalkan.`)) {
+            $.ajax({
+                url: "{{ route('stock-ban.ban-dalam.destroy-usage', ['id' => ':id']) }}".replace(':id', id),
+                type: "DELETE",
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        window.location.reload();
+                    } else {
+                        alert(response.message || 'Terjadi kesalahan saat menghapus data');
                     }
-                });
-
-                $.ajax({
-                    url: "{{ route('stock-ban.ban-dalam.destroy-usage', ['id' => ':id']) }}".replace(':id', id),
-                    type: "DELETE",
-                    data: {
-                        _token: "{{ csrf_token() }}"
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: response.message,
-                                timer: 2000,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: response.message || 'Terjadi kesalahan saat menghapus data'
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Gagal menghubungi server. Hak akses Anda mungkin tidak mencukupi.'
-                        });
-                    }
-                });
-            }
-        });
+                },
+                error: function(xhr) {
+                    alert('Gagal menghubungi server. Hak akses Anda mungkin tidak mencukupi.');
+                }
+            });
+        }
     });
 });
 </script>
-@endsection
+@endpush
