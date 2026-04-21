@@ -3041,6 +3041,18 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-bongkaran.export')
          ->middleware('can:tanda-terima-bongkaran-export');
 
+    // Tanda Terima Surat Jalan Bongkaran Batam
+    Route::resource('tanda-terima-bongkaran-batam', \App\Http\Controllers\TandaTerimaBongkaranBatamController::class)
+         ->names([
+             'index' => 'tanda-terima-bongkaran-batam.index',
+             'create' => 'tanda-terima-bongkaran-batam.create',
+             'store' => 'tanda-terima-bongkaran-batam.store',
+             'show' => 'tanda-terima-bongkaran-batam.show',
+             'edit' => 'tanda-terima-bongkaran-batam.edit',
+             'update' => 'tanda-terima-bongkaran-batam.update',
+             'destroy' => 'tanda-terima-bongkaran-batam.destroy'
+         ]);
+
     // Update status surat jalan
     Route::post('/surat-jalan/{suratJalan}/update-status', [\App\Http\Controllers\SuratJalanController::class, 'updateStatus'])
          ->name('surat-jalan.update-status')
