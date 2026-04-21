@@ -2572,6 +2572,7 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan.index')
          ->middleware('can:surat-jalan-view');
 
+    Route::post('pembatalan-surat-jalan/{pembatalan}/sync-to-coa', [\App\Http\Controllers\PembatalanSuratJalanController::class, 'syncToCoa'])->name('pembatalan-surat-jalan.sync-to-coa');
     Route::resource('pembatalan-surat-jalan', \App\Http\Controllers\PembatalanSuratJalanController::class);
     
     Route::get('surat-jalan/create', [\App\Http\Controllers\SuratJalanController::class, 'create'])

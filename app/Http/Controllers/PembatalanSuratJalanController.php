@@ -4,14 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\PembatalanSuratJalan;
 use App\Models\Coa;
+use App\Models\CoaTransaction;
 use App\Http\Controllers\Controller;
+use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PembatalanSuratJalanController extends Controller
 {
-    /**
-     * Display a listing of Pembatalan.
-     */
+    protected $coaTransactionService;
+
+    public function __construct(CoaTransactionService $coaTransactionService)
+    {
+        $this->coaTransactionService = $coaTransactionService;
+    }
     public function index(Request $request)
     {
         $query = PembatalanSuratJalan::with(['suratJalan', 'suratJalanBongkaran']);
@@ -20,11 +27,21 @@ class PembatalanSuratJalanController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('alasan_batal', 'like', "%{$search}%");
+                  ->orWhere('alasan_batal', 'like', "%{$search}%")
+                  ->orWhere('nomor_pembayaran', 'like', "%{$search}%");
             });
         }
 
         $pembatalans = $query->orderBy('created_at', 'desc')->paginate(15);
+
+        // Check which cancellations are already in COA
+        $syncedReferences = \App\Models\CoaTransaction::whereIn('nomor_referensi', $pembatalans->pluck('nomor_pembayaran'))
+            ->pluck('nomor_referensi')
+            ->toArray();
+
+        foreach ($pembatalans as $pembatalan) {
+            $pembatalan->is_synced = in_array($pembatalan->nomor_pembayaran, $syncedReferences);
+        }
 
         return view('pembatalan-surat-jalan.index', compact('pembatalans'));
     }
@@ -200,10 +217,52 @@ class PembatalanSuratJalanController extends Controller
                 }
             }
 
-            PembatalanSuratJalan::create($pblData);
+            $pbl = PembatalanSuratJalan::create($pblData);
 
             // Hapus surat jalan yang dibatalkan
             $suratJalan->delete();
+
+            // ==========================================
+            // DOUBLE BOOK ACCOUNTING LOGIC (CORE)
+            // ==========================================
+            $totalPembayaran = $validated['total_tagihan_setelah_penyesuaian'] ?? $validated['total_pembayaran'];
+            $bankName = $validated['bank'];
+            $jenisTransaksi = $validated['jenis_transaksi'] ?? 'Debit';
+            $noPbl = $validated['nomor_pembayaran'];
+            $keterangan = "Pembatalan SJ " . $noSuratJalan . " - " . $noPbl;
+            if (!empty($validated['keterangan'])) {
+                $keterangan .= " | " . $validated['keterangan'];
+            }
+
+            // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
+            if ($jenisTransaksi == 'Debit') {
+                // Jenis Debit: Bank bertambah (Debit), Biaya Uang Jalan berkurang (Kredit)
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // DEBIT Bank
+                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // KREDIT Biaya
+                    $validated['tanggal_pembayaran'],
+                    $noPbl,
+                    'Pembatalan Surat Jalan',
+                    $keterangan
+                );
+            } else {
+                // Jenis Kredit: Biaya Uang Jalan bertambah (Debit), Bank berkurang (Kredit)
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // DEBIT Biaya
+                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // KREDIT Bank
+                    $validated['tanggal_pembayaran'],
+                    $noPbl,
+                    'Pembatalan Surat Jalan',
+                    $keterangan
+                );
+            }
+
+            Log::info('Double Entry Accounting recorded for Pembatalan Surat Jalan', [
+                'nomor_pembayaran' => $noPbl,
+                'no_surat_jalan' => $noSuratJalan,
+                'total' => $totalPembayaran,
+                'bank' => $bankName
+            ]);
         });
 
         return redirect()->route('pembatalan-surat-jalan.index')->with('success', 'Surat Jalan berhasil dibatalkan dan data terkait sudah dihapus.');
@@ -233,6 +292,58 @@ class PembatalanSuratJalanController extends Controller
     }
 
     /**
+     * Sinkronkan data lama ke jurnal COA jika belum ada.
+     */
+    public function syncToCoa(PembatalanSuratJalan $pembatalan)
+    {
+        DB::beginTransaction();
+        try {
+            // Check if transaction already exists in COA
+            $existing = \App\Models\CoaTransaction::where('nomor_referensi', $pembatalan->nomor_pembayaran)->first();
+            if ($existing) {
+                return back()->with('error', 'Data ini sudah ada di jurnal COA.');
+            }
+
+            $totalPembayaran = $pembatalan->total_tagihan_setelah_penyesuaian ?? $pembatalan->total_pembayaran;
+            $bankName = $pembatalan->bank;
+            $jenisTransaksi = $pembatalan->jenis_transaksi ?? 'Debit';
+            $noPbl = $pembatalan->nomor_pembayaran;
+            $keterangan = "Pembatalan SJ " . $pembatalan->no_surat_jalan . " - " . $noPbl;
+            if (!empty($pembatalan->keterangan)) {
+                $keterangan .= " | " . $pembatalan->keterangan;
+            }
+
+            // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
+            if ($jenisTransaksi == 'Debit') {
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran],
+                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran],
+                    $pembatalan->tanggal_pembayaran ? $pembatalan->tanggal_pembayaran->toDateString() : now()->toDateString(),
+                    $noPbl,
+                    'Pembatalan Surat Jalan',
+                    $keterangan
+                );
+            } else {
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran],
+                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran],
+                    $pembatalan->tanggal_pembayaran ? $pembatalan->tanggal_pembayaran->toDateString() : now()->toDateString(),
+                    $noPbl,
+                    'Pembatalan Surat Jalan',
+                    $keterangan
+                );
+            }
+
+            DB::commit();
+            return back()->with('success', 'Data berhasil disinkronkan ke jurnal COA.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error syncToCoa Pembatalan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal sinkronisasi: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, PembatalanSuratJalan $pembatalanSuratJalan)
@@ -250,25 +361,40 @@ class PembatalanSuratJalanController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        // Keep total_tagihan_setelah_penyesuaian in sync if not explicitly changed
-        $totalPembayaran = (float) ($pembatalanSuratJalan->total_pembayaran ?? 0);
-        $totalPenyesuaian = (float) ($validated['total_tagihan_penyesuaian'] ?? 0);
+        DB::beginTransaction();
+        try {
+            // Keep total_tagihan_setelah_penyesuaian in sync if not explicitly changed
+            $totalPembayaran = (float) ($pembatalanSuratJalan->total_pembayaran ?? 0);
+            $totalPenyesuaian = (float) ($validated['total_tagihan_penyesuaian'] ?? 0);
+            $totalAkhir = (float) ($validated['total_tagihan_setelah_penyesuaian'] ?? ($totalPembayaran + $totalPenyesuaian));
 
-        $pembatalanSuratJalan->update([
-            'nomor_accurate' => $validated['nomor_accurate'] ?? null,
-            'tanggal_kas' => $validated['tanggal_kas'],
-            'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
-            'bank' => $validated['bank'],
-            'jenis_transaksi' => $validated['jenis_transaksi'],
-            'total_tagihan_penyesuaian' => $validated['total_tagihan_penyesuaian'] ?? 0,
-            'total_tagihan_setelah_penyesuaian' => $validated['total_tagihan_setelah_penyesuaian'] ?? ($totalPembayaran + $totalPenyesuaian),
-            'alasan_penyesuaian' => $validated['alasan_penyesuaian'] ?? null,
-            'keterangan' => $validated['keterangan'] ?? null,
-            'alasan_batal' => $validated['alasan_batal'],
-            'updated_by' => auth()->id()
-        ]);
+            $pembatalanSuratJalan->update([
+                'nomor_accurate' => $validated['nomor_accurate'] ?? null,
+                'tanggal_kas' => $validated['tanggal_kas'],
+                'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
+                'bank' => $validated['bank'],
+                'jenis_transaksi' => $validated['jenis_transaksi'],
+                'total_tagihan_penyesuaian' => $validated['total_tagihan_penyesuaian'] ?? 0,
+                'total_tagihan_setelah_penyesuaian' => $totalAkhir,
+                'alasan_penyesuaian' => $validated['alasan_penyesuaian'] ?? null,
+                'keterangan' => $validated['keterangan'] ?? null,
+                'alasan_batal' => $validated['alasan_batal'],
+                'updated_by' => auth()->id()
+            ]);
 
-        return redirect()->route('pembatalan-surat-jalan.index')->with('success', 'Catatan pembatalan diperbarui.');
+            // Sync with CoaTransactions (Update date and reference if needed, though usually just date)
+            if ($pembatalanSuratJalan->nomor_pembayaran) {
+                CoaTransaction::where('nomor_referensi', $pembatalanSuratJalan->nomor_pembayaran)
+                    ->update(['tanggal_transaksi' => $validated['tanggal_pembayaran']]);
+            }
+
+            DB::commit();
+            return redirect()->route('pembatalan-surat-jalan.index')->with('success', 'Catatan pembatalan dan jurnal COA berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating Pembatalan SJ: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage())->withInput();
+        }
     }
 
     /**
