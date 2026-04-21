@@ -505,7 +505,6 @@ class TandaTerimaController extends Controller
             'plastik' => 'nullable|string|max:50',
             'terpal' => 'nullable|string|max:50',
             'lembur' => 'nullable|boolean',
-            'lembur' => 'nullable|boolean',
             'nginap' => 'nullable|boolean',
             'tidak_lembur_nginap' => 'nullable|boolean',
             // Field khusus tanda terima
@@ -517,7 +516,7 @@ class TandaTerimaController extends Controller
             'tanggal_terima_pelabuhan' => 'nullable|date',
             'tanggal_garasi' => 'nullable|date',
             'nama_barang' => 'nullable|array',
-            'nama_barang.*' => 'nullable|string|max:255',
+            'nama_barang.*' => 'nullable|string|max:5000',
             'jumlah' => 'nullable|array',
             'jumlah.*' => 'nullable|integer|min:0',
             'satuan' => 'nullable|array',
@@ -1145,7 +1144,7 @@ class TandaTerimaController extends Controller
             'dimensi_items.*.tonase' => 'nullable|numeric|min:0',
             // Support untuk array fields dari edit form
             'nama_barang' => 'nullable|array',
-            'nama_barang.*' => 'nullable|string|max:255',
+            'nama_barang.*' => 'nullable|string|max:5000',
             'gambar_checkpoint' => 'nullable|array|max:5',
             'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
             'lembur' => 'nullable|boolean',
