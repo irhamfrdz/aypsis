@@ -778,4 +778,44 @@ class PembayaranPranotaUangJalanController extends Controller
             return redirect()->back()->with('error', 'Gagal sinkronisasi COA: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Update payment total based on current pranota totals.
+     */
+    public function updateTotal(PembayaranPranotaUangJalan $pembayaranPranotaUangJalan)
+    {
+        DB::beginTransaction();
+        try {
+            // Load pranotas
+            $pembayaranPranotaUangJalan->load('pranotaUangJalans');
+            
+            $newTotal = 0;
+            foreach ($pembayaranPranotaUangJalan->pranotaUangJalans as $pranota) {
+                // Get current total from pranota model
+                $currentPranotaTotal = $pranota->total_for_payment;
+                
+                // Update pivot subtotal
+                $pembayaranPranotaUangJalan->pranotaUangJalans()->updateExistingPivot($pranota->id, [
+                    'subtotal' => $currentPranotaTotal
+                ]);
+                
+                $newTotal += $currentPranotaTotal;
+            }
+
+            // Update main payment record
+            $penyesuaian = $pembayaranPranotaUangJalan->total_tagihan_penyesuaian ?? 0;
+            $pembayaranPranotaUangJalan->update([
+                'total_pembayaran' => $newTotal,
+                'total_tagihan_setelah_penyesuaian' => $newTotal + $penyesuaian,
+                'updated_by' => Auth::id()
+            ]);
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Total pembayaran berhasil diperbarui sesuai data pranota terbaru.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating payment total: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui total: ' . $e->getMessage());
+        }
+    }
 }

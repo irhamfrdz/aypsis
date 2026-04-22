@@ -3996,6 +3996,9 @@ Route::get('/test-gate-in-ajax', function () {
             Route::post('/{pembayaranPranotaUangJalan}/sync-coa', [PembayaranPranotaUangJalanController::class, 'syncCoa'])
                 ->name('sync-coa')
                 ->middleware('can:pembayaran-pranota-uang-jalan-edit');
+            Route::post('/{pembayaranPranotaUangJalan}/update-total', [PembayaranPranotaUangJalanController::class, 'updateTotal'])
+                ->name('update-total')
+                ->middleware('can:pembayaran-pranota-uang-jalan-edit');
         });
 
     // 💰 PEMBAYARAN PRANOTA LEMBUR (Overtime Payment)

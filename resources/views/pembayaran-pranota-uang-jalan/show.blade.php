@@ -53,6 +53,18 @@
                         </button>
                     </form>
                 @endcan
+                @can('pembayaran-pranota-uang-jalan-edit')
+                    <form action="{{ route('pembayaran-pranota-uang-jalan.update-total', $pembayaranPranotaUangJalan) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin memperbarui total pembayaran sesuai dengan jumlah terbaru dari pranota?')">
+                        @csrf
+                        <button type="submit" 
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            Update Total
+                        </button>
+                    </form>
+                @endcan
                 <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" 
                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
