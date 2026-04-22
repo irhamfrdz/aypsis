@@ -43,7 +43,20 @@
                     <td align="right" valign="top"><b>{{ number_format($containerItems->sum('amount') ?: 0, 0, ',', '.') }}</b></td>
                 </tr>
                 
-                @foreach($containerItems as $index => $item)
+                @php
+                    $summedItems = $containerItems->groupBy(function($item) {
+                        return strtoupper($item->nama_barang) . '_' . strtoupper($item->satuan ?: 'UNIT');
+                    })->map(function($group) {
+                        $first = $group->first();
+                        return (object)[
+                            'nama_barang' => $first->nama_barang,
+                            'satuan' => $first->satuan,
+                            'kuantitas' => $group->sum('kuantitas')
+                        ];
+                    });
+                @endphp
+                
+                @foreach($summedItems as $index => $item)
                     <tr>
                         <td></td>
                         <td></td>
@@ -53,7 +66,7 @@
                         <td></td>
                         <td></td>
                         <td align="right" valign="top">
-                            @if($index === 0)
+                            @if($index === 0 || count($summedItems) === 1)
                                 @if($first->rate){{ number_format($first->rate, 2, ',', '.') }}%@else 0,30% @endif
                             @endif
                         </td>
