@@ -489,6 +489,8 @@ class PembayaranPranotaObController extends Controller
             return redirect()->route('pembayaran-pranota-ob.index')
                 ->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
         }
+    }
+
     /**
      * Sync payment data with COA transactions.
      */
