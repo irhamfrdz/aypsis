@@ -22,6 +22,7 @@ class PelamarKaryawan extends Model
         'jenis_kelamin',
         'agama',
         'status_pernikahan',
+        'status_pajak',
         'tempat_lahir',
         'tanggal_lahir',
         'no_handphone',

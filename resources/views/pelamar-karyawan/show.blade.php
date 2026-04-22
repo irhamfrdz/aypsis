@@ -50,6 +50,10 @@
                 <p class="text-sm text-gray-900 font-medium">{{ $pelamar->status_pernikahan ?? '-' }}</p>
             </div>
             <div>
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Status Pajak</label>
+                <p class="text-sm text-gray-900 font-medium">{{ $pelamar->status_pajak ?? '-' }}</p>
+            </div>
+            <div>
                 <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Tempat, Tanggal Lahir</label>
                 <p class="text-sm text-gray-900 font-medium">{{ strtoupper($pelamar->tempat_lahir) }}, {{ \Carbon\Carbon::parse($pelamar->tanggal_lahir)->format('d F Y') }}</p>
             </div>

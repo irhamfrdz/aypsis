@@ -108,6 +108,26 @@
                             </select>
                             @error('status_pernikahan')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                         </div>
+
+                        <div>
+                            <label for="status_pajak" class="{{ $labelClasses }}">Status Pajak <span class="text-red-500">*</span></label>
+                            <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }} @error('status_pajak') border-red-500 @enderror" required>
+                                <option value="">-- Pilih Status Pajak --</option>
+                                <option value="K/0 - Kawin, tanpa tanggungan" {{ old('status_pajak') == 'K/0 - Kawin, tanpa tanggungan' ? 'selected' : '' }}>K/0 - Kawin, tanpa tanggungan</option>
+                                <option value="K/1 - Kawin, dengan 1 tanggungan" {{ old('status_pajak') == 'K/1 - Kawin, dengan 1 tanggungan' ? 'selected' : '' }}>K/1 - Kawin, dengan 1 tanggungan</option>
+                                <option value="K/2 - Kawin, dengan 2 tanggungan" {{ old('status_pajak') == 'K/2 - Kawin, dengan 2 tanggungan' ? 'selected' : '' }}>K/2 - Kawin, dengan 2 tanggungan</option>
+                                <option value="K/3 - Kawin, dengan 3 tanggungan" {{ old('status_pajak') == 'K/3 - Kawin, dengan 3 tanggungan' ? 'selected' : '' }}>K/3 - Kawin, dengan 3 tanggungan</option>
+                                <option value="K/I/0 - Kawin, penghasilan istri digabung, tanpa tanggungan" {{ old('status_pajak') == 'K/I/0 - Kawin, penghasilan istri digabung, tanpa tanggungan' ? 'selected' : '' }}>K/I/0 - Kawin, penghasilan istri digabung, tanpa tanggungan</option>
+                                <option value="K/I/1 - Kawin, penghasilan istri digabung, dengan 1 tanggungan" {{ old('status_pajak') == 'K/I/1 - Kawin, penghasilan istri digabung, dengan 1 tanggungan' ? 'selected' : '' }}>K/I/1 - Kawin, penghasilan istri digabung, dengan 1 tanggungan</option>
+                                <option value="K/I/2 - Kawin, penghasilan istri digabung, dengan 2 tanggungan" {{ old('status_pajak') == 'K/I/2 - Kawin, penghasilan istri digabung, dengan 2 tanggungan' ? 'selected' : '' }}>K/I/2 - Kawin, penghasilan istri digabung, dengan 2 tanggungan</option>
+                                <option value="K/I/3 - Kawin, penghasilan istri digabung, dengan 3 tanggungan" {{ old('status_pajak') == 'K/I/3 - Kawin, penghasilan istri digabung, dengan 3 tanggungan' ? 'selected' : '' }}>K/I/3 - Kawin, penghasilan istri digabung, dengan 3 tanggungan</option>
+                                <option value="TK/0 - Tidak Kawin, tanpa tanggungan" {{ old('status_pajak') == 'TK/0 - Tidak Kawin, tanpa tanggungan' ? 'selected' : '' }}>TK/0 - Tidak Kawin, tanpa tanggungan</option>
+                                <option value="TK/1 - Tidak Kawin, dengan 1 tanggungan" {{ old('status_pajak') == 'TK/1 - Tidak Kawin, dengan 1 tanggungan' ? 'selected' : '' }}>TK/1 - Tidak Kawin, dengan 1 tanggungan</option>
+                                <option value="TK/2 - Tidak Kawin, dengan 2 tanggungan" {{ old('status_pajak') == 'TK/2 - Tidak Kawin, dengan 2 tanggungan' ? 'selected' : '' }}>TK/2 - Tidak Kawin, dengan 2 tanggungan</option>
+                                <option value="TK/3 - Tidak Kawin, dengan 3 tanggungan" {{ old('status_pajak') == 'TK/3 - Tidak Kawin, dengan 3 tanggungan' ? 'selected' : '' }}>TK/3 - Tidak Kawin, dengan 3 tanggungan</option>
+                            </select>
+                            @error('status_pajak')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                        </div>
                         
                         <div>
                             <label for="tanggal_lahir" class="{{ $labelClasses }}">Tanggal Lahir <span class="text-red-500">*</span></label>

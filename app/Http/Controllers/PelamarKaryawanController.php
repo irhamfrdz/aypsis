@@ -39,6 +39,7 @@ class PelamarKaryawanController extends Controller
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'agama' => 'nullable|string|max:255',
             'status_pernikahan' => 'nullable|in:Menikah,Belum Menikah,Janda,Duda',
+            'status_pajak' => 'nullable|string|max:255',
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date',
             'no_handphone' => 'required|string|max:20',
