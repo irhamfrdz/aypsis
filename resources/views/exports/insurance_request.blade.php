@@ -63,7 +63,7 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td align="left" style="color: #FF0000;">{{ $first->pengirim }} - JAKARTA</td>
+                    <td align="left" style="color: #FF0000;">PT. AYP QQ {{ $first->pengirim }} - JAKARTA</td>
                     <td align="right">@if($first->rate){{ number_format($first->rate, 2, ',', '.') }}%@else 0,30% @endif</td>
                     <td></td>
                     <td></td>
