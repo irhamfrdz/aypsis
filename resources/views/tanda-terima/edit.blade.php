@@ -406,10 +406,10 @@
                                 <option value="">-- Pilih Penerima --</option>
                                 @if(isset($masterPenerimaList))
                                     @foreach($masterPenerimaList as $penerimaItem)
-                                        <option value="{{ $penerimaItem->nama }}"
+                                        <option value="{{ $penerimaItem->nama_penerima }}"
                                                 data-alamat="{{ $penerimaItem->alamat ?? '' }}"
-                                                {{ old('penerima', $tandaTerima->penerima) == $penerimaItem->nama ? 'selected' : '' }}>
-                                            {{ $penerimaItem->nama }}
+                                                {{ old('penerima', $tandaTerima->penerima) == $penerimaItem->nama_penerima ? 'selected' : '' }}>
+                                            {{ $penerimaItem->nama_penerima }}
                                         </option>
                                     @endforeach
                                 @endif
