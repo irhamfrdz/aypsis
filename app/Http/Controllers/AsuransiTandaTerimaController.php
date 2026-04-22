@@ -65,7 +65,7 @@ class AsuransiTandaTerimaController extends Controller
                     'tanda_terimas.penerima', 
                     'tanda_terimas.no_kontainer', 
                     'tanda_terimas.size as size_tanda_terima',
-                    'surat_jalans.size_kontainer as size_surat_jalan',
+                    'surat_jalans.size as size_surat_jalan',
                     'tanda_terimas.tipe_kontainer as tipe_kontainer_tt',
                     'surat_jalans.tipe_kontainer as tipe_kontainer_sj',
                     'tanda_terimas.nama_barang as raw_nama_barang',
