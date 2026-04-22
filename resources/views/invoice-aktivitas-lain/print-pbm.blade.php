@@ -232,20 +232,18 @@
                 <tr>
                     <td style="width: 15%;">Tanggal</td>
                     <td style="width: 35%;">: {{ \Carbon\Carbon::parse($invoice->tanggal_invoice)->format('d/M/Y') }}</td>
-                    <td style="width: 15%;">Penerima</td>
-                    <td>: {{ $invoice->penerima ?? '-' }}</td>
+                    <td style="width: 15%;">Jenis Biaya</td>
+                    <td>: {{ $invoice->klasifikasiBiaya->nama ?? 'BIAYA PBM' }}</td>
                 </tr>
                 <tr>
                     <td style="width: 15%;">Nomor</td>
                     <td style="width: 35%;">: {{ $invoice->nomor_invoice }}</td>
-                    <td style="width: 15%;">No. Rekening</td>
-                    <td>: {{ $invoice->nomor_bank ?? '-' }}</td>
+                    <td colspan="2"></td>
                 </tr>
                 <tr>
                     <td>No. Ref</td>
                     <td>: {{ $invoice->referensi ?? $invoice->nomor_invoice }}</td>
-                    <td>Jenis Biaya</td>
-                    <td>: {{ $invoice->klasifikasiBiaya->nama ?? 'BIAYA PBM' }}</td>
+                    <td colspan="2"></td>
                 </tr>
             </table>
         </div>
