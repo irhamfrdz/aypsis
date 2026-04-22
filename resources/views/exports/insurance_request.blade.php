@@ -35,28 +35,26 @@
                         @endif
                     </td>
                     <td align="left" valign="top"><b>{{ $first->no_kontainer ?: $first->number }}</b></td>
-                    <td align="right" valign="top"><b>{{ number_format($first->kuantitas ?: 0) }}</b></td>
-                    <td align="left" valign="top">&nbsp;<b>{{ strtoupper($first->satuan ?: 'UNIT') }}</b></td>
-                    <td align="left" valign="top">{{ strtoupper($first->nama_barang) }}</td>
+                    <td align="right" valign="top"><b>1</b></td>
+                    <td align="left" valign="top">&nbsp;<b>UNIT</b></td>
+                    <td align="left" valign="top">{{ $first->container_size_label ?? 'CONT.20" ISI' }}</td>
                     <td align="right" valign="top"></td>
                     <td align="left" valign="top">Rp</td>
                     <td align="right" valign="top"><b>{{ number_format($containerItems->sum('amount') ?: 0, 0, ',', '.') }}</b></td>
                 </tr>
                 
-                @if($containerItems->count() > 1)
-                    @foreach($containerItems->slice(1) as $later)
+                @foreach($containerItems as $item)
                     <tr>
                         <td></td>
                         <td></td>
-                        <td align="right" valign="top"><b>{{ number_format($later->kuantitas ?: 0) }}</b></td>
-                        <td align="left" valign="top">&nbsp;<b>{{ strtoupper($later->satuan ?: 'UNIT') }}</b></td>
-                        <td align="left" valign="top">{{ strtoupper($later->nama_barang) }}</td>
+                        <td align="right" valign="top"><b>{{ number_format($item->kuantitas ?: 0) }}</b></td>
+                        <td align="left" valign="top">&nbsp;<b>{{ strtoupper($item->satuan ?: 'UNIT') }}</b></td>
+                        <td align="left" valign="top">{{ strtoupper($item->nama_barang) }}</td>
                         <td></td>
                         <td></td>
                         <td></td>
                     </tr>
-                    @endforeach
-                @endif
+                @endforeach
                 
                 <tr>
                     <td></td>

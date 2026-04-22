@@ -64,6 +64,10 @@ class AsuransiTandaTerimaController extends Controller
                     'tanda_terimas.pengirim', 
                     'tanda_terimas.penerima', 
                     'tanda_terimas.no_kontainer', 
+                    'tanda_terimas.size as size_tanda_terima',
+                    'surat_jalans.size_kontainer as size_surat_jalan',
+                    'tanda_terimas.tipe_kontainer as tipe_kontainer_tt',
+                    'surat_jalans.tipe_kontainer as tipe_kontainer_sj',
                     'tanda_terimas.nama_barang as raw_nama_barang',
                     'tanda_terimas.dimensi_details as raw_dimensi_details',
                     DB::raw('COALESCE(tanda_terimas.nama_barang, surat_jalans.jenis_barang) as fallback_nama_barang'), 
@@ -120,6 +124,14 @@ class AsuransiTandaTerimaController extends Controller
                     $row->kuantitas = $item['jumlah'] ?? $main->fallback_kuantitas;
                     $row->satuan = $item['satuan'] ?? $main->fallback_satuan;
                     
+                    $tipe = strtolower($main->tipe_kontainer_tt ?? ($main->tipe_kontainer_sj ?? ''));
+                    if ($tipe == 'cargo') {
+                        $row->container_size_label = 'CONT. LCL';
+                    } else {
+                        $size = $main->size_tanda_terima ?? ($main->size_surat_jalan ?? '20');
+                        $row->container_size_label = 'CONT.' . str_replace('"', '', $size) . '" ISI';
+                    }
+                    
                     if ($idx > 0) {
                         $row->amount = 0;
                         $row->rate = 0;
@@ -141,6 +153,7 @@ class AsuransiTandaTerimaController extends Controller
                     'pengirim', 
                     'penerima', 
                     'no_kontainer', 
+                    'size_kontainer as size_tttsj',
                     DB::raw('COALESCE(nama_barang, jenis_barang) as fallback_nama_barang'), 
                     'jumlah_barang as fallback_kuantitas', 
                     'satuan_barang as fallback_satuan',
@@ -165,6 +178,8 @@ class AsuransiTandaTerimaController extends Controller
                     $row->nama_barang = $main->fallback_nama_barang;
                     $row->kuantitas = $main->fallback_kuantitas;
                     $row->satuan = $main->fallback_satuan;
+                    $size = $main->size_tttsj ?? '20';
+                    $row->container_size_label = 'CONT.' . str_replace('"', '', $size) . '" ISI';
                     $receipts->push($row);
                 } else {
                     foreach ($items as $idx => $item) {
@@ -172,6 +187,8 @@ class AsuransiTandaTerimaController extends Controller
                         $row->nama_barang = $item->nama_barang;
                         $row->kuantitas = $item->jumlah;
                         $row->satuan = $item->satuan;
+                        $size = $main->size_tttsj ?? '20';
+                        $row->container_size_label = 'CONT.' . str_replace('"', '', $size) . '" ISI';
                         if ($idx > 0) { $row->amount = 0; $row->rate = 0; }
                         $receipts->push($row);
                     }
@@ -216,6 +233,7 @@ class AsuransiTandaTerimaController extends Controller
                     $row->nama_barang = '-';
                     $row->kuantitas = 0;
                     $row->satuan = '-';
+                    $row->container_size_label = 'CONT. LCL';
                     $receipts->push($row);
                 } else {
                     foreach ($items as $idx => $item) {
@@ -223,6 +241,7 @@ class AsuransiTandaTerimaController extends Controller
                         $row->nama_barang = $item->nama_barang;
                         $row->kuantitas = $item->jumlah;
                         $row->satuan = $item->satuan;
+                        $row->container_size_label = 'CONT. LCL';
                         if ($idx > 0) { $row->amount = 0; $row->rate = 0; }
                         $receipts->push($row);
                     }
