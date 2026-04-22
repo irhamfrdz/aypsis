@@ -39,6 +39,7 @@
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">NIK</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">Agama</th>
+                        <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">No. HP</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">Email</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">CV</th>
@@ -65,6 +66,9 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $pelamar->agama ?? '-' }}
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
+                                {{ $pelamar->status_pernikahan ?? '-' }}
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $pelamar->no_handphone }}

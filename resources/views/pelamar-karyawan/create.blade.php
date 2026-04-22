@@ -97,6 +97,17 @@
                             </div>
                             @error('agama')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                         </div>
+                        <div>
+                            <label for="status_pernikahan" class="{{ $labelClasses }}">Status Pernikahan <span class="text-red-500">*</span></label>
+                            <select name="status_pernikahan" id="status_pernikahan" class="{{ $selectClasses }} @error('status_pernikahan') border-red-500 @enderror" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option value="Menikah" {{ old('status_pernikahan') == 'Menikah' ? 'selected' : '' }}>Menikah</option>
+                                <option value="Belum Menikah" {{ old('status_pernikahan') == 'Belum Menikah' ? 'selected' : '' }}>Belum Menikah</option>
+                                <option value="Janda" {{ old('status_pernikahan') == 'Janda' ? 'selected' : '' }}>Janda</option>
+                                <option value="Duda" {{ old('status_pernikahan') == 'Duda' ? 'selected' : '' }}>Duda</option>
+                            </select>
+                            @error('status_pernikahan')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                        </div>
                         
                         <div>
                             <label for="tanggal_lahir" class="{{ $labelClasses }}">Tanggal Lahir <span class="text-red-500">*</span></label>
