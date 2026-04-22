@@ -124,15 +124,31 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                     ]);
 
                     // Update Pranota Status
-                    $pranota = PranotaInvoiceVendorSupir::find($pranotaId);
+                    $pranota = PranotaInvoiceVendorSupir::with('invoiceTagihanVendors.tagihanSupirVendors')->find($pranotaId);
                     $totalTelahDibayar = PembayaranPranotaVendorSupirItem::where('pranota_id', $pranotaId)->sum('nominal');
                     
                     if ($totalTelahDibayar >= ($pranota->grand_total ?? $pranota->total_nominal)) {
-                        $pranota->status_pembayaran = 'lunas';
+                        $newStatus = 'lunas';
                     } else {
-                        $pranota->status_pembayaran = 'sebagian';
+                        $newStatus = 'sebagian';
                     }
+                    $pranota->status_pembayaran = $newStatus;
                     $pranota->save();
+
+                    // Cascade status to children
+                    if ($pranota->invoiceTagihanVendors) {
+                        foreach ($pranota->invoiceTagihanVendors as $invoice) {
+                            $invoice->status_pembayaran = $newStatus;
+                            $invoice->save();
+
+                            if ($invoice->tagihanSupirVendors) {
+                                foreach ($invoice->tagihanSupirVendors as $tagihan) {
+                                    $tagihan->status_pembayaran = $newStatus;
+                                    $tagihan->save();
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -236,7 +252,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                 $pranotaId = $item->pranota_id;
                 
                 // Recalculate status pranota after this item is gone
-                $pranota = PranotaInvoiceVendorSupir::find($pranotaId);
+                $pranota = PranotaInvoiceVendorSupir::with('invoiceTagihanVendors.tagihanSupirVendors')->find($pranotaId);
                 
                 // We use a temporary delete or sub calculation
                 $totalTelahDibayarLainnya = PembayaranPranotaVendorSupirItem::where('pranota_id', $pranotaId)
@@ -244,13 +260,29 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                     ->sum('nominal');
                 
                 if ($totalTelahDibayarLainnya <= 0) {
-                    $pranota->status_pembayaran = 'belum_dibayar';
+                    $newStatus = 'belum_dibayar';
                 } elseif ($totalTelahDibayarLainnya < ($pranota->grand_total ?? $pranota->total_nominal)) {
-                    $pranota->status_pembayaran = 'sebagian';
+                    $newStatus = 'sebagian';
                 } else {
-                    $pranota->status_pembayaran = 'lunas';
+                    $newStatus = 'lunas';
                 }
+                $pranota->status_pembayaran = $newStatus;
                 $pranota->save();
+                
+                // Cascade status to children
+                if ($pranota->invoiceTagihanVendors) {
+                    foreach ($pranota->invoiceTagihanVendors as $invoice) {
+                        $invoice->status_pembayaran = $newStatus;
+                        $invoice->save();
+
+                        if ($invoice->tagihanSupirVendors) {
+                            foreach ($invoice->tagihanSupirVendors as $tagihan) {
+                                $tagihan->status_pembayaran = $newStatus;
+                                $tagihan->save();
+                            }
+                        }
+                    }
+                }
                 
                 $item->delete();
             }
