@@ -229,8 +229,15 @@
                     <select name="nomor_polisi" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('nomor_polisi') border-red-500 @enderror">
                         <option value="">Pilih Nomor Polisi</option>
                         @foreach($mobils as $mobil)
-                            <option value="{{ $mobil->nomor_polisi }}" {{ old('nomor_polisi') == $mobil->nomor_polisi ? 'selected' : '' }}>
-                                {{ $mobil->nomor_polisi }} - {{ $mobil->merek }} {{ $mobil->jenis }}
+                            @php
+                                $val = $mobil->nomor_polisi ?: $mobil->no_kir;
+                                $label = ($mobil->nomor_polisi ?: $mobil->no_kir ?: 'Tanpa Plat/KIR') . ' - ' . $mobil->merek . ' ' . $mobil->jenis;
+                                if ($mobil->nomor_polisi && $mobil->no_kir) {
+                                    $label .= ' (KIR: ' . $mobil->no_kir . ')';
+                                }
+                            @endphp
+                            <option value="{{ $val }}" {{ old('nomor_polisi') == $val ? 'selected' : '' }}>
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
@@ -774,7 +781,7 @@ function initializeSelect2() {
 
     function toggleNomorPolisi() {
         const subJenis = subJenisSelect.value;
-        if (subJenis === 'Plat' || subJenis === 'STNK' || subJenis === 'KIR') {
+        if (subJenis === 'Plat' || subJenis === 'STNK' || subJenis === 'KIR' || subJenis === 'Lain Lain') {
             nomorPolisiField.classList.remove('hidden');
             nomorPolisiSelect.setAttribute('required', 'required');
             // Reinitialize Select2 after showing

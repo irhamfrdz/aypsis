@@ -161,7 +161,7 @@ class PembayaranAktivitasLainController extends Controller
             ->orderBy('kode_nomor')
             ->get();
         $mobils = DB::table('mobils')
-            ->select('id', 'nomor_polisi', 'merek', 'jenis')
+            ->select('id', 'nomor_polisi', 'merek', 'jenis', 'no_kir')
             ->orderBy('nomor_polisi')
             ->get();
         
