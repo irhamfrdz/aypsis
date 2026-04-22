@@ -4931,6 +4931,12 @@ Route::prefix('pembayaran-pranota-ob')->name('pembayaran-pranota-ob.')->middlewa
          ->middleware('can:pembayaran-pranota-ob-update');
     Route::delete('/{id}', [PembayaranPranotaObController::class, 'destroy'])->name('destroy')
          ->middleware('can:pembayaran-pranota-ob-delete');
+    Route::post('/{pembayaranPranotaOb}/sync-coa', [PembayaranPranotaObController::class, 'syncCoa'])
+         ->name('sync-coa')
+         ->middleware('can:pembayaran-pranota-ob-update');
+    Route::post('/{pembayaranPranotaOb}/update-total', [PembayaranPranotaObController::class, 'updateTotal'])
+         ->name('update-total')
+         ->middleware('can:pembayaran-pranota-ob-update');
 });
 
 // Additional route for pembayaran-pranota-ob print

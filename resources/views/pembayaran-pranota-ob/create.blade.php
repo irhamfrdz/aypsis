@@ -355,6 +355,7 @@
                                                     $item['supir'] = strtoupper(trim($item['supir']));
                                                 }
                                             }
+                                            unset($item); // Fix: Unset reference to avoid orphaning the last element in subsequent loops
                                             
                                             $supirList = array_values(array_unique(array_filter(array_column($enrichedItems, 'supir'), function($supir) {
                                                 return $supir && $supir !== '-' && $supir !== null && trim($supir) !== '';
@@ -373,6 +374,16 @@
                                                     }
                                                     $supirBreakdown[$supirName]['items'] += 1;
                                                     $supirBreakdown[$supirName]['biaya'] += floatval($item['biaya'] ?? 0);
+                                                } else {
+                                                    $fallbackKey = 'Belum Ditentukan';
+                                                    if (!isset($supirBreakdown[$fallbackKey])) {
+                                                        $supirBreakdown[$fallbackKey] = [
+                                                            'items' => 0,
+                                                            'biaya' => 0
+                                                        ];
+                                                    }
+                                                    $supirBreakdown[$fallbackKey]['items'] += 1;
+                                                    $supirBreakdown[$fallbackKey]['biaya'] += floatval($item['biaya'] ?? 0);
                                                 }
                                             }
                                         @endphp

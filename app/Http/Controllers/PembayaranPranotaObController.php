@@ -489,5 +489,149 @@ class PembayaranPranotaObController extends Controller
             return redirect()->route('pembayaran-pranota-ob.index')
                 ->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
         }
+    /**
+     * Sync payment data with COA transactions.
+     */
+    public function syncCoa(PembayaranPranotaOb $pembayaranPranotaOb)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->can('pembayaran-pranota-ob-edit')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk melakukan ini.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // 1. Delete existing COA transactions for this payment reference
+            $this->coaTransactionService->deleteTransactionByReference($pembayaranPranotaOb->nomor_pembayaran);
+
+            // 2. Prepare data for re-sync
+            $totalPembayaran = $pembayaranPranotaOb->total_setelah_penyesuaian ?? $pembayaranPranotaOb->total_pembayaran;
+            $akunBankId = $pembayaranPranotaOb->akun_bank_id;
+            $akunCoaId = $pembayaranPranotaOb->akun_coa_id;
+            $debitKredit = strtolower($pembayaranPranotaOb->jenis_transaksi);
+            $keterangan = "Pembayaran Pranota OB - " . $pembayaranPranotaOb->nomor_pembayaran . " (Synced)";
+
+            // 3. Record Double Entry
+            if ($debitKredit == 'debit') {
+                // Jenis Debit (Bank Bertambah): DEBIT Bank, KREDIT Biaya OB
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['id' => $akunBankId, 'jumlah' => $totalPembayaran],
+                    ['id' => $akunCoaId, 'jumlah' => $totalPembayaran],
+                    $pembayaranPranotaOb->tanggal_kas,
+                    $pembayaranPranotaOb->nomor_pembayaran,
+                    'Pembayaran Pranota OB',
+                    $keterangan
+                );
+            } else {
+                // Jenis Kredit (Bank Berkurang): DEBIT Biaya OB, KREDIT Bank
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['id' => $akunCoaId, 'jumlah' => $totalPembayaran],
+                    ['id' => $akunBankId, 'jumlah' => $totalPembayaran],
+                    $pembayaranPranotaOb->tanggal_kas,
+                    $pembayaranPranotaOb->nomor_pembayaran,
+                    'Pembayaran Pranota OB',
+                    $keterangan
+                );
+            }
+
+            Log::info('Double Entry Accounting RE-SYNCED for Pembayaran Pranota OB', [
+                'nomor_pembayaran' => $pembayaranPranotaOb->nomor_pembayaran,
+                'total_pembayaran' => $totalPembayaran,
+                'synced_by' => $user->name
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Transaksi COA untuk ' . $pembayaranPranotaOb->nomor_pembayaran . ' berhasil disinkronisasi.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error syncing COA for payment: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal sinkronisasi COA: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update payment total based on current pranota totals.
+     */
+    public function updateTotal(PembayaranPranotaOb $pembayaranPranotaOb)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->can('pembayaran-pranota-ob-edit')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk melakukan ini.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $pranotaObs = $pembayaranPranotaOb->pranota_obs; // Use accessor
+            
+            $newTotal = 0;
+            $newBreakdownMap = [];
+            
+            foreach ($pranotaObs as $pranota) {
+                $newTotal += $pranota->calculateTotalAmount();
+                
+                // Recalculate breakdown from items
+                $items = $pranota->getEnrichedItems();
+                foreach ($items as $item) {
+                    $supir = strtoupper(trim($item['supir'] ?? ''));
+                    if (empty($supir) || $supir === '-') $supir = 'BELUM DITENTUKAN';
+                    
+                    if (!isset($newBreakdownMap[$supir])) {
+                        $newBreakdownMap[$supir] = [
+                            'nama_supir' => $supir,
+                            'jumlah_item' => 0,
+                            'total_biaya' => 0,
+                            'dp' => 0, // DPs are tricky to re-calculate without original context
+                            'sisa' => 0,
+                            'potongan_utang' => 0,
+                            'potongan_tabungan' => 0,
+                            'potongan_bpjs' => 0,
+                            'grand_total' => 0
+                        ];
+                    }
+                    
+                    $newBreakdownMap[$supir]['jumlah_item'] += 1;
+                    $newBreakdownMap[$supir]['total_biaya'] += (float)($item['biaya'] ?? 0);
+                }
+            }
+
+            // Sync with existing breakdown (preserved DP and deductions)
+            $oldBreakdown = $pembayaranPranotaOb->breakdown_supir ?? [];
+            $finalBreakdown = [];
+            
+            foreach ($newBreakdownMap as $supir => $newData) {
+                // Find matching supir in old breakdown to preserve DP, etc.
+                $oldData = collect($oldBreakdown)->first(fn($v) => strtoupper(trim($v['nama_supir'] ?? '')) === $supir);
+                
+                if ($oldData) {
+                    $newData['dp'] = $oldData['dp'] ?? 0;
+                    $newData['potongan_utang'] = $oldData['potongan_utang'] ?? 0;
+                    $newData['potongan_tabungan'] = $oldData['potongan_tabungan'] ?? 0;
+                    $newData['potongan_bpjs'] = $oldData['potongan_bpjs'] ?? 0;
+                }
+                
+                $newData['sisa'] = $newData['total_biaya'] - $newData['dp'];
+                $newData['grand_total'] = $newData['sisa'] - $newData['potongan_utang'] - $newData['potongan_tabungan'] - $newData['potongan_bpjs'];
+                
+                $finalBreakdown[] = $newData;
+            }
+
+            // Update main payment record
+            $penyesuaian = $pembayaranPranotaOb->penyesuaian ?? 0;
+            $pembayaranPranotaOb->update([
+                'total_pembayaran' => $newTotal,
+                'total_biaya_pranota' => $newTotal,
+                'total_setelah_penyesuaian' => $newTotal + $penyesuaian,
+                'breakdown_supir' => $finalBreakdown,
+                'updated_by' => Auth::id()
+            ]);
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Total pembayaran dan breakdown supir berhasil diperbarui sesuai data pranota terbaru.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating payment total: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui total: ' . $e->getMessage());
+        }
     }
 }

@@ -10,6 +10,24 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <h1 class="text-2xl font-bold text-gray-900">Detail Pembayaran Pranota OB</h1>
                 <div class="mt-4 sm:mt-0">
+                    @can('pembayaran-pranota-ob-edit')
+                        <form action="{{ route('pembayaran-pranota-ob.sync-coa', $pembayaran->id) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 mr-2" onclick="return confirm('Apakah Anda yakin ingin menyingkronkan ulang data COA?')">
+                                <i class="fas fa-sync mr-2"></i>
+                                Sync COA
+                            </button>
+                        </form>
+                        
+                        <form action="{{ route('pembayaran-pranota-ob.update-total', $pembayaran->id) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150 mr-2" onclick="return confirm('Apakah Anda yakin ingin memperbarui total pembayaran sesuai total pranota terbaru?')">
+                                <i class="fas fa-calculator mr-2"></i>
+                                Update Total
+                            </button>
+                        </form>
+                    @endcan
+
                     <a href="{{ route('pembayaran-pranota-ob.index') }}"
                        class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                         <i class="fas fa-arrow-left mr-2"></i>
@@ -28,6 +46,10 @@
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Nomor Pembayaran</dt>
                             <dd class="text-sm text-gray-900">{{ $pembayaran->nomor_pembayaran }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Nomor Accurate</dt>
+                            <dd class="text-sm text-gray-900">{{ $pembayaran->nomor_accurate ?? '-' }}</dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Tanggal Kas</dt>
