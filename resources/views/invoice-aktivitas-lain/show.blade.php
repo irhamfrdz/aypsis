@@ -400,6 +400,83 @@
                         </div>
                     </div>
                     @endif
+                    
+                    <!-- Detail Biaya PBM -->
+                    @php
+                        $pbmDetails = $invoice->pbm_detail_array;
+                        $isBiayaPBMShow = !empty($pbmDetails) || ($invoice->klasifikasiBiayaUmum && 
+                                      str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'pbm'));
+                    @endphp
+                    @if($isBiayaPBMShow)
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex items-center space-x-2 mb-4">
+                            <h3 class="text-sm font-semibold text-gray-800">Detail Biaya PBM</h3>
+                            <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full uppercase">Multi-Invoice</span>
+                        </div>
+                        
+                        @if(!empty($pbmDetails))
+                        <div class="overflow-x-auto border border-gray-100 rounded-lg shadow-sm">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">No. Invoice/Ref</th>
+                                        <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Penerima</th>
+                                        <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">No. Bank</th>
+                                        <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nominal Bayar</th>
+                                        <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Biaya Admin</th>
+                                        <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-100">
+                                    @php $pbmTotal = 0; @endphp
+                                    @foreach($pbmDetails as $pbm)
+                                        @php 
+                                            $nominalVal = $pbm['nominal_bayar'] ?? 0;
+                                            $adminVal = $pbm['biaya_admin'] ?? 0;
+                                            $rowTotal = ($pbm['grand_total'] ?? ($nominalVal + $adminVal));
+                                            $pbmTotal += $rowTotal;
+                                        @endphp
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['referensi'] ?? '-' }}</td>
+                                            <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['penerima'] ?? '-' }}</td>
+                                            <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['nomor_bank'] ?? '-' }}</td>
+                                            <td class="px-3 py-3 text-xs text-gray-700 text-right">Rp {{ number_format($nominalVal, 0, ',', '.') }}</td>
+                                            <td class="px-3 py-3 text-xs text-gray-700 text-right text-yellow-600 font-medium">+ Rp {{ number_format($adminVal, 0, ',', '.') }}</td>
+                                            <td class="px-3 py-3 text-xs font-bold text-blue-700 text-right">Rp {{ number_format($rowTotal, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-gray-50 border-t border-gray-200 font-bold">
+                                    <tr>
+                                        <td colspan="5" class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase italic">Grand Total PBM:</td>
+                                        <td class="px-3 py-3 text-right text-sm font-black text-blue-800">Rp {{ number_format($pbmTotal, 0, ',', '.') }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        @else
+                        <!-- Fallback to single fields if detail is empty (compatibility with older records) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Bank</label>
+                                <p class="text-gray-900 font-bold">{{ $invoice->nomor_bank ?? '-' }}</p>
+                            </div>
+                            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <label class="block text-xs font-medium text-blue-600 mb-1">Nominal Bayar</label>
+                                <p class="text-blue-900 font-bold text-lg">Rp {{ number_format($invoice->nominal_bayar, 0, ',', '.') }}</p>
+                            </div>
+                            <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                                <label class="block text-xs font-medium text-yellow-600 mb-1">Biaya Admin</label>
+                                <p class="text-yellow-900 font-bold text-lg">+ Rp {{ number_format($invoice->biaya_admin, 0, ',', '.') }}</p>
+                            </div>
+                            <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                                <label class="block text-xs font-medium text-green-600 mb-1">Grand Total</label>
+                                <p class="text-green-900 font-black text-xl">Rp {{ number_format($invoice->total, 0, ',', '.') }}</p>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                    @endif
 
                     <!-- Detail Pembayaran -->
                     @php

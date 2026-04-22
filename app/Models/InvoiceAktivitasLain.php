@@ -44,6 +44,10 @@ class InvoiceAktivitasLain extends Model
         'deskripsi',
         'catatan',
         'keterangan',
+        'nomor_bank',
+        'nominal_bayar',
+        'biaya_admin',
+        'pbm_detail',
         'created_by',
         'approved_by',
         'approved_at'
@@ -244,6 +248,20 @@ class InvoiceAktivitasLain extends Model
             return [];
         }
 
-        return $detailPembayaran;
+    /**
+     * Accessor untuk pbm detail array
+     */
+    public function getPbmDetailArrayAttribute()
+    {
+        if (!$this->pbm_detail) {
+            return [];
+        }
+
+        $pbmDetail = json_decode($this->pbm_detail, true);
+        if (!is_array($pbmDetail)) {
+            return [];
+        }
+
+        return $pbmDetail;
     }
 }

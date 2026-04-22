@@ -244,7 +244,9 @@ class InvoiceAktivitasLainController extends Controller
             'nominal',
             'pph',
             'biaya_materai',
-            'biaya_adjustment'
+            'biaya_adjustment',
+            'nominal_bayar',
+            'biaya_admin'
         ];
         
         foreach ($fieldsToClean as $field) {
@@ -387,6 +389,17 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_utilities_detail.*.ppn' => 'nullable|numeric|min:0',
             'biaya_utilities_detail.*.grand_total' => 'required_with:biaya_utilities_detail|numeric|min:0',
             'biaya_utilities_detail.*.keterangan' => 'nullable|string',
+            // Biaya PBM fields
+            'nomor_bank' => 'nullable|string|max:255',
+            'nominal_bayar' => 'nullable|numeric|min:0',
+            'biaya_admin' => 'nullable|numeric|min:0',
+            'pbm_detail' => 'nullable|array',
+            'pbm_detail.*.referensi' => 'nullable|string|max:255',
+            'pbm_detail.*.penerima' => 'nullable|string|max:255',
+            'pbm_detail.*.nomor_bank' => 'nullable|string|max:255',
+            'pbm_detail.*.nominal_bayar' => 'nullable|string',
+            'pbm_detail.*.biaya_admin' => 'nullable|string',
+            'pbm_detail.*.grand_total' => 'nullable|string',
         ]);
         
         // Convert bl_details array to JSON for storage
@@ -414,6 +427,23 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
             $validated['detail_pembayaran'] = json_encode($validated['detail_pembayaran']);
+        }
+
+        // Convert pbm_detail array to JSON for storage
+        if (isset($validated['pbm_detail'])) {
+            // Clean up numeric values - remove currency formatting
+            foreach ($validated['pbm_detail'] as &$pbm) {
+                if (isset($pbm['nominal_bayar'])) {
+                    $pbm['nominal_bayar'] = str_replace(['.', ','], '', $pbm['nominal_bayar']);
+                }
+                if (isset($pbm['biaya_admin'])) {
+                    $pbm['biaya_admin'] = str_replace(['.', ','], '', $pbm['biaya_admin']);
+                }
+                if (isset($pbm['grand_total'])) {
+                    $pbm['grand_total'] = str_replace(['.', ','], '', $pbm['grand_total']);
+                }
+            }
+            $validated['pbm_detail'] = json_encode($validated['pbm_detail']);
         }
 
         // Map Labuh Tambat fields to database columns
@@ -794,7 +824,9 @@ class InvoiceAktivitasLainController extends Controller
             'dpp',
             'nominal',
             'biaya_materai',
-            'biaya_adjustment'
+            'biaya_adjustment',
+            'nominal_bayar',
+            'biaya_admin'
         ];
         
         foreach ($fieldsToClean as $field) {
@@ -936,6 +968,17 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_utilities_detail.*.ppn' => 'nullable|numeric|min:0',
             'biaya_utilities_detail.*.grand_total' => 'required_with:biaya_utilities_detail|numeric|min:0',
             'biaya_utilities_detail.*.keterangan' => 'nullable|string',
+            // Biaya PBM fields
+            'nomor_bank' => 'nullable|string|max:255',
+            'nominal_bayar' => 'nullable|numeric|min:0',
+            'biaya_admin' => 'nullable|numeric|min:0',
+            'pbm_detail' => 'nullable|array',
+            'pbm_detail.*.referensi' => 'nullable|string|max:255',
+            'pbm_detail.*.penerima' => 'nullable|string|max:255',
+            'pbm_detail.*.nomor_bank' => 'nullable|string|max:255',
+            'pbm_detail.*.nominal_bayar' => 'nullable|string',
+            'pbm_detail.*.biaya_admin' => 'nullable|string',
+            'pbm_detail.*.grand_total' => 'nullable|string',
         ]);
         
         // Convert arrays to JSON
@@ -960,6 +1003,16 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
             $validated['detail_pembayaran'] = json_encode($validated['detail_pembayaran']);
+        }
+
+        // Convert pbm_detail array to JSON for storage
+        if (isset($validated['pbm_detail'])) {
+            foreach ($validated['pbm_detail'] as &$pbm) {
+                if (isset($pbm['nominal_bayar'])) $pbm['nominal_bayar'] = str_replace(['.', ','], '', $pbm['nominal_bayar']);
+                if (isset($pbm['biaya_admin'])) $pbm['biaya_admin'] = str_replace(['.', ','], '', $pbm['biaya_admin']);
+                if (isset($pbm['grand_total'])) $pbm['grand_total'] = str_replace(['.', ','], '', $pbm['grand_total']);
+            }
+            $validated['pbm_detail'] = json_encode($validated['pbm_detail']);
         }
 
         // Map Labuh Tambat fields

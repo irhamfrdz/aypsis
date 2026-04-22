@@ -74,8 +74,7 @@ class AsuransiTandaTerimaController extends Controller
                     'asuransi_tanda_terimas.nilai_barang as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
                     'asuransi_tanda_terimas.asuransi_rate as rate',
-                    'asuransi_tanda_terimas.vendor_asuransi_id',
-                    'tanda_terimas.size'
+                    'asuransi_tanda_terimas.vendor_asuransi_id'
                 )
                 ->whereIn('tanda_terimas.id', $idsByType['tt'])
                 ->get();
@@ -150,8 +149,7 @@ class AsuransiTandaTerimaController extends Controller
                     'asuransi_tanda_terimas.nilai_barang as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
                     'asuransi_tanda_terimas.asuransi_rate as rate',
-                    'asuransi_tanda_terimas.vendor_asuransi_id',
-                    'tanda_terima_tanpa_surat_jalan.size_kontainer as size'
+                    'asuransi_tanda_terimas.vendor_asuransi_id'
                 )
                 ->whereIn('tanda_terima_tanpa_surat_jalan.id', $idsByType['tttsj'])
                 ->get();
@@ -202,8 +200,7 @@ class AsuransiTandaTerimaController extends Controller
                     'asuransi_tanda_terimas.nilai_barang as amount',
                     'asuransi_tanda_terimas.nomor_urut as numbering',
                     'asuransi_tanda_terimas.asuransi_rate as rate',
-                    'asuransi_tanda_terimas.vendor_asuransi_id',
-                    'tanda_terima_lcl_kontainer_pivot.size_kontainer as size'
+                    'asuransi_tanda_terimas.vendor_asuransi_id'
                 )
                 ->whereIn('tanda_terimas_lcl.id', $idsByType['lcl'])
                 ->get();

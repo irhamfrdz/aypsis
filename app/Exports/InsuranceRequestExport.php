@@ -57,10 +57,13 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
                 
                 // Set Column Widths (Manual override because ShouldAutoSize is not always perfect)
                 $sheet->getColumnDimension('A')->setWidth(5);
-                $sheet->getColumnDimension('B')->setWidth(20);
-                $sheet->getColumnDimension('C')->setWidth(50);
+                $sheet->getColumnDimension('B')->setWidth(18);
+                $sheet->getColumnDimension('C')->setWidth(6);
+                $sheet->getColumnDimension('D')->setWidth(8);
+                $sheet->getColumnDimension('E')->setWidth(40);
+                $sheet->getColumnDimension('F')->setWidth(10);
                 $sheet->getColumnDimension('G')->setWidth(5);
-                $sheet->getColumnDimension('H')->setWidth(20);
+                $sheet->getColumnDimension('H')->setWidth(18);
 
                 // Styling for the whole sheet
                 $highestRow = $sheet->getHighestRow();
@@ -74,14 +77,14 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
                 // Vertical align everything to top
                 $sheet->getStyle("A1:Z{$highestRow}")->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
 
-                // Post-process column C: replace ", " with newline for in-cell line breaks
+                // Post-process column E: replace ", " with newline for in-cell line breaks
                 for ($row = 1; $row <= $highestRow; $row++) {
-                    $cell = $sheet->getCell("C{$row}");
+                    $cell = $sheet->getCell("E{$row}");
                     $value = $cell->getValue();
                     
                     if ($value && is_string($value) && strpos($value, ', ') !== false) {
                         $cell->setValue(str_replace(', ', "," . chr(10), $value));
-                        $sheet->getStyle("C{$row}")->getAlignment()->setWrapText(true);
+                        $sheet->getStyle("E{$row}")->getAlignment()->setWrapText(true);
                     }
                 }
             },

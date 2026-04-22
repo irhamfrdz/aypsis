@@ -369,6 +369,7 @@
                             <input type="text" 
                                    id="nomor_rekening_labuh" 
                                    name="nomor_rekening_labuh"
+                                   value="{{ $invoice->nomor_rekening_labuh }}"
                                    class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                    style="height: 38px; padding: 6px 12px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                    placeholder="Masukkan nomor rekening...">
@@ -384,6 +385,7 @@
                                 <input type="text" 
                                        id="sub_total_labuh" 
                                        name="sub_total_labuh"
+                                       value="{{ number_format($invoice->subtotal, 0, ',', '.') }}"
                                        class="w-full pl-10 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                        style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                        placeholder="0">
@@ -398,6 +400,7 @@
                                 <input type="text" 
                                        id="pph_labuh" 
                                        name="pph_labuh"
+                                       value="{{ number_format($invoice->pph, 0, ',', '.') }}"
                                        class="w-full pl-10 bg-gray-100 cursor-not-allowed border-gray-300 rounded-md shadow-sm"
                                        style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                        placeholder="0"
@@ -413,6 +416,7 @@
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
                                 <input type="text" 
                                        id="total_labuh" 
+                                       value="{{ number_format($invoice->grand_total, 0, ',', '.') }}"
                                        class="w-full pl-10 bg-green-50 font-semibold cursor-not-allowed border-gray-300 rounded-md shadow-sm"
                                        style="height: 38px; padding: 6px 12px 6px 40px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 6px;"
                                        placeholder="0"
@@ -420,6 +424,46 @@
                             </div>
                             <p class="mt-1 text-xs text-green-600 font-medium">Total = Sub Total - PPH</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Perhitungan Biaya PBM (multi-row for Biaya PBM) -->
+                <div id="biaya_pbm_wrapper" class="hidden md:col-span-2 space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-semibold text-gray-800 uppercase tracking-wider">Detail Invoice PBM</h3>
+                        <button type="button" 
+                                id="add_pbm_row_btn"
+                                class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition transform active:scale-95 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Tambah Invoice
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+                        <table class="min-w-full divide-y divide-gray-200" id="pbm_table">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">No. Invoice/Ref</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">Penerima</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">No. Bank</th>
+                                    <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider">Nominal Bayar</th>
+                                    <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider">Biaya Admin</th>
+                                    <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider">Total</th>
+                                    <th class="px-1 py-3 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100" id="pbm_tbody">
+                                <!-- Existing rows will be loaded by JS -->
+                            </tbody>
+                            <tfoot class="bg-gray-50 border-t border-gray-200 font-bold">
+                                <tr>
+                                    <td colspan="5" class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase italic">Grand Total PBM:</td>
+                                    <td class="px-3 py-3 text-right text-sm font-black text-blue-700" id="grand_total_pbm_sum">Rp 0</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
 
@@ -1744,6 +1788,8 @@ console.log('Akun COAs data:', akunCoasData);
                     
                     // Handle Labuh Tambah/Tambat for Pembayaran Lain-lain
                     if (namaJenisBiaya.includes('labuh tambat') || namaJenisBiaya.includes('labuh tambah')) {
+                        if (penerimaWrapper) penerimaWrapper.classList.remove('hidden');
+                        if (referensiWrapper) referensiWrapper.classList.remove('hidden');
                         if (vendorLabuhTambatWrapper) {
                             vendorLabuhTambatWrapper.classList.remove('hidden');
                             if (vendorLabuhTambatInput) vendorLabuhTambatInput.setAttribute('required', 'required');
@@ -1755,7 +1801,33 @@ console.log('Akun COAs data:', akunCoasData);
                             totalWrapper.classList.add('hidden');
                             if (totalInput) totalInput.removeAttribute('required');
                         }
+                    } else if (namaJenisBiaya.includes('pbm')) {
+                        if (penerimaWrapper) {
+                            penerimaWrapper.classList.add('hidden');
+                            if (penerimaInput) penerimaInput.removeAttribute('required');
+                        }
+                        if (referensiWrapper) referensiWrapper.classList.add('hidden');
+
+                        const pbmWrapper = document.getElementById('biaya_pbm_wrapper');
+                        if (pbmWrapper) {
+                            pbmWrapper.classList.remove('hidden');
+                            const tbody = document.getElementById('pbm_tbody');
+                            if (tbody && tbody.children.length === 0 && window.addPBMLine) {
+                                window.addPBMLine();
+                            }
+                        }
+                        if (totalWrapper) {
+                            totalWrapper.classList.add('hidden');
+                            if (totalInput) totalInput.removeAttribute('required');
+                        }
                     } else {
+                        // Show penerima & referensi for other types
+                        if (penerimaWrapper) {
+                            penerimaWrapper.classList.remove('hidden');
+                            if (penerimaInput) penerimaInput.setAttribute('required', 'required');
+                        }
+                        if (referensiWrapper) referensiWrapper.classList.remove('hidden');
+
                         // Show total field for other jenis biaya
                         if (totalWrapper) {
                             totalWrapper.classList.remove('hidden');
@@ -1770,6 +1842,12 @@ console.log('Akun COAs data:', akunCoasData);
                         }
                         if (labuhTambatCalculationWrapper) {
                             labuhTambatCalculationWrapper.classList.add('hidden');
+                        }
+                        const pbmWrapper = document.getElementById('biaya_pbm_wrapper');
+                        if (pbmWrapper) {
+                            pbmWrapper.classList.add('hidden');
+                            const tbody = document.getElementById('pbm_tbody');
+                            if (tbody) tbody.innerHTML = '';
                         }
                     }
                     
@@ -3743,6 +3821,135 @@ console.log('Akun COAs data:', akunCoasData);
 
 
         }
+        
+        // Initialize Labuh Tambat
+        setupLabuhTambatCalculations();
+
+        // PBM Calculation
+        function setupPBMCalculations() {
+            const addBtn = document.getElementById('add_pbm_row_btn');
+            const tbody = document.getElementById('pbm_tbody');
+            const totalSumDisplay = document.getElementById('grand_total_pbm_sum');
+            const mainTotalInput = document.getElementById('total');
+            let pbmRowIndex = 0;
+
+            function addPBMLine(data = {}) {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors';
+                row.innerHTML = `
+                    <td class="px-2 py-2">
+                        <input type="text" name="pbm_detail[${pbmRowIndex}][referensi]" value="${data.referensi || ''}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="No. Ref...">
+                    </td>
+                    <td class="px-2 py-2">
+                        <input type="text" name="pbm_detail[${pbmRowIndex}][penerima]" value="${data.penerima || ''}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Penerima...">
+                    </td>
+                    <td class="px-2 py-2">
+                        <input type="text" name="pbm_detail[${pbmRowIndex}][nomor_bank]" value="${data.nomor_bank || ''}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="No. Bank...">
+                    </td>
+                    <td class="px-2 py-2">
+                        <div class="relative">
+                            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">Rp</span>
+                            <input type="text" name="pbm_detail[${pbmRowIndex}][nominal_bayar]" value="${data.nominal_bayar ? parseInt(data.nominal_bayar).toLocaleString('id-ID') : ''}" class="w-full pl-6 text-right border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500 pbm-row-calc" placeholder="0">
+                        </div>
+                    </td>
+                    <td class="px-2 py-2">
+                        <div class="relative">
+                            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">Rp</span>
+                            <input type="text" name="pbm_detail[${pbmRowIndex}][biaya_admin]" value="${data.biaya_admin ? parseInt(data.biaya_admin).toLocaleString('id-ID') : ''}" class="w-full pl-6 text-right border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500 pbm-row-calc" placeholder="0">
+                        </div>
+                    </td>
+                    <td class="px-2 py-2">
+                        <div class="relative">
+                            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">Rp</span>
+                            <input type="text" name="pbm_detail[${pbmRowIndex}][grand_total]" value="${data.grand_total ? parseInt(data.grand_total).toLocaleString('id-ID') : ''}" class="w-full pl-6 text-right bg-gray-50 border-gray-300 rounded-md text-xs shadow-sm cursor-not-allowed font-semibold pbm-row-total" readonly placeholder="0">
+                        </div>
+                    </td>
+                    <td class="px-1 py-2 text-center">
+                        <button type="button" class="remove-pbm-row text-red-500 hover:text-red-700 transition transform active:scale-90">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                pbmRowIndex++;
+                
+                // Add listeners to new fields
+                row.querySelectorAll('.pbm-row-calc').forEach(input => {
+                    input.addEventListener('input', () => {
+                        formatCurrency(input);
+                        calculatePBMRows();
+                    });
+                });
+                
+                row.querySelector('.remove-pbm-row').addEventListener('click', () => {
+                    row.remove();
+                    calculatePBMRows();
+                });
+            }
+
+            function formatCurrency(input) {
+                let val = input.value.replace(/[^0-9]/g, '');
+                if (val) {
+                    input.value = parseInt(val).toLocaleString('id-ID');
+                } else {
+                    input.value = '';
+                }
+            }
+
+            function calculatePBMRows() {
+                let totalSum = 0;
+                tbody.querySelectorAll('tr').forEach(row => {
+                    const nominalInput = row.querySelector('input[name*="[nominal_bayar]"]');
+                    const adminInput = row.querySelector('input[name*="[biaya_admin]"]');
+                    const rowTotalInput = row.querySelector('.pbm-row-total');
+                    
+                    const nominal = parseInt(nominalInput.value.replace(/[^0-9]/g, '')) || 0;
+                    const admin = parseInt(adminInput.value.replace(/[^0-9]/g, '')) || 0;
+                    const rowTotal = nominal + admin;
+                    
+                    rowTotalInput.value = rowTotal.toLocaleString('id-ID');
+                    totalSum += rowTotal;
+                });
+                
+                if (totalSumDisplay) totalSumDisplay.textContent = 'Rp ' + totalSum.toLocaleString('id-ID');
+                
+                // Sync with main total field
+                const namaJenisBiaya = $('#jenis_biaya_dropdown option:selected').text().toLowerCase();
+                if (mainTotalInput && namaJenisBiaya.includes('pbm')) {
+                    mainTotalInput.value = totalSum > 0 ? totalSum.toLocaleString('id-ID') : '';
+                }
+            }
+
+            if (addBtn) addBtn.addEventListener('click', () => addPBMLine());
+            
+            // Load existing data
+            const existingDetails = @json($invoice->pbm_detail_array);
+            console.log('Existing PBM details:', existingDetails);
+            if (existingDetails && existingDetails.length > 0) {
+                existingDetails.forEach(detail => addPBMLine(detail));
+                calculatePBMRows();
+            } else {
+                // If it's a PBM invoice but no details yet (legacy from previous step), add one row with legacy data
+                @if($invoice->klasifikasiBiayaUmum && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'pbm'))
+                    addPBMLine({
+                        referensi: '{{ $invoice->referensi }}',
+                        penerima: '{{ $invoice->penerima }}',
+                        nomor_bank: '{{ $invoice->nomor_bank }}',
+                        nominal_bayar: '{{ (int)$invoice->nominal_bayar }}',
+                        biaya_admin: '{{ (int)$invoice->biaya_admin }}',
+                        grand_total: '{{ (int)$invoice->total }}'
+                    });
+                    calculatePBMRows();
+                @endif
+            }
+
+            // Expose addPBMLine for use in toggle logic
+            window.addPBMLine = addPBMLine;
+        }
+        
+        setupPBMCalculations();
         
         generateInvoiceNumber();
     }
