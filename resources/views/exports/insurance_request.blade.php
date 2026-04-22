@@ -43,7 +43,7 @@
                     <td align="right" valign="top"><b>{{ number_format($containerItems->sum('amount') ?: 0, 0, ',', '.') }}</b></td>
                 </tr>
                 
-                @foreach($containerItems as $item)
+                @foreach($containerItems as $index => $item)
                     <tr>
                         <td></td>
                         <td></td>
@@ -52,7 +52,11 @@
                         <td align="left" valign="top">{{ strtoupper($item->nama_barang) }}</td>
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td align="right" valign="top">
+                            @if($index === 0)
+                                @if($first->rate){{ number_format($first->rate, 2, ',', '.') }}%@else 0,30% @endif
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
                 
@@ -62,7 +66,7 @@
                     <td></td>
                     <td></td>
                     <td align="left" style="color: #FF0000;">PT. AYP QQ {{ $first->pengirim }} - JAKARTA</td>
-                    <td align="right">@if($first->rate){{ number_format($first->rate, 2, ',', '.') }}%@else 0,30% @endif</td>
+                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>
