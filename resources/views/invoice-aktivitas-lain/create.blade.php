@@ -3786,6 +3786,12 @@ console.log('Akun COAs data:', akunCoasData);
             let pbmRowIndex = 0;
 
             function addPBMLine(data = {}) {
+                const defaultPenerima = "SDR MUHAMMAD SUHARMIN";
+                const defaultNomorBank = "1232290277";
+                
+                const initialPenerima = data.penerima !== undefined ? data.penerima : defaultPenerima;
+                const initialNomorBank = data.nomor_bank !== undefined ? data.nomor_bank : defaultNomorBank;
+
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-gray-50 transition-colors';
                 row.innerHTML = `
@@ -3793,10 +3799,10 @@ console.log('Akun COAs data:', akunCoasData);
                         <input type="text" name="pbm_detail[${pbmRowIndex}][referensi]" value="${data.referensi || ''}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="No. Ref...">
                     </td>
                     <td class="px-2 py-2">
-                        <input type="text" name="pbm_detail[${pbmRowIndex}][penerima]" value="${data.penerima || ''}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Penerima...">
+                        <input type="text" name="pbm_detail[${pbmRowIndex}][penerima]" value="${initialPenerima}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Penerima...">
                     </td>
                     <td class="px-2 py-2">
-                        <input type="text" name="pbm_detail[${pbmRowIndex}][nomor_bank]" value="${data.nomor_bank || ''}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="No. Bank...">
+                        <input type="text" name="pbm_detail[${pbmRowIndex}][nomor_bank]" value="${initialNomorBank}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="No. Bank...">
                     </td>
                     <td class="px-2 py-2">
                         <div class="relative">
