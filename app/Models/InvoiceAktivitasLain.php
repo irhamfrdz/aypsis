@@ -45,6 +45,7 @@ class InvoiceAktivitasLain extends Model
         'catatan',
         'keterangan',
         'nomor_bank',
+        'nama_bank',
         'nominal_bayar',
         'biaya_admin',
         'pbm_detail',

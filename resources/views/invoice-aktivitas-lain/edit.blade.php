@@ -448,6 +448,7 @@
                                     <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">No. Voyage</th>
                                     <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">Penerima</th>
                                     <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">No. Bank</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">Nama Bank</th>
                                     <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider">Nominal Bayar</th>
                                     <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider">Biaya Admin</th>
                                     <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">Catatan</th>
@@ -3838,9 +3839,11 @@ console.log('Akun COAs data:', akunCoasData);
             function addPBMLine(data = {}) {
                 const defaultPenerima = "SDR MUHAMMAD SUHARMIN";
                 const defaultNomorBank = "1232290277";
+                const defaultNamaBank = "MANDIRI";
                 
                 const initialPenerima = data.penerima !== undefined ? data.penerima : defaultPenerima;
                 const initialNomorBank = data.nomor_bank !== undefined ? data.nomor_bank : defaultNomorBank;
+                const initialNamaBank = data.nama_bank !== undefined ? data.nama_bank : defaultNamaBank;
 
                 let voyageOptions = '<option value="">Pilih Voyage</option>';
                 @if(isset($voyages))
@@ -3865,6 +3868,9 @@ console.log('Akun COAs data:', akunCoasData);
                     </td>
                     <td class="px-2 py-2">
                         <input type="text" name="pbm_detail[${pbmRowIndex}][nomor_bank]" value="${initialNomorBank}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="No. Bank...">
+                    </td>
+                    <td class="px-2 py-2">
+                        <input type="text" name="pbm_detail[${pbmRowIndex}][nama_bank]" value="${initialNamaBank}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Nama Bank...">
                     </td>
                     <td class="px-2 py-2">
                         <div class="relative">
@@ -3972,6 +3978,7 @@ console.log('Akun COAs data:', akunCoasData);
                         referensi: '{{ $invoice->referensi }}',
                         penerima: '{{ $invoice->penerima }}',
                         nomor_bank: '{{ $invoice->nomor_bank }}',
+                        nama_bank: '{{ $invoice->nama_bank }}',
                         nominal_bayar: '{{ (int)$invoice->nominal_bayar }}',
                         biaya_admin: '{{ (int)$invoice->biaya_admin }}',
                         grand_total: '{{ (int)$invoice->total }}'

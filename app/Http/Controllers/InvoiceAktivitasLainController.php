@@ -398,6 +398,7 @@ class InvoiceAktivitasLainController extends Controller
             'pbm_detail.*.nomor_voyage' => 'nullable|string',
             'pbm_detail.*.penerima' => 'nullable|string|max:255',
             'pbm_detail.*.nomor_bank' => 'nullable|string|max:255',
+            'pbm_detail.*.nama_bank' => 'nullable|string|max:255',
             'pbm_detail.*.nominal_bayar' => 'nullable|string',
             'pbm_detail.*.biaya_admin' => 'nullable|string',
             'pbm_detail.*.grand_total' => 'nullable|string',
@@ -446,6 +447,14 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
             $validated['pbm_detail'] = json_encode($validated['pbm_detail']);
+
+            // Sync first PBM row to main columns if not already set
+            $pbmData = json_decode($validated['pbm_detail'], true);
+            if (!empty($pbmData) && isset($pbmData[0])) {
+                if (empty($validated['penerima'])) $validated['penerima'] = $pbmData[0]['penerima'] ?? null;
+                if (empty($validated['nomor_bank'])) $validated['nomor_bank'] = $pbmData[0]['nomor_bank'] ?? null;
+                if (empty($validated['nama_bank'])) $validated['nama_bank'] = $pbmData[0]['nama_bank'] ?? null;
+            }
         }
 
         // Map Labuh Tambat fields to database columns
@@ -979,6 +988,7 @@ class InvoiceAktivitasLainController extends Controller
             'pbm_detail.*.nomor_voyage' => 'nullable|string',
             'pbm_detail.*.penerima' => 'nullable|string|max:255',
             'pbm_detail.*.nomor_bank' => 'nullable|string|max:255',
+            'pbm_detail.*.nama_bank' => 'nullable|string|max:255',
             'pbm_detail.*.nominal_bayar' => 'nullable|string',
             'pbm_detail.*.biaya_admin' => 'nullable|string',
             'pbm_detail.*.grand_total' => 'nullable|string',
@@ -1017,6 +1027,14 @@ class InvoiceAktivitasLainController extends Controller
                 if (isset($pbm['grand_total'])) $pbm['grand_total'] = str_replace(['.', ','], '', $pbm['grand_total']);
             }
             $validated['pbm_detail'] = json_encode($validated['pbm_detail']);
+
+            // Sync first PBM row to main columns if not already set
+            $pbmData = json_decode($validated['pbm_detail'], true);
+            if (!empty($pbmData) && isset($pbmData[0])) {
+                if (empty($validated['penerima'])) $validated['penerima'] = $pbmData[0]['penerima'] ?? null;
+                if (empty($validated['nomor_bank'])) $validated['nomor_bank'] = $pbmData[0]['nomor_bank'] ?? null;
+                if (empty($validated['nama_bank'])) $validated['nama_bank'] = $pbmData[0]['nama_bank'] ?? null;
+            }
         }
 
         // Map Labuh Tambat fields

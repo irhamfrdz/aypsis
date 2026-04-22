@@ -430,6 +430,7 @@
                                         <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">No. Invoice/Ref</th>
                                         <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Penerima</th>
                                         <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">No. Bank</th>
+                                        <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nama Bank</th>
                                         <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nominal Bayar</th>
                                         <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Biaya Admin</th>
                                         <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Catatan</th>
@@ -449,6 +450,7 @@
                                             <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['referensi'] ?? '-' }}</td>
                                             <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['penerima'] ?? '-' }}</td>
                                             <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['nomor_bank'] ?? '-' }}</td>
+                                            <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['nama_bank'] ?? '-' }}</td>
                                             <td class="px-3 py-3 text-xs text-gray-700 text-right">Rp {{ number_format($nominalVal, 0, ',', '.') }}</td>
                                             <td class="px-3 py-3 text-xs text-gray-700 text-right text-yellow-600 font-medium">+ Rp {{ number_format($adminVal, 0, ',', '.') }}</td>
                                             <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['catatan'] ?? '-' }}</td>
@@ -470,6 +472,10 @@
                             <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Bank</label>
                                 <p class="text-gray-900 font-bold">{{ $invoice->nomor_bank ?? '-' }}</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Nama Bank</label>
+                                <p class="text-gray-900 font-bold">{{ $invoice->nama_bank ?? '-' }}</p>
                             </div>
                             <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
                                 <label class="block text-xs font-medium text-blue-600 mb-1">Nominal Bayar</label>

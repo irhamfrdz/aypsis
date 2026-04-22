@@ -234,14 +234,16 @@
                     if (empty($pbmDetails)) {
                         $uniqueRecipients[] = [
                             'penerima' => $invoice->penerima ?? '-',
-                            'rekening' => $invoice->nomor_bank ?? '-'
+                            'rekening' => $invoice->nomor_bank ?? '-',
+                            'bank' => $invoice->nama_bank ?? '-'
                         ];
                     } else {
                         foreach($pbmDetails as $pbm) {
-                            $key = ($pbm['penerima'] ?? '-') . '|' . ($pbm['nomor_bank'] ?? '-');
+                            $key = ($pbm['penerima'] ?? '-') . '|' . ($pbm['nomor_bank'] ?? '-') . '|' . ($pbm['nama_bank'] ?? '-');
                             $uniqueRecipients[$key] = [
                                 'penerima' => $pbm['penerima'] ?? '',
-                                'rekening' => $pbm['nomor_bank'] ?? ''
+                                'rekening' => $pbm['nomor_bank'] ?? '',
+                                'bank' => $pbm['nama_bank'] ?? ''
                             ];
                         }
                         $uniqueRecipients = array_values($uniqueRecipients);
@@ -264,12 +266,20 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>No. Ref</td>
-                    <td>: {{ $invoice->referensi ?? $invoice->nomor_invoice }}</td>
                     <td>No. Rekening</td>
                     <td>: 
                         @foreach($uniqueRecipients as $rec)
                             {{ $rec['rekening'] ?: '-' }}{{ !$loop->last ? ', ' : '' }}
+                        @endforeach
+                    </td>
+                </tr>
+                <tr>
+                    <td>No. Ref</td>
+                    <td>: {{ $invoice->referensi ?? $invoice->nomor_invoice }}</td>
+                    <td>Bank</td>
+                    <td>: 
+                        @foreach($uniqueRecipients as $rec)
+                            {{ $rec['bank'] ?: '-' }}{{ !$loop->last ? ', ' : '' }}
                         @endforeach
                     </td>
                 </tr>
