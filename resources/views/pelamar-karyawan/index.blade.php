@@ -12,6 +12,10 @@
                 <div class="flex items-center gap-4">
                     <h1 class="text-xl font-bold text-gray-900 leading-tight">Daftar Pelamar Karyawan</h1>
                 </div>
+                <div class="flex bg-gray-100 p-1 rounded-lg">
+                    <a href="{{ route('master.pelamar-karyawan.index', ['filter' => 'belum']) }}" class="{{ request('filter', 'belum') === 'belum' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700' }} px-4 py-2 rounded-md text-sm font-medium transition-all">Belum Terdaftar</a>
+                    <a href="{{ route('master.pelamar-karyawan.index', ['filter' => 'sudah']) }}" class="{{ request('filter') === 'sudah' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700' }} px-4 py-2 rounded-md text-sm font-medium transition-all">Sudah Jadi Karyawan</a>
+                </div>
             </div>
         </div>
 

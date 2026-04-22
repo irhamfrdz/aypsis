@@ -13,10 +13,22 @@ class PelamarKaryawanController extends Controller
         return view('pelamar-karyawan.create');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $pelamars = PelamarKaryawan::latest()->paginate(10);
-        return view('pelamar-karyawan.index', compact('pelamars'));
+        $filter = $request->query('filter', 'belum');
+        $registeredNiks = \App\Models\Karyawan::pluck('ktp')->filter()->toArray();
+
+        $query = PelamarKaryawan::latest();
+        
+        if ($filter === 'sudah') {
+            $query->whereIn('no_nik', $registeredNiks);
+        } else {
+            $query->whereNotIn('no_nik', $registeredNiks);
+        }
+
+        $pelamars = $query->paginate(10)->appends(['filter' => $filter]);
+        
+        return view('pelamar-karyawan.index', compact('pelamars', 'filter'));
     }
 
     public function show(PelamarKaryawan $pelamar)
