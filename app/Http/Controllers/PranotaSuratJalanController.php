@@ -362,9 +362,6 @@ class PranotaSuratJalanController extends Controller
         }
     }
 
-    /**
-     * Remove the specified pranota uang jalan from storage.
-     */
     public function destroy(PranotaUangJalan $pranotaUangJalan)
     {
         $user = Auth::user();
@@ -403,6 +400,60 @@ class PranotaSuratJalanController extends Controller
             DB::rollBack();
             Log::error('Error deleting pranota uang jalan: ' . $e->getMessage());
             return back()->with('error', 'Gagal menghapus pranota uang jalan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Remove a specific uang jalan from the pranota.
+     */
+    public function removeUangJalan(PranotaUangJalan $pranotaUangJalan, UangJalan $uangJalan)
+    {
+        $user = Auth::user();
+
+        // Check permission
+        if (!$this->hasPranotaUangJalanPermission($user, 'pranota-uang-jalan-update')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengubah pranota uang jalan.');
+        }
+
+        // Only allow removing if status is unpaid or paid
+        if (!in_array($pranotaUangJalan->status_pembayaran, ['unpaid', 'paid'])) {
+            return back()->with('error', 'Item tidak dapat dikeluarkan dari pranota dengan status ' . $pranotaUangJalan->status_pembayaran);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Detach uang jalan from pranota
+            $pranotaUangJalan->uangJalans()->detach($uangJalan->id);
+
+            // Restore uang jalan status back to 'belum_masuk_pranota'
+            $uangJalan->update(['status' => 'belum_masuk_pranota']);
+
+            // Recalculate total amount and count
+            $pranotaUangJalan->load('uangJalans');
+            $totalAmount = $pranotaUangJalan->uangJalans->sum('jumlah_total');
+            $jumlahUangJalan = $pranotaUangJalan->uangJalans->count();
+
+            // If no more items, maybe delete the pranota? 
+            // Or just keep it with 0 items. Usually keep it.
+            $pranotaUangJalan->update([
+                'total_amount' => $totalAmount,
+                'jumlah_uang_jalan' => $jumlahUangJalan,
+                'updated_by' => $user->id
+            ]);
+
+            Log::info('Uang jalan removed from pranota', [
+                'pranota_id' => $pranotaUangJalan->id,
+                'uang_jalan_id' => $uangJalan->id,
+                'removed_by' => $user->name,
+            ]);
+
+            DB::commit();
+            return back()->with('success', 'Uang jalan ' . $uangJalan->nomor_uang_jalan . ' berhasil dikeluarkan dari pranota.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error removing uang jalan from pranota: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengeluarkan uang jalan: ' . $e->getMessage());
         }
     }
 

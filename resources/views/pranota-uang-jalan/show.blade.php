@@ -133,6 +133,9 @@
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supir/Kenek</th>
                                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
                                 <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                @if(in_array($pranotaUangJalan->status_pembayaran, ['unpaid', 'paid']))
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase scale-90">Aksi</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -192,12 +195,24 @@
                                             </div>
                                         @endif
                                     </td>
+                                    @if(in_array($pranotaUangJalan->status_pembayaran, ['unpaid', 'paid']))
+                                        <td class="px-3 py-2 text-center">
+                                            <form action="{{ route('pranota-uang-jalan.remove-uang-jalan', [$pranotaUangJalan, $uangJalan]) }}" method="POST" onsubmit="return confirm('Keluarkan uang jalan ini dari pranota?')">
+                                                @csrf
+                                                <button type="submit" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors" title="Keluarkan dari Pranota">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="bg-gray-50">
                             <tr>
-                                <td colspan="7" class="px-3 py-3 text-right text-sm font-semibold text-gray-900">
+                                <td colspan="{{ in_array($pranotaUangJalan->status_pembayaran, ['unpaid', 'paid']) ? '8' : '7' }}" class="px-3 py-3 text-right text-sm font-semibold text-gray-900">
                                     Total Keseluruhan:
                                 </td>
                                 <td class="px-3 py-3 text-right text-lg font-bold text-gray-900">

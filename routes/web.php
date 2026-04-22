@@ -2768,6 +2768,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('pranota-uang-jalan.update-total')
          ->middleware('can:pranota-uang-jalan-update');
 
+    Route::post('pranota-uang-jalan/{pranotaUangJalan}/remove-uang-jalan/{uangJalan}', [\App\Http\Controllers\PranotaSuratJalanController::class, 'removeUangJalan'])
+         ->name('pranota-uang-jalan.remove-uang-jalan')
+         ->middleware('can:pranota-uang-jalan-update');
+
     Route::resource('pranota-uang-jalan', \App\Http\Controllers\PranotaSuratJalanController::class)
          ->middleware([
              'index' => 'can:pranota-uang-jalan-view',
@@ -3988,6 +3992,9 @@ Route::get('/test-gate-in-ajax', function () {
                 ->middleware('can:pembayaran-pranota-uang-jalan-delete');
             Route::post('/update-date', [PembayaranPranotaUangJalanController::class, 'updateDate'])
                 ->name('update-date')
+                ->middleware('can:pembayaran-pranota-uang-jalan-edit');
+            Route::post('/{pembayaranPranotaUangJalan}/sync-coa', [PembayaranPranotaUangJalanController::class, 'syncCoa'])
+                ->name('sync-coa')
                 ->middleware('can:pembayaran-pranota-uang-jalan-edit');
         });
 

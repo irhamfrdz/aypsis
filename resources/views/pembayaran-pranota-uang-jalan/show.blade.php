@@ -41,6 +41,18 @@
                         </a>
                     @endif
                 @endcan
+                @can('pembayaran-pranota-uang-jalan-edit')
+                    <form action="{{ route('pembayaran-pranota-uang-jalan.sync-coa', $pembayaranPranotaUangJalan) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin sinkronisasi ulang data COA ini?')">
+                        @csrf
+                        <button type="submit" 
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center">
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Sync COA
+                        </button>
+                    </form>
+                @endcan
                 <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" 
                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

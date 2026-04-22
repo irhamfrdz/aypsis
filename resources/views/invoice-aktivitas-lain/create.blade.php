@@ -440,6 +440,7 @@
                             <thead class="bg-gray-100">
                                 <tr>
                                     <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">No. Invoice/Ref</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">No. Voyage</th>
                                     <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">Penerima</th>
                                     <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">No. Bank</th>
                                     <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider">Nominal Bayar</th>
@@ -453,7 +454,7 @@
                             </tbody>
                             <tfoot class="bg-gray-50 border-t border-gray-200">
                                 <tr>
-                                    <td colspan="5" class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase italic">Grand Total PBM:</td>
+                                    <td colspan="6" class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase italic">Grand Total PBM:</td>
                                     <td class="px-3 py-3 text-right text-sm font-black text-blue-700" id="grand_total_pbm_sum">Rp 0</td>
                                     <td></td>
                                 </tr>
@@ -3792,11 +3793,23 @@ console.log('Akun COAs data:', akunCoasData);
                 const initialPenerima = data.penerima !== undefined ? data.penerima : defaultPenerima;
                 const initialNomorBank = data.nomor_bank !== undefined ? data.nomor_bank : defaultNomorBank;
 
+                let voyageOptions = '<option value="">Pilih Voyage</option>';
+                @if(isset($voyages))
+                    @foreach($voyages as $voyage)
+                        voyageOptions += `<option value="{{ $voyage->voyage }}">{{ $voyage->voyage }} | {{ $voyage->nama_kapal }}</option>`;
+                    @endforeach
+                @endif
+
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-gray-50 transition-colors';
                 row.innerHTML = `
                     <td class="px-2 py-2">
                         <input type="text" name="pbm_detail[${pbmRowIndex}][referensi]" value="${data.referensi || ''}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="No. Ref...">
+                    </td>
+                    <td class="px-2 py-2">
+                        <select name="pbm_detail[${pbmRowIndex}][nomor_voyage]" class="pbm-voyage-select w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            ${voyageOptions}
+                        </select>
                     </td>
                     <td class="px-2 py-2">
                         <input type="text" name="pbm_detail[${pbmRowIndex}][penerima]" value="${initialPenerima}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Penerima...">
@@ -3840,6 +3853,18 @@ console.log('Akun COAs data:', akunCoasData);
                         calculatePBMRows();
                     });
                 });
+
+                // Initialize Select2 for the voyage dropdown
+                const selectEl = row.querySelector('.pbm-voyage-select');
+                $(selectEl).select2({
+                    placeholder: 'Pilih Voyage',
+                    allowClear: true,
+                    width: '100%'
+                });
+                
+                if (data.nomor_voyage) {
+                    $(selectEl).val(data.nomor_voyage).trigger('change');
+                }
                 
                 row.querySelector('.remove-pbm-row').addEventListener('click', () => {
                     row.remove();

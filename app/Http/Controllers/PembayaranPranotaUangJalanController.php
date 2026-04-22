@@ -721,4 +721,61 @@ class PembayaranPranotaUangJalanController extends Controller
             return redirect()->back()->with('error', 'Gagal memperbarui tanggal: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Sync payment data with COA transactions.
+     */
+    public function syncCoa(PembayaranPranotaUangJalan $pembayaranPranotaUangJalan)
+    {
+        $user = Auth::user();
+
+        DB::beginTransaction();
+        try {
+            // 1. Delete existing COA transactions for this payment reference
+            $this->coaTransactionService->deleteTransactionByReference($pembayaranPranotaUangJalan->nomor_pembayaran);
+
+            // 2. Prepare data for re-sync
+            $totalPembayaran = $pembayaranPranotaUangJalan->total_tagihan_setelah_penyesuaian ?? $pembayaranPranotaUangJalan->total_pembayaran;
+            $bankName = $pembayaranPranotaUangJalan->bank;
+            $jenisTransaksi = $pembayaranPranotaUangJalan->jenis_transaksi;
+            $keterangan = "Pembayaran Pranota Uang Jalan - " . $pembayaranPranotaUangJalan->nomor_pembayaran . " (Synced)";
+
+            // 3. Record Double Entry using identical logic as store()
+            if ($jenisTransaksi == 'Debit') {
+                // Jenis Debit: Bank bertambah (Debit), Biaya Uang Jalan berkurang (Kredit)
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // DEBIT Bank
+                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // KREDIT Biaya
+                    $pembayaranPranotaUangJalan->tanggal_pembayaran,
+                    $pembayaranPranotaUangJalan->nomor_pembayaran,
+                    'Pembayaran Pranota Uang Jalan',
+                    $keterangan
+                );
+            } else {
+                // Jenis Kredit: Biaya Uang Jalan bertambah (Debit), Bank berkurang (Kredit)
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // DEBIT Biaya
+                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // KREDIT Bank
+                    $pembayaranPranotaUangJalan->tanggal_pembayaran,
+                    $pembayaranPranotaUangJalan->nomor_pembayaran,
+                    'Pembayaran Pranota Uang Jalan',
+                    $keterangan
+                );
+            }
+
+            Log::info('Double Entry Accounting RE-SYNCED for Pembayaran Pranota Uang Jalan', [
+                'nomor_pembayaran' => $pembayaranPranotaUangJalan->nomor_pembayaran,
+                'total_pembayaran' => $totalPembayaran,
+                'synced_by' => $user->name
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Transaksi COA untuk ' . $pembayaranPranotaUangJalan->nomor_pembayaran . ' berhasil disinkronisasi.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error syncing COA for payment: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal sinkronisasi COA: ' . $e->getMessage());
+        }
+    }
 }
