@@ -255,13 +255,14 @@
                 <thead>
                     <tr>
                         <th style="width: 3%;">No</th>
-                        <th style="width: 12%;">No. Referensi</th>
-                        <th style="width: 15%;">Voyage</th>
-                        <th style="width: 12%;">Penerima</th>
-                        <th style="width: 18%;">No. Rekening</th>
-                        <th style="width: 12%;">Nominal Bayar</th>
-                        <th style="width: 8%;">Adm</th>
-                        <th style="width: 20%;">Total</th>
+                        <th style="width: 10%;">No. Referensi</th>
+                        <th style="width: 12%;">Voyage</th>
+                        <th style="width: 10%;">Penerima</th>
+                        <th style="width: 12%;">No. Rekening</th>
+                        <th style="width: 15%;">Catatan</th>
+                        <th style="width: 14%;">Nominal Bayar</th>
+                        <th style="width: 10%;">Adm</th>
+                        <th style="width: 14%;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -286,6 +287,7 @@
                             <td>{{ $pbm['nomor_voyage'] ?? '-' }}</td>
                             <td>{{ $pbm['penerima'] ?? '-' }}</td>
                             <td>{{ $pbm['nomor_bank'] ?? '-' }}</td>
+                            <td>{{ $pbm['catatan'] ?? '-' }}</td>
                             <td class="text-right">{{ number_format($nominal, 0, ',', '.') }}</td>
                             <td class="text-right">{{ number_format($admin, 0, ',', '.') }}</td>
                             <td class="text-right">Rp {{ number_format($total, 0, ',', '.') }}</td>
@@ -304,6 +306,7 @@
                             <td>{{ $invoice->nomor_voyage ?? '-' }}</td>
                             <td>{{ $invoice->penerima ?? '-' }}</td>
                             <td>{{ $invoice->nomor_bank ?? '-' }}</td>
+                            <td>-</td>
                             <td class="text-right">{{ number_format($nominal, 0, ',', '.') }}</td>
                             <td class="text-right">{{ number_format($admin, 0, ',', '.') }}</td>
                             <td class="text-right">Rp {{ number_format($total, 0, ',', '.') }}</td>
@@ -312,31 +315,31 @@
                     
                     @if($invoice->biaya_materai > 0 || $invoice->biaya_adjustment != 0 || $invoice->pph > 0)
                         <tr>
-                            <td colspan="7" class="text-right">Subtotal</td>
+                            <td colspan="8" class="text-right">Subtotal</td>
                             <td class="text-right">Rp {{ number_format($grandTotalAll, 0, ',', '.') }}</td>
                         </tr>
                         @if($invoice->biaya_materai > 0)
                         <tr>
-                            <td colspan="7" class="text-right">Materai</td>
+                            <td colspan="8" class="text-right">Materai</td>
                             <td class="text-right">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</td>
                         </tr>
                         @endif
                         @if($invoice->biaya_adjustment != 0)
                         <tr>
-                            <td colspan="7" class="text-right">Adjustment</td>
+                            <td colspan="8" class="text-right">Adjustment</td>
                             <td class="text-right">Rp {{ ($invoice->biaya_adjustment > 0 ? '+' : '') . number_format($invoice->biaya_adjustment, 0, ',', '.') }}</td>
                         </tr>
                         @endif
                         @if($invoice->pph > 0)
                         <tr>
-                            <td colspan="7" class="text-right">PPH</td>
+                            <td colspan="8" class="text-right">PPH</td>
                             <td class="text-right">Rp ({{ number_format($invoice->pph, 0, ',', '.') }})</td>
                         </tr>
                         @endif
                     @endif
 
                     <tr class="total-row">
-                        <td colspan="7" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="8" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($invoice->grand_total ?? $invoice->total, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>

@@ -401,6 +401,7 @@ class InvoiceAktivitasLainController extends Controller
             'pbm_detail.*.nominal_bayar' => 'nullable|string',
             'pbm_detail.*.biaya_admin' => 'nullable|string',
             'pbm_detail.*.grand_total' => 'nullable|string',
+            'pbm_detail.*.catatan' => 'nullable|string',
         ]);
         
         // Convert bl_details array to JSON for storage
@@ -981,6 +982,7 @@ class InvoiceAktivitasLainController extends Controller
             'pbm_detail.*.nominal_bayar' => 'nullable|string',
             'pbm_detail.*.biaya_admin' => 'nullable|string',
             'pbm_detail.*.grand_total' => 'nullable|string',
+            'pbm_detail.*.catatan' => 'nullable|string',
         ]);
         
         // Convert arrays to JSON

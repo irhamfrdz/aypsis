@@ -445,6 +445,7 @@
                                     <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">No. Bank</th>
                                     <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider">Nominal Bayar</th>
                                     <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider">Biaya Admin</th>
+                                    <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-600 uppercase tracking-wider">Catatan</th>
                                     <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-600 uppercase tracking-wider">Total</th>
                                     <th class="px-1 py-3 text-center text-[10px] font-bold text-gray-600 uppercase tracking-wider w-10"></th>
                                 </tr>
@@ -454,7 +455,7 @@
                             </tbody>
                             <tfoot class="bg-gray-50 border-t border-gray-200">
                                 <tr>
-                                    <td colspan="6" class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase italic">Grand Total PBM:</td>
+                                    <td colspan="7" class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase italic">Grand Total PBM:</td>
                                     <td class="px-3 py-3 text-right text-sm font-black text-blue-700" id="grand_total_pbm_sum">Rp 0</td>
                                     <td></td>
                                 </tr>
@@ -3828,6 +3829,9 @@ console.log('Akun COAs data:', akunCoasData);
                             <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">Rp</span>
                             <input type="text" name="pbm_detail[${pbmRowIndex}][biaya_admin]" value="${data.biaya_admin || ''}" class="w-full pl-6 text-right border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500 pbm-row-calc" placeholder="0">
                         </div>
+                    </td>
+                    <td class="px-2 py-2">
+                        <input type="text" name="pbm_detail[${pbmRowIndex}][catatan]" value="${data.catatan || ''}" class="w-full border-gray-300 rounded-md text-xs shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Catatan...">
                     </td>
                     <td class="px-2 py-2">
                         <div class="relative">

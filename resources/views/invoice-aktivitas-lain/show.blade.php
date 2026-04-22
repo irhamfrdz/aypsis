@@ -432,6 +432,7 @@
                                         <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">No. Bank</th>
                                         <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Nominal Bayar</th>
                                         <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Biaya Admin</th>
+                                        <th class="px-3 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Catatan</th>
                                         <th class="px-3 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total</th>
                                     </tr>
                                 </thead>
@@ -450,13 +451,14 @@
                                             <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['nomor_bank'] ?? '-' }}</td>
                                             <td class="px-3 py-3 text-xs text-gray-700 text-right">Rp {{ number_format($nominalVal, 0, ',', '.') }}</td>
                                             <td class="px-3 py-3 text-xs text-gray-700 text-right text-yellow-600 font-medium">+ Rp {{ number_format($adminVal, 0, ',', '.') }}</td>
+                                            <td class="px-3 py-3 text-xs text-gray-700">{{ $pbm['catatan'] ?? '-' }}</td>
                                             <td class="px-3 py-3 text-xs font-bold text-blue-700 text-right">Rp {{ number_format($rowTotal, 0, ',', '.') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                                 <tfoot class="bg-gray-50 border-t border-gray-200 font-bold">
                                     <tr>
-                                        <td colspan="5" class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase italic">Grand Total PBM:</td>
+                                        <td colspan="6" class="px-3 py-3 text-right text-xs font-bold text-gray-700 uppercase italic">Grand Total PBM:</td>
                                         <td class="px-3 py-3 text-right text-sm font-black text-blue-800">Rp {{ number_format($pbmTotal, 0, ',', '.') }}</td>
                                     </tr>
                                 </tfoot>
