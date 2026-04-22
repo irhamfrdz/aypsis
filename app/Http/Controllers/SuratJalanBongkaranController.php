@@ -231,6 +231,10 @@ class SuratJalanBongkaranController extends Controller
                                                                ->orderBy('ke')
                                                                ->get();
 
+        $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::orderBy('rute')
+                                                                       ->get()
+                                                                       ->groupBy('rute');
+
         $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
                                          ->where('status', 'aktif')
                                          ->orderBy('nama_kegiatan')
@@ -238,7 +242,7 @@ class SuratJalanBongkaranController extends Controller
 
         $terms = \App\Models\Term::orderBy('kode')->get();
 
-        return view('surat-jalan-bongkaran.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
+        return view('surat-jalan-bongkaran.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
     }
 
     /**

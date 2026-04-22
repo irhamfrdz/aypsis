@@ -1200,6 +1200,62 @@
 
 @push('scripts')
 <script>
+// Data for destinations based on location
+const destinations = {
+    jakarta: [
+        @foreach($tujuanKegiatanUtamas as $tujuan)
+        { 
+            label: "{{ $tujuan->ke }}", 
+            value: "{{ $tujuan->ke }}", 
+            uj20: {{ $tujuan->uang_jalan_20ft ?? 0 }}, 
+            uj40: {{ $tujuan->uang_jalan_40ft ?? 0 }} 
+        },
+        @endforeach
+    ],
+    batam: [
+        @foreach($pricelistUangJalanBatams as $rute => $items)
+        { 
+            label: "{{ $rute }}", 
+            value: "{{ $rute }}", 
+            uj20: {{ $items->filter(function($i){ return strpos($i->size, '20') !== false; })->first()->tarif ?? 0 }}, 
+            uj40: {{ $items->filter(function($i){ return strpos($i->size, '40') !== false; })->first()->tarif ?? 0 }} 
+        },
+        @endforeach
+    ]
+};
+
+// Function to update Tujuan Pengiriman options based on selected Lokasi
+function updateDestinationOptions(modalType) {
+    const prefix = modalType === 'create' ? 'modal_' : 'edit_modal_';
+    const lokasiSelect = document.getElementById(prefix + 'lokasi');
+    const tujuanSelect = document.getElementById(prefix + 'tujuan_pengambilan');
+    
+    if (!lokasiSelect || !tujuanSelect) return;
+    
+    const selectedLokasi = lokasiSelect.value;
+    const availableDestinations = destinations[selectedLokasi] || [];
+    
+    // Remember current selection if any
+    const currentValue = tujuanSelect.value;
+    
+    // Clear and add default option
+    tujuanSelect.innerHTML = '<option value="">Pilih tujuan pengiriman</option>';
+    
+    // Add new options
+    availableDestinations.forEach(dest => {
+        const option = document.createElement('option');
+        option.value = dest.value;
+        option.text = dest.label;
+        option.setAttribute('data-uang-jalan-20', dest.uj20);
+        option.setAttribute('data-uang-jalan-40', dest.uj40);
+        
+        if (dest.value === currentValue) {
+            option.selected = true;
+        }
+        
+        tujuanSelect.appendChild(option);
+    });
+}
 // Toggle dropdown menu for action buttons
 function toggleDropdown(dropdownId) {
     // Close all other dropdowns first
@@ -1265,6 +1321,18 @@ function buatSuratJalanManual() {
     setupModalSupirAutoFill();
     setupModalUangJalanCalculation('');
     setupModalLanjutMuatToggle();
+
+    // Add listener for lokasi change
+    const lokasiSelect = document.getElementById('modal_lokasi');
+    if (lokasiSelect) {
+        // Trigger initial update for destinations
+        updateDestinationOptions('create');
+        
+        // Remove existing listener if any to avoid duplicates
+        lokasiSelect.onchange = () => {
+            updateDestinationOptions('create');
+        };
+    }
 }
 
 // Buat Surat Jalan function - Open modal and populate with Manifest data
@@ -1325,6 +1393,16 @@ function buatSuratJalan(manifestId) {
             
             // Setup auto-calculate uang jalan
             setupModalUangJalanCalculation(data.size_kontainer);
+
+            // Add listener for lokasi change
+            const lokasiSelect = document.getElementById('modal_lokasi');
+            if (lokasiSelect) {
+                lokasiSelect.addEventListener('change', () => {
+                    updateDestinationOptions('create');
+                });
+                // Initial trigger
+                updateDestinationOptions('create');
+            }
             
             // Setup toggle lanjut muat
             setupModalLanjutMuatToggle();
@@ -1779,6 +1857,21 @@ function openEditModal(suratJalanId) {
             const nominalValue = data.uang_jalan_nominal ? Math.round(parseFloat(data.uang_jalan_nominal)) : '';
             document.getElementById('edit_modal_uang_jalan_nominal').value = nominalValue;
             
+            // Update destinations based on fetched lokasi
+            updateDestinationOptions('edit');
+            // Restore selection after update because updateDestinationOptions clears it
+            if (data.tujuan_pengambilan) {
+                document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan;
+            }
+
+            // Add listener for lokasi change in edit modal
+            const editLokasiSelect = document.getElementById('edit_modal_lokasi');
+            if (editLokasiSelect) {
+                editLokasiSelect.onchange = () => {
+                    updateDestinationOptions('edit');
+                };
+            }
+
             // Setup auto-fill and auto-calculate functions
             setupEditModalSupirAutoFill();
             setupEditModalUangJalanCalculation(data.size);
