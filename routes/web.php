@@ -5030,6 +5030,8 @@ Route::prefix('invoice-aktivitas-lain')->name('invoice-aktivitas-lain.')->middle
          ->middleware('can:invoice-aktivitas-lain-view');
     Route::get('/{invoiceAktivitasLain}/print-labuh-tambat', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'printLabuhTambat'])->name('print-labuh-tambat')
          ->middleware('can:invoice-aktivitas-lain-view');
+    Route::get('/{invoiceAktivitasLain}/print-pbm', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'printPbm'])->name('print-pbm')
+         ->middleware('can:invoice-aktivitas-lain-view');
 });
 
 // Pembayaran Uang Muka routes

@@ -1267,4 +1267,25 @@ class InvoiceAktivitasLainController extends Controller
         
         return view('invoice-aktivitas-lain.print-labuh-tambat', compact('invoice'));
     }
+
+    /**
+     * Print invoice khusus untuk Biaya PBM
+     */
+    public function printPbm(string $id)
+    {
+        $invoice = InvoiceAktivitasLain::with(['createdBy', 'approvedBy', 'klasifikasiBiaya', 'klasifikasiBiayaUmum'])->findOrFail($id);
+        
+        // Pastikan ini invoice Biaya PBM
+        $isPbm = false;
+        if ($invoice->klasifikasiBiaya && stripos($invoice->klasifikasiBiaya->nama, 'PBM') !== false) {
+            $isPbm = true;
+        }
+        
+        if (!$isPbm) {
+            return redirect()->route('invoice-aktivitas-lain.print', $id)
+                ->with('warning', 'Print khusus PBM hanya untuk invoice Biaya PBM.');
+        }
+        
+        return view('invoice-aktivitas-lain.print-pbm', compact('invoice'));
+    }
 }
