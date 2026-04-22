@@ -270,7 +270,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                             </svg>
                                         </a>
-                                    @elseif($invoice->klasifikasiBiaya && stripos($invoice->klasifikasiBiaya->nama, 'PBM') !== false)
+                                    @elseif(($invoice->klasifikasiBiaya && stripos($invoice->klasifikasiBiaya->nama, 'PBM') !== false) || (!empty($invoice->pbm_detail) && count(json_decode($invoice->pbm_detail, true) ?? []) > 0))
                                         <!-- Print Biaya PBM -->
                                         <a href="{{ route('invoice-aktivitas-lain.print-pbm', $invoice->id) }}" 
                                            class="text-blue-600 hover:text-blue-900" title="Print Biaya PBM" target="_blank">

@@ -90,6 +90,14 @@ class InvoiceAktivitasLain extends Model
     }
 
     /**
+     * Alias for approver relationship
+     */
+    public function approvedBy()
+    {
+        return $this->approver();
+    }
+
+    /**
      * Relationship dengan SuratJalan
      */
     public function suratJalan()

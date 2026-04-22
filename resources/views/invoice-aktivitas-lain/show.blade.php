@@ -49,7 +49,7 @@
                         </svg>
                         Print Utilities
                     </a>
-                @elseif($invoice->klasifikasiBiaya && stripos($invoice->klasifikasiBiaya->nama, 'PBM') !== false)
+                @elseif(($invoice->klasifikasiBiaya && stripos($invoice->klasifikasiBiaya->nama, 'PBM') !== false) || (!empty($invoice->pbm_detail) && count(json_decode($invoice->pbm_detail, true) ?? []) > 0))
                     <a href="{{ route('invoice-aktivitas-lain.print-pbm', $invoice->id) }}" target="_blank"
                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

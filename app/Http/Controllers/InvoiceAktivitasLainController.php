@@ -1281,6 +1281,14 @@ class InvoiceAktivitasLainController extends Controller
             $isPbm = true;
         }
         
+        // Cek juga jika ada data pbm_detail (JSON)
+        if (!$isPbm && !empty($invoice->pbm_detail)) {
+            $pbmArray = json_decode($invoice->pbm_detail, true);
+            if (is_array($pbmArray) && count($pbmArray) > 0) {
+                $isPbm = true;
+            }
+        }
+        
         if (!$isPbm) {
             return redirect()->route('invoice-aktivitas-lain.print', $id)
                 ->with('warning', 'Print khusus PBM hanya untuk invoice Biaya PBM.');
