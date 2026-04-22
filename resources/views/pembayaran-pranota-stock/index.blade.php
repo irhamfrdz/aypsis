@@ -64,6 +64,11 @@
                         <a href="{{ route('pembayaran-pranota-stock.show', $item->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">
                             <i class="fas fa-eye"></i> Detail
                         </a>
+                        @can('pembayaran-pranota-stock-edit')
+                        <a href="{{ route('pembayaran-pranota-stock.edit', $item->id) }}" class="text-yellow-600 hover:text-yellow-900 mr-3">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        @endcan
                         @can('pembayaran-pranota-stock-delete')
                         <form action="{{ route('pembayaran-pranota-stock.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pembayaran ini?')">
                             @csrf

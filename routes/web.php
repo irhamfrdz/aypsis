@@ -4104,6 +4104,12 @@ Route::get('/test-gate-in-ajax', function () {
             Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'show'])
                 ->name('show')
                 ->middleware('can:pembayaran-pranota-stock-view');
+            Route::get('/{id}/edit', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'edit'])
+                ->name('edit')
+                ->middleware('can:pembayaran-pranota-stock-edit');
+            Route::patch('/{id}', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'update'])
+                ->name('update')
+                ->middleware('can:pembayaran-pranota-stock-edit');
             Route::delete('/{id}', [\App\Http\Controllers\PembayaranPranotaStockController::class, 'destroy'])
                 ->name('destroy')
                 ->middleware('can:pembayaran-pranota-stock-delete');

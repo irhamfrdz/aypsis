@@ -166,6 +166,129 @@ class PembayaranPranotaStockController extends Controller
         }
     }
 
+    public function edit($id)
+    {
+        $item = PembayaranPranotaStock::with('pranotaStocks')->findOrFail($id);
+        
+        // Items currently in this payment
+        $selectedPranotaIds = $item->pranotaStocks->pluck('id')->toArray();
+        
+        // Available items (approved and not paid, or already in this payment)
+        $pranotaStocks = PranotaStock::where(function($query) use ($selectedPranotaIds) {
+                $query->where('status', 'approved')
+                      ->whereDoesntHave('pembayaranPranotaStocks');
+            })
+            ->orWhereIn('id', $selectedPranotaIds)
+            ->orderBy('tanggal_pranota', 'desc')
+            ->get();
+
+        $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%kas%')
+            ->orderBy('nama_akun')
+            ->get();
+
+        return view('pembayaran-pranota-stock.edit', compact('item', 'pranotaStocks', 'akunCoa', 'selectedPranotaIds'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $pembayaran = PembayaranPranotaStock::findOrFail($id);
+        
+        $validated = $request->validate([
+            'pranota_stock_ids' => ['required', 'array', 'min:1'],
+            'pranota_stock_ids.*' => ['exists:pranota_stocks,id'],
+            'nomor_pembayaran' => 'required|string',
+            'nomor_accurate' => 'nullable|string|max:255',
+            'tanggal_pembayaran' => 'required|date',
+            'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
+            'bank' => 'required|string|max:255',
+            'total_pembayaran' => 'required|numeric|min:0',
+            'total_tagihan_penyesuaian' => 'nullable|numeric',
+            'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
+            'alasan_penyesuaian' => 'nullable|string',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Restore old pranota statuses
+            foreach($pembayaran->pranotaStocks as $oldPranota) {
+                $oldPranota->update(['status' => 'approved']);
+            }
+            
+            // Revert accounting
+            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+
+            // Update main record
+            $paymentData = $validated;
+            unset($paymentData['pranota_stock_ids']);
+            $paymentData['updated_by'] = Auth::id();
+
+            $pembayaran->update($paymentData);
+
+            // Sync pranotas
+            $syncData = [];
+            foreach ($validated['pranota_stock_ids'] as $pranotaId) {
+                $pranota = PranotaStock::findOrFail($pranotaId);
+                
+                $subtotal = 0;
+                if (is_array($pranota->items)) {
+                    foreach ($pranota->items as $i) {
+                        $subtotal += ($i['harga'] ?? 0) * ($i['jumlah'] ?? 0);
+                    }
+                }
+                $subtotal += $pranota->adjustment ?? 0;
+
+                $syncData[$pranotaId] = [
+                    'subtotal' => $subtotal,
+                    'updated_at' => now(),
+                ];
+
+                $pranota->update(['status' => 'paid']);
+            }
+            
+            $pembayaran->pranotaStocks()->sync($syncData);
+
+            // Accounting Entry (Double Book)
+            $totalFinal = $validated['total_tagihan_setelah_penyesuaian'];
+            $bankName = $validated['bank'];
+            $jenisTransaksi = $validated['jenis_transaksi'];
+            $desc = "Update Pembayaran Pranota Stock - " . $pembayaran->nomor_pembayaran;
+
+            if ($jenisTransaksi == 'Debit') {
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
+                    ['nama_akun' => 'Biaya Amprahan', 'jumlah' => $totalFinal],
+                    $validated['tanggal_pembayaran'],
+                    $pembayaran->nomor_pembayaran,
+                    'Pembayaran Pranota Stock',
+                    $desc
+                );
+            } else {
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => 'Biaya Amprahan', 'jumlah' => $totalFinal],
+                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
+                    $validated['tanggal_pembayaran'],
+                    $pembayaran->nomor_pembayaran,
+                    'Pembayaran Pranota Stock',
+                    $desc
+                );
+            }
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-pranota-stock.index')
+                           ->with('success', 'Pembayaran berhasil diupdate.');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Error updating Pembayaran Pranota Stock: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal update pembayaran: ' . $e->getMessage());
+        }
+    }
+
     public function show($id)
     {
         $item = PembayaranPranotaStock::with(['pranotaStocks.creator', 'createdBy'])->findOrFail($id);

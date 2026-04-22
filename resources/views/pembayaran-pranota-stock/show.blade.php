@@ -100,6 +100,11 @@
                 <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                     <i class="fas fa-print mr-2"></i> Cetak Bukti
                 </button>
+                @can('pembayaran-pranota-stock-edit')
+                <a href="{{ route('pembayaran-pranota-stock.edit', $item->id) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700">
+                    <i class="fas fa-edit mr-2"></i> Edit
+                </a>
+                @endcan
                 @can('pembayaran-pranota-stock-delete')
                 <form action="{{ route('pembayaran-pranota-stock.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data pembayaran ini? Status pranota akan kembali menjadi approved.')">
                     @csrf
