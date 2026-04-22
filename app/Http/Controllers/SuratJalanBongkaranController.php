@@ -681,6 +681,7 @@ class SuratJalanBongkaranController extends Controller
             'dokumentasi' => 'nullable|string',
             'lokasi' => 'nullable|string|in:jakarta,batam',
             'uang_jalan_nominal' => 'nullable|numeric|min:0',
+            'f_e' => 'nullable|string|in:Full,Empty',
         ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Check if request is AJAX (from modal)
@@ -883,6 +884,7 @@ class SuratJalanBongkaranController extends Controller
             'catatan_khusus' => 'nullable|string',
             'dokumentasi' => 'nullable|string',
             'lokasi' => 'nullable|string|in:jakarta,batam',
+            'f_e' => 'nullable|string|in:Full,Empty',
         ]);
 
         // If manifest_id is present, ensure we store the actual BL number (nomor_bl) from manifest
@@ -1175,6 +1177,7 @@ class SuratJalanBongkaranController extends Controller
                 'uang_jalan_type' => $suratJalan->uang_jalan_type ?? 'full',
                 'uang_jalan_nominal' => $suratJalan->uang_jalan_nominal ?? 0,
                 'lokasi' => $suratJalan->lokasi ?? '',
+                'f_e' => $suratJalan->f_e ?? 'Full',
             ]);
         } catch (\Exception $e) {
             \Log::error('Error fetching Surat Jalan by ID: ' . $e->getMessage(), [

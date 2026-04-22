@@ -74,7 +74,8 @@ class SuratJalanBongkaran extends Model
         'manifest_id',
         'jenis_pengiriman',
         'tanggal_ambil_barang',
-        'lokasi'
+        'lokasi',
+        'f_e'
     ];
 
     protected $casts = [

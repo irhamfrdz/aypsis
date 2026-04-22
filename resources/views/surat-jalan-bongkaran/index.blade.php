@@ -571,19 +571,36 @@
                         </div>
 
                         <!-- Tujuan Pengiriman -->
-                        <div>
-                            <label for="modal_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                            <select name="tujuan_pengambilan" id="modal_tujuan_pengambilan"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Pilih tujuan pengiriman</option>
-                                @foreach($tujuanKegiatanUtamas as $tujuan)
-                                    <option value="{{ $tujuan->ke }}" 
-                                            data-uang-jalan-20="{{ $tujuan->uang_jalan_20ft ?? 0 }}" 
-                                            data-uang-jalan-40="{{ $tujuan->uang_jalan_40ft ?? 0 }}">
-                                        {{ $tujuan->ke }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="flex flex-col gap-4">
+                            <div>
+                                <label for="modal_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
+                                <select name="tujuan_pengambilan" id="modal_tujuan_pengambilan"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Pilih tujuan pengiriman</option>
+                                    @foreach($tujuanKegiatanUtamas as $tujuan)
+                                        <option value="{{ $tujuan->ke }}" 
+                                                data-uang-jalan-20="{{ $tujuan->uang_jalan_20ft ?? 0 }}" 
+                                                data-uang-jalan-40="{{ $tujuan->uang_jalan_40ft ?? 0 }}">
+                                            {{ $tujuan->ke }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <!-- Full/Empty Radio (Visible for Batam) -->
+                            <div id="modal_f_e_wrapper" class="hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status Muatan (F/E)</label>
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="f_e" value="Full" checked class="form-radio text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Full</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="f_e" value="Empty" class="form-radio text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Empty</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Jenis Pengiriman -->
@@ -945,19 +962,36 @@
                         </div>
 
                         <!-- Tujuan Pengambilan -->
-                        <div>
-                            <label for="edit_modal_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                            <select name="tujuan_pengambilan" id="edit_modal_tujuan_pengambilan"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Pilih tujuan pengiriman</option>
-                                @foreach($tujuanKegiatanUtamas as $tujuan)
-                                    <option value="{{ $tujuan->ke }}" 
-                                            data-uang-jalan-20="{{ $tujuan->uang_jalan_20ft ?? 0 }}" 
-                                            data-uang-jalan-40="{{ $tujuan->uang_jalan_40ft ?? 0 }}">
-                                        {{ $tujuan->ke }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="flex flex-col gap-4">
+                            <div>
+                                <label for="edit_modal_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
+                                <select name="tujuan_pengambilan" id="edit_modal_tujuan_pengambilan"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Pilih tujuan pengiriman</option>
+                                    @foreach($tujuanKegiatanUtamas as $tujuan)
+                                        <option value="{{ $tujuan->ke }}" 
+                                                data-uang-jalan-20="{{ $tujuan->uang_jalan_20ft ?? 0 }}" 
+                                                data-uang-jalan-40="{{ $tujuan->uang_jalan_40ft ?? 0 }}">
+                                            {{ $tujuan->ke }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Full/Empty Radio (Visible for Batam) -->
+                            <div id="edit_modal_f_e_wrapper" class="hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status Muatan (F/E)</label>
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="f_e" value="Full" class="form-radio text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Full</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="f_e" value="Empty" class="form-radio text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Empty</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Jenis Pengiriman -->
@@ -1217,8 +1251,10 @@ const destinations = {
         { 
             label: "{{ $rute }}", 
             value: "{{ $rute }}", 
-            uj20: {{ $items->filter(function($i){ return strpos($i->size, '20') !== false; })->first()->tarif ?? 0 }}, 
-            uj40: {{ $items->filter(function($i){ return strpos($i->size, '40') !== false; })->first()->tarif ?? 0 }} 
+            uj20_full: {{ $items->filter(function($i){ return strpos($i->size, '20') !== false && $i->f_e == 'Full'; })->first()->tarif ?? 0 }},
+            uj20_empty: {{ $items->filter(function($i){ return strpos($i->size, '20') !== false && $i->f_e == 'Empty'; })->first()->tarif ?? 0 }},
+            uj40_full: {{ $items->filter(function($i){ return strpos($i->size, '40') !== false && $i->f_e == 'Full'; })->first()->tarif ?? 0 }},
+            uj40_empty: {{ $items->filter(function($i){ return strpos($i->size, '40') !== false && $i->f_e == 'Empty'; })->first()->tarif ?? 0 }}
         },
         @endforeach
     ]
@@ -1229,11 +1265,21 @@ function updateDestinationOptions(modalType) {
     const prefix = modalType === 'create' ? 'modal_' : 'edit_modal_';
     const lokasiSelect = document.getElementById(prefix + 'lokasi');
     const tujuanSelect = document.getElementById(prefix + 'tujuan_pengambilan');
+    const feWrapper = document.getElementById(prefix + 'f_e_wrapper');
     
     if (!lokasiSelect || !tujuanSelect) return;
     
     const selectedLokasi = lokasiSelect.value;
     const availableDestinations = destinations[selectedLokasi] || [];
+    
+    // Show/hide F/E wrapper based on location
+    if (feWrapper) {
+        if (selectedLokasi === 'batam') {
+            feWrapper.classList.remove('hidden');
+        } else {
+            feWrapper.classList.add('hidden');
+        }
+    }
     
     // Remember current selection if any
     const currentValue = tujuanSelect.value;
@@ -1246,8 +1292,16 @@ function updateDestinationOptions(modalType) {
         const option = document.createElement('option');
         option.value = dest.value;
         option.text = dest.label;
-        option.setAttribute('data-uang-jalan-20', dest.uj20);
-        option.setAttribute('data-uang-jalan-40', dest.uj40);
+        
+        if (selectedLokasi === 'batam') {
+            option.setAttribute('data-uj20-full', dest.uj20_full);
+            option.setAttribute('data-uj20-empty', dest.uj20_empty);
+            option.setAttribute('data-uj40-full', dest.uj40_full);
+            option.setAttribute('data-uj40-empty', dest.uj40_empty);
+        } else {
+            option.setAttribute('data-uang-jalan-20', dest.uj20);
+            option.setAttribute('data-uang-jalan-40', dest.uj40);
+        }
         
         if (dest.value === currentValue) {
             option.selected = true;
@@ -1449,20 +1503,41 @@ function setupModalUangJalanCalculation(containerSize) {
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
         const uangJalanType = document.querySelector('input[name="uang_jalan_type"]:checked');
+        const lokasiSelect = document.getElementById('modal_lokasi');
+        const feType = document.querySelector('#modalBuatSuratJalan input[name="f_e"]:checked')?.value || 'Full';
         
         // Get current size from dropdown
         const currentSize = sizeSelect.value;
+        const isBatam = lokasiSelect && lokasiSelect.value === 'batam';
         
         let uangJalan = 0;
         
-        // Determine uang jalan based on container size
-        if (currentSize === '20' || currentSize === '20ft') {
-            uangJalan = uangJalan20;
-        } else if (currentSize === '40' || currentSize === '40ft' || currentSize === '40hc' || currentSize === '40 hc') {
-            uangJalan = uangJalan40;
+        if (isBatam) {
+            const uj20Full = parseFloat(selectedOption.getAttribute('data-uj20-full')) || 0;
+            const uj20Empty = parseFloat(selectedOption.getAttribute('data-uj20-empty')) || 0;
+            const uj40Full = parseFloat(selectedOption.getAttribute('data-uj40-full')) || 0;
+            const uj40Empty = parseFloat(selectedOption.getAttribute('data-uj40-empty')) || 0;
+
+            if (currentSize === '20' || currentSize === '20ft') {
+                uangJalan = feType === 'Full' ? uj20Full : uj20Empty;
+            } else if (currentSize === '40' || currentSize === '40ft' || currentSize === '40hc' || currentSize === '40 hc') {
+                uangJalan = feType === 'Full' ? uj40Full : uj40Empty;
+            } else {
+                uangJalan = feType === 'Full' ? uj20Full : uj20Empty;
+            }
         } else {
-            // Default to 20ft if size is not clear
-            uangJalan = uangJalan20;
+            const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
+            const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
+            
+            // Determine uang jalan based on container size
+            if (currentSize === '20' || currentSize === '20ft') {
+                uangJalan = uangJalan20;
+            } else if (currentSize === '40' || currentSize === '40ft' || currentSize === '40hc' || currentSize === '40 hc') {
+                uangJalan = uangJalan40;
+            } else {
+                // Default to 20ft if size is not clear
+                uangJalan = uangJalan20;
+            }
         }
         
         // Apply half calculation if "setengah" is selected
@@ -1486,6 +1561,12 @@ function setupModalUangJalanCalculation(containerSize) {
         
         uangJalanTypeRadios.forEach(radio => {
             radio.removeEventListener('change', calculateModalUangJalan);
+            radio.addEventListener('change', calculateModalUangJalan);
+        });
+
+        // Add listener for F/E radio
+        const feRadios = document.querySelectorAll('#modalBuatSuratJalan input[name="f_e"]');
+        feRadios.forEach(radio => {
             radio.addEventListener('change', calculateModalUangJalan);
         });
     }
@@ -1838,19 +1919,23 @@ function openEditModal(suratJalanId) {
             
             // Set radio buttons
             if (data.karton) {
-                document.querySelector(`input[name="karton"][value="${data.karton}"]`).checked = true;
+                document.querySelector(`#modalEditSuratJalan input[name="karton"][value="${data.karton}"]`).checked = true;
             }
             if (data.plastik) {
-                document.querySelector(`input[name="plastik"][value="${data.plastik}"]`).checked = true;
+                document.querySelector(`#modalEditSuratJalan input[name="plastik"][value="${data.plastik}"]`).checked = true;
             }
             if (data.terpal) {
-                document.querySelector(`input[name="terpal"][value="${data.terpal}"]`).checked = true;
+                document.querySelector(`#modalEditSuratJalan input[name="terpal"][value="${data.terpal}"]`).checked = true;
             }
             if (data.rit) {
-                document.querySelector(`input[name="rit"][value="${data.rit}"]`).checked = true;
+                document.querySelector(`#modalEditSuratJalan input[name="rit"][value="${data.rit}"]`).checked = true;
             }
             if (data.uang_jalan_type) {
-                document.querySelector(`input[name="uang_jalan_type"][value="${data.uang_jalan_type}"]`).checked = true;
+                document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type}"]`).checked = true;
+            }
+            if (data.f_e) {
+                const feRadio = document.querySelector(`#modalEditSuratJalan input[name="f_e"][value="${data.f_e}"]`);
+                if (feRadio) feRadio.checked = true;
             }
             
             // Convert to integer to remove decimal places
@@ -1928,16 +2013,37 @@ function setupEditModalUangJalanCalculation(containerSize) {
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
         const uangJalanType = document.querySelector('#modalEditSuratJalan input[name="uang_jalan_type"]:checked');
+        const lokasiSelect = document.getElementById('edit_modal_lokasi');
+        const feType = document.querySelector('#modalEditSuratJalan input[name="f_e"]:checked')?.value || 'Full';
         
         const currentSize = sizeSelect.value;
+        const isBatam = lokasiSelect && lokasiSelect.value === 'batam';
         let uangJalan = 0;
         
-        if (currentSize === '20' || currentSize === '20ft') {
-            uangJalan = uangJalan20;
-        } else if (currentSize === '40' || currentSize === '40ft' || currentSize === '40hc' || currentSize === '40 hc') {
-            uangJalan = uangJalan40;
+        if (isBatam) {
+            const uj20Full = parseFloat(selectedOption.getAttribute('data-uj20-full')) || 0;
+            const uj20Empty = parseFloat(selectedOption.getAttribute('data-uj20-empty')) || 0;
+            const uj40Full = parseFloat(selectedOption.getAttribute('data-uj40-full')) || 0;
+            const uj40Empty = parseFloat(selectedOption.getAttribute('data-uj40-empty')) || 0;
+
+            if (currentSize === '20' || currentSize === '20ft') {
+                uangJalan = feType === 'Full' ? uj20Full : uj20Empty;
+            } else if (currentSize === '40' || currentSize === '40ft' || currentSize === '40hc' || currentSize === '40 hc') {
+                uangJalan = feType === 'Full' ? uj40Full : uj40Empty;
+            } else {
+                uangJalan = feType === 'Full' ? uj20Full : uj20Empty;
+            }
         } else {
-            uangJalan = uangJalan20;
+            const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
+            const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
+            
+            if (currentSize === '20' || currentSize === '20ft') {
+                uangJalan = uangJalan20;
+            } else if (currentSize === '40' || currentSize === '40ft' || currentSize === '40hc' || currentSize === '40 hc') {
+                uangJalan = uangJalan40;
+            } else {
+                uangJalan = uangJalan20;
+            }
         }
         
         if (uangJalanType && uangJalanType.value === 'setengah') {
@@ -1958,6 +2064,12 @@ function setupEditModalUangJalanCalculation(containerSize) {
         
         uangJalanTypeRadios.forEach(radio => {
             radio.removeEventListener('change', calculateEditModalUangJalan);
+            radio.addEventListener('change', calculateEditModalUangJalan);
+        });
+
+        // Add listener for F/E radio in edit modal
+        const feRadios = document.querySelectorAll('#modalEditSuratJalan input[name="f_e"]');
+        feRadios.forEach(radio => {
             radio.addEventListener('change', calculateEditModalUangJalan);
         });
     }
