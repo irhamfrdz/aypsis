@@ -1032,10 +1032,47 @@
         }
     }
 
+    // Function to open penerima popup window
     function openPenerimaPopup() {
-        alert('Fitur tambah penerima baru akan segera tersedia.\nUntuk sementara, silakan hubungi admin untuk menambah penerima baru.');
-        // TODO: Implement popup form untuk tambah penerima baru
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("tanda-terima.penerima.create", [], false) }}',
+            'TambahPenerima',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
     }
+
+    // Listen for message from popup when new penerima is added
+    window.addEventListener('message', function(event) {
+        // Verify origin for security
+        if (event.origin !== window.location.origin) return;
+        
+        if (event.data.type === 'penerimaAdded') {
+            const newPenerima = event.data.penerima;
+            
+            // Add new option to select
+            const select = $('#penerima');
+            const newOption = new Option(newPenerima.nama, newPenerima.nama, true, true);
+            $(newOption).attr('data-alamat', newPenerima.alamat || '');
+            select.append(newOption);
+            
+            // Trigger select2 change and auto-fill alamat
+            select.trigger('change');
+            $('#alamat_penerima').val(newPenerima.alamat || '');
+            
+            console.log('✓ New penerima added:', newPenerima.nama);
+        }
+    });
 
     function initializePengirimDropdown() {
         const searchInput = document.getElementById('pengirimSearch');
