@@ -229,6 +229,24 @@
         <!-- Info Section -->
         <div class="info-section">
             <table class="info-table" style="width: 100%;">
+                @php
+                    $uniqueRecipients = [];
+                    if (empty($pbmDetails)) {
+                        $uniqueRecipients[] = [
+                            'penerima' => $invoice->penerima ?? '-',
+                            'rekening' => $invoice->nomor_bank ?? '-'
+                        ];
+                    } else {
+                        foreach($pbmDetails as $pbm) {
+                            $key = ($pbm['penerima'] ?? '-') . '|' . ($pbm['nomor_bank'] ?? '-');
+                            $uniqueRecipients[$key] = [
+                                'penerima' => $pbm['penerima'] ?? '',
+                                'rekening' => $pbm['nomor_bank'] ?? ''
+                            ];
+                        }
+                        $uniqueRecipients = array_values($uniqueRecipients);
+                    }
+                @endphp
                 <tr>
                     <td style="width: 15%;">Tanggal</td>
                     <td style="width: 35%;">: {{ \Carbon\Carbon::parse($invoice->tanggal_invoice)->format('d/M/Y') }}</td>
@@ -238,12 +256,22 @@
                 <tr>
                     <td style="width: 15%;">Nomor</td>
                     <td style="width: 35%;">: {{ $invoice->nomor_invoice }}</td>
-                    <td colspan="2"></td>
+                    <td>Penerima</td>
+                    <td>: 
+                        @foreach($uniqueRecipients as $rec)
+                            {{ $rec['penerima'] ?: '-' }}{{ !$loop->last ? ', ' : '' }}
+                        @endforeach
+                    </td>
                 </tr>
                 <tr>
                     <td>No. Ref</td>
                     <td>: {{ $invoice->referensi ?? $invoice->nomor_invoice }}</td>
-                    <td colspan="2"></td>
+                    <td>No. Rekening</td>
+                    <td>: 
+                        @foreach($uniqueRecipients as $rec)
+                            {{ $rec['rekening'] ?: '-' }}{{ !$loop->last ? ', ' : '' }}
+                        @endforeach
+                    </td>
                 </tr>
             </table>
         </div>
@@ -254,15 +282,13 @@
             <table class="table" style="margin-top: 4px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 3%;">No</th>
-                        <th style="width: 10%;">No. Referensi</th>
-                        <th style="width: 12%;">Voyage</th>
-                        <th style="width: 10%;">Penerima</th>
-                        <th style="width: 12%;">No. Rekening</th>
-                        <th style="width: 15%;">Catatan</th>
-                        <th style="width: 14%;">Nominal Bayar</th>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 15%;">No. Referensi</th>
+                        <th style="width: 20%;">Voyage</th>
+                        <th style="width: 20%;">Catatan</th>
+                        <th style="width: 15%;">Nominal Bayar</th>
                         <th style="width: 10%;">Adm</th>
-                        <th style="width: 14%;">Total</th>
+                        <th style="width: 15%;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -285,8 +311,6 @@
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $pbm['referensi'] ?? '-' }}</td>
                             <td>{{ $pbm['nomor_voyage'] ?? '-' }}</td>
-                            <td>{{ $pbm['penerima'] ?? '-' }}</td>
-                            <td>{{ $pbm['nomor_bank'] ?? '-' }}</td>
                             <td>{{ $pbm['catatan'] ?? '-' }}</td>
                             <td class="text-right">{{ number_format($nominal, 0, ',', '.') }}</td>
                             <td class="text-right">{{ number_format($admin, 0, ',', '.') }}</td>
@@ -304,8 +328,6 @@
                             <td class="text-center">1</td>
                             <td>{{ $invoice->referensi ?? '-' }}</td>
                             <td>{{ $invoice->nomor_voyage ?? '-' }}</td>
-                            <td>{{ $invoice->penerima ?? '-' }}</td>
-                            <td>{{ $invoice->nomor_bank ?? '-' }}</td>
                             <td>-</td>
                             <td class="text-right">{{ number_format($nominal, 0, ',', '.') }}</td>
                             <td class="text-right">{{ number_format($admin, 0, ',', '.') }}</td>
@@ -315,31 +337,31 @@
                     
                     @if($invoice->biaya_materai > 0 || $invoice->biaya_adjustment != 0 || $invoice->pph > 0)
                         <tr>
-                            <td colspan="8" class="text-right">Subtotal</td>
+                            <td colspan="6" class="text-right">Subtotal</td>
                             <td class="text-right">Rp {{ number_format($grandTotalAll, 0, ',', '.') }}</td>
                         </tr>
                         @if($invoice->biaya_materai > 0)
                         <tr>
-                            <td colspan="8" class="text-right">Materai</td>
+                            <td colspan="6" class="text-right">Materai</td>
                             <td class="text-right">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</td>
                         </tr>
                         @endif
                         @if($invoice->biaya_adjustment != 0)
                         <tr>
-                            <td colspan="8" class="text-right">Adjustment</td>
+                            <td colspan="6" class="text-right">Adjustment</td>
                             <td class="text-right">Rp {{ ($invoice->biaya_adjustment > 0 ? '+' : '') . number_format($invoice->biaya_adjustment, 0, ',', '.') }}</td>
                         </tr>
                         @endif
                         @if($invoice->pph > 0)
                         <tr>
-                            <td colspan="8" class="text-right">PPH</td>
+                            <td colspan="6" class="text-right">PPH</td>
                             <td class="text-right">Rp ({{ number_format($invoice->pph, 0, ',', '.') }})</td>
                         </tr>
                         @endif
                     @endif
 
                     <tr class="total-row">
-                        <td colspan="8" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="6" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($invoice->grand_total ?? $invoice->total, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
