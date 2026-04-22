@@ -506,8 +506,13 @@ class PembayaranPranotaObController extends Controller
 
             // 2. Prepare data for re-sync
             $totalPembayaran = $pembayaranPranotaOb->total_setelah_penyesuaian ?? $pembayaranPranotaOb->total_pembayaran;
-            $akunBankId = $pembayaranPranotaOb->akun_bank_id;
-            $akunCoaId = $pembayaranPranotaOb->akun_coa_id;
+            $akunBank = \App\Models\Coa::find($pembayaranPranotaOb->akun_bank_id);
+            $akunBiaya = \App\Models\Coa::find($pembayaranPranotaOb->akun_coa_id);
+            
+            if (!$akunBank || !$akunBiaya) {
+                throw new \Exception("Data Akun Bank atau Akun Biaya tidak ditemukan di database.");
+            }
+            
             $debitKredit = strtolower($pembayaranPranotaOb->jenis_transaksi);
             $keterangan = "Pembayaran Pranota OB - " . $pembayaranPranotaOb->nomor_pembayaran . " (Synced)";
 
@@ -515,8 +520,8 @@ class PembayaranPranotaObController extends Controller
             if ($debitKredit == 'debit') {
                 // Jenis Debit (Bank Bertambah): DEBIT Bank, KREDIT Biaya OB
                 $this->coaTransactionService->recordDoubleEntry(
-                    ['id' => $akunBankId, 'jumlah' => $totalPembayaran],
-                    ['id' => $akunCoaId, 'jumlah' => $totalPembayaran],
+                    ['nama_akun' => $akunBank->nama_akun, 'jumlah' => $totalPembayaran],
+                    ['nama_akun' => $akunBiaya->nama_akun, 'jumlah' => $totalPembayaran],
                     $pembayaranPranotaOb->tanggal_kas,
                     $pembayaranPranotaOb->nomor_pembayaran,
                     'Pembayaran Pranota OB',
@@ -525,8 +530,8 @@ class PembayaranPranotaObController extends Controller
             } else {
                 // Jenis Kredit (Bank Berkurang): DEBIT Biaya OB, KREDIT Bank
                 $this->coaTransactionService->recordDoubleEntry(
-                    ['id' => $akunCoaId, 'jumlah' => $totalPembayaran],
-                    ['id' => $akunBankId, 'jumlah' => $totalPembayaran],
+                    ['nama_akun' => $akunBiaya->nama_akun, 'jumlah' => $totalPembayaran],
+                    ['nama_akun' => $akunBank->nama_akun, 'jumlah' => $totalPembayaran],
                     $pembayaranPranotaOb->tanggal_kas,
                     $pembayaranPranotaOb->nomor_pembayaran,
                     'Pembayaran Pranota OB',
