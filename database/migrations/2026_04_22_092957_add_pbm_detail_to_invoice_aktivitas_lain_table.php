@@ -12,7 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
-            $table->longText('pbm_detail')->nullable()->after('biaya_admin');
+            if (!Schema::hasColumn('invoice_aktivitas_lain', 'nomor_bank')) {
+                $table->string('nomor_bank')->nullable()->after('total');
+            }
+            if (!Schema::hasColumn('invoice_aktivitas_lain', 'nominal_bayar')) {
+                $table->decimal('nominal_bayar', 15, 2)->default(0)->after('nomor_bank');
+            }
+            if (!Schema::hasColumn('invoice_aktivitas_lain', 'biaya_admin')) {
+                $table->decimal('biaya_admin', 15, 2)->default(0)->after('nominal_bayar');
+            }
+            $table->longText('pbm_detail')->nullable()->after('total');
         });
     }
 
@@ -22,7 +31,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
-            $table->dropColumn('pbm_detail');
+            $table->dropColumn(['nomor_bank', 'nominal_bayar', 'biaya_admin', 'pbm_detail']);
         });
     }
 };
