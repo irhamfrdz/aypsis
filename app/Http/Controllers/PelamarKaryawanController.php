@@ -37,6 +37,7 @@ class PelamarKaryawanController extends Controller
             'no_bpjs_kesehatan' => 'nullable|string|max:50',
             'no_ketenagakerjaan' => 'nullable|string|max:50',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
+            'agama' => 'nullable|string|max:255',
             'tempat_lahir' => 'required|string|max:255',
             'tanggal_lahir' => 'required|date',
             'no_handphone' => 'required|string|max:20',

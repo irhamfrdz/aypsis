@@ -38,6 +38,7 @@
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">Nama Lengkap</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">NIK</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
+                        <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">Agama</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">No. HP</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">Email</th>
                         <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">CV</th>
@@ -61,6 +62,9 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $pelamar->jenis_kelamin }}
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
+                                {{ $pelamar->agama ?? '-' }}
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $pelamar->no_handphone }}
@@ -91,7 +95,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-10 text-center text-gray-500">
+                            <td colspan="10" class="px-6 py-10 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <i class="fas fa-user-clock text-4xl text-gray-200 mb-3"></i>
                                     <p class="text-xs font-medium">Belum ada data pelamar</p>

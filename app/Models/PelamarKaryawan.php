@@ -20,6 +20,7 @@ class PelamarKaryawan extends Model
         'no_bpjs_kesehatan',
         'no_ketenagakerjaan',
         'jenis_kelamin',
+        'agama',
         'tempat_lahir',
         'tanggal_lahir',
         'no_handphone',

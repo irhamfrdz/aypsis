@@ -78,6 +78,25 @@
                             </select>
                             @error('jenis_kelamin')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                         </div>
+
+                        <div>
+                            <label for="agama_select" class="{{ $labelClasses }}">Agama <span class="text-red-500">*</span></label>
+                            <select id="agama_select" class="{{ $selectClasses }} @error('agama') border-red-500 @enderror" required onchange="handleAgamaChange(this)">
+                                <option value="">-- Pilih Agama --</option>
+                                <option value="Islam" {{ old('agama') == 'Islam' ? 'selected' : '' }}>Islam</option>
+                                <option value="Kristen" {{ old('agama') == 'Kristen' ? 'selected' : '' }}>Kristen</option>
+                                <option value="Katolik" {{ old('agama') == 'Katolik' ? 'selected' : '' }}>Katolik</option>
+                                <option value="Hindu" {{ old('agama') == 'Hindu' ? 'selected' : '' }}>Hindu</option>
+                                <option value="Budha" {{ old('agama') == 'Budha' ? 'selected' : '' }}>Budha</option>
+                                <option value="Konghucu" {{ old('agama') == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
+                                <option value="Lainnya" {{ (old('agama') && !in_array(old('agama'), ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Budha', 'Konghucu'])) ? 'selected' : '' }}>Lainnya (Isi Sendiri)</option>
+                            </select>
+                            <input type="hidden" name="agama" id="agama_hidden" value="{{ old('agama') }}">
+                            <div id="agama_lainnya_container" class="mt-2 {{ (old('agama') && !in_array(old('agama'), ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Budha', 'Konghucu'])) ? '' : 'hidden' }}">
+                                <input type="text" id="agama_lainnya" class="{{ $inputClasses }}" placeholder="Masukkan Agama Anda..." value="{{ (old('agama') && !in_array(old('agama'), ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Budha', 'Konghucu'])) ? old('agama') : '' }}" oninput="updateAgamaHidden(this.value)">
+                            </div>
+                            @error('agama')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                        </div>
                         
                         <div>
                             <label for="tanggal_lahir" class="{{ $labelClasses }}">Tanggal Lahir <span class="text-red-500">*</span></label>
@@ -234,4 +253,27 @@
         </form>
     </div>
 </div>
+@endsection
+@section('scripts')
+<script>
+    function handleAgamaChange(select) {
+        const container = document.getElementById('agama_lainnya_container');
+        const hiddenInput = document.getElementById('agama_hidden');
+        const otherInput = document.getElementById('agama_lainnya');
+        
+        if (select.value === 'Lainnya') {
+            container.classList.remove('hidden');
+            otherInput.required = true;
+            hiddenInput.value = otherInput.value;
+        } else {
+            container.classList.add('hidden');
+            otherInput.required = false;
+            hiddenInput.value = select.value;
+        }
+    }
+
+    function updateAgamaHidden(value) {
+        document.getElementById('agama_hidden').value = value;
+    }
+</script>
 @endsection
