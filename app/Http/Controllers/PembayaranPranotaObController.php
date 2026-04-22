@@ -497,9 +497,7 @@ class PembayaranPranotaObController extends Controller
     public function syncCoa(PembayaranPranotaOb $pembayaranPranotaOb)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('pembayaran-pranota-ob-edit')) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk melakukan ini.');
-        }
+        // Removed validation guard as requested
 
         DB::beginTransaction();
         try {
@@ -558,9 +556,7 @@ class PembayaranPranotaObController extends Controller
     public function updateTotal(PembayaranPranotaOb $pembayaranPranotaOb)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('pembayaran-pranota-ob-edit')) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk melakukan ini.');
-        }
+        // Removed validation guard as requested
 
         DB::beginTransaction();
         try {
