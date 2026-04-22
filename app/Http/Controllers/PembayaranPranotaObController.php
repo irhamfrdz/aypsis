@@ -404,15 +404,15 @@ class PembayaranPranotaObController extends Controller
 
             // Update pembayaran record
             $updateData = [
-                'nomor_accurate' => $validated['nomor_accurate'],
+                'nomor_accurate' => $validated['nomor_accurate'] ?? null,
                 'tanggal_kas' => $validated['tanggal_kas'],
-                'bank' => \App\Models\Coa::find($request->akun_bank_id)?->nama_akun ?? $validated['bank'],
-                'jenis_transaksi' => $request->input('debit_kredit', $validated['jenis_transaksi']),
+                'bank' => \App\Models\Coa::find($request->akun_bank_id)?->nama_akun ?? ($validated['bank'] ?? null),
+                'jenis_transaksi' => $request->input('debit_kredit', $validated['jenis_transaksi'] ?? null),
                 'total_pembayaran' => $totalPembayaran,
                 'penyesuaian' => $penyesuaian,
                 'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
-                'alasan_penyesuaian' => $validated['alasan_penyesuaian'],
-                'keterangan' => $validated['keterangan'],
+                'alasan_penyesuaian' => $validated['alasan_penyesuaian'] ?? null,
+                'keterangan' => $validated['keterangan'] ?? null,
                 'breakdown_supir' => !empty($breakdownSupir) ? $breakdownSupir : null,
                 'akun_coa_id' => $request->akun_coa_id,
                 'akun_bank_id' => $request->akun_bank_id,
