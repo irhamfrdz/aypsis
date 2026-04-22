@@ -247,6 +247,8 @@ class InvoiceAktivitasLain extends Model
         if (!is_array($detailPembayaran)) {
             return [];
         }
+        return $detailPembayaran;
+    }
 
     /**
      * Accessor untuk pbm detail array
