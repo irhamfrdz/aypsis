@@ -72,7 +72,7 @@
                             <input type="hidden" name="bank" id="bankValue" value="{{ $item->bank }}" required>
                             
                             <div id="bankList" class="hidden absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg searchable-dropdown-items z-50">
-                                @foreach($akunCoas as $akun)
+                                @foreach($akunCoa as $akun)
                                     <div class="searchable-dropdown-item px-3 py-2 text-sm cursor-pointer hover:bg-gray-100" data-value="{{ $akun->nama_akun }}">
                                         {{ $akun->nama_akun }}
                                     </div>
