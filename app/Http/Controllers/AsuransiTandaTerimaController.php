@@ -270,8 +270,13 @@ class AsuransiTandaTerimaController extends Controller
         $search = $request->search;
         $dari_tanggal = $request->dari_tanggal;
         $sampai_tanggal = $request->sampai_tanggal;
+        $selected_ids = $request->selected_ids;
+
+        if ($selected_ids && is_string($selected_ids)) {
+            $selected_ids = json_decode($selected_ids, true);
+        }
         
-        $unionQuery = $this->getReceiptsQuery($search, $dari_tanggal, $sampai_tanggal);
+        $unionQuery = $this->getReceiptsQuery($search, $dari_tanggal, $sampai_tanggal, $selected_ids);
         
         $receipts = DB::table(DB::raw("({$unionQuery->toSql()}) as combined_receipts"))
             ->mergeBindings($unionQuery)
@@ -314,8 +319,20 @@ class AsuransiTandaTerimaController extends Controller
         }
     }
 
-    private function getReceiptsQuery($search, $dari_tanggal = null, $sampai_tanggal = null)
+    private function getReceiptsQuery($search, $dari_tanggal = null, $sampai_tanggal = null, $selected_ids = null)
     {
+        $idsByType = null;
+        if ($selected_ids) {
+            $idsByType = ['tt' => [], 'tttsj' => [], 'lcl' => []];
+            foreach ($selected_ids as $item) {
+                if (strpos($item, '_') !== false) {
+                    list($type, $id) = explode('_', $item);
+                    if (isset($idsByType[$type])) {
+                        $idsByType[$type][] = $id;
+                    }
+                }
+            }
+        }
         // Tanda Terima Regular
         $tt = DB::table('tanda_terimas')
             ->leftJoin('surat_jalans', 'tanda_terimas.surat_jalan_id', '=', 'surat_jalans.id')
@@ -352,6 +369,9 @@ class AsuransiTandaTerimaController extends Controller
             })
             ->when($sampai_tanggal, function($q) use ($sampai_tanggal) {
                 return $q->whereDate('tanda_terimas.tanggal', '<=', $sampai_tanggal);
+            })
+            ->when($idsByType, function($q) use ($idsByType) {
+                return !empty($idsByType['tt']) ? $q->whereIn('tanda_terimas.id', $idsByType['tt']) : $q->whereRaw('1=0');
             });
 
         // Tanda Terima Tanpa SJ
@@ -389,6 +409,9 @@ class AsuransiTandaTerimaController extends Controller
             })
             ->when($sampai_tanggal, function($q) use ($sampai_tanggal) {
                 return $q->whereDate('tanda_terima_tanpa_surat_jalan.tanggal_tanda_terima', '<=', $sampai_tanggal);
+            })
+            ->when($idsByType, function($q) use ($idsByType) {
+                return !empty($idsByType['tttsj']) ? $q->whereIn('tanda_terima_tanpa_surat_jalan.id', $idsByType['tttsj']) : $q->whereRaw('1=0');
             });
 
         // Tanda Terima LCL
@@ -427,6 +450,9 @@ class AsuransiTandaTerimaController extends Controller
             })
             ->when($sampai_tanggal, function($q) use ($sampai_tanggal) {
                 return $q->whereDate('tanda_terimas_lcl.tanggal_tanda_terima', '<=', $sampai_tanggal);
+            })
+            ->when($idsByType, function($q) use ($idsByType) {
+                return !empty($idsByType['lcl']) ? $q->whereIn('tanda_terimas_lcl.id', $idsByType['lcl']) : $q->whereRaw('1=0');
             });
         return $tt->union($tttsj)->union($lcl);
     }

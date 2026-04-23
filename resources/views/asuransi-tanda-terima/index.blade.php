@@ -30,13 +30,21 @@
                     </button>
                 </form>
 
-                <a href="{{ route('asuransi-tanda-terima.export', request()->query()) }}"
-                   class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm rounded-lg font-medium transition duration-200 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    Download Excel
-                </a>
+                <form id="excelExportForm" action="{{ route('asuransi-tanda-terima.export') }}" method="POST" class="inline">
+                    @csrf
+                    <input type="hidden" name="selected_ids" id="excelSelectedIdsInput">
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                    <input type="hidden" name="dari_tanggal" value="{{ request('dari_tanggal') }}">
+                    <input type="hidden" name="sampai_tanggal" value="{{ request('sampai_tanggal') }}">
+                    
+                    <button type="button" onclick="performExcelExport()"
+                       class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm rounded-lg font-medium transition duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Download Excel
+                    </button>
+                </form>
                 @can('asuransi-tanda-terima-create')
                 <a href="{{ route('asuransi-tanda-terima.create') }}"
                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm rounded-lg font-medium transition duration-200 flex items-center">
@@ -395,6 +403,20 @@
         document.getElementById('exportModal').classList.add('hidden');
     }
 
+    function performExcelExport() {
+        const selected = getSelectedIds();
+        const input = document.getElementById('excelSelectedIdsInput');
+        const form = document.getElementById('excelExportForm');
+        
+        if (selected.length > 0) {
+            input.value = JSON.stringify(selected);
+        } else {
+            input.value = '';
+        }
+        
+        form.submit();
+    }
+
     function performBulkExport() {
         const form = document.getElementById('bulkExportForm');
         const reqDate = document.getElementById('export_request_date').value;
@@ -408,10 +430,6 @@
         dInput.value = reqDate; 
         dInput.className = 'dynamic-input';
         form.appendChild(dInput);
-
-        // Optional: Clear selection after export if needed
-        // setSelectedIds([]);
-        // updateCheckboxStates();
 
         form.submit();
         hideExportModal();
