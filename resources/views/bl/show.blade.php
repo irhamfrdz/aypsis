@@ -13,6 +13,12 @@
                 </div>
             </div>
             <div class="flex gap-2">
+                @can('bl-edit')
+                <a href="{{ route('bl.edit', $bl) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                    <i class="fas fa-edit mr-2"></i>
+                    Edit BL
+                </a>
+                @endcan
                 <a href="{{ route('bl.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Kembali ke Daftar BL

@@ -2286,6 +2286,83 @@ class BlController extends Controller
     }
 
     /**
+     * Show the form for editing the specified BL.
+     */
+    public function edit(Bl $bl)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-edit")
+                ->exists();
+            
+            if (!$hasPermission) {
+                abort(403, "Tidak memiliki akses untuk mengedit data BL");
+            }
+        }
+
+        return view('bl.edit', compact('bl'));
+    }
+
+    /**
+     * Update the specified BL in storage.
+     */
+    public function update(Request $request, Bl $bl)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-edit")
+                ->exists();
+            
+            if (!$hasPermission) {
+                abort(403, "Tidak memiliki akses untuk mengupdate data BL");
+            }
+        }
+
+        $validated = $request->validate([
+            'nomor_bl' => 'nullable|string|max:255',
+            'nomor_kontainer' => 'nullable|string|max:255',
+            'no_seal' => 'nullable|string|max:255',
+            'tipe_kontainer' => 'nullable|string|max:255',
+            'size_kontainer' => 'nullable|in:20,40,45',
+            'no_voyage' => 'nullable|string|max:255',
+            'nama_kapal' => 'nullable|string|max:255',
+            'tanggal_berangkat' => 'nullable|date',
+            'pelabuhan_asal' => 'nullable|string|max:255',
+            'pelabuhan_tujuan' => 'nullable|string|max:255',
+            'nama_barang' => 'nullable|string|max:255',
+            'pengirim' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
+            'alamat_pengiriman' => 'nullable|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'tonnage' => 'nullable|numeric',
+            'volume' => 'nullable|numeric',
+            'satuan' => 'nullable|string|max:50',
+            'term' => 'nullable|string|max:255',
+            'kuantitas' => 'nullable|string|max:255',
+            'status_bongkar' => 'nullable|in:Sudah Bongkar,Belum Bongkar',
+        ]);
+
+        try {
+            $validated['updated_by'] = $user->id;
+            $bl->update($validated);
+            
+            return redirect()->route('bl.show', $bl)->with('success', 'Data BL berhasil diupdate.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengupdate data BL: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    /**
      * Remove the specified BL from storage.
      */
     public function destroy(Request $request, Bl $bl)

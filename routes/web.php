@@ -5440,6 +5440,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::get('bl/{bl}', [\App\Http\Controllers\BlController::class, 'show'])->name('bl.show')
                ->middleware('can:bl-view');
                
+          Route::get('bl/{bl}/edit', [\App\Http\Controllers\BlController::class, 'edit'])->name('bl.edit')
+               ->middleware('can:bl-edit');
+          Route::put('bl/{bl}', [\App\Http\Controllers\BlController::class, 'update'])->name('bl.update')
+               ->middleware('can:bl-edit');
+               
           Route::patch('bl/{bl}/nomor-bl', [\App\Http\Controllers\BlController::class, 'updateNomorBl'])->name('bl.update-nomor-bl')
                ->middleware('can:bl-edit');
                

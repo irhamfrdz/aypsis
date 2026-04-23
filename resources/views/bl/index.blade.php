@@ -369,6 +369,13 @@
                                            title="Lihat Detail">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @can('bl-edit')
+                                        <a href="{{ route('bl.edit', $bl) }}" 
+                                           class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 p-1.5 rounded hover:bg-indigo-100 transition" 
+                                           title="Edit BL">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @endcan
                                         @if($bl->prospek)
                                         <a href="{{ route('prospek.show', $bl->prospek) }}" 
                                            class="text-teal-600 hover:text-teal-900 bg-teal-50 p-1.5 rounded hover:bg-teal-100 transition"
