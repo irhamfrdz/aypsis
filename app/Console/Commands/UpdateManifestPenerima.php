@@ -275,6 +275,7 @@ class UpdateManifestPenerima extends Command
                     $satuanVal = null;
                     $volumeVal = null;
                     $tonnageVal = null;
+                    $termVal = null;
 
                     if ($tandaTerima) {
                         $penerimaName = $tandaTerima->penerima;
@@ -288,6 +289,7 @@ class UpdateManifestPenerima extends Command
                         $satuanVal = $tandaTerima->satuan;
                         $volumeVal = $tandaTerima->meter_kubik;
                         $tonnageVal = $tandaTerima->tonase;
+                        $termVal = $tandaTerima->term;
                     } elseif ($tttsj) {
                         $penerimaName = $tttsj->penerima;
                         $alamatPenerima = $tttsj->alamat_penerima;
@@ -299,6 +301,7 @@ class UpdateManifestPenerima extends Command
                         $satuanVal = $tttsj->satuan_barang;
                         $volumeVal = $tttsj->meter_kubik;
                         $tonnageVal = $tttsj->tonase;
+                        $termVal = $tttsj->term ? $tttsj->term->kode : null;
                     } elseif ($tandaTerimaLcl) {
                         // Handle both Model and stdClass (DB::table)
                         $isModel = $tandaTerimaLcl instanceof \Illuminate\Database\Eloquent\Model;
@@ -342,12 +345,20 @@ class UpdateManifestPenerima extends Command
                                 $satuanVal = 'PKGS';
                             }
                         }
+
+                        // Fetch term for LCL
+                        if ($isModel) {
+                            $termVal = $tandaTerimaLcl->term ? $tandaTerimaLcl->term->kode : null;
+                        } elseif (isset($tandaTerimaLcl->term_id) && $tandaTerimaLcl->term_id) {
+                            $termVal = DB::table('terms')->where('id', $tandaTerimaLcl->term_id)->value('kode');
+                        }
                     } elseif ($sjBongkaran) {
                         $penerimaName = $sjBongkaran->penerima;
                         $alamatPenerima = $sjBongkaran->tujuan_alamat;
                         $pengirimName = $sjBongkaran->pengirim;
                         $nomorTandaTerima = $manifest->nomor_tanda_terima;
                         $sealTandaTerima = $sjBongkaran->no_seal;
+                        $termVal = $sjBongkaran->term;
                     }
                     
                     // Cek apakah ada perubahan
@@ -375,6 +386,10 @@ class UpdateManifestPenerima extends Command
 
                     // Sync No. Seal if empty or different
                     if ($sealTandaTerima !== null && $manifest->no_seal != $sealTandaTerima) {
+                        $hasChanges = true;
+                    }
+
+                    if ($termVal !== null && $manifest->term != $termVal) {
                         $hasChanges = true;
                     }
 
@@ -435,6 +450,9 @@ class UpdateManifestPenerima extends Command
                             }
                             if ($alamatPenerima) {
                                 $manifest->alamat_pengiriman = $alamatPenerima;
+                            }
+                            if ($termVal !== null) {
+                                $manifest->term = $termVal;
                             }
                             $manifest->save();
                             $totalUpdated++;

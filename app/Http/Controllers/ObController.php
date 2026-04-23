@@ -883,6 +883,10 @@ class ObController extends Controller
                 'prospek_tujuan_pengiriman' => $naikKapal->prospek ? $naikKapal->prospek->tujuan_pengiriman : null,
                 'prospek_jumlah' => $naikKapal->prospek ? $naikKapal->prospek->kuantitas : ($naikKapal->kuantitas ?? null),
                 'prospek_satuan' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->satuan : null,
+                'term' => $naikKapal->prospek ? ($naikKapal->prospek->tandaTerima ? $naikKapal->prospek->tandaTerima->term : (
+                    preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $naikKapal->prospek->keterangan, $matches) ? 
+                    (\App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', trim($matches[1]))->first()?->term?->kode) : null
+                )) : null,
             ];
 
             if (!$existingBl) {
@@ -1001,6 +1005,11 @@ class ObController extends Controller
                     $bl->nomor_bl = 'BL-' . $nextNumber;
                 } else {
                     $bl->nomor_bl = 'BL-000001';
+                }
+
+                // Set term if available
+                if ($manifestDataForLater['term']) {
+                    $bl->term = $manifestDataForLater['term'];
                 }
                 
                 \Log::info("Generated nomor_bl: " . $bl->nomor_bl);
@@ -1127,6 +1136,7 @@ class ObController extends Controller
                             $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
                             $manifest->tanggal_berangkat = now();
                             $manifest->penerimaan = $tandaTerima->tanggal_tanda_terima;
+                            $manifest->term = $tandaTerima->term ? ($tandaTerima->term instanceof \App\Models\Term ? $tandaTerima->term->kode : $tandaTerima->term) : $manifestDataForLater['term'];
                             if ($manifestDataForLater['prospek_id']) {
                                 $manifest->prospek_id = $manifestDataForLater['prospek_id'];
                             }
@@ -1167,6 +1177,7 @@ class ObController extends Controller
                         $manifest->satuan = $manifestDataForLater['prospek_satuan'] ?? null;
                         $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
                         $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
+                        $manifest->term = $manifestDataForLater['term'];
                         $manifest->tanggal_berangkat = now();
                         if ($manifestDataForLater['prospek_id']) {
                             $manifest->prospek_id = $manifestDataForLater['prospek_id'];
@@ -1226,6 +1237,7 @@ class ObController extends Controller
                         $manifest->tonnage = $manifestDataForLater['total_tonase'];
                         $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
                         $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
+                        $manifest->term = $manifestDataForLater['term'];
                         $manifest->tanggal_berangkat = now();
 
                         if ($manifestDataForLater['prospek_id']) {
@@ -1346,6 +1358,12 @@ class ObController extends Controller
                 $prospekTujuanPengiriman = $record->prospek ? $record->prospek->tujuan_pengiriman : null;
             }
 
+            // Calculate term value for sync
+            $termVal = ($record->prospek && $record->prospek->tandaTerima) ? $record->prospek->tandaTerima->term : (
+                ($record->prospek && $record->prospek->keterangan && preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $record->prospek->keterangan, $matches)) ? 
+                (\App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', trim($matches[1]))->first()?->term?->kode) : null
+            );
+
             $isCargo = (
                 strtoupper(trim($tipeKontainer ?? '')) === 'CARGO' ||
                 stripos($nomorKontainer ?? '', 'CARGO') !== false
@@ -1394,6 +1412,7 @@ class ObController extends Controller
                         $manifest->pelabuhan_bongkar = $ke;
                         $manifest->tanggal_berangkat = now();
                         $manifest->penerimaan      = $tandaTerima->tanggal_tanda_terima;
+                        $manifest->term            = $tandaTerima->term ? ($tandaTerima->term instanceof \App\Models\Term ? $tandaTerima->term->kode : $tandaTerima->term) : $termVal;
                         if ($prospekId) {
                             $manifest->prospek_id  = $prospekId;
                         }
@@ -1429,6 +1448,7 @@ class ObController extends Controller
                     $manifest->satuan           = ($record->prospek && $record->prospek->tandaTerima) ? $record->prospek->tandaTerima->satuan : null;
                     $manifest->pelabuhan_muat   = $asalKontainer;
                     $manifest->pelabuhan_bongkar = $ke;
+                    $manifest->term             = $termVal;
                     $manifest->tanggal_berangkat = now();
                     if ($prospekId) {
                         $manifest->prospek_id   = $prospekId;
