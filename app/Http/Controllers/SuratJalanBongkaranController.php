@@ -1114,7 +1114,6 @@ class SuratJalanBongkaranController extends Controller
         $baData->jenis_barang = $manifest->nama_barang;                         // manifests.nama_barang
         $baData->pengirim = $manifest->pengirim ?? '';                          // manifests.pengirim
         $baData->penerima = $manifest->penerima ?? '';                          // manifests.penerima
-        $baData->contact_person = $manifest->contact_person ?? '';              // manifests.contact_person
         $baData->kuantitas = $manifest->kuantitas;                              // manifests.kuantitas
         $baData->satuan = $manifest->satuan;                                    // manifests.satuan
         
