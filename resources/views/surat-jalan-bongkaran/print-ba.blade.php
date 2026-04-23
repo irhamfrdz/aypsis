@@ -38,10 +38,10 @@
         }
         .penerima-cp {
             position: absolute;
-            top: 9.8cm; /* Exactly below the consignee block */
+            top: 9.3cm; /* Raised from 9.8cm */
             left: 4.5cm;
-            font-size: 11px;
-            font-weight: normal;
+            font-size: 14px; /* Same as consignee */
+            font-weight: bold; /* Same as consignee */
         }
         /* Positioned container number */
         .no-kontainer {
