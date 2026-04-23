@@ -1451,11 +1451,18 @@ function buatSuratJalan(manifestId) {
             // Add listener for lokasi change
             const lokasiSelect = document.getElementById('modal_lokasi');
             if (lokasiSelect) {
-                lokasiSelect.addEventListener('change', () => {
+                lokasiSelect.onchange = () => {
                     updateDestinationOptions('create');
-                });
+                    if (lokasiSelect.value === 'batam') {
+                        document.getElementById('modal_jenis_barang').value = data.nama_barang || '';
+                    }
+                };
                 // Initial trigger
                 updateDestinationOptions('create');
+                // Check if already batam on load
+                if (lokasiSelect.value === 'batam') {
+                    document.getElementById('modal_jenis_barang').value = data.nama_barang || '';
+                }
             }
             
             // Setup toggle lanjut muat
@@ -1954,6 +1961,9 @@ function openEditModal(suratJalanId) {
             if (editLokasiSelect) {
                 editLokasiSelect.onchange = () => {
                     updateDestinationOptions('edit');
+                    if (editLokasiSelect.value === 'batam') {
+                        document.getElementById('edit_modal_jenis_barang').value = data.nama_barang_manifest || '';
+                    }
                 };
             }
 

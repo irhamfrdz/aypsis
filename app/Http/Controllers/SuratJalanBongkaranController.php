@@ -1139,7 +1139,7 @@ class SuratJalanBongkaranController extends Controller
     public function getSuratJalanById($id)
     {
         try {
-            $suratJalan = SuratJalanBongkaran::find($id);
+            $suratJalan = SuratJalanBongkaran::with('manifest')->find($id);
             
             if (!$suratJalan) {
                 return response()->json(['error' => 'Surat Jalan not found'], 404);
@@ -1157,6 +1157,7 @@ class SuratJalanBongkaranController extends Controller
                 'pengirim' => $suratJalan->pengirim ?? '',
                 'penerima' => $suratJalan->penerima ?? '',
                 'jenis_barang' => $suratJalan->jenis_barang ?? '',
+                'nama_barang_manifest' => $suratJalan->manifest->nama_barang ?? '',
                 'tujuan_alamat' => $suratJalan->tujuan_alamat ?? '',
                 'tujuan_pengambilan' => $suratJalan->tujuan_pengambilan ?? '',
                 'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? '',
