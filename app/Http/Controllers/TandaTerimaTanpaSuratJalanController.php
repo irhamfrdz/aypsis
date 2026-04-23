@@ -485,7 +485,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'tonase' => 'nullable|array',
             'tonase.*' => 'nullable|numeric|min:0',
             // Hidden fields for backward compatibility (scalar values)
-            'jenis_barang' => 'nullable|string|max:255',
+            'jenis_barang' => 'nullable|string|max:5000',
             'aktifitas' => 'nullable|string|max:255',
             'jumlah_barang' => 'nullable|integer|min:1',
             'satuan_barang' => 'nullable|string|max:255',
@@ -899,7 +899,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Accept either scalar or array inputs for LCL rows during edit
             'nama_barang' => 'nullable',
             'nama_barang.*' => 'nullable|string',
-            'jenis_barang' => 'nullable|string|max:255',
+            'jenis_barang' => 'nullable|string|max:5000',
             'jumlah_barang' => 'nullable|integer|min:1',
             'satuan_barang' => 'nullable|string|max:255',
             'keterangan_barang' => 'nullable|string',
