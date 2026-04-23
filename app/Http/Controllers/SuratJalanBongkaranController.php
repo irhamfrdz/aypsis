@@ -1219,6 +1219,7 @@ class SuratJalanBongkaranController extends Controller
                 'volume' => $manifest->volume ?? '',
                 'status_bongkar' => $manifest->status_bongkar ?? '',
                 'term' => $manifest->term ?? '',
+                'term_nama' => \App\Models\Term::where('kode', $manifest->term)->value('nama_status') ?? '',
                 'pengirim' => $manifest->pengirim ?? '',
                 'penerima' => $manifest->penerima ?? '',
                 'alamat_pengiriman' => $manifest->alamat_pengiriman ?? '',

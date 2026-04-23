@@ -1446,6 +1446,33 @@ function buatSuratJalan(manifestId) {
             document.getElementById('modal_pengirim').value = data.pengirim || '';
             document.getElementById('modal_penerima').value = data.penerima || data.pengirim || '';
             
+            // Populate term if available with robust matching
+            if (data.term || data.term_nama) {
+                const termSelect = document.getElementById('modal_term');
+                const termToMatch = (data.term || '').toLowerCase();
+                const termNamaToMatch = (data.term_nama || '').toLowerCase();
+                
+                // Try direct match first
+                termSelect.value = data.term || '';
+                
+                // If not matched, try searching through options
+                if (termSelect.value === '') {
+                    const options = termSelect.options;
+                    for (let i = 0; i < options.length; i++) {
+                        const optValue = options[i].value.toLowerCase();
+                        const optText = options[i].text.toLowerCase();
+                        
+                        if (optValue === termToMatch || 
+                            optText === termToMatch || 
+                            optText.includes(termToMatch) ||
+                            (termNamaToMatch && optText.includes(termNamaToMatch))) {
+                            termSelect.value = options[i].value;
+                            break;
+                        }
+                    }
+                }
+            }
+            
             // Set jenis pengiriman if available
             if (data.jenis_pengiriman) {
                 document.getElementById('modal_jenis_pengiriman').value = data.jenis_pengiriman;
@@ -1918,7 +1945,27 @@ function openEditModal(suratJalanId) {
             document.getElementById('edit_modal_nomor_surat_jalan').value = data.nomor_surat_jalan || '';
             document.getElementById('edit_modal_lokasi').value = data.lokasi || '';
             document.getElementById('edit_modal_tanggal_surat_jalan').value = data.tanggal_surat_jalan || '';
-            document.getElementById('edit_modal_term').value = data.term || '';
+            
+            // Populate term with robust matching
+            const editTermSelect = document.getElementById('edit_modal_term');
+            const editTermToMatch = (data.term || '').toLowerCase();
+            const editTermNamaToMatch = (data.term_nama || '').toLowerCase();
+            
+            editTermSelect.value = data.term || '';
+            if (editTermSelect.value === '') {
+                const options = editTermSelect.options;
+                for (let i = 0; i < options.length; i++) {
+                    const optValue = options[i].value.toLowerCase();
+                    const optText = options[i].text.toLowerCase();
+                    if (optValue === editTermToMatch || 
+                        optText === editTermToMatch || 
+                        optText.includes(editTermToMatch) ||
+                        (editTermNamaToMatch && optText.includes(editTermNamaToMatch))) {
+                        editTermSelect.value = options[i].value;
+                        break;
+                    }
+                }
+            }
             document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
             document.getElementById('edit_modal_pengirim').value = data.pengirim || '';
             document.getElementById('edit_modal_penerima').value = data.penerima || '';
