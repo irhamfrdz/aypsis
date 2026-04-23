@@ -665,6 +665,97 @@ class PembayaranAktivitasLainController extends Controller
         }
     }
 
+    /**
+     * Update only the amount of the payment
+     */
+    public function updateJumlah(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
+    {
+        if ($pembayaranAktivitasLain->status === 'paid') {
+            return redirect()->back()->with('error', 'Tidak dapat mengubah jumlah untuk pembayaran yang sudah status Paid');
+        }
+
+        $request->validate([
+            'jumlah' => 'required|integer|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $oldJumlah = (int)$pembayaranAktivitasLain->jumlah;
+            $newJumlah = (int)$request->jumlah;
+            $selisih = $newJumlah - $oldJumlah;
+
+            if ($selisih === 0) {
+                return redirect()->back()->with('info', 'Tidak ada perubahan jumlah');
+            }
+
+            // Update main record
+            $pembayaranAktivitasLain->update(['jumlah' => $newJumlah]);
+
+            // Update related CoaTransactions and Coa balances
+            $transactions = CoaTransaction::where('nomor_referensi', $pembayaranAktivitasLain->nomor)->get();
+            
+            foreach ($transactions as $transaction) {
+                $affectedAccount = Coa::find($transaction->coa_id);
+                
+                if ($transaction->debit > 0) {
+                    $transaction->update([
+                        'debit' => $newJumlah,
+                        'saldo' => $transaction->saldo + $selisih
+                    ]);
+                    
+                    // Adjust Coa balance if it was Dr+
+                    if ($affectedAccount) {
+                        if ($transaction->coa_id == $pembayaranAktivitasLain->akun_coa_id) {
+                            if ($pembayaranAktivitasLain->debit_kredit === 'kredit') {
+                                // Dr. Expense (+)
+                                $affectedAccount->update(['saldo' => $affectedAccount->saldo + $selisih]);
+                            } else {
+                                // Dr. Bank (+)
+                                $affectedAccount->update(['saldo' => $affectedAccount->saldo + $selisih]);
+                            }
+                        } else if ($transaction->coa_id == $pembayaranAktivitasLain->akun_bank_id) {
+                            if ($pembayaranAktivitasLain->debit_kredit === 'debit') {
+                                // Dr. Bank (+)
+                                $affectedAccount->update(['saldo' => $affectedAccount->saldo + $selisih]);
+                            } else {
+                                // This case should be credit if bank is Cr. handled below
+                            }
+                        }
+                    }
+                } else if ($transaction->kredit > 0) {
+                    $transaction->update([
+                        'kredit' => $newJumlah,
+                        'saldo' => $transaction->saldo - $selisih
+                    ]);
+                    
+                    // Adjust Coa balance if it was Cr+
+                    if ($affectedAccount) {
+                        if ($transaction->coa_id == $pembayaranAktivitasLain->akun_coa_id) {
+                            if ($pembayaranAktivitasLain->debit_kredit === 'debit') {
+                                // Cr. Expense (-)
+                                $affectedAccount->update(['saldo' => $affectedAccount->saldo - $selisih]);
+                            }
+                        } else if ($transaction->coa_id == $pembayaranAktivitasLain->akun_bank_id) {
+                            if ($pembayaranAktivitasLain->debit_kredit === 'kredit') {
+                                // Cr. Bank (-)
+                                $affectedAccount->update(['saldo' => $affectedAccount->saldo - $selisih]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain)
+                ->with('success', 'Jumlah berhasil diperbarui dan jurnal telah disesuaikan');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memperbarui jumlah: ' . $e->getMessage());
+        }
+    }
+
     public function destroy(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
         try {

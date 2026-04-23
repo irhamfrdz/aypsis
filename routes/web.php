@@ -4991,6 +4991,8 @@ Route::prefix('pembayaran-aktivitas-lain')->name('pembayaran-aktivitas-lain.')->
          ->middleware('can:pembayaran-aktivitas-lain-update');
     Route::put('/{pembayaranAktivitasLain}', [PembayaranAktivitasLainController::class, 'update'])->name('update')
          ->middleware('can:pembayaran-aktivitas-lain-update');
+    Route::patch('/{pembayaranAktivitasLain}/update-jumlah', [PembayaranAktivitasLainController::class, 'updateJumlah'])->name('update-jumlah')
+         ->middleware('can:pembayaran-aktivitas-lain-update');
     Route::delete('/{pembayaranAktivitasLain}', [PembayaranAktivitasLainController::class, 'destroy'])->name('destroy')
          ->middleware('can:pembayaran-aktivitas-lain-delete');
     Route::post('/{pembayaranAktivitasLain}/approve', [PembayaranAktivitasLainController::class, 'approve'])->name('approve')
