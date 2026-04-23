@@ -316,11 +316,21 @@
                                 <div class="text-sm text-gray-900">{{ $manifest->satuan ?? '-' }}</div>
                                 @endcan
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ $manifest->pengirim }}
+                            <td class="px-6 py-4 text-sm text-gray-900 whitespace-normal">
+                                <div class="font-medium">{{ $manifest->pengirim }}</div>
+                                @if($manifest->alamat_pengirim)
+                                    <div class="text-xs text-gray-500 mt-1 line-clamp-2" title="{{ $manifest->alamat_pengirim }}">
+                                        {{ $manifest->alamat_pengirim }}
+                                    </div>
+                                @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ $manifest->penerima }}
+                            <td class="px-6 py-4 text-sm text-gray-900 whitespace-normal">
+                                <div class="font-medium">{{ $manifest->penerima }}</div>
+                                @if($manifest->alamat_penerima)
+                                    <div class="text-xs text-gray-500 mt-1 line-clamp-2" title="{{ $manifest->alamat_penerima }}">
+                                        {{ $manifest->alamat_penerima }}
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center gap-2">

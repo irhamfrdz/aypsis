@@ -280,7 +280,8 @@ class UpdateManifestPenerima extends Command
                         $penerimaName = $tandaTerima->penerima;
                         $alamatPenerima = $tandaTerima->alamat_penerima;
                         $pengirimName = $tandaTerima->pengirim;
-                        $alamatPengirim = $tandaTerima->alamat_pengirim;
+                        // Use alamat from suratJalan as fallback for alamat_pengirim in TandaTerima (which doesn't have the column)
+                        $alamatPengirim = $tandaTerima->alamat_pengirim ?? ($tandaTerima->suratJalan ? $tandaTerima->suratJalan->alamat : null);
                         $nomorTandaTerima = $tandaTerima->no_tanda_terima;
                         $sealTandaTerima = $tandaTerima->no_seal;
                         $kuantitasVal = $tandaTerima->jumlah;
@@ -393,6 +394,10 @@ class UpdateManifestPenerima extends Command
                         $hasChanges = true;
                     }
                     
+                    if ($alamatPenerima && $manifest->alamat_pengiriman != $alamatPenerima) {
+                        $hasChanges = true;
+                    }
+                    
                     if ($hasChanges) {
                         $totalWithChanges++;
                         
@@ -427,6 +432,9 @@ class UpdateManifestPenerima extends Command
                             }
                             if ($tonnageVal !== null) {
                                 $manifest->tonnage = $tonnageVal;
+                            }
+                            if ($alamatPenerima) {
+                                $manifest->alamat_pengiriman = $alamatPenerima;
                             }
                             $manifest->save();
                             $totalUpdated++;

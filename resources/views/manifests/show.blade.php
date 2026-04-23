@@ -144,11 +144,17 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">SHIPPER</label>
-                    <p class="text-base text-gray-900">{{ $manifest->pengirim ?? '-' }}</p>
+                    <p class="text-base text-gray-900 font-semibold">{{ $manifest->pengirim ?? '-' }}</p>
+                    @if($manifest->alamat_pengirim)
+                        <p class="text-sm text-gray-600 mt-1 whitespace-pre-line">{{ $manifest->alamat_pengirim }}</p>
+                    @endif
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">CONSIGNEE</label>
-                    <p class="text-base text-gray-900">{{ $manifest->penerima ?? '-' }}</p>
+                    <p class="text-base text-gray-900 font-semibold">{{ $manifest->penerima ?? '-' }}</p>
+                    @if($manifest->alamat_penerima)
+                        <p class="text-sm text-gray-600 mt-1 whitespace-pre-line">{{ $manifest->alamat_penerima }}</p>
+                    @endif
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Asal Kontainer</label>
