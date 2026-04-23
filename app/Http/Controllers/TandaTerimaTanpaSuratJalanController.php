@@ -11,6 +11,7 @@ use App\Models\Karyawan;
 use App\Models\MasterTujuanKirim;
 use App\Models\MasterKapal;
 use App\Models\MasterPengirimPenerima;
+use App\Models\Penerima;
 use App\Models\Prospek;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
@@ -182,7 +183,21 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $masterPengirimPenerima = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
+        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama_penerima,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masterPengirimPenerima = $penerimas->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
+            return (object)$item;
+        });
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
                           ->orderBy('nama_panggilan')
                           ->get(['id', 'nama_lengkap', 'nama_panggilan']);
@@ -244,7 +259,21 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $masterPengirimPenerima = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
+        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama_penerima,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masterPengirimPenerima = $penerimas->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
+            return (object)$item;
+        });
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
                           ->orderBy('nama_panggilan')
                           ->get(['id', 'nama_lengkap', 'nama_panggilan']);
@@ -777,7 +806,21 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $masterPengirimPenerima = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
+        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama_penerima,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masterPengirimPenerima = $penerimas->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
+            return (object)$item;
+        });
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
                           ->orderBy('nama_panggilan')
                           ->get(['id', 'nama_lengkap', 'nama_panggilan']);

@@ -196,9 +196,9 @@
                                     <option value="">-- Pilih Mobil --</option>
                                     @foreach($mobilList as $mobil)
                                         <option value="{{ $mobil->id }}" {{ old('mobil_id') == $mobil->id ? 'selected' : '' }}>
-                                            {{ $mobil->plat }}
-                                            @if($mobil->aktiva)
-                                                - {{ $mobil->aktiva }}
+                                            {{ $mobil->nomor_polisi }}
+                                            @if($mobil->merek)
+                                                - {{ $mobil->merek }}
                                             @endif
                                         </option>
                                     @endforeach

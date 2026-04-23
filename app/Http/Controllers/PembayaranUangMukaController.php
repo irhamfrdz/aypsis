@@ -90,7 +90,7 @@ class PembayaranUangMukaController extends Controller
                                      ->get();
 
         // Ambil data mobil untuk dropdown KIR & STNK
-        $mobilList = Mobil::orderBy('plat')->get();
+        $mobilList = Mobil::orderBy('nomor_polisi')->get();
 
         // Ambil data karyawan untuk dropdown penerima (KIR & STNK)
         $karyawanList = Karyawan::where('status', 'active')
@@ -428,7 +428,7 @@ class PembayaranUangMukaController extends Controller
                                      ->get();
 
         // Ambil data mobil untuk dropdown KIR & STNK
-        $mobilList = Mobil::orderBy('plat')->get();
+        $mobilList = Mobil::orderBy('nomor_polisi')->get();
 
         // Ambil data karyawan untuk dropdown penerima (KIR & STNK)
         $karyawanList = Karyawan::where('status', 'active')
