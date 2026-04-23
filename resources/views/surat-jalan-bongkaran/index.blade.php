@@ -713,7 +713,10 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Pilih size kontainer</option>
                                 <option value="20">20</option>
+                                <option value="20ft">20ft</option>
                                 <option value="40">40</option>
+                                <option value="40ft">40ft</option>
+                                <option value="40hc">40hc</option>
                             </select>
                         </div>
 
@@ -1104,7 +1107,10 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Pilih size kontainer</option>
                                 <option value="20">20</option>
+                                <option value="20ft">20ft</option>
                                 <option value="40">40</option>
+                                <option value="40ft">40ft</option>
+                                <option value="40hc">40hc</option>
                             </select>
                         </div>
 
@@ -1428,7 +1434,15 @@ function buatSuratJalan(manifestId) {
             document.getElementById('modal_no_bl').value = data.nomor_bl || '';
             document.getElementById('modal_no_kontainer').value = data.nomor_kontainer || '';
             document.getElementById('modal_no_seal').value = data.no_seal || '';
-            document.getElementById('modal_size').value = data.size_kontainer || '';
+            // Populate size with normalization
+            const sizeSelect = document.getElementById('modal_size');
+            const sizeVal = data.size_kontainer || '';
+            sizeSelect.value = sizeVal;
+            if (sizeSelect.value === '' && sizeVal !== '') {
+                const normSize = sizeVal.toLowerCase().replace(/\s/g, '');
+                if (normSize.includes('20')) sizeSelect.value = '20ft';
+                else if (normSize.includes('40')) sizeSelect.value = '40ft';
+            }
             document.getElementById('modal_pengirim').value = data.pengirim || '';
             document.getElementById('modal_penerima').value = data.penerima || data.pengirim || '';
             
@@ -1922,7 +1936,15 @@ function openEditModal(suratJalanId) {
             document.getElementById('edit_modal_no_kontainer').value = data.no_kontainer || '';
             document.getElementById('edit_modal_no_seal').value = data.no_seal || '';
             document.getElementById('edit_modal_no_bl').value = data.no_bl || '';
-            document.getElementById('edit_modal_size').value = data.size || '';
+            // Populate size with normalization
+            const editSizeSelect = document.getElementById('edit_modal_size');
+            const editSizeVal = data.size || '';
+            editSizeSelect.value = editSizeVal;
+            if (editSizeSelect.value === '' && editSizeVal !== '') {
+                const normSize = editSizeVal.toLowerCase().replace(/\s/g, '');
+                if (normSize.includes('20')) editSizeSelect.value = '20ft';
+                else if (normSize.includes('40')) editSizeSelect.value = '40ft';
+            }
             
             // Set radio buttons
             if (data.karton) {
