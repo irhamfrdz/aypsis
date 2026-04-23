@@ -54,7 +54,6 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         return [
             $pricelist->expedisi,
             $pricelist->ring,
-            $pricelist->rute,
             $pricelist->size,
             $pricelist->f_e,
             $pricelist->tarif,
@@ -68,7 +67,6 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         return [
             'Expedisi',
             'Ring',
-            'Rute',
             'Size',
             'F/E',
             'Tarif',
@@ -82,19 +80,18 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         return [
             'A' => 15, // Expedisi
             'B' => 10, // Ring
-            'C' => 30, // Rute
-            'D' => 12, // Size
-            'E' => 12, // F/E
-            'F' => 15, // Tarif
-            'G' => 15, // Tarif Base
-            'H' => 15, // Status
+            'C' => 12, // Size
+            'D' => 12, // F/E
+            'E' => 15, // Tarif
+            'F' => 15, // Tarif Base
+            'G' => 15, // Status
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:H1')->applyFromArray([
+        $sheet->getStyle('A1:G1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -117,7 +114,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         ]);
 
         // Auto filter for headings
-        $sheet->setAutoFilter('A1:H1');
+        $sheet->setAutoFilter('A1:G1');
 
         return [];
     }

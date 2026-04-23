@@ -57,7 +57,6 @@ class PricelistUangJalanBatamController extends Controller
         $validated = $request->validate([
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
-            'rute' => 'nullable|string|max:500',
             'size' => 'required|string|max:255',
             'f_e' => 'required|in:Full,Empty',
             'tarif' => 'required|numeric|min:0',
@@ -94,7 +93,6 @@ class PricelistUangJalanBatamController extends Controller
         $validated = $request->validate([
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
-            'rute' => 'nullable|string|max:500',
             'size' => 'required|string|max:255',
             'f_e' => 'required|in:Full,Empty',
             'tarif' => 'required|numeric|min:0',

@@ -231,9 +231,7 @@ class SuratJalanBongkaranController extends Controller
                                                                ->orderBy('ke')
                                                                ->get();
 
-        $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::orderBy('rute')
-                                                                       ->get()
-                                                                       ->groupBy('rute');
+        $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::orderBy('expedisi')->orderBy('ring')->get();
 
         $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
                                          ->where('status', 'aktif')

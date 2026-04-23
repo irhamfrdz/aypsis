@@ -34,7 +34,6 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             // More robust column matching
             $expedisi = $this->robustGet($row, ['expedisi', 'expe', 'vendor']);
             $ring = $this->robustGet($row, ['ring', 'wilayah', 'area']);
-            $rute = $this->robustGet($row, ['rute', 'rute_pengiriman', 'tujuan', 'destination']);
             $size = $this->robustGet($row, ['size', 'ukuran', 'kontainer']);
             $f_e = $this->robustGet($row, ['f/e', 'fe', 'f_e', 'full/empty', 'kondisi']);
             $tarif = $this->robustGet($row, ['tarif', 'harga', 'price', 'total']);
@@ -44,7 +43,7 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             // Clean data
             $expedisi = !empty($expedisi) ? trim($expedisi) : '';
             $ring = !empty($ring) ? trim($ring) : '';
-            $rute = !empty($rute) ? trim($rute) : null;
+
             $size = !empty($size) ? trim($size) : '';
             $f_e = !empty($f_e) ? trim($f_e) : '';
             $tarif = $this->cleanTarif($tarif);
@@ -90,10 +89,9 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 return null;
             }
 
-            // Check duplicate (termasuk rute)
+            // Check duplicate
             $exists = PricelistUangJalanBatam::where('expedisi', $expedisi)
                 ->where('ring', $ring)
-                ->where('rute', $rute)
                 ->where('size', $size)
                 ->where('f_e', $f_e)
                 ->first();
@@ -104,8 +102,8 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                     'status' => $status ?? $exists->status,
                 ];
                 
-                // Only update rute if it's provided in Excel
-                if ($rute !== null) $updateData['rute'] = $rute;
+                // Update data if provided in Excel
+
                 if ($tarif_base !== null) $updateData['tarif_base'] = $tarif_base;
 
                 $exists->update($updateData);
@@ -118,7 +116,7 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             return new PricelistUangJalanBatam([
                 'expedisi' => $expedisi,
                 'ring' => $ring,
-                'rute' => $rute,
+
                 'size' => $size,
                 'f_e' => $f_e,
                 'tarif' => $tarif,

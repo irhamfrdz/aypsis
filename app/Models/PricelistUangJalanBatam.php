@@ -14,7 +14,6 @@ class PricelistUangJalanBatam extends Model
     protected $fillable = [
         'expedisi',
         'ring',
-        'rute',
         'size',
         'f_e',
         'tarif',

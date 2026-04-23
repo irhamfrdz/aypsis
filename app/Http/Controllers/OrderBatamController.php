@@ -67,14 +67,7 @@ class OrderBatamController extends Controller
             ->pluck('ukuran')
             ->toArray();
 
-        // Get rutes from pricelist_uang_jalan_batam
-        $rutes = PricelistUangJalanBatam::select('rute')
-            ->distinct()
-            ->whereNotNull('rute')
-            ->where('rute', '!=', '')
-            ->orderBy('rute')
-            ->pluck('rute')
-            ->toArray();
+        $rutes = [];
 
         // Generate next order number
         $nextOrderNumber = $this->generateNextOrderNumber();
@@ -303,14 +296,7 @@ class OrderBatamController extends Controller
             ->pluck('ukuran')
             ->toArray();
 
-        // Get rutes from pricelist_uang_jalan_batam
-        $rutes = PricelistUangJalanBatam::select('rute')
-            ->distinct()
-            ->whereNotNull('rute')
-            ->where('rute', '!=', '')
-            ->orderBy('rute')
-            ->pluck('rute')
-            ->toArray();
+        $rutes = [];
 
         return view('orders-batam.edit', compact('orderBatam', 'terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'rutes'));
     }

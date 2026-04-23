@@ -115,10 +115,7 @@ class SuratJalanBatamController extends Controller
         // Calculate default uang jalan from pricelist
         $defaultUangJalan = 0;
         if ($selectedOrder) {
-            $pricelist = PricelistUangJalanBatam::where('rute', $selectedOrder->tujuan_ambil)
-                ->where('size', $selectedOrder->size_kontainer)
-                ->where('f_e', $selectedOrder->f_e)
-                ->first();
+            $pricelist = null; // Removed rute lookup
             
             if ($pricelist) {
                 $defaultUangJalan = $pricelist->tarif;
