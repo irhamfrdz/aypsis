@@ -148,9 +148,14 @@
     @else
         <div class="pengirim">&nbsp;</div>
     @endif
-    {{-- Penerima (ambil dari tabel bls via $baData->penerima) --}}
+    {{-- Penerima (consignee) --}}
     @if(isset($baData) && !empty($baData->penerima))
-        <div class="penerima">{!! nl2br(e($baData->penerima)) !!}</div>
+        <div class="penerima">
+            {!! nl2br(e($baData->penerima)) !!}
+            @if(!empty($baData->contact_person))
+                <div style="font-weight: normal; font-size: 12px; margin-top: 2px;">CP: {{ e($baData->contact_person) }}</div>
+            @endif
+        </div>
     @else
         <div class="penerima">&nbsp;</div>
     @endif
