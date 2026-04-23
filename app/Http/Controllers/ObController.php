@@ -881,6 +881,11 @@ class ObController extends Controller
                 'prospek_id' => $naikKapal->prospek_id,
                 'prospek_pt_pengirim' => $naikKapal->prospek ? $naikKapal->prospek->pt_pengirim : null,
                 'prospek_tujuan_pengiriman' => $naikKapal->prospek ? $naikKapal->prospek->tujuan_pengiriman : null,
+                // Tambahkan field alamat untuk prospek (FCL)
+                'prospek_alamat_pengirim' => $naikKapal->prospek ? $naikKapal->prospek->alamat_pengirim : null,
+                'prospek_alamat_penerima' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->alamat_penerima : ($naikKapal->prospek->alamat_penerima ?? null),
+                'prospek_alamat_pengiriman' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->alamat_penerima : ($naikKapal->prospek->alamat_pengiriman ?? null),
+                'prospek_contact_person' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->contact_person : ($naikKapal->prospek->contact_person ?? null),
                 'prospek_jumlah' => $naikKapal->prospek ? $naikKapal->prospek->kuantitas : ($naikKapal->kuantitas ?? null),
                 'prospek_satuan' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->satuan : null,
                 'term' => $naikKapal->prospek ? ($naikKapal->prospek->tandaTerima ? $naikKapal->prospek->tandaTerima->term : (
@@ -1119,6 +1124,8 @@ class ObController extends Controller
                             $manifest->penerima = $tandaTerima->nama_penerima;
                             $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
                             $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
+                            $manifest->alamat_pengiriman = $tandaTerima->alamat_penerima;
+                            $manifest->contact_person = $tandaTerima->contact_person;
                             $namaBarang = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
                             $manifest->nama_barang = $namaBarang ?: $manifestDataForLater['jenis_barang'];
                             $manifest->volume = $tandaTerima->items->sum('meter_kubik');
@@ -1181,6 +1188,12 @@ class ObController extends Controller
                         $manifest->tanggal_berangkat = now();
                         if ($manifestDataForLater['prospek_id']) {
                             $manifest->prospek_id = $manifestDataForLater['prospek_id'];
+                            $manifest->pengirim = $manifestDataForLater['prospek_pt_pengirim'];
+                            $manifest->penerima = $manifestDataForLater['prospek_tujuan_pengiriman'];
+                            $manifest->alamat_pengirim = $manifestDataForLater['prospek_alamat_pengirim'];
+                            $manifest->alamat_penerima = $manifestDataForLater['prospek_alamat_penerima'];
+                            $manifest->alamat_pengiriman = $manifestDataForLater['prospek_alamat_pengiriman'];
+                            $manifest->contact_person = $manifestDataForLater['prospek_contact_person'];
                         }
 
                         $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
@@ -1244,6 +1257,10 @@ class ObController extends Controller
                             $manifest->prospek_id = $manifestDataForLater['prospek_id'];
                             $manifest->pengirim = $manifestDataForLater['prospek_pt_pengirim'];
                             $manifest->penerima = $manifestDataForLater['prospek_tujuan_pengiriman'];
+                            $manifest->alamat_pengirim = $manifestDataForLater['prospek_alamat_pengirim'];
+                            $manifest->alamat_penerima = $manifestDataForLater['prospek_alamat_penerima'];
+                            $manifest->alamat_pengiriman = $manifestDataForLater['prospek_alamat_pengiriman'];
+                            $manifest->contact_person = $manifestDataForLater['prospek_contact_person'];
                         }
 
                         $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
@@ -1396,6 +1413,8 @@ class ObController extends Controller
                         $manifest->penerima        = $tandaTerima->nama_penerima;
                         $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
                         $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
+                        $manifest->alamat_pengiriman = $tandaTerima->alamat_penerima;
+                        $manifest->contact_person = $tandaTerima->contact_person;
                         $namaBarangItems = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
                         $manifest->nama_barang     = $namaBarangItems ?: $namaBarang;
                         $manifest->volume          = $tandaTerima->items->sum('meter_kubik');

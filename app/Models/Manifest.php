@@ -93,4 +93,12 @@ class Manifest extends Model
         
         return '-';
     }
+
+    /**
+     * Get the Alamat Pengiriman, fallback to Alamat Penerima if empty.
+     */
+    public function getAlamatPengirimanAttribute($value)
+    {
+        return $value ?: $this->alamat_penerima;
+    }
 }
