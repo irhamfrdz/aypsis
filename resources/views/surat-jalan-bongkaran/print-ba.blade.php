@@ -28,13 +28,20 @@
         /* Positioned penerima data - below pengirim */
         .penerima {
             position: absolute;
-            top: 9.0cm; /* raised by 0.5cm from 9.5cm */
-            left: 4.5cm;  /* aligned with pengirim */
-            width: 12cm; /* same width as pengirim */
+            top: 8.5cm; /* Reverted/Adjusted to be closer to pengirim as per visual */
+            left: 4.5cm;
+            width: 12cm;
             white-space: pre-wrap;
             line-height: 1.2;
             font-size: 14px;
             font-weight: bold;
+        }
+        .penerima-cp {
+            position: absolute;
+            top: 9.8cm; /* Exactly below the consignee block */
+            left: 4.5cm;
+            font-size: 11px;
+            font-weight: normal;
         }
         /* Positioned container number */
         .no-kontainer {
@@ -150,14 +157,13 @@
     @endif
     {{-- Penerima (ambil dari tabel bls via $baData->penerima) --}}
     @if(isset($baData) && !empty($baData->penerima))
-        <div class="penerima">
-            {!! nl2br(e($baData->penerima)) !!}
-            @if(!empty($baData->contact_person))
-                <div style="font-weight: normal; font-size: 11px; margin-top: 2px;">CP: {{ e($baData->contact_person) }}</div>
-            @endif
-        </div>
+        <div class="penerima">{!! nl2br(e($baData->penerima)) !!}</div>
     @else
         <div class="penerima">&nbsp;</div>
+    @endif
+    {{-- Contact Person (separated div to not affect consignee position) --}}
+    @if(isset($baData) && !empty($baData->contact_person))
+        <div class="penerima-cp">CP: {{ e($baData->contact_person) }}</div>
     @endif
     {{-- Nomor Kontainer (ambil dari tabel bls via $baData->no_kontainer) --}}
     @if(isset($baData) && !empty($baData->no_kontainer))
