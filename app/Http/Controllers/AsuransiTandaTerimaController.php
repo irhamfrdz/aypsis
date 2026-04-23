@@ -18,7 +18,10 @@ class AsuransiTandaTerimaController extends Controller
     public function index(Request $request)
     {
         $search = $request->search;
-        $unionQuery = $this->getReceiptsQuery($search);
+        $dari_tanggal = $request->dari_tanggal;
+        $sampai_tanggal = $request->sampai_tanggal;
+        
+        $unionQuery = $this->getReceiptsQuery($search, $dari_tanggal, $sampai_tanggal);
         
         $receipts = DB::table(DB::raw("({$unionQuery->toSql()}) as combined_receipts"))
             ->mergeBindings($unionQuery)
@@ -265,7 +268,10 @@ class AsuransiTandaTerimaController extends Controller
     public function exportExcel(Request $request)
     {
         $search = $request->search;
-        $unionQuery = $this->getReceiptsQuery($search);
+        $dari_tanggal = $request->dari_tanggal;
+        $sampai_tanggal = $request->sampai_tanggal;
+        
+        $unionQuery = $this->getReceiptsQuery($search, $dari_tanggal, $sampai_tanggal);
         
         $receipts = DB::table(DB::raw("({$unionQuery->toSql()}) as combined_receipts"))
             ->mergeBindings($unionQuery)
@@ -308,7 +314,7 @@ class AsuransiTandaTerimaController extends Controller
         }
     }
 
-    private function getReceiptsQuery($search)
+    private function getReceiptsQuery($search, $dari_tanggal = null, $sampai_tanggal = null)
     {
         // Tanda Terima Regular
         $tt = DB::table('tanda_terimas')
@@ -340,6 +346,12 @@ class AsuransiTandaTerimaController extends Controller
                         ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
                         ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
+            })
+            ->when($dari_tanggal, function($q) use ($dari_tanggal) {
+                return $q->whereDate('tanda_terimas.tanggal', '>=', $dari_tanggal);
+            })
+            ->when($sampai_tanggal, function($q) use ($sampai_tanggal) {
+                return $q->whereDate('tanda_terimas.tanggal', '<=', $sampai_tanggal);
             });
 
         // Tanda Terima Tanpa SJ
@@ -371,6 +383,12 @@ class AsuransiTandaTerimaController extends Controller
                         ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
                         ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
+            })
+            ->when($dari_tanggal, function($q) use ($dari_tanggal) {
+                return $q->whereDate('tanda_terima_tanpa_surat_jalan.tanggal_tanda_terima', '>=', $dari_tanggal);
+            })
+            ->when($sampai_tanggal, function($q) use ($sampai_tanggal) {
+                return $q->whereDate('tanda_terima_tanpa_surat_jalan.tanggal_tanda_terima', '<=', $sampai_tanggal);
             });
 
         // Tanda Terima LCL
@@ -403,6 +421,12 @@ class AsuransiTandaTerimaController extends Controller
                        ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
                        ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
+            })
+            ->when($dari_tanggal, function($q) use ($dari_tanggal) {
+                return $q->whereDate('tanda_terimas_lcl.tanggal_tanda_terima', '>=', $dari_tanggal);
+            })
+            ->when($sampai_tanggal, function($q) use ($sampai_tanggal) {
+                return $q->whereDate('tanda_terimas_lcl.tanggal_tanda_terima', '<=', $sampai_tanggal);
             });
         return $tt->union($tttsj)->union($lcl);
     }

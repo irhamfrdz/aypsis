@@ -64,22 +64,34 @@
             </div>
         @endif
 
-        <!-- Filter -->
         <div class="bg-gray-50 rounded-lg p-4 mb-6">
-            <form method="GET" action="{{ route('asuransi-tanda-terima.index') }}" class="flex gap-4">
-                <div class="flex-1">
+            <form method="GET" action="{{ route('asuransi-tanda-terima.index') }}" class="flex flex-wrap items-end gap-4">
+                <div class="flex-1 min-w-[300px]">
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Pencarian</label>
                     <input type="text" name="search" value="{{ request('search') }}"
-                           placeholder="Cari nomor polis, vendor..."
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                           placeholder="Cari nomor polis, kontainer, vendor..."
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                 </div>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200">
-                    Cari
-                </button>
-                <a href="{{ route('asuransi-tanda-terima.index') }}" 
-                   onclick="sessionStorage.removeItem('selected_asuransi_receipt_ids')"
-                   class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition duration-200">
-                    Reset
-                </a>
+                <div class="w-44">
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Dari Tanggal</label>
+                    <input type="date" name="dari_tanggal" value="{{ request('dari_tanggal') }}"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                </div>
+                <div class="w-44">
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Sampai Tanggal</label>
+                    <input type="date" name="sampai_tanggal" value="{{ request('sampai_tanggal') }}"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition duration-200 text-sm">
+                        Cari
+                    </button>
+                    <a href="{{ route('asuransi-tanda-terima.index') }}" 
+                       onclick="sessionStorage.removeItem('selected_asuransi_receipt_ids')"
+                       class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition duration-200 text-sm">
+                        Reset
+                    </a>
+                </div>
             </form>
         </div>
 
