@@ -77,14 +77,16 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
                 // Vertical align everything to top
                 $sheet->getStyle("A1:Z{$highestRow}")->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
 
-                // Post-process column E: replace ", " with newline for in-cell line breaks
-                for ($row = 1; $row <= $highestRow; $row++) {
-                    $cell = $sheet->getCell("E{$row}");
-                    $value = $cell->getValue();
-                    
-                    if ($value && is_string($value) && strpos($value, ', ') !== false) {
-                        $cell->setValue(str_replace(', ', "," . chr(10), $value));
-                        $sheet->getStyle("E{$row}")->getAlignment()->setWrapText(true);
+                // Post-process columns C and E: replace ", " with newline for in-cell line breaks
+                foreach (['C', 'E'] as $col) {
+                    for ($row = 1; $row <= $highestRow; $row++) {
+                        $cell = $sheet->getCell("{$col}{$row}");
+                        $value = $cell->getValue();
+                        
+                        if ($value && is_string($value) && strpos($value, ', ') !== false) {
+                            $cell->setValue(str_replace(', ', "," . chr(10), $value));
+                            $sheet->getStyle("{$col}{$row}")->getAlignment()->setWrapText(true);
+                        }
                     }
                 }
             },

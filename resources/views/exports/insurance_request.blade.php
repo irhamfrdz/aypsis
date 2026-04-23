@@ -35,9 +35,7 @@
                         @endif
                     </td>
                     <td align="left" valign="top"><b>{{ $first->no_kontainer ?: $first->number }}</b></td>
-                    <td align="right" valign="top"><b>1</b></td>
-                    <td align="left" valign="top">&nbsp;<b>UNIT</b></td>
-                    <td align="left" valign="top">{{ $first->container_size_label ?? 'CONT.20" ISI' }}</td>
+                    <td align="left" valign="top" colspan="3"><b>1 UNIT&nbsp;</b>{{ $first->container_size_label ?? 'CONT.20" ISI' }}</td>
                     <td align="right" valign="top"></td>
                     <td align="left" valign="top">Rp</td>
                     <td align="right" valign="top"><b>{{ number_format($containerItems->sum('amount') ?: 0, 0, ',', '.') }}</b></td>
@@ -60,9 +58,7 @@
                     <tr>
                         <td></td>
                         <td></td>
-                        <td align="right" valign="top"><b>{{ number_format($item->kuantitas ?: 0) }}</b></td>
-                        <td align="left" valign="top">&nbsp;<b>{{ strtoupper($item->satuan ?: 'UNIT') }}</b></td>
-                        <td align="left" valign="top">{{ strtoupper($item->nama_barang) }}</td>
+                        <td align="left" valign="top" colspan="3"><b>{{ number_format($item->kuantitas ?: 0) }} {{ strtoupper($item->satuan ?: 'UNIT') }}&nbsp;</b>{{ strtoupper($item->nama_barang) }}</td>
                         <td></td>
                         <td></td>
                         <td align="right" valign="top">
