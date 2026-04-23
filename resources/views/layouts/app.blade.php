@@ -1117,7 +1117,7 @@
 
 {{-- Aktivitas Dropdown --}}
 @php
-    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('ob.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('pembayaran-pranota-ob.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*') || Request::routeIs('pembayaran-aktivitas-lain.*') || Request::routeIs('invoice-aktivitas-lain.*') || Request::routeIs('realisasi-uang-muka.*');
+    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('pembayaran-pranota-rit.*') || Request::routeIs('pranota-uang-rit-kenek.*') || Request::routeIs('pembayaran-pranota-rit-kenek.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-lembur.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('ob.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('pranota-ob.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('pembayaran-pranota-ob.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*') || Request::routeIs('pembayaran-aktivitas-lain.*') || Request::routeIs('invoice-aktivitas-lain.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('realisasi-uang-muka.*');
     $hasAktivitasPermissions = $user && (
         $user->can('permohonan-memo-view') ||
         $user->can('pranota-supir-view') ||
@@ -1198,6 +1198,7 @@
         $user->can('invoice-aktivitas-lain-create') ||
         $user->can('invoice-aktivitas-lain-update') ||
         $user->can('invoice-aktivitas-lain-delete') ||
+        $user->can('pembayaran-uang-muka-view') ||
         $user->can('realisasi-uang-muka-delete') ||
         $user->can('kontainer-sewa-final-view')
     );
@@ -2015,8 +2016,8 @@
 
         {{-- Aktivitas Lain-Lain Sub-Dropdown --}}
         @php
-            $isAktivitasLainRoute = Request::routeIs('pembayaran-aktivitas-lain.*') || Request::routeIs('invoice-aktivitas-lain.*') || Request::routeIs('realisasi-uang-muka.*');
-            $hasAktivitasLainPermissions = $isAdmin || ($user && ($user->can('pembayaran-aktivitas-lain-view') || $user->can('pembayaran-aktivitas-lain-create') || $user->can('pembayaran-aktivitas-lain-update') || $user->can('pembayaran-aktivitas-lain-delete') || $user->can('invoice-aktivitas-lain-view') || $user->can('invoice-aktivitas-lain-create') || $user->can('invoice-aktivitas-lain-update') || $user->can('invoice-aktivitas-lain-delete') || $user->can('realisasi-uang-muka-view') || $user->can('realisasi-uang-muka-create') || $user->can('realisasi-uang-muka-update') || $user->can('realisasi-uang-muka-delete')));
+        $isAktivitasLainRoute = Request::routeIs('pembayaran-aktivitas-lain.*') || Request::routeIs('invoice-aktivitas-lain.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('realisasi-uang-muka.*');
+        $hasAktivitasLainPermissions = $isAdmin || ($user && ($user->can('pembayaran-aktivitas-lain-view') || $user->can('pembayaran-aktivitas-lain-create') || $user->can('pembayaran-aktivitas-lain-update') || $user->can('pembayaran-aktivitas-lain-delete') || $user->can('invoice-aktivitas-lain-view') || $user->can('invoice-aktivitas-lain-create') || $user->can('invoice-aktivitas-lain-update') || $user->can('invoice-aktivitas-lain-delete') || $user->can('pembayaran-uang-muka-view') || $user->can('realisasi-uang-muka-view') || $user->can('realisasi-uang-muka-create') || $user->can('realisasi-uang-muka-update') || $user->can('realisasi-uang-muka-delete')));
         @endphp
 
         @if($hasAktivitasLainPermissions)
@@ -2039,6 +2040,12 @@
                 @if($isAdmin || ($user && $user->can('pembayaran-aktivitas-lain-view')))
                     <a href="{{ route('pembayaran-aktivitas-lain.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lain.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pembayaran Aktivitas Lain</span>
+                    </a>
+                @endif
+                {{-- Pembayaran Uang Muka --}}
+                @if($isAdmin || ($user && $user->can('pembayaran-uang-muka-view')))
+                    <a href="{{ route('pembayaran-uang-muka.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('pembayaran-uang-muka.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pembayaran Uang Muka</span>
                     </a>
                 @endif
                 
