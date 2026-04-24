@@ -544,11 +544,27 @@ class StockBanController extends Controller
      */
     public function kirim(Request $request, $id)
     {
+        return $this->processKirim($request, $id, 'Batam');
+    }
+
+    /**
+     * Send ban to Tanjung Pinang.
+     */
+    public function kirimTanjungPinang(Request $request, $id)
+    {
+        return $this->processKirim($request, $id, 'Tanjung Pinang');
+    }
+
+    /**
+     * Process sending ban to a destination.
+     */
+    private function processKirim(Request $request, $id, $destination)
+    {
         $stockBan = StockBan::findOrFail($id);
 
         // Informative check: only Stok can be sent
         if ($stockBan->status !== 'Stok') {
-            return redirect()->back()->with('error', 'Gagal: Ban ini sedang dalam status "' . $stockBan->status . '" dan tidak bisa dikirim ke kapal.')->withInput();
+            return redirect()->back()->with('error', 'Gagal: Ban ini sedang dalam status "' . $stockBan->status . '" dan tidak bisa dikirim.')->withInput();
         }
 
         $request->validate([
@@ -564,16 +580,19 @@ class StockBanController extends Controller
             'tanggal_kirim.required' => 'Tanggal kirim harus diisi.',
         ]);
 
+        $status = "Dikirim Ke " . $destination;
+        $keteranganNote = "[Kirim ke " . $destination . ": " . ($request->keterangan ?? '-') . "]";
+
         $stockBan->update([
-            'status' => 'Dikirim Ke Batam',
+            'status' => $status,
             'penerima_id' => $request->penerima_id,
             'kapal_id' => $request->kapal_id,
             'tanggal_kirim' => $request->tanggal_kirim,
-            'keterangan' => $request->keterangan ? ($stockBan->keterangan . "\n" . "[Kirim ke Batam: " . $request->keterangan . "]") : $stockBan->keterangan,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $keteranganNote) : $keteranganNote,
         ]);
 
         $kapalName = \App\Models\MasterKapal::find($request->kapal_id)->nama_kapal ?? '-';
-        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri ' . ($stockBan->nomor_seri ?? '-') . ' berhasil dikirim ke Batam (' . $kapalName . ').');
+        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri ' . ($stockBan->nomor_seri ?? '-') . ' berhasil dikirim ke ' . $destination . ' (' . $kapalName . ').');
     }
 
     /**

@@ -5584,6 +5584,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::put('stock-ban/{stock_ban}/kirim', [\App\Http\Controllers\StockBanController::class, 'kirim'])
                ->name('stock-ban.kirim')
                ->middleware('can:stock-ban-update');
+          Route::put('stock-ban/{stock_ban}/kirim-tp', [\App\Http\Controllers\StockBanController::class, 'kirimTanjungPinang'])
+               ->name('stock-ban.kirim-tp')
+               ->middleware('can:stock-ban-update');
           Route::delete('stock-ban/{stock_ban}', [\App\Http\Controllers\StockBanController::class, 'destroy'])
                ->name('stock-ban.destroy')
                ->middleware('can:stock-ban-delete');

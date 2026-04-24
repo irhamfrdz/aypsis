@@ -281,10 +281,23 @@
                     <div id="card-dikirim" onclick="setCardFilter('dikirim', false)" class="cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-medium text-cyan-600 uppercase">Dikirim Batam</span>
-                            <i class="fas fa-map-marked-alt text-cyan-400 text-lg"></i>
+                            <i class="fas fa-ship text-cyan-400 text-lg"></i>
                         </div>
                         <div class="text-2xl font-bold text-cyan-900">{{ $banDikirim }}</div>
                         <p class="text-xs text-cyan-600 mt-1">Transit</p>
+                    </div>
+
+                    <!-- Ban Dikirim Ke Tanjung Pinang -->
+                    @php
+                        $banDikirimTP = $stockBans->where('status', 'Dikirim Ke Tanjung Pinang')->count();
+                    @endphp
+                    <div id="card-dikirim-tp" onclick="setCardFilter('dikirim-tp', false)" class="cursor-pointer bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-teal-600 uppercase">Dikirim TP</span>
+                            <i class="fas fa-paper-plane text-teal-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-teal-900">{{ $banDikirimTP }}</div>
+                        <p class="text-xs text-teal-600 mt-1">Transit</p>
                     </div>
                     
                     <!-- Ban Asli -->
@@ -471,7 +484,7 @@
                                         {{ $ban->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
                                            ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
                                            ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
-                                           ($ban->status == 'Dikirim Ke Batam' ? 'bg-cyan-100 text-cyan-800' : 
+                                           (($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') ? 'bg-cyan-100 text-cyan-800' : 
                                            ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
                                            ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
                                         {{ $ban->status }}
@@ -501,7 +514,7 @@
                                         <div class="text-xs text-gray-500 mt-1">
                                             {{ $ban->alatBerat->jenis }} {{ $ban->alatBerat->warna ? '- '.$ban->alatBerat->warna : '' }}
                                         </div>
-                                    @elseif($ban->status == 'Dikirim Ke Batam' && $ban->kapal)
+                                    @elseif(($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') && $ban->kapal)
                                         <span class="text-cyan-600 font-medium">
                                             <i class="fas fa-ship mr-1"></i> {{ $ban->kapal->nama_kapal }}
                                         </span>
@@ -573,8 +586,18 @@
                                                  class="btn-kirim-modal text-blue-500 hover:text-blue-700" 
                                                  data-id="{{ $ban->id }}" 
                                                  data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                 data-destination="Batam"
                                                  title="Kirim Ke Batam">
                                                  <i class="fas fa-truck-loading"></i>
+                                             </button>
+
+                                             <button type="button" 
+                                                 class="btn-kirim-tp-modal text-teal-500 hover:text-teal-700" 
+                                                 data-id="{{ $ban->id }}" 
+                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                 data-destination="Tanjung Pinang"
+                                                 title="Kirim Ke Tanjung Pinang">
+                                                 <i class="fas fa-paper-plane"></i>
                                              </button>
 
                                              <button type="button" 
@@ -862,7 +885,7 @@
                                         {{ $ban->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
                                            ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
                                            ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
-                                           ($ban->status == 'Dikirim Ke Batam' ? 'bg-cyan-100 text-cyan-800' : 
+                                           (($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') ? 'bg-cyan-100 text-cyan-800' : 
                                            ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
                                            ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
                                         {{ $ban->status }}
@@ -892,7 +915,7 @@
                                         <div class="text-xs text-gray-500 mt-1">
                                             {{ $ban->alatBerat->jenis }} {{ $ban->alatBerat->warna ? '- '.$ban->alatBerat->warna : '' }}
                                         </div>
-                                    @elseif($ban->status == 'Dikirim Ke Batam' && $ban->kapal)
+                                    @elseif(($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') && $ban->kapal)
                                         <span class="text-cyan-600 font-medium">
                                             <i class="fas fa-ship mr-1"></i> {{ $ban->kapal->nama_kapal }}
                                         </span>
@@ -964,8 +987,18 @@
                                                  class="btn-kirim-modal text-blue-500 hover:text-blue-700" 
                                                  data-id="{{ $ban->id }}" 
                                                  data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                 data-destination="Batam"
                                                  title="Kirim Ke Batam">
                                                  <i class="fas fa-truck-loading"></i>
+                                             </button>
+
+                                             <button type="button" 
+                                                 class="btn-kirim-tp-modal text-teal-500 hover:text-teal-700" 
+                                                 data-id="{{ $ban->id }}" 
+                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                 data-destination="Tanjung Pinang"
+                                                 title="Kirim Ke Tanjung Pinang">
+                                                 <i class="fas fa-paper-plane"></i>
                                              </button>
 
                                              <button type="button" 
@@ -2119,7 +2152,7 @@
     }
 
     // KIRIM BAN FUNCTIONS
-    function openKirimModal(id, seri) {
+    function openKirimModal(id, seri, destination = 'Batam') {
         const modal = document.getElementById('kirimBanModal');
         const modalBanId = document.getElementById('kirim_ban_id');
         const modalNomorSeri = document.getElementById('kirim_nomor_seri');
@@ -2128,6 +2161,8 @@
         
         modalBanId.value = id;
         modalNomorSeri.textContent = seri || '-';
+        document.getElementById('modal-title-kirim').textContent = 'Kirim Ke ' + destination + ': ';
+        document.getElementById('kirim_destination').value = destination;
         
         // Reset dropdowns
         document.getElementById('kirim_penerima').value = '';
@@ -2166,7 +2201,12 @@
         if (!tanggal) { alert('Mohon isi tanggal kirim!'); return; }
 
         const form = document.getElementById('kirimBanForm');
-        form.action = `{{ url('stock-ban') }}/${banId}/kirim`;
+        const dest = document.getElementById('kirim_destination').value;
+        if (dest === 'Tanjung Pinang') {
+            form.action = `{{ url('stock-ban') }}/${banId}/kirim-tp`;
+        } else {
+            form.action = `{{ url('stock-ban') }}/${banId}/kirim`;
+        }
         form.submit();
     }
 
@@ -2247,7 +2287,8 @@
                 'dikirim': 'ring-cyan-400',
                 'dikembalikan': 'ring-rose-400',
                 'dijual': 'ring-amber-400',
-                'gudang-batam': 'ring-indigo-400'
+                'gudang-batam': 'ring-indigo-400',
+                'dikirim-tp': 'ring-teal-400'
             };
             activeCard.classList.add(colorMap[filterType]);
         }
@@ -2584,6 +2625,8 @@
                         filterMatch = kondisi === 'asli' && status === 'stok';
                     } else if (currentCardFilter === 'dikirim') {
                         filterMatch = status === 'dikirim ke batam';
+                    } else if (currentCardFilter === 'dikirim-tp') {
+                        filterMatch = status === 'dikirim ke tanjung pinang';
                     } else if (currentCardFilter === 'dikembalikan') {
                         filterMatch = status === 'dikembalikan';
                     } else if (currentCardFilter === 'dijual') {
@@ -2685,6 +2728,8 @@
         
         if (modalBanId) modalBanId.value = id;
         if (modalNomorSeri) modalNomorSeri.textContent = seri || '-';
+        document.getElementById('modal-title-kirim').textContent = 'Kirim Ke ' + destination + ': ';
+        document.getElementById('kirim_destination').value = destination;
         if (modalLokasi) modalLokasi.value = '';
         
         // Set tanggal to today
@@ -2751,6 +2796,8 @@
 
         modalBanId.value = id;
         modalNomorSeri.textContent = seri || '-';
+        document.getElementById('modal-title-kirim').textContent = 'Kirim Ke ' + destination + ': ';
+        document.getElementById('kirim_destination').value = destination;
         modalTanggal.value = new Date().toISOString().split('T')[0];
         modalNamaToko.value = '';
         modalKeterangan.value = '';
@@ -2796,12 +2843,13 @@
 
     // Additional event listener for the new Kirim button
     document.addEventListener('click', function(e) {
-        const kirimBtn = e.target.closest('.btn-kirim-modal');
+        const kirimBtn = e.target.closest('.btn-kirim-modal') || e.target.closest('.btn-kirim-tp-modal');
         if (kirimBtn) {
             e.preventDefault();
             const id = kirimBtn.getAttribute('data-id');
             const seri = kirimBtn.getAttribute('data-seri');
-            openKirimModal(id, seri);
+            const dest = kirimBtn.getAttribute('data-destination') || 'Batam';
+            openKirimModal(id, seri, dest);
         }
 
         const returnShopBtn = e.target.closest('.btn-return-shop-modal');
@@ -2832,6 +2880,8 @@
 
         modalBanId.value = id;
         modalNomorSeri.textContent = seri || '-';
+        document.getElementById('modal-title-kirim').textContent = 'Kirim Ke ' + destination + ': ';
+        document.getElementById('kirim_destination').value = destination;
         modalLokasi.value = '';
 
         modal.classList.remove('hidden');
@@ -2877,6 +2927,8 @@
 
         modalBanId.value = id;
         modalNomorSeri.textContent = seri || '-';
+        document.getElementById('modal-title-kirim').textContent = 'Kirim Ke ' + destination + ': ';
+        document.getElementById('kirim_destination').value = destination;
         modalPembeli.value = '';
         modalHarga.value = '';
         document.getElementById('jual_tanggal').value = new Date().toISOString().split('T')[0];
@@ -2940,6 +2992,7 @@
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="ban_id" id="kirim_ban_id">
+                <input type="hidden" name="destination" id="kirim_destination">
                 
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
@@ -2948,7 +3001,7 @@
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                             <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                Kirim Ke Batam: <span id="kirim_nomor_seri" class="text-blue-600 font-bold"></span>
+                                <span id="modal-title-kirim">Kirim Ke Batam: </span><span id="kirim_nomor_seri" class="text-blue-600 font-bold"></span>
                             </h3>
                             <div class="mt-4 space-y-4">
                                 <div>
