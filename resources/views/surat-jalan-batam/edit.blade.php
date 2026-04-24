@@ -47,33 +47,77 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
-                <!-- Section: Detail Pengiriman -->
+                <!-- Section: Order Details -->
                 <div class="md:col-span-2 border-t pt-4 mt-2">
                     <h3 class="text-sm font-bold text-gray-800 mb-3">Detail Pengiriman</h3>
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Term Pembayaran</label>
+                    <select name="term" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Pilih Term</option>
+                        @foreach($terms as $term)
+                            <option value="{{ $term->kode }}" {{ old('term', $suratJalan->term) == $term->kode ? 'selected' : '' }}>
+                                {{ $term->kode }} - {{ $term->nama_status }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
+                    <select name="aktifitas" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Pilih Aktifitas</option>
+                        @foreach($masterKegiatans as $kegiatan)
+                            <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('aktifitas', $suratJalan->aktifitas) == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                {{ $kegiatan->nama_kegiatan }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
                     <input type="text" name="pengirim" value="{{ old('pengirim', $suratJalan->pengirim) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
+                    <input type="text" name="penerima" value="{{ old('penerima', $suratJalan->penerima) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat / Tujuan Alamat</label>
+                    <input type="text" name="alamat" value="{{ old('alamat', $suratJalan->alamat) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
-                    <input type="text" name="jenis_barang" value="{{ old('jenis_barang', $suratJalan->jenis_barang) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <select name="jenis_barang" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Pilih Jenis Barang</option>
+                        @foreach($jenisBarangs as $jb)
+                            <option value="{{ $jb->nama_barang }}" {{ old('jenis_barang', $suratJalan->jenis_barang) == $jb->nama_barang ? 'selected' : '' }}>
+                                {{ $jb->nama_barang }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
+
+                <div></div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
                     <input type="text" name="tujuan_pengambilan" value="{{ old('tujuan_pengambilan', $suratJalan->tujuan_pengambilan) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
                     <input type="text" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $suratJalan->tujuan_pengiriman) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <!-- Section: Transport -->
@@ -84,7 +128,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Plat Kendaraan</label>
                     <input type="text" name="no_plat" id="no_plat" value="{{ old('no_plat', $suratJalan->no_plat) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <div class="relative supir-dropdown-container">
@@ -110,7 +154,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir 2 (Opsional)</label>
                     <input type="text" name="supir2" value="{{ old('supir2', $suratJalan->supir2) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <div class="relative kenek-dropdown-container">
@@ -131,6 +175,52 @@
                     </div>
                 </div>
 
+                <div class="relative krani-dropdown-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
+                    <div class="relative">
+                        <input type="text" id="krani_search" placeholder="Cari krani..." autocomplete="off"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="hidden" name="krani" id="krani_value" value="{{ old('krani', $suratJalan->krani) }}">
+                        <div id="krani_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                            <div class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic krani-item" data-value="">Pilih Krani</div>
+                            @foreach($kranis as $kr)
+                                <div class="px-4 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 krani-item" 
+                                     data-value="{{ $kr->nama_panggilan ?: $kr->nama_lengkap }}">
+                                    <div class="font-medium">{{ $kr->nama_panggilan ?: $kr->nama_lengkap }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
+                    <input type="text" name="uang_jalan" id="uang_jalan" 
+                           value="{{ old('uang_jalan', number_format($suratJalan->uang_jalan, 0, ',', '.')) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 money-format">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Insentif Driver</label>
+                    <div class="flex space-x-4 mt-2">
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="lembur" value="1" {{ old('lembur', $suratJalan->lembur) ? 'checked' : '' }} class="form-checkbox text-indigo-600 rounded">
+                            <span class="ml-2 text-sm text-gray-700">Lembur</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="checkbox" name="nginap" value="1" {{ old('nginap', $suratJalan->nginap) ? 'checked' : '' }} class="form-checkbox text-indigo-600 rounded">
+                            <span class="ml-2 text-sm text-gray-700">Nginap</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex items-center">
+                    <label class="inline-flex items-center mt-6">
+                        <input type="checkbox" name="is_supir_customer" value="1" {{ old('is_supir_customer', $suratJalan->is_supir_customer) ? 'checked' : '' }} class="form-checkbox text-indigo-600 rounded">
+                        <span class="ml-2 text-sm font-medium text-gray-700">Supir Customer?</span>
+                    </label>
+                </div>
+
                 <!-- Section: Kontainer -->
                 <div class="md:col-span-2 border-t pt-4 mt-2">
                     <h3 class="text-sm font-bold text-gray-800 mb-3">Informasi Kontainer</h3>
@@ -138,7 +228,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Size Kontainer</label>
-                    <select name="size" id="size_select" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <select name="size" id="size_select" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">Pilih Size</option>
                         @foreach($ukuranKontainers as $uk)
                             <option value="{{ $uk }}" {{ old('size', $suratJalan->size) == $uk ? 'selected' : '' }}>
@@ -150,7 +240,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
-                    <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">Pilih Tipe</option>
                         @php
                             $selectedTipe = old('tipe_kontainer', $suratJalan->tipe_kontainer);
@@ -189,8 +279,91 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Seal</label>
+                    <input type="text" name="no_seal" value="{{ old('no_seal', $suratJalan->no_seal) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">F/E</label>
+                    <div class="flex space-x-4 mt-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="f_e" value="Full" class="form-radio text-indigo-600" {{ $suratJalan->f_e == 'Full' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Full</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="f_e" value="Empty" class="form-radio text-indigo-600" {{ $suratJalan->f_e == 'Empty' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Empty</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">RIT</label>
+                    <div class="flex space-x-4 mt-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="rit" value="menggunakan_rit" class="form-radio text-indigo-600" {{ $suratJalan->rit == 'menggunakan_rit' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="rit" value="tidak_menggunakan_rit" class="form-radio text-indigo-600" {{ $suratJalan->rit == 'tidak_menggunakan_rit' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Section: Packaging -->
+                <div class="md:col-span-2 border-t pt-4 mt-2">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Packaging</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Karton</label>
+                    <div class="flex space-x-4 mt-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="karton" value="ya" class="form-radio text-indigo-600" {{ $suratJalan->karton == 'ya' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="karton" value="tidak" class="form-radio text-indigo-600" {{ $suratJalan->karton != 'ya' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Plastik</label>
+                    <div class="flex space-x-4 mt-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="plastik" value="ya" class="form-radio text-indigo-600" {{ $suratJalan->plastik == 'ya' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="plastik" value="tidak" class="form-radio text-indigo-600" {{ $suratJalan->plastik != 'ya' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Terpal</label>
+                    <div class="flex space-x-4 mt-2">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="terpal" value="ya" class="form-radio text-indigo-600" {{ $suratJalan->terpal == 'ya' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="terpal" value="tidak" class="form-radio text-indigo-600" {{ $suratJalan->terpal != 'ya' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div></div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="draft" {{ old('status', $suratJalan->status) == 'draft' ? 'selected' : '' }}>Draft</option>
                         <option value="active" {{ old('status', $suratJalan->status) == 'active' ? 'selected' : '' }}>Active</option>
                         <option value="completed" {{ old('status', $suratJalan->status) == 'completed' ? 'selected' : '' }}>Completed</option>
@@ -210,6 +383,14 @@
 
 @push('scripts')
 <script>
+    // Money format script
+    document.querySelectorAll('.money-format').forEach(function(input) {
+        input.addEventListener('keyup', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            this.value = new Intl.NumberFormat('id-ID').format(value);
+        });
+    });
+
     // Custom Searchable Dropdown Logic
     function setupSearchableDropdown(containerClass, inputId, listId, valueId, itemClass, onSelect = null) {
         const searchInput = document.getElementById(inputId);
@@ -278,6 +459,15 @@
         'kenek_list',
         'kenek_value',
         'kenek-item'
+    );
+
+    // Initialize Krani Dropdown
+    setupSearchableDropdown(
+        'krani-dropdown-container',
+        'krani_search',
+        'krani_list',
+        'krani_value',
+        'krani-item'
     );
 
     // Initialize No. Kontainer Dropdown

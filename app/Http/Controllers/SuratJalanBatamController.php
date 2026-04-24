@@ -116,6 +116,7 @@ class SuratJalanBatamController extends Controller
                                          ->where('status', 'aktif')
                                          ->orderBy('nama_kegiatan')
                                          ->get();
+        $jenisBarangs = \App\Models\JenisBarang::orderBy('nama_barang')->get();
         
         // Calculate default uang jalan from pricelist
         $defaultUangJalan = 0;
@@ -164,7 +165,7 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers'));
+        return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'jenisBarangs', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers'));
     }
 
     /**
@@ -248,6 +249,8 @@ class SuratJalanBatamController extends Controller
                                          ->where('status', 'aktif')
                                          ->orderBy('nama_kegiatan')
                                          ->get();
+        $jenisBarangs = \App\Models\JenisBarang::orderBy('nama_barang')->get();
+
         
         $ukuranKontainers = StockKontainer::select('ukuran')
             ->distinct()
@@ -285,7 +288,7 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        return view('surat-jalan-batam.edit', compact('suratJalan', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'ukuranKontainers', 'daftarKontainers'));
+        return view('surat-jalan-batam.edit', compact('suratJalan', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'jenisBarangs', 'ukuranKontainers', 'daftarKontainers'));
     }
 
     /**
