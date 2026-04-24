@@ -116,16 +116,22 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
-                <div>
+                <div class="relative jenis-barang-dropdown-container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
-                    <select name="jenis_barang" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">Pilih Jenis Barang</option>
-                        @foreach($jenisBarangs as $jb)
-                            <option value="{{ $jb->nama_barang }}" {{ old('jenis_barang', $selectedOrder->jenisBarang->nama_barang ?? '') == $jb->nama_barang ? 'selected' : '' }}>
-                                {{ $jb->nama_barang }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div class="relative">
+                        <input type="text" id="jenis_barang_search" placeholder="Cari jenis barang..." autocomplete="off"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="hidden" name="jenis_barang" id="jenis_barang_value" value="{{ old('jenis_barang', $selectedOrder->jenisBarang->nama_barang ?? '') }}">
+                        <div id="jenis_barang_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                            <div class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic jenis-barang-item" data-value="">Pilih Jenis Barang</div>
+                            @foreach($jenisBarangs as $jb)
+                                <div class="px-4 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 jenis-barang-item" 
+                                     data-value="{{ $jb->nama_barang }}">
+                                    <div class="font-medium">{{ $jb->nama_barang }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
 
                 <div></div>
@@ -500,6 +506,15 @@
         'kenek_list',
         'kenek_value',
         'kenek-item'
+    );
+
+    // Initialize Jenis Barang Dropdown
+    setupSearchableDropdown(
+        'jenis-barang-dropdown-container',
+        'jenis_barang_search',
+        'jenis_barang_list',
+        'jenis_barang_value',
+        'jenis-barang-item'
     );
 
     // Initialize Krani Dropdown
