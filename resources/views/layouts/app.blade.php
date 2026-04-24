@@ -1126,9 +1126,16 @@
         $user->can('order-create') ||
         $user->can('order-update') ||
         $user->can('order-delete') ||
+        $user->can('order-batam-view') ||
+        $user->can('order-batam-create') ||
+        $user->can('order-batam-update') ||
+        $user->can('order-batam-delete') ||
         $user->can('pranota-uang-jalan-view') ||
+        $user->can('pranota-uang-jalan-batam-view') ||
         $user->can('uang-jalan-view') ||
+        $user->can('uang-jalan-batam-view') ||
         $user->can('pembayaran-pranota-uang-jalan-view') ||
+        $user->can('pembayaran-pranota-uang-jalan-batam-view') ||
         $user->can('pranota-rit-view') ||
         $user->can('pranota-uang-rit-view') ||
         $user->can('pembayaran-pranota-rit-view') ||
@@ -1138,10 +1145,18 @@
         $user->can('surat-jalan-create') ||
         $user->can('surat-jalan-update') ||
         $user->can('surat-jalan-delete') ||
+        $user->can('surat-jalan-batam-view') ||
+        $user->can('surat-jalan-batam-create') ||
+        $user->can('surat-jalan-batam-update') ||
+        $user->can('surat-jalan-batam-delete') ||
         $user->can('surat-jalan-bongkaran-view') ||
         $user->can('surat-jalan-bongkaran-create') ||
         $user->can('surat-jalan-bongkaran-update') ||
         $user->can('surat-jalan-bongkaran-delete') ||
+        $user->can('surat-jalan-bongkaran-batam-view') ||
+        $user->can('surat-jalan-bongkaran-batam-create') ||
+        $user->can('surat-jalan-bongkaran-batam-update') ||
+        $user->can('surat-jalan-bongkaran-batam-delete') ||
         $user->can('uang-jalan-bongkaran-view') ||
         $user->can('uang-jalan-bongkaran-create') ||
         $user->can('uang-jalan-bongkaran-update') ||
@@ -1498,7 +1513,7 @@
                 {{-- Surat Jalan Bongkaran Sub-Dropdown --}}
                 @php
                     $isSuratJalanBongkaranRoute = Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('uang-jalan-bongkaran.*') || Request::routeIs('pranota-uang-jalan-bongkaran.*') || Request::routeIs('tanda-terima-bongkaran.*');
-                    $hasSuratJalanBongkaranPermissions = $user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete') || $user->can('uang-jalan-bongkaran-view') || $user->can('uang-jalan-bongkaran-create') || $user->can('uang-jalan-bongkaran-update') || $user->can('uang-jalan-bongkaran-delete') || $user->can('tanda-terima-bongkaran-view') || $user->can('tanda-terima-bongkaran-create') || $user->can('tanda-terima-bongkaran-update') || $user->can('tanda-terima-bongkaran-delete'));
+                    $hasSuratJalanBongkaranPermissions = $user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete') || $user->can('surat-jalan-bongkaran-batam-view') || $user->can('surat-jalan-bongkaran-batam-create') || $user->can('surat-jalan-bongkaran-batam-update') || $user->can('surat-jalan-bongkaran-batam-delete') || $user->can('uang-jalan-bongkaran-view') || $user->can('uang-jalan-bongkaran-create') || $user->can('uang-jalan-bongkaran-update') || $user->can('uang-jalan-bongkaran-delete') || $user->can('tanda-terima-bongkaran-view') || $user->can('tanda-terima-bongkaran-create') || $user->can('tanda-terima-bongkaran-update') || $user->can('tanda-terima-bongkaran-delete') || $user->can('tanda-terima-bongkaran-batam-view') || $user->can('tanda-terima-bongkaran-batam-create') || $user->can('tanda-terima-bongkaran-batam-update') || $user->can('tanda-terima-bongkaran-batam-delete'));
                 @endphp
 
                 @if($hasSuratJalanBongkaranPermissions)
