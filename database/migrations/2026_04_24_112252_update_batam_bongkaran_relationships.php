@@ -12,10 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Update Tanda Terima Bongkaran Batam to point to the new table
-        try {
-            DB::statement('ALTER TABLE tanda_terima_bongkaran_batams DROP FOREIGN KEY IF EXISTS ttbb_sj_bongkaran_foreign');
-        } catch (\Exception $e) {
-            // Ignore if doesn't exist
+        $existingFkTt = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tanda_terima_bongkaran_batams' AND CONSTRAINT_NAME = 'ttbb_sj_bongkaran_foreign'");
+        if (!empty($existingFkTt)) {
+            DB::statement('ALTER TABLE tanda_terima_bongkaran_batams DROP FOREIGN KEY ttbb_sj_bongkaran_foreign');
         }
 
         // Check if the new FK already exists

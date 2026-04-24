@@ -19,13 +19,16 @@ return new class extends Migration
         }
 
         // 2. Drop old foreign keys that point to the old table for Batam records
-        try {
-            DB::statement('ALTER TABLE tanda_terima_bongkaran_batams DROP FOREIGN KEY IF EXISTS ttbb_sj_bongkaran_foreign');
-        } catch (\Exception $e) {}
+        // Using a more robust check for older MySQL versions
+        $existingFkTt = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tanda_terima_bongkaran_batams' AND CONSTRAINT_NAME = 'ttbb_sj_bongkaran_foreign'");
+        if (!empty($existingFkTt)) {
+            DB::statement('ALTER TABLE tanda_terima_bongkaran_batams DROP FOREIGN KEY ttbb_sj_bongkaran_foreign');
+        }
 
-        try {
-            DB::statement('ALTER TABLE uang_jalans DROP FOREIGN KEY IF EXISTS uang_jalans_surat_jalan_bongkaran_id_foreign');
-        } catch (\Exception $e) {}
+        $existingFkUj = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'uang_jalans' AND CONSTRAINT_NAME = 'uang_jalans_surat_jalan_bongkaran_id_foreign'");
+        if (!empty($existingFkUj)) {
+            DB::statement('ALTER TABLE uang_jalans DROP FOREIGN KEY uang_jalans_surat_jalan_bongkaran_id_foreign');
+        }
 
         // 3. Move Data
         $batamRecords = DB::table('surat_jalan_bongkarans')->where('lokasi', 'batam')->get();
@@ -35,7 +38,6 @@ return new class extends Migration
             $data = (array) $record;
             
             // Ensure any columns that might not exist in the new table are handled
-            // (Our new table schema was based on the old one, but some names might differ)
             if (isset($data['nomor_surat_jalan'])) {
                 $data['no_surat_jalan'] = $data['nomor_surat_jalan'];
                 unset($data['nomor_surat_jalan']);
@@ -76,22 +78,33 @@ return new class extends Migration
         }
 
         // 4. Re-establish Foreign Keys pointing to the NEW tables
-        Schema::table('tanda_terima_bongkaran_batams', function (Blueprint $table) {
-            $table->foreign('surat_jalan_bongkaran_id', 'ttbb_sj_bongkaran_batam_foreign')
-                ->references('id')->on('surat_jalan_bongkaran_batams')
-                ->onDelete('cascade');
-        });
+        $checkTt = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tanda_terima_bongkaran_batams' AND CONSTRAINT_NAME = 'ttbb_sj_bongkaran_batam_foreign'");
+        if (empty($checkTt)) {
+            Schema::table('tanda_terima_bongkaran_batams', function (Blueprint $table) {
+                $table->foreign('surat_jalan_bongkaran_id', 'ttbb_sj_bongkaran_batam_foreign')
+                    ->references('id')->on('surat_jalan_bongkaran_batams')
+                    ->onDelete('cascade');
+            });
+        }
 
-        Schema::table('uang_jalans', function (Blueprint $table) {
-            $table->foreign('surat_jalan_bongkaran_batam_id', 'uj_sjb_batam_foreign')
-                ->references('id')->on('surat_jalan_bongkaran_batams')
-                ->onDelete('cascade');
-            
-            // Re-add the old FK for Jakarta records
-            $table->foreign('surat_jalan_bongkaran_id')
-                ->references('id')->on('surat_jalan_bongkarans')
-                ->onDelete('cascade');
-        });
+        $checkUjBatam = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'uang_jalans' AND CONSTRAINT_NAME = 'uj_sjb_batam_foreign'");
+        if (empty($checkUjBatam)) {
+            Schema::table('uang_jalans', function (Blueprint $table) {
+                $table->foreign('surat_jalan_bongkaran_batam_id', 'uj_sjb_batam_foreign')
+                    ->references('id')->on('surat_jalan_bongkaran_batams')
+                    ->onDelete('cascade');
+            });
+        }
+
+        $checkUjOld = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'uang_jalans' AND CONSTRAINT_NAME = 'uang_jalans_surat_jalan_bongkaran_id_foreign'");
+        if (empty($checkUjOld)) {
+            Schema::table('uang_jalans', function (Blueprint $table) {
+                // Re-add the old FK for Jakarta records
+                $table->foreign('surat_jalan_bongkaran_id', 'uang_jalans_surat_jalan_bongkaran_id_foreign')
+                    ->references('id')->on('surat_jalan_bongkarans')
+                    ->onDelete('cascade');
+            });
+        }
     }
 
     public function down(): void
