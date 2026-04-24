@@ -23,7 +23,6 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 'ATB',      // expedisi
                 '1',        // ring
                 '20FT',     // size
-                'Full',     // f_e
                 170500,     // tarif
                 170500,     // tarif_base
                 50000,      // tarif_antar_lokasi
@@ -33,7 +32,6 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 'AYP',
                 '2',
                 '40FT',
-                'Empty',
                 150000,
                 150000,
                 0,
@@ -43,7 +41,6 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 'ATB',
                 '3',
                 '45FT',
-                'Full',
                 200000,
                 200000,
                 60000,
@@ -61,7 +58,6 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
             'Expedisi',
             'Ring',
             'Size',
-            'F/E',
             'Tarif',
             'Tarif Base',
             'Tarif Antar Lokasi',
@@ -78,11 +74,10 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
             'A' => 15,  // Expedisi
             'B' => 10,  // Ring
             'C' => 12,  // Size
-            'D' => 12,  // F/E
-            'E' => 15,  // Tarif
-            'F' => 15,  // Tarif Base
-            'G' => 18,  // Tarif Antar Lokasi
-            'H' => 15,  // Status
+            'D' => 15,  // Tarif
+            'E' => 15,  // Tarif Base
+            'F' => 18,  // Tarif Antar Lokasi
+            'G' => 15,  // Status
         ];
     }
 
@@ -92,7 +87,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:H1')->applyFromArray([
+        $sheet->getStyle('A1:G1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -115,7 +110,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
         ]);
 
         // Style data rows
-        $sheet->getStyle('A2:H4')->applyFromArray([
+        $sheet->getStyle('A2:G4')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -129,19 +124,19 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
 
         // Center align for specific columns
         $sheet->getStyle('B2:D4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('E2:G4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('D2:F4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
         // Add notes below the data
         $sheet->setCellValue('A6', 'CATATAN PENTING:');
         $sheet->setCellValue('A7', '1. Expedisi: Wajib diisi (contoh: ATB, AYP)');
         $sheet->setCellValue('A8', '2. Ring: Wajib diisi (contoh: 1, 2, 3)');
         $sheet->setCellValue('A9', '3. Size: Wajib diisi 20FT, 40FT, atau 45FT (bisa juga 20, 40, 45 saja akan otomatis ditambah FT)');
-        $sheet->setCellValue('A10', '4. F/E: Wajib diisi Full atau Empty (tidak case-sensitive)');
-        $sheet->setCellValue('A11', '5. Tarif: Wajib diisi, bisa format apa saja (170500 atau 170.500,00 atau 170,500.00)');
+        $sheet->setCellValue('A10', '4. Tarif: Wajib diisi, bisa format apa saja (170500 atau 170.500,00 atau 170,500.00)');
+        $sheet->setCellValue('A11', '5. Tarif Base: Nominal dasar tarif');
         $sheet->setCellValue('A12', '6. Tarif Antar Lokasi: Opsional, isi dengan nominal tambahan antar lokasi');
         $sheet->setCellValue('A13', '7. Status: Opsional, pilih AQUA atau CHASIS PB (tidak case-sensitive), atau kosongkan');
         $sheet->setCellValue('A14', '8. Hapus 3 baris contoh data sebelum import');
-        $sheet->setCellValue('A15', '9. Data duplikat (expedisi+ring+size+f_e sama) akan otomatis diupdate');
+        $sheet->setCellValue('A15', '9. Data duplikat (expedisi+ring+size sama) akan otomatis diupdate');
 
         // Style notes
         $sheet->getStyle('A6')->applyFromArray([

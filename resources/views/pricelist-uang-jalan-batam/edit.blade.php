@@ -96,22 +96,7 @@
                 @enderror
             </div>
 
-            <!-- F/E -->
-            <div>
-                <label for="f_e" class="block text-sm font-medium text-gray-700 mb-2">
-                    F/E (Full/Empty) <span class="text-red-500">*</span>
-                </label>
-                <select name="f_e" 
-                        id="f_e"
-                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('f_e') border-red-300 @enderror">
-                    <option value="">-- Pilih F/E --</option>
-                    <option value="Full" {{ old('f_e', $pricelistUangJalanBatam->f_e) == 'Full' ? 'selected' : '' }}>Full</option>
-                    <option value="Empty" {{ old('f_e', $pricelistUangJalanBatam->f_e) == 'Empty' ? 'selected' : '' }}>Empty</option>
-                </select>
-                @error('f_e')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
+
 
             <!-- Tarif -->
             <div>
@@ -181,7 +166,6 @@
                             <li>Expedisi: Nama perusahaan expedisi (contoh: ATB, AYP)</li>
                             <li>Ring: Area zona pengiriman (1-5)</li>
                             <li>Size: Ukuran kontainer (20FT, 40FT, 45FT)</li>
-                            <li>F/E: Status kontainer Full (penuh) atau Empty (kosong)</li>
                             <li>Status: Khusus untuk AQUA atau CHASIS PB (opsional)</li>
                         </ul>
                     </div>

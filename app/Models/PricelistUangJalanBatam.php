@@ -15,7 +15,6 @@ class PricelistUangJalanBatam extends Model
         'expedisi',
         'ring',
         'size',
-        'f_e',
         'tarif',
         'tarif_base',
         'tarif_antar_lokasi',
@@ -52,13 +51,7 @@ class PricelistUangJalanBatam extends Model
         return $query->where('size', $size);
     }
 
-    /**
-     * Scope untuk filter berdasarkan F/E
-     */
-    public function scopeByFE($query, $fe)
-    {
-        return $query->where('f_e', $fe);
-    }
+
 
     /**
      * Scope untuk filter berdasarkan status
@@ -71,12 +64,11 @@ class PricelistUangJalanBatam extends Model
     /**
      * Mendapatkan tarif berdasarkan parameter
      */
-    public static function getTarif($expedisi, $ring, $size, $fe, $status = null)
+    public static function getTarif($expedisi, $ring, $size, $status = null)
     {
         $query = self::where('expedisi', $expedisi)
             ->where('ring', $ring)
-            ->where('size', $size)
-            ->where('f_e', $fe);
+            ->where('size', $size);
 
         if ($status) {
             $query->where('status', $status);

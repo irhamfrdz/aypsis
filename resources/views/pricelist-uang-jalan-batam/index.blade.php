@@ -154,7 +154,6 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ring</th>
 
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">F/E</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif Antar Lokasi</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -168,14 +167,6 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pricelist->ring }}</td>
 
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pricelist->size }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                            @if($pricelist->f_e == 'Full') bg-blue-100 text-blue-800
-                            @else bg-gray-100 text-gray-800
-                            @endif">
-                            {{ $pricelist->f_e }}
-                        </span>
-                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">Rp {{ number_format($pricelist->tarif, 0, ',', '.') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         @if($pricelist->tarif_antar_lokasi)
@@ -214,7 +205,7 @@
                             @endcan
                             @can('master-pricelist-uang-jalan-batam-delete')
                                 <form method="POST" action="{{ route('pricelist-uang-jalan-batam.destroy', $pricelist) }}" class="inline" 
-                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus pricelist ini?\n\nExpedisi: {{ $pricelist->expedisi }}\nRing: {{ $pricelist->ring }}\nSize: {{ $pricelist->size }}\nF/E: {{ $pricelist->f_e }}')">
+                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus pricelist ini?\n\nExpedisi: {{ $pricelist->expedisi }}\nRing: {{ $pricelist->ring }}\nSize: {{ $pricelist->size }}')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" 

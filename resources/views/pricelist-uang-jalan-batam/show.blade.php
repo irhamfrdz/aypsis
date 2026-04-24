@@ -59,23 +59,7 @@
                 </dd>
             </div>
 
-            <!-- F/E -->
-            <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-500">
-                    F/E (Full/Empty)
-                </dt>
-                <dd class="mt-1">
-                    @if($pricelistUangJalanBatam->f_e == 'Full')
-                        <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-box mr-1"></i> Full
-                        </span>
-                    @else
-                        <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                            <i class="fas fa-box-open mr-1"></i> Empty
-                        </span>
-                    @endif
-                </dd>
-            </div>
+
 
             <!-- Tarif -->
             <div class="sm:col-span-1">

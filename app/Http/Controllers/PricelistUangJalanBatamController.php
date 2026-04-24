@@ -27,7 +27,6 @@ class PricelistUangJalanBatamController extends Controller
                 $q->where('expedisi', 'like', "%{$search}%")
                   ->orWhere('ring', 'like', "%{$search}%")
                   ->orWhere('size', 'like', "%{$search}%")
-                  ->orWhere('f_e', 'like', "%{$search}%")
                   ->orWhere('status', 'like', "%{$search}%");
             });
         }
@@ -35,7 +34,6 @@ class PricelistUangJalanBatamController extends Controller
         $pricelists = $query->orderBy('expedisi')
                            ->orderBy('ring')
                            ->orderBy('size')
-                           ->orderBy('f_e')
                            ->paginate($request->get('per_page', 15));
         
         return view('pricelist-uang-jalan-batam.index', compact('pricelists', 'search'));
@@ -58,7 +56,6 @@ class PricelistUangJalanBatamController extends Controller
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
             'size' => 'required|string|max:255',
-            'f_e' => 'required|in:Full,Empty',
             'tarif' => 'required|numeric|min:0',
             'tarif_antar_lokasi' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:AQUA,CHASIS PB',
@@ -95,7 +92,6 @@ class PricelistUangJalanBatamController extends Controller
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
             'size' => 'required|string|max:255',
-            'f_e' => 'required|in:Full,Empty',
             'tarif' => 'required|numeric|min:0',
             'tarif_antar_lokasi' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:AQUA,CHASIS PB',
