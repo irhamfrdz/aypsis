@@ -77,23 +77,7 @@
 
 
 
-            <!-- Size -->
-            <div>
-                <label for="size" class="block text-sm font-medium text-gray-700 mb-2">
-                    Size <span class="text-red-500">*</span>
-                </label>
-                <select name="size" 
-                        id="size"
-                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('size') border-red-300 @enderror">
-                    <option value="">-- Pilih Size --</option>
-                    <option value="20FT" {{ old('size') == '20FT' ? 'selected' : '' }}>20FT</option>
-                    <option value="40FT" {{ old('size') == '40FT' ? 'selected' : '' }}>40FT</option>
-                    <option value="45FT" {{ old('size') == '45FT' ? 'selected' : '' }}>45FT</option>
-                </select>
-                @error('size')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
+
 
 
 
@@ -164,7 +148,6 @@
                             <li>Field yang bertanda <span class="text-red-500">*</span> wajib diisi</li>
                             <li>Expedisi: Nama perusahaan expedisi (contoh: ATB, AYP)</li>
                             <li>Ring: Area zona pengiriman (1-5)</li>
-                            <li>Size: Ukuran kontainer (20FT, 40FT, 45FT)</li>
                             <li>Status: Khusus untuk AQUA atau CHASIS PB (opsional)</li>
                         </ul>
                     </div>

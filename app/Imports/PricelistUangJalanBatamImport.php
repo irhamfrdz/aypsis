@@ -34,7 +34,6 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             // More robust column matching
             $expedisi = $this->robustGet($row, ['expedisi', 'expe', 'vendor']);
             $ring = $this->robustGet($row, ['ring', 'wilayah', 'area']);
-            $size = $this->robustGet($row, ['size', 'ukuran', 'kontainer']);
             $tarif = $this->robustGet($row, ['tarif', 'harga', 'price', 'total']);
             $tarif_base = $this->robustGet($row, ['tarif_base', 'base_tarif', 'base_price', 'tarif_asli']);
             $tarif_antar_lokasi = $this->robustGet($row, ['tarif_antar_lokasi', 'antar_lokasi', 'biaya_antar']);
@@ -43,22 +42,18 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             // Clean data
             $expedisi = !empty($expedisi) ? trim($expedisi) : '';
             $ring = !empty($ring) ? trim($ring) : '';
-
-            $size = !empty($size) ? trim($size) : '';
             $tarif = $this->cleanTarif($tarif);
             $tarif_base = !empty($tarif_base) ? $this->cleanTarif($tarif_base) : null;
             $tarif_antar_lokasi = !empty($tarif_antar_lokasi) ? $this->cleanTarif($tarif_antar_lokasi) : 0;
             $status = !empty($status) ? trim($status) : null;
 
             // Skip if crucial fields are empty
-            if (empty($expedisi) && empty($ring) && empty($size)) {
+            if (empty($expedisi) && empty($ring)) {
                 return null;
             }
 
             // Normalize values
-            if (is_numeric($size)) $size .= 'FT';
-            $size = strtoupper($size);
-            if (!Str::endsWith($size, 'FT')) $size .= 'FT';
+
 
 
 
@@ -69,24 +64,19 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             }
 
             // Validations
-            if (empty($expedisi) || empty($ring) || empty($size)) {
+            if (empty($expedisi) || empty($ring)) {
                 $this->errorCount++;
-                $this->errors[] = "Baris {$this->rowNumber}: Data (Expedisi, Ring, Size) tidak lengkap.";
+                $this->errors[] = "Baris {$this->rowNumber}: Data (Expedisi, Ring) tidak lengkap.";
                 return null;
             }
 
 
 
-            if (!in_array($size, ['20FT', '40FT', '45FT'])) {
-                $this->errorCount++;
-                $this->errors[] = "Baris {$this->rowNumber} ({$expedisi}): Size '{$size}' tdk valid (Harus 20FT, 40FT, 45FT).";
-                return null;
-            }
+
 
             // Check duplicate
             $exists = PricelistUangJalanBatam::where('expedisi', $expedisi)
                 ->where('ring', $ring)
-                ->where('size', $size)
                 ->first();
 
             if ($exists) {
@@ -110,8 +100,6 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             return new PricelistUangJalanBatam([
                 'expedisi' => $expedisi,
                 'ring' => $ring,
-
-                'size' => $size,
                 'tarif' => $tarif,
                 'tarif_base' => $tarif_base ?? $tarif,
                 'tarif_antar_lokasi' => $tarif_antar_lokasi,

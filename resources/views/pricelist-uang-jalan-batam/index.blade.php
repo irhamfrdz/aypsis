@@ -117,7 +117,7 @@
                            name="search" 
                            id="search"
                            value="{{ $search }}" 
-                           placeholder="Cari berdasarkan expedisi, ring, size, f/e, atau status..." 
+                           placeholder="Cari berdasarkan expedisi, ring, atau status..." 
                            class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                 </div>
             </div>
@@ -152,8 +152,6 @@
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expedisi</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ring</th>
-
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif Antar Lokasi</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -165,8 +163,6 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pricelist->expedisi }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pricelist->ring }}</td>
-
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pricelist->size }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">Rp {{ number_format($pricelist->tarif, 0, ',', '.') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         @if($pricelist->tarif_antar_lokasi)
@@ -205,7 +201,7 @@
                             @endcan
                             @can('master-pricelist-uang-jalan-batam-delete')
                                 <form method="POST" action="{{ route('pricelist-uang-jalan-batam.destroy', $pricelist) }}" class="inline" 
-                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus pricelist ini?\n\nExpedisi: {{ $pricelist->expedisi }}\nRing: {{ $pricelist->ring }}\nSize: {{ $pricelist->size }}')">
+                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus pricelist ini?\n\nExpedisi: {{ $pricelist->expedisi }}\nRing: {{ $pricelist->ring }}')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" 

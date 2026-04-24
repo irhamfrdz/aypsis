@@ -33,14 +33,12 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
             $query->where(function($q) {
                 $q->where('expedisi', 'like', "%{$this->search}%")
                   ->orWhere('ring', 'like', "%{$this->search}%")
-                  ->orWhere('size', 'like', "%{$this->search}%")
                   ->orWhere('status', 'like', "%{$this->search}%");
             });
         }
 
         return $query->orderBy('expedisi')
                      ->orderBy('ring')
-                     ->orderBy('size')
                      ->get();
     }
 
@@ -52,7 +50,6 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         return [
             $pricelist->expedisi,
             $pricelist->ring,
-            $pricelist->size,
             $pricelist->tarif,
             $pricelist->tarif_base,
             $pricelist->tarif_antar_lokasi,
@@ -65,7 +62,6 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         return [
             'Expedisi',
             'Ring',
-            'Size',
             'Tarif',
             'Tarif Base',
             'Tarif Antar Lokasi',
@@ -78,18 +74,17 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         return [
             'A' => 15, // Expedisi
             'B' => 10, // Ring
-            'C' => 12, // Size
-            'E' => 15, // Tarif
-            'F' => 15, // Tarif Base
-            'G' => 18, // Tarif Antar Lokasi
-            'H' => 15, // Status
+            'C' => 15, // Tarif
+            'D' => 15, // Tarif Base
+            'E' => 18, // Tarif Antar Lokasi
+            'F' => 15, // Status
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:G1')->applyFromArray([
+        $sheet->getStyle('A1:F1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -112,7 +107,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         ]);
 
         // Auto filter for headings
-        $sheet->setAutoFilter('A1:G1');
+        $sheet->setAutoFilter('A1:F1');
 
         return [];
     }
