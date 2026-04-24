@@ -939,10 +939,11 @@ class StockAmprahanController extends Controller
                             $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
                             if (!$refType) $refType = 'Buntut';
                         }
-                        if ($firstUsage->lain_lain) {
-                            $refItems[] = $firstUsage->lain_lain;
-                            if (!$refType) $refType = 'Lain-lain';
+                        if ($firstUsage->kantor) {
+                            $refItems[] = $firstUsage->kantor;
+                            if (!$refType) $refType = 'Kantor';
                         }
+
                     }
                     $reference = count($refItems) > 0 ? implode(' / ', $refItems) : 'Stock ' . ($item->lokasi ?? '-');
                     
