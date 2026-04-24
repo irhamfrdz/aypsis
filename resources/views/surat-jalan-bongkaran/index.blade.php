@@ -1253,14 +1253,14 @@ const destinations = {
         @endforeach
     ],
     batam: [
-        @foreach($pricelistUangJalanBatams as $rute => $items)
+        @foreach($pricelistUangJalanBatams as $item)
         { 
-            label: "{{ $rute }}", 
-            value: "{{ $rute }}", 
-            uj20_full: {{ $items->filter(function($i){ return strpos($i->size, '20') !== false && $i->f_e == 'Full'; })->first()->tarif ?? 0 }},
-            uj20_empty: {{ $items->filter(function($i){ return strpos($i->size, '20') !== false && $i->f_e == 'Empty'; })->first()->tarif ?? 0 }},
-            uj40_full: {{ $items->filter(function($i){ return strpos($i->size, '40') !== false && $i->f_e == 'Full'; })->first()->tarif ?? 0 }},
-            uj40_empty: {{ $items->filter(function($i){ return strpos($i->size, '40') !== false && $i->f_e == 'Empty'; })->first()->tarif ?? 0 }}
+            label: "{{ $item->expedisi }} - {{ $item->ring }}", 
+            value: "{{ $item->expedisi }} - {{ $item->ring }}", 
+            uj20_full: {{ $item->tarif_20ft_full ?? 0 }},
+            uj20_empty: {{ $item->tarif_20ft_empty ?? 0 }},
+            uj40_full: {{ $item->tarif_40ft_full ?? 0 }},
+            uj40_empty: {{ $item->tarif_40ft_empty ?? 0 }}
         },
         @endforeach
     ]
