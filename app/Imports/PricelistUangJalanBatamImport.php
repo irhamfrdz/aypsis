@@ -38,6 +38,7 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             $f_e = $this->robustGet($row, ['f/e', 'fe', 'f_e', 'full/empty', 'kondisi']);
             $tarif = $this->robustGet($row, ['tarif', 'harga', 'price', 'total']);
             $tarif_base = $this->robustGet($row, ['tarif_base', 'base_tarif', 'base_price', 'tarif_asli']);
+            $tarif_antar_lokasi = $this->robustGet($row, ['tarif_antar_lokasi', 'antar_lokasi', 'biaya_antar']);
             $status = $this->robustGet($row, ['status', 'keterangan', 'ket']);
             
             // Clean data
@@ -48,6 +49,7 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             $f_e = !empty($f_e) ? trim($f_e) : '';
             $tarif = $this->cleanTarif($tarif);
             $tarif_base = !empty($tarif_base) ? $this->cleanTarif($tarif_base) : null;
+            $tarif_antar_lokasi = !empty($tarif_antar_lokasi) ? $this->cleanTarif($tarif_antar_lokasi) : 0;
             $status = !empty($status) ? trim($status) : null;
 
             // Skip if crucial fields are empty
@@ -99,6 +101,7 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             if ($exists) {
                 $updateData = [
                     'tarif' => $tarif,
+                    'tarif_antar_lokasi' => $tarif_antar_lokasi,
                     'status' => $status ?? $exists->status,
                 ];
                 
@@ -121,6 +124,7 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 'f_e' => $f_e,
                 'tarif' => $tarif,
                 'tarif_base' => $tarif_base ?? $tarif,
+                'tarif_antar_lokasi' => $tarif_antar_lokasi,
                 'status' => $status,
             ]);
 

@@ -60,6 +60,7 @@ class PricelistUangJalanBatamController extends Controller
             'size' => 'required|string|max:255',
             'f_e' => 'required|in:Full,Empty',
             'tarif' => 'required|numeric|min:0',
+            'tarif_antar_lokasi' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:AQUA,CHASIS PB',
         ]);
 
@@ -96,6 +97,7 @@ class PricelistUangJalanBatamController extends Controller
             'size' => 'required|string|max:255',
             'f_e' => 'required|in:Full,Empty',
             'tarif' => 'required|numeric|min:0',
+            'tarif_antar_lokasi' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:AQUA,CHASIS PB',
         ]);
 

@@ -156,6 +156,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">F/E</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif Antar Lokasi</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
@@ -176,6 +177,13 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">Rp {{ number_format($pricelist->tarif, 0, ',', '.') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        @if($pricelist->tarif_antar_lokasi)
+                            Rp {{ number_format($pricelist->tarif_antar_lokasi, 0, ',', '.') }}
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         @if($pricelist->status)
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 

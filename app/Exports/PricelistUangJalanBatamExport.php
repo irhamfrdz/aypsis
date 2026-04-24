@@ -58,6 +58,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
             $pricelist->f_e,
             $pricelist->tarif,
             $pricelist->tarif_base,
+            $pricelist->tarif_antar_lokasi,
             $pricelist->status,
         ];
     }
@@ -71,6 +72,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
             'F/E',
             'Tarif',
             'Tarif Base',
+            'Tarif Antar Lokasi',
             'Status',
         ];
     }
@@ -84,14 +86,15 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
             'D' => 12, // F/E
             'E' => 15, // Tarif
             'F' => 15, // Tarif Base
-            'G' => 15, // Status
+            'G' => 18, // Tarif Antar Lokasi
+            'H' => 15, // Status
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:G1')->applyFromArray([
+        $sheet->getStyle('A1:H1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -114,7 +117,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         ]);
 
         // Auto filter for headings
-        $sheet->setAutoFilter('A1:G1');
+        $sheet->setAutoFilter('A1:H1');
 
         return [];
     }
