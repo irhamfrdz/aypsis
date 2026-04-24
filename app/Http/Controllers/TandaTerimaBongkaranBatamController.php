@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\TandaTerimaBongkaranBatam;
-use App\Models\SuratJalanBongkaran;
+use App\Models\SuratJalanBongkaranBatam;
 use App\Models\Gudang;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -16,10 +16,10 @@ class TandaTerimaBongkaranBatamController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        // $this->middleware('permission:tanda-terima-bongkaran-batam-view', ['only' => ['index', 'show']]);
-        // $this->middleware('permission:tanda-terima-bongkaran-batam-create', ['only' => ['create', 'store']]);
-        // $this->middleware('permission:tanda-terima-bongkaran-batam-update', ['only' => ['edit', 'update']]);
-        // $this->middleware('permission:tanda-terima-bongkaran-batam-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:tanda-terima-bongkaran-batam-view', ['only' => ['index', 'show']]);
+        $this->middleware('permission:tanda-terima-bongkaran-batam-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:tanda-terima-bongkaran-batam-update', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:tanda-terima-bongkaran-batam-delete', ['only' => ['destroy']]);
     }
 
     /**
@@ -48,7 +48,7 @@ class TandaTerimaBongkaranBatamController extends Controller
             return view('tanda-terima-bongkaran-batam.index', compact('tandaTerimas'));
         } else {
             // Query for Surat Jalan Bongkaran with lokasi = 'batam'
-            $query = SuratJalanBongkaran::with(['bl', 'tandaTerima'])
+            $query = SuratJalanBongkaranBatam::with(['bl', 'tandaTerima'])
                 ->where('lokasi', 'batam');
 
             if ($request->filled('search')) {
@@ -95,7 +95,7 @@ class TandaTerimaBongkaranBatamController extends Controller
         try {
             DB::beginTransaction();
 
-            $suratJalan = SuratJalanBongkaran::findOrFail($validated['surat_jalan_bongkaran_id']);
+            $suratJalan = SuratJalanBongkaranBatam::findOrFail($validated['surat_jalan_bongkaran_id']);
             
             $validated['nomor_tanda_terima'] = TandaTerimaBongkaranBatam::generateNoTandaTerima();
             $validated['no_kontainer'] = $suratJalan->no_kontainer;

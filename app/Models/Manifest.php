@@ -71,6 +71,11 @@ class Manifest extends Model
         return $this->hasOne(SuratJalanBongkaran::class, 'manifest_id');
     }
 
+    public function suratJalanBongkaranBatam()
+    {
+        return $this->hasOne(SuratJalanBongkaranBatam::class, 'manifest_id');
+    }
+
     /**
      * Get the Tanda Terima number for display, with fallbacks.
      */

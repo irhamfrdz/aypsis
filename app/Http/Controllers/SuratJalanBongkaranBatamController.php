@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SuratJalanBongkaran;
 use App\Models\SuratJalanBongkaranBatam;
-use App\Models\Order;
 use App\Models\Manifest;
 use App\Models\MasterKapal;
 use App\Models\User;
@@ -19,15 +17,15 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use App\Exports\SuratJalanBongkaranTableExport;
 use Maatwebsite\Excel\Facades\Excel;
 
-class SuratJalanBongkaranController extends Controller
+class SuratJalanBongkaranBatamController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('permission:surat-jalan-bongkaran-view', ['only' => ['index', 'show']]);
-        $this->middleware('permission:surat-jalan-bongkaran-create', ['only' => ['create', 'store']]);
-        $this->middleware('permission:surat-jalan-bongkaran-update', ['only' => ['edit', 'update']]);
-        $this->middleware('permission:surat-jalan-bongkaran-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:surat-jalan-bongkaran-batam-view', ['only' => ['index', 'show']]);
+        $this->middleware('permission:surat-jalan-bongkaran-batam-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:surat-jalan-bongkaran-batam-update', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:surat-jalan-bongkaran-batam-delete', ['only' => ['destroy']]);
     }
 
     /**
@@ -60,7 +58,7 @@ class SuratJalanBongkaranController extends Controller
                         ->pluck('no_voyage');
         }
 
-        return view('surat-jalan-bongkaran.select-ship', compact('kapals', 'voyages'));
+        return view('surat-jalan-bongkaran-batam.select-ship', compact('kapals', 'voyages'));
     }
 
     /**
@@ -96,7 +94,7 @@ class SuratJalanBongkaranController extends Controller
     /**
      * Display a listing of the resource.
      */
-        public function index(Request $request)
+    public function index(Request $request)
     {
         // Get selected kapal and voyage from request for filter functionality
         $selectedKapal = $request->nama_kapal;
@@ -107,7 +105,8 @@ class SuratJalanBongkaranController extends Controller
 
         if ($mode === 'surat_jalan') {
             // Show Surat Jalan Bongkaran data
-            $query = SuratJalanBongkaran::query();
+            $query = SuratJalanBongkaranBatam::query()
+                ->where('lokasi', 'batam');
 
             // Filter by selected kapal and voyage if provided
             if ($selectedKapal) {
@@ -128,11 +127,6 @@ class SuratJalanBongkaranController extends Controller
                     $q->whereIn('jenis_pengiriman', $types)
                       ->orWhereIn('tipe_kontainer', $types);
                 });
-            }
-
-            // Filter by lokasi
-            if ($request->filled('lokasi')) {
-                $query->where('lokasi', $request->lokasi);
             }
 
             // Search in surat jalan bongkaran (ignore punctuation)
@@ -168,7 +162,7 @@ class SuratJalanBongkaranController extends Controller
             // Join with terms table to fetch human friendly term name
             $query->leftJoin('terms as t', 'manifests.term', '=', 't.kode')
                 ->select('manifests.*', 't.nama_status as term_nama')
-                ->with('suratJalanBongkaran');
+                ->with('suratJalanBongkaranBatam');
 
             // Filter by selected kapal and voyage if provided
             if ($selectedKapal) {
@@ -203,7 +197,7 @@ class SuratJalanBongkaranController extends Controller
                       ->orWhere('nama_barang', 'like', "%{$search}%")
                       ->orWhere('penerima', 'like', "%{$search}%")
                       ->orWhere('tipe_kontainer', 'like', "%{$search}%")
-                      ->orWhereHas('suratJalanBongkaran', function($sq) use ($search) {
+                      ->orWhereHas('suratJalanBongkaranBatam', function($sq) use ($search) {
                           $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
                       })
                       // Search without punctuation
@@ -241,7 +235,7 @@ class SuratJalanBongkaranController extends Controller
 
         $terms = \App\Models\Term::orderBy('kode')->get();
 
-        return view('surat-jalan-bongkaran.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
+        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
     }
 
     /**
@@ -254,7 +248,8 @@ class SuratJalanBongkaranController extends Controller
         $mode = $request->get('mode', 'bl');
 
         if ($mode === 'surat_jalan') {
-            $query = SuratJalanBongkaran::with('manifest');
+            $query = SuratJalanBongkaranBatam::with('manifest')
+                ->where('lokasi', 'batam');
             if ($selectedKapal) {
                 $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
                 $query->where(function($q) use ($selectedKapal, $kapalClean) {
@@ -286,7 +281,7 @@ class SuratJalanBongkaranController extends Controller
                 });
             }
             $data = $query->orderBy('created_at', 'desc')->get();
-            $filename = 'Surat_Jalan_Bongkaran_' . str_replace(' ', '_', $selectedKapal) . '_' . str_replace('/', '-', $selectedVoyage) . '.xlsx';
+            $filename = 'Surat_Jalan_Bongkaran_Batam_' . str_replace(' ', '_', $selectedKapal) . '_' . str_replace('/', '-', $selectedVoyage) . '.xlsx';
         } else {
             $query = Manifest::query();
             $query->leftJoin('terms as t', 'manifests.term', '=', 't.kode')
@@ -317,7 +312,7 @@ class SuratJalanBongkaranController extends Controller
                 });
             }
             $data = $query->orderBy('manifests.created_at', 'desc')->get();
-            $filename = 'Manifest_Bongkaran_' . str_replace(' ', '_', $selectedKapal) . '_' . str_replace('/', '-', $selectedVoyage) . '.xlsx';
+            $filename = 'Manifest_Bongkaran_Batam_' . str_replace(' ', '_', $selectedKapal) . '_' . str_replace('/', '-', $selectedVoyage) . '.xlsx';
         }
 
         return Excel::download(new SuratJalanBongkaranTableExport($data, $mode, $selectedKapal, $selectedVoyage), $filename);
@@ -354,7 +349,7 @@ class SuratJalanBongkaranController extends Controller
                 ->groupBy('no_voyage');
         }
         
-        return view('surat-jalan-bongkaran.select-kapal', compact('kapals', 'bls'));
+        return view('surat-jalan-bongkaran-batam.select-kapal', compact('kapals', 'bls'));
     }
 
     /**
@@ -366,19 +361,6 @@ class SuratJalanBongkaranController extends Controller
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
-        // Get kapal name from BLs table using incremental ID
-        $kapals = Manifest::select('nama_kapal')
-                    ->whereNotNull('nama_kapal')
-                    ->distinct()
-                    ->orderBy('nama_kapal')
-                    ->get()
-                    ->map(function($bl, $index) {
-                        return (object)[
-                            'id' => $index + 1,
-                            'nama_kapal' => $bl->nama_kapal
-                        ];
-                    });
-        
         // Find selected kapal by nama_kapal
         $selectedKapalName = $request->nama_kapal;
         if (!$selectedKapalName) {
@@ -436,9 +418,6 @@ class SuratJalanBongkaranController extends Controller
      */
     public function create(Request $request)
     {
-        // Debug: log all request parameters
-        \Log::info('SJB Create Request Parameters:', $request->all());
-        
         // Validate that kapal and voyage are provided
         $request->validate([
             'nama_kapal' => 'required|string',
@@ -527,43 +506,27 @@ class SuratJalanBongkaranController extends Controller
 
         // If no_bl is passed, it might be either a container number (nomor_kontainer) or the BL number (nomor_bl) itself.
         if ($request->filled('no_bl') && $selectedKapalName) {
-            // If the form includes both no_bl (BL) and no_kontainer (container) in query params, prefer the container
-            // number for locating the container row; otherwise, use the provided no_bl value.
             $rawNoBlInput = $request->filled('no_kontainer') ? $request->no_kontainer : $request->no_bl;
 
-            // 1) Try to find by container number first
+            // Try to find by container number first
             $selectedContainer = Manifest::where('nama_kapal', $selectedKapalName)
                                    ->where('no_voyage', $noVoyage)
                                    ->where('nomor_kontainer', $rawNoBlInput)
                                    ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
 
             if ($selectedContainer) {
-                \Log::info('Selected Container Data:', [
-                    'nomor_kontainer' => $selectedContainer->nomor_kontainer,
-                    'no_seal' => $selectedContainer->no_seal,
-                    'tipe_kontainer' => $selectedContainer->tipe_kontainer,
-                    'size_kontainer' => $selectedContainer->size_kontainer,
-                    'pengirim' => $selectedContainer->pengirim,
-                    'penerima' => $selectedContainer->penerima,
-                    'alamat_pengiriman' => $selectedContainer->alamat_pengiriman,
-                    'pelabuhan_tujuan' => $selectedContainer->pelabuhan_tujuan,
-                    'nama_barang' => $selectedContainer->nama_barang,
-                ]);
-
-                // Fill selectedBl from the container row
                 $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
                                  ->where('no_voyage', $noVoyage)
                                  ->where('nomor_kontainer', $rawNoBlInput)
                                  ->first(['id', 'nomor_bl']);
             } else {
-                // 2) Fallback: try to find by BL number (nomor_bl)
+                // Fallback: try to find by BL number (nomor_bl)
                 $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
                                  ->where('no_voyage', $noVoyage)
                                  ->where('nomor_bl', $rawNoBlInput)
                                  ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
 
                 if ($selectedBl) {
-                    // Create a container-like object to keep the rest of the view working
                     $selectedContainer = (object) [
                         'id' => $selectedBl->id,
                         'nomor_kontainer' => $selectedBl->nomor_kontainer ?? null,
@@ -577,38 +540,11 @@ class SuratJalanBongkaranController extends Controller
                         'nama_barang' => $selectedBl->nama_barang ?? null,
                         'nomor_bl' => $selectedBl->nomor_bl ?? null,
                     ];
-
-                    \Log::info('Selected BL Data (no_bl input used as nomor_bl):', [
-                        'id' => $selectedBl->id,
-                        'nomor_bl' => $selectedBl->nomor_bl,
-                        'nomor_kontainer' => $selectedBl->nomor_kontainer ?? null,
-                    ]);
                 }
             }
         }
         
-        // Also check for container details passed via URL parameters
-        if (!$selectedContainer && ($request->filled('container_seal') || $request->filled('container_size') || $request->filled('no_bl'))) {
-            $selectedContainer = (object) [
-                'nomor_kontainer' => $request->no_bl ?? '',
-                'no_seal' => $request->container_seal ?? '',
-                'size_kontainer' => $request->container_size ?? '',
-                'tipe_kontainer' => $request->container_size ?? '',
-                'pengirim' => $request->pengirim ?? '',
-                'penerima' => $request->pengirim ?? '',
-                'alamat_pengiriman' => $request->alamat_pengiriman ?? '',
-                'nama_barang' => $request->jenis_barang ?? ''
-            ];
-            // If we only have URL params and a no_bl in the params, attempt to load BL record as selectedBl
-            if ($request->filled('no_bl') && $selectedKapalName) {
-                $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
-                                 ->where('no_voyage', $noVoyage)
-                                 ->where('nomor_kontainer', $request->no_bl)
-                                 ->first(['id', 'nomor_bl']);
-            }
-        }
-
-        return view('surat-jalan-bongkaran.create', compact(
+        return view('surat-jalan-bongkaran-batam.create', compact(
             'kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'selectedBl', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'kapalId'
         ));
     }
@@ -618,165 +554,86 @@ class SuratJalanBongkaranController extends Controller
      */
     public function store(Request $request)
     {
-        // Debug: log all request data
-        \Log::info('SJB Store Request Data:', $request->all());
-        
         try {
             $validatedData = $request->validate([
-            'kapal_id' => 'nullable|integer',
-            'nama_kapal' => 'nullable|string|max:255',
-            'no_voyage' => 'nullable|string|max:255',
-            'no_bl' => 'nullable|string|max:255',
-            'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
-            'tanggal_surat_jalan' => 'required|date',
-            'lanjut_muat' => 'nullable|string|in:ya,tidak',
-            'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
-            'term' => 'nullable|string|max:255',
-            'aktifitas' => 'nullable|string',
-            'pengirim' => 'nullable|string|max:255',
-            'penerima' => 'nullable|string|max:255',
-            'jenis_barang' => 'nullable|string|max:1000',
-            'tujuan_alamat' => 'nullable|string|max:255',
-            'tujuan_pengambilan' => 'nullable|string|max:255',
-            'tujuan_pengiriman' => 'nullable|string|max:255',
-            'jenis_pengiriman' => 'nullable|string|max:100',
-            'tanggal_ambil_barang' => 'nullable|date',
-            'supir' => 'nullable|string|max:255',
-            'no_plat' => 'nullable|string|max:50',
-            'kenek' => 'nullable|string|max:255',
-            'krani' => 'nullable|string|max:255',
-            'no_kontainer' => 'nullable|string|max:100',
-            'manifest_id' => 'nullable|integer|exists:manifests,id',
-            'bl_id' => 'nullable|integer|exists:bls,id',
-            'no_seal' => 'nullable|string|max:100',
-            'size' => 'nullable|string|max:50',
-            'karton' => 'nullable|string|in:ya,tidak',
-            'plastik' => 'nullable|string|in:ya,tidak',
-            'terpal' => 'nullable|string|in:ya,tidak',
-            'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
-            'uang_jalan_type' => 'nullable|string|in:full,setengah',
-            'tagihan_ayp' => 'nullable|boolean',
-            'tagihan_atb' => 'nullable|boolean',
-            'tagihan_pb' => 'nullable|boolean',
-            'nama_supir' => 'nullable|string|max:255',
-            'nomor_sim' => 'nullable|string|max:50',
-            'telepon_supir' => 'nullable|string|max:50',
-            'nama_kenek' => 'nullable|string|max:255',
-            'telepon_kenek' => 'nullable|string|max:50',
-            'nomor_polisi_kendaraan' => 'nullable|string|max:50',
-            'jenis_kendaraan' => 'nullable|string|max:100',
-            'nomor_container' => 'nullable|string|max:100',
-            'ukuran_container' => 'nullable|string|max:50',
-            'jenis_container' => 'nullable|string|max:100',
-            'nomor_seal' => 'nullable|string|max:100',
-            'kondisi_container' => 'nullable|string|max:100',
-            'biaya_bongkar' => 'nullable|numeric',
-            'biaya_tambahan' => 'nullable|numeric',
-            'total_biaya' => 'nullable|numeric',
-            'metode_pembayaran' => 'nullable|string|max:100',
-            'status_pembayaran' => 'nullable|string|max:50',
-            'keterangan' => 'nullable|string',
-            'catatan_khusus' => 'nullable|string',
-            'dokumentasi' => 'nullable|string',
-            'lokasi' => 'nullable|string|in:jakarta,batam',
-            'uang_jalan_nominal' => 'nullable|numeric|min:0',
-            'f_e' => 'nullable|string|in:Full,Empty',
-        ]);
+                'kapal_id' => 'nullable|integer',
+                'nama_kapal' => 'nullable|string|max:255',
+                'no_voyage' => 'nullable|string|max:255',
+                'no_bl' => 'nullable|string|max:255',
+                'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkaran_batams',
+                'tanggal_surat_jalan' => 'required|date',
+                'lanjut_muat' => 'nullable|string|in:ya,tidak',
+                'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
+                'term' => 'nullable|string|max:255',
+                'aktifitas' => 'nullable|string',
+                'pengirim' => 'nullable|string|max:255',
+                'penerima' => 'nullable|string|max:255',
+                'jenis_barang' => 'nullable|string|max:1000',
+                'tujuan_alamat' => 'nullable|string|max:255',
+                'tujuan_pengambilan' => 'nullable|string|max:255',
+                'tujuan_pengiriman' => 'nullable|string|max:255',
+                'jenis_pengiriman' => 'nullable|string|max:100',
+                'tanggal_ambil_barang' => 'nullable|date',
+                'supir' => 'nullable|string|max:255',
+                'no_plat' => 'nullable|string|max:50',
+                'kenek' => 'nullable|string|max:255',
+                'krani' => 'nullable|string|max:255',
+                'no_kontainer' => 'nullable|string|max:100',
+                'manifest_id' => 'nullable|integer|exists:manifests,id',
+                'no_seal' => 'nullable|string|max:100',
+                'size' => 'nullable|string|max:50',
+                'karton' => 'nullable|string|in:ya,tidak',
+                'plastik' => 'nullable|string|in:ya,tidak',
+                'terpal' => 'nullable|string|in:ya,tidak',
+                'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
+                'uang_jalan_type' => 'nullable|string|in:full,setengah',
+                'tagihan_ayp' => 'nullable|boolean',
+                'tagihan_atb' => 'nullable|boolean',
+                'tagihan_pb' => 'nullable|boolean',
+                'keterangan' => 'nullable|string',
+                'uang_jalan_nominal' => 'nullable|numeric|min:0',
+                'f_e' => 'nullable|string|in:Full,Empty',
+            ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Check if request is AJAX (from modal)
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validasi gagal. Silakan periksa kembali data yang diinput.',
+                    'message' => 'Validasi gagal.',
                     'errors' => $e->errors()
                 ], 422);
             }
             throw $e;
         }
 
-        // If manifest_id is present, ensure we store the actual BL number (nomor_bl) from manifest
-        if ($request->filled('manifest_id')) {
-            $manifest = Manifest::find($request->manifest_id);
-            if ($manifest && isset($manifest->nomor_bl)) {
-                $validatedData['no_bl'] = $manifest->nomor_bl;
-                if (Schema::hasColumn('surat_jalan_bongkarans', 'manifest_id')) {
-                    $validatedData['manifest_id'] = $request->manifest_id;
-                }
-            }
-        } elseif ($request->filled('bl_id')) {
-            // Backward compatibility: If bl_id is present
-            $bl = Manifest::find($request->bl_id);
-            if ($bl && isset($bl->nomor_bl)) {
-                $validatedData['no_bl'] = $bl->nomor_bl;
-                if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
-                    $validatedData['bl_id'] = $request->bl_id;
-                }
-            }
-        } elseif ($request->filled('no_kontainer') && (!isset($validatedData['no_bl']) || empty($validatedData['no_bl']))) {
-            // If only container number is provided and no_bl missing, try to look up BL number from manifest first
-            $manifestByContainer = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
-            if ($manifestByContainer && isset($manifestByContainer->nomor_bl)) {
-                $validatedData['no_bl'] = $manifestByContainer->nomor_bl;
-                if (Schema::hasColumn('surat_jalan_bongkarans', 'manifest_id')) {
-                    $validatedData['manifest_id'] = $manifestByContainer->id;
-                }
-            } else {
-                // Fallback to BL table for backward compatibility
-                $blByContainer = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['nomor_bl']);
-                if ($blByContainer && isset($blByContainer->nomor_bl)) {
-                    $validatedData['no_bl'] = $blByContainer->nomor_bl;
-                    $blRecord = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['id']);
-                    if ($blRecord && Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
-                        $validatedData['bl_id'] = $blRecord->id;
-                    }
-                }
-            }
-        }
         $validatedData['input_by'] = Auth::id();
-
-        // Ensure uang_jalan_nominal has a default value if not provided
-        if (!isset($validatedData['uang_jalan_nominal'])) {
-            $validatedData['uang_jalan_nominal'] = null;
-        }
+        $validatedData['lokasi'] = 'batam';
 
         try {
             DB::beginTransaction();
 
-            if ($request->lokasi === 'batam') {
-                $suratJalanBongkaran = SuratJalanBongkaranBatam::create($validatedData);
-            } else {
-                $suratJalanBongkaran = SuratJalanBongkaran::create($validatedData);
-            }
+            $suratJalanBongkaran = SuratJalanBongkaranBatam::create($validatedData);
 
             DB::commit();
 
-            // Check if request is AJAX (from modal)
             if ($request->ajax() || $request->wantsJson()) {
-                $redirectRoute = $request->lokasi === 'batam' 
-                    ? route('tanda-terima-bongkaran-batam.index') // Default Batam bongkaran view for now
-                    : route('surat-jalan-bongkaran.list');
-
                 return response()->json([
                     'success' => true,
-                    'message' => 'Surat Jalan Bongkaran ' . ucfirst($request->lokasi ?? 'jakarta') . ' berhasil dibuat.',
-                    'redirect' => $redirectRoute
+                    'message' => 'Surat Jalan Bongkaran Batam berhasil dibuat.',
+                    'redirect' => route('surat-jalan-bongkaran-batam.list')
                 ]);
             }
 
-            return redirect()->route('surat-jalan-bongkaran.list')
-                           ->with('success', 'Surat Jalan Bongkaran berhasil dibuat.');
+            return redirect()->route('surat-jalan-bongkaran-batam.list')
+                           ->with('success', 'Surat Jalan Bongkaran Batam berhasil dibuat.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            
-            // Check if request is AJAX (from modal)
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Terjadi kesalahan: ' . $e->getMessage()
                 ], 500);
             }
-            
             return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -784,40 +641,34 @@ class SuratJalanBongkaranController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(SuratJalanBongkaran $suratJalanBongkaran)
+    public function show(SuratJalanBongkaranBatam $suratJalanBongkaran)
     {
         $suratJalanBongkaran->load(['inputBy', 'bl']);
         
-        return view('surat-jalan-bongkaran.show', compact('suratJalanBongkaran'));
+        return view('surat-jalan-bongkaran-batam.show', compact('suratJalanBongkaran'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(SuratJalanBongkaran $suratJalanBongkaran)
+    public function edit(SuratJalanBongkaranBatam $suratJalanBongkaran)
     {
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
-        
-        // Get terms untuk dropdown term pembayaran  
         $terms = \App\Models\Term::orderBy('kode')->get();
-        
-        // Get master kegiatan untuk dropdown aktifitas
-        $masterKegiatans = MasterKegiatan::orderBy('nama_kegiatan')->get();
-        
-        // Get tujuan kegiatan utama untuk dropdown tujuan pengiriman
+        $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')->where('status', 'aktif')->orderBy('nama_kegiatan')->get();
         $tujuanKegiatanUtamas = TujuanKegiatanUtama::orderBy('ke')->get();
         
-        // Get karyawan supir untuk dropdown supir (from karyawans table)
-        $karyawanSupirs = \App\Models\Karyawan::where('pekerjaan', 'Supir')
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
+                              ->whereNull('tanggal_berhenti')
                               ->orderBy('nama_panggilan')
                               ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
         
-        // Get karyawan krani untuk dropdown kenek dan krani (from karyawans table)
-        $karyawanKranis = \App\Models\Karyawan::where('pekerjaan', 'Krani')
+        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
+                              ->whereNull('tanggal_berhenti')
                               ->orderBy('nama_panggilan')
                               ->get(['id', 'nama_panggilan', 'nama_lengkap']);
 
-        return view('surat-jalan-bongkaran.edit', compact(
+        return view('surat-jalan-bongkaran-batam.edit', compact(
             'suratJalanBongkaran', 
             'kapals', 
             'terms', 
@@ -831,105 +682,49 @@ class SuratJalanBongkaranController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, SuratJalanBongkaran $suratJalanBongkaran)
+    public function update(Request $request, SuratJalanBongkaranBatam $suratJalanBongkaran)
     {
-        $validatedData = $request->validate([
-            'kapal_id' => 'nullable|exists:master_kapals,id',
-            'nama_kapal' => 'nullable|string|max:255',
-            'no_voyage' => 'nullable|string|max:255',
-            'no_bl' => 'nullable|string|max:255',
-            'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans,nomor_surat_jalan,' . $suratJalanBongkaran->id,
-            'tanggal_surat_jalan' => 'required|date',
-            'lanjut_muat' => 'nullable|string|in:ya,tidak',
-            'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
-            'term' => 'nullable|string|max:255',
-            'aktifitas' => 'nullable|string',
-            'pengirim' => 'nullable|string|max:255',
-            'penerima' => 'nullable|string|max:255',
-            'jenis_barang' => 'nullable|string|max:1000',
-            'tujuan_alamat' => 'nullable|string|max:255',
-            'tujuan_pengambilan' => 'nullable|string|max:255',
-            'tujuan_pengiriman' => 'nullable|string|max:255',
-            'jenis_pengiriman' => 'nullable|string|max:100',
-            'tanggal_ambil_barang' => 'nullable|date',
-            'supir' => 'nullable|string|max:255',
-            'no_plat' => 'nullable|string|max:50',
-            'kenek' => 'nullable|string|max:255',
-            'krani' => 'nullable|string|max:255',
-            'no_kontainer' => 'nullable|string|max:100',
-            'manifest_id' => 'nullable|integer|exists:manifests,id',
-            'bl_id' => 'nullable|integer|exists:bls,id',
-            'no_seal' => 'nullable|string|max:100',
-            'size' => 'nullable|string|max:50',
-            'karton' => 'nullable|string|in:ya,tidak',
-            'plastik' => 'nullable|string|in:ya,tidak',
-            'terpal' => 'nullable|string|in:ya,tidak',
-            'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
-            'uang_jalan_type' => 'nullable|string|in:full,setengah',
-            'uang_jalan_nominal' => 'nullable|numeric|min:0',
-            'tagihan_ayp' => 'nullable|boolean',
-            'tagihan_atb' => 'nullable|boolean',
-            'tagihan_pb' => 'nullable|boolean',
-            'nama_supir' => 'nullable|string|max:255',
-            'nomor_sim' => 'nullable|string|max:50',
-            'telepon_supir' => 'nullable|string|max:50',
-            'nama_kenek' => 'nullable|string|max:255',
-            'telepon_kenek' => 'nullable|string|max:50',
-            'nomor_polisi_kendaraan' => 'nullable|string|max:50',
-            'jenis_kendaraan' => 'nullable|string|max:100',
-            'nomor_container' => 'nullable|string|max:100',
-            'ukuran_container' => 'nullable|string|max:50',
-            'jenis_container' => 'nullable|string|max:100',
-            'nomor_seal' => 'nullable|string|max:100',
-            'kondisi_container' => 'nullable|string|max:100',
-            'biaya_bongkar' => 'nullable|numeric',
-            'biaya_tambahan' => 'nullable|numeric',
-            'total_biaya' => 'nullable|numeric',
-            'metode_pembayaran' => 'nullable|string|max:100',
-            'status_pembayaran' => 'nullable|string|max:50',
-            'keterangan' => 'nullable|string',
-            'catatan_khusus' => 'nullable|string',
-            'dokumentasi' => 'nullable|string',
-            'lokasi' => 'nullable|string|in:jakarta,batam',
-            'f_e' => 'nullable|string|in:Full,Empty',
-        ]);
-
-        // If manifest_id is present, ensure we store the actual BL number (nomor_bl) from manifest
-        if ($request->filled('manifest_id')) {
-            $manifest = Manifest::find($request->manifest_id);
-            if ($manifest && isset($manifest->nomor_bl)) {
-                $validatedData['no_bl'] = $manifest->nomor_bl;
-                if (Schema::hasColumn('surat_jalan_bongkarans', 'manifest_id')) {
-                    $validatedData['manifest_id'] = $request->manifest_id;
-                }
-            }
-        } elseif ($request->filled('bl_id')) {
-            // Backward compatibility: If bl_id is present
-            $bl = Manifest::find($request->bl_id);
-            if ($bl && isset($bl->nomor_bl)) {
-                $validatedData['no_bl'] = $bl->nomor_bl;
-                if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
-                    $validatedData['bl_id'] = $bl->id;
-                }
-            }
-        } elseif ($request->filled('no_kontainer') && (!isset($validatedData['no_bl']) || empty($validatedData['no_bl']))) {
-            // Try to look up from manifest table first
-            $manifestByContainer = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
-            if ($manifestByContainer && isset($manifestByContainer->nomor_bl)) {
-                $validatedData['no_bl'] = $manifestByContainer->nomor_bl;
-                if (Schema::hasColumn('surat_jalan_bongkarans', 'manifest_id')) {
-                    $validatedData['manifest_id'] = $manifestByContainer->id;
-                }
-            } else {
-                // Fallback to BL table
-                $blByContainer = Manifest::where('nomor_kontainer', $request->no_kontainer)->first(['id', 'nomor_bl']);
-                if ($blByContainer && isset($blByContainer->nomor_bl)) {
-                    $validatedData['no_bl'] = $blByContainer->nomor_bl;
-                    if (Schema::hasColumn('surat_jalan_bongkarans', 'bl_id')) {
-                        $validatedData['bl_id'] = $blByContainer->id;
-                    }
-                }
-            }
+        try {
+            $validatedData = $request->validate([
+                'kapal_id' => 'nullable|integer',
+                'nama_kapal' => 'nullable|string|max:255',
+                'no_voyage' => 'nullable|string|max:255',
+                'no_bl' => 'nullable|string|max:255',
+                'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkaran_batams,nomor_surat_jalan,' . $suratJalanBongkaran->id,
+                'tanggal_surat_jalan' => 'required|date',
+                'lanjut_muat' => 'nullable|string|in:ya,tidak',
+                'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
+                'term' => 'nullable|string|max:255',
+                'aktifitas' => 'nullable|string',
+                'pengirim' => 'nullable|string|max:255',
+                'penerima' => 'nullable|string|max:255',
+                'jenis_barang' => 'nullable|string|max:1000',
+                'tujuan_alamat' => 'nullable|string|max:255',
+                'tujuan_pengambilan' => 'nullable|string|max:255',
+                'tujuan_pengiriman' => 'nullable|string|max:255',
+                'jenis_pengiriman' => 'nullable|string|max:100',
+                'tanggal_ambil_barang' => 'nullable|date',
+                'supir' => 'nullable|string|max:255',
+                'no_plat' => 'nullable|string|max:50',
+                'kenek' => 'nullable|string|max:255',
+                'krani' => 'nullable|string|max:255',
+                'no_kontainer' => 'nullable|string|max:100',
+                'no_seal' => 'nullable|string|max:100',
+                'size' => 'nullable|string|max:50',
+                'karton' => 'nullable|string|in:ya,tidak',
+                'plastik' => 'nullable|string|in:ya,tidak',
+                'terpal' => 'nullable|string|in:ya,tidak',
+                'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
+                'uang_jalan_type' => 'nullable|string|in:full,setengah',
+                'tagihan_ayp' => 'nullable|boolean',
+                'tagihan_atb' => 'nullable|boolean',
+                'tagihan_pb' => 'nullable|boolean',
+                'keterangan' => 'nullable|string',
+                'uang_jalan_nominal' => 'nullable|numeric|min:0',
+                'f_e' => 'nullable|string|in:Full,Empty',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
         }
 
         try {
@@ -939,32 +734,11 @@ class SuratJalanBongkaranController extends Controller
 
             DB::commit();
 
-            // Check if this is an AJAX request
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Surat Jalan Bongkaran berhasil diperbarui.',
-                    'redirect' => route('surat-jalan-bongkaran.list', [
-                        'nama_kapal' => $request->nama_kapal,
-                        'no_voyage' => $request->no_voyage
-                    ])
-                ]);
-            }
-
-            return redirect()->route('surat-jalan-bongkaran.show', $suratJalanBongkaran)
-                           ->with('success', 'Surat Jalan Bongkaran berhasil diperbarui.');
+            return redirect()->route('surat-jalan-bongkaran-batam.list')
+                           ->with('success', 'Surat Jalan Bongkaran Batam berhasil diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            
-            // Check if this is an AJAX request
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-                ], 500);
-            }
-            
             return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
@@ -972,41 +746,39 @@ class SuratJalanBongkaranController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(SuratJalanBongkaran $suratJalanBongkaran)
+    public function destroy(SuratJalanBongkaranBatam $suratJalanBongkaran)
     {
         try {
+            DB::beginTransaction();
+            
             $suratJalanBongkaran->delete();
             
-            return redirect()->route('surat-jalan-bongkaran.list')
-                           ->with('success', 'Surat Jalan Bongkaran berhasil dihapus.');
+            DB::commit();
+            
+            return redirect()->route('surat-jalan-bongkaran-batam.list')
+                           ->with('success', 'Surat Jalan Bongkaran Batam berhasil dihapus.');
                            
         } catch (\Exception $e) {
+            DB::rollback();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Print a surat jalan bongkaran (render a printable view)
-     */
-    public function print(SuratJalanBongkaran $suratJalanBongkaran)
+    public function print(SuratJalanBongkaranBatam $suratJalanBongkaran)
     {
-        // Eager load relations useful for the print view
         $suratJalanBongkaran->load(['inputBy', 'bl']);
 
-        // Hitung posisi surat jalan dalam grup BL yang sama
         $pageNumber = 1;
         $totalPages = 1;
         
         if ($suratJalanBongkaran->bl_id) {
-            // Ambil semua surat jalan untuk BL yang sama, diurutkan berdasarkan created_at
-            $suratJalansForSameBl = SuratJalanBongkaran::where('bl_id', $suratJalanBongkaran->bl_id)
+            $suratJalansForSameBl = SuratJalanBongkaranBatam::where('bl_id', $suratJalanBongkaran->bl_id)
                 ->orderBy('created_at', 'asc')
                 ->orderBy('id', 'asc')
                 ->get();
             
             $totalPages = $suratJalansForSameBl->count();
             
-            // Cari posisi surat jalan saat ini
             foreach ($suratJalansForSameBl as $index => $sj) {
                 if ($sj->id == $suratJalanBongkaran->id) {
                     $pageNumber = $index + 1;
@@ -1015,140 +787,85 @@ class SuratJalanBongkaranController extends Controller
             }
         }
 
-        return view('surat-jalan-bongkaran.print', compact('suratJalanBongkaran', 'pageNumber', 'totalPages'));
+        return view('surat-jalan-bongkaran-batam.print', compact('suratJalanBongkaran', 'pageNumber', 'totalPages'));
     }
 
-    /**
-     * Print SJ directly from Manifest data (without creating surat jalan first)
-     * 
-     * IMPORTANT: Semua data diambil dari tabel MANIFESTS, BUKAN dari tabel BLS
-     * Data source: App\Models\Manifest (table: manifests)
-     */
     public function printFromBl($bl)
     {
-        // ========================================
-        // DATA SOURCE: TABLE MANIFESTS
-        // ========================================
-        // Find manifest by ID from manifests table
         $manifest = Manifest::findOrFail($bl);
         
-        // Create a temporary object with Manifest data to pass to print view
-        // This allows printing even if surat jalan hasn't been created yet
         $printData = new \stdClass();
-        
-        // Get tanggal_berangkat from manifest table
         $printData->tanggal_berangkat = $manifest->tanggal_berangkat ?? now()->format('Y-m-d');
-        
-        // Get current date for tanggal_surat_jalan (fallback)
         $printData->tanggal_surat_jalan = now()->format('Y-m-d');
         
-        // ========================================
-        // MAPPING DATA DARI TABEL MANIFESTS
-        // ========================================
-        $printData->no_voyage = $manifest->no_voyage ?? '';                      // manifests.no_voyage
-        $printData->nama_kapal = $manifest->nama_kapal ?? '';                    // manifests.nama_kapal
-        $printData->no_plat = '';                                                // Will be empty until filled
-        $printData->no_bl = $manifest->nomor_bl ?? '';                          // manifests.nomor_bl
-        $printData->no_kontainer = $manifest->nomor_kontainer ?? '';            // manifests.nomor_kontainer
-        $printData->jenis_pengiriman = 'IMPORT';                                 // Default for manifest
-        $printData->jenis_barang = $manifest->nama_barang ?? '';                // manifests.nama_barang
-        $printData->penerima = $manifest->penerima ?? '';                       // manifests.penerima
-        $printData->tujuan_pengambilan = '';                                     // Will be empty until filled
-        $printData->no_seal = $manifest->no_seal ?? '';                         // manifests.no_seal
-        $printData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan              // manifests.pelabuhan_tujuan
-                                    ?? $manifest->pelabuhan_bongkar ?? '';       // or manifests.pelabuhan_bongkar
-        $printData->tujuan_pengiriman = $manifest->pelabuhan_tujuan             // manifests.pelabuhan_tujuan
-                                     ?? $manifest->pelabuhan_bongkar ?? '';      // or manifests.pelabuhan_bongkar
-        $printData->size_kontainer = $manifest->size_kontainer ?? '';           // manifests.size_kontainer
-        $printData->tipe_kontainer = $manifest->tipe_kontainer ?? 'FCL';        // manifests.tipe_kontainer
-        $printData->kuantitas = $manifest->kuantitas ?? '';                     // manifests.kuantitas
-        $printData->satuan = $manifest->satuan ?? '';                           // manifests.satuan
-        $printData->nomor_urut = $manifest->nomor_urut ?? '';                   // manifests.nomor_urut
+        $printData->no_voyage = $manifest->no_voyage ?? '';
+        $printData->nama_kapal = $manifest->nama_kapal ?? '';
+        $printData->no_plat = '';
+        $printData->no_bl = $manifest->nomor_bl ?? '';
+        $printData->no_kontainer = $manifest->nomor_kontainer ?? '';
+        $printData->jenis_pengiriman = 'IMPORT';
+        $printData->jenis_barang = $manifest->nama_barang ?? '';
+        $printData->penerima = $manifest->penerima ?? '';
+        $printData->tujuan_pengambilan = '';
+        $printData->no_seal = $manifest->no_seal ?? '';
+        $printData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? $manifest->pelabuhan_bongkar ?? '';
+        $printData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? $manifest->pelabuhan_bongkar ?? '';
+        $printData->size_kontainer = $manifest->size_kontainer ?? '';
+        $printData->tipe_kontainer = $manifest->tipe_kontainer ?? 'FCL';
+        $printData->kuantitas = $manifest->kuantitas ?? '';
+        $printData->satuan = $manifest->satuan ?? '';
+        $printData->nomor_urut = $manifest->nomor_urut ?? '';
         
-        // Create fake bl relation for compatibility with existing print view
         $printData->bl = $manifest;
         $printData->kapal = null;
 
-        return view('surat-jalan-bongkaran.print-from-bl', compact('printData'));
+        return view('surat-jalan-bongkaran-batam.print-from-bl', compact('printData'));
     }
 
-    /**
-     * Print Berita Acara (BA) directly from Manifest data
-     * 
-     * IMPORTANT: Semua data diambil dari tabel MANIFESTS, BUKAN dari tabel BLS
-     * Data source: App\Models\Manifest (table: manifests)
-     */
     public function printBa($bl)
     {
-        // ========================================
-        // DATA SOURCE: TABLE MANIFESTS
-        // ========================================
-        // Find manifest by ID from manifests table
         $manifest = Manifest::findOrFail($bl);
         
-        // This allows printing BA even if surat jalan hasn't been created yet
         $baData = new \stdClass();
-        
-        // Generate BA number if not exists
         $baData->id = $manifest->id;
         $baData->nomor_ba = 'BA/' . date('Y/m/d') . '/' . str_pad($manifest->id, 4, '0', STR_PAD_LEFT);
-        
-        // Use manifest tanggal_berangkat for BA date
         $baData->tanggal_ba = $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('Y-m-d') : now()->format('Y-m-d');
-        
-        // Attach manifest object for view compatibility
         $baData->manifest = $manifest;
         
-        // ========================================
-        // MAPPING DATA DARI TABEL MANIFESTS
-        // ========================================
-        // Ship data (manifests table)
-        $baData->nama_kapal = $manifest->nama_kapal;                            // manifests.nama_kapal
-        $baData->no_voyage = $manifest->no_voyage;                              // manifests.no_voyage
-        $baData->pelabuhan_asal = $manifest->pelabuhan_asal ?? '';              // manifests.pelabuhan_asal
-        $baData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan ?? '';          // manifests.pelabuhan_tujuan
-        $baData->tujuan_pengiriman = $manifest->pelabuhan_tujuan ?? '';         // manifests.pelabuhan_tujuan
-        
-        // Container data (manifests table)
-        $baData->no_bl = $manifest->nomor_bl;                                   // manifests.nomor_bl
-        $baData->no_kontainer = $manifest->nomor_kontainer;                     // manifests.nomor_kontainer
-        $baData->no_seal = $manifest->no_seal;                                  // manifests.no_seal
-        $baData->size = $manifest->size_kontainer;                              // manifests.size_kontainer
-        $baData->size_kontainer = $manifest->size_kontainer;                    // manifests.size_kontainer
-        $baData->tipe_kontainer = $manifest->tipe_kontainer ?? '';              // manifests.tipe_kontainer (CARGO, FCL, LCL, etc)
-        
-        // Cargo data (manifests table)
-        $baData->jenis_barang = $manifest->nama_barang;                         // manifests.nama_barang
-        $baData->pengirim = $manifest->pengirim ?? '';                          // manifests.pengirim
-        $baData->penerima = $manifest->penerima ?? '';                          // manifests.penerima
-        $baData->contact_person = $manifest->contact_person ?? '';              // manifests.contact_person
-        $baData->kuantitas = $manifest->kuantitas;                              // manifests.kuantitas
-        $baData->satuan = $manifest->satuan;                                    // manifests.satuan
-        
-        // Transportation data (will be empty until surat jalan is created)
-        $baData->no_plat = '';
-        $baData->supir = '';
-        $baData->kenek = '';
-        $baData->krani = '';
-        $baData->tujuan_pengambilan = '';
-        
-        // Condition notes (default values)
-        $baData->kondisi_seal = 'Seal dalam keadaan baik dan tidak rusak';
-        $baData->kondisi_kontainer = 'Kontainer dalam keadaan baik dan tidak rusak';
-        $baData->kondisi_barang = 'Barang dalam keadaan baik sesuai manifest';
-        $baData->catatan = '-';
-
-        return view('surat-jalan-bongkaran.print-ba', compact('baData'));
+        return view('surat-jalan-bongkaran-batam.print-ba', compact('baData'));
     }
 
-    /**
-     * Get Surat Jalan Bongkaran data by ID for API (for edit modal)
-     */
+    public function downloadPdf(SuratJalanBongkaranBatam $suratJalanBongkaran)
+    {
+        $suratJalanBongkaran->load(['inputBy', 'bl']);
+        
+        $pageNumber = 1;
+        $totalPages = 1;
+        
+        if ($suratJalanBongkaran->bl_id) {
+            $suratJalansForSameBl = SuratJalanBongkaranBatam::where('bl_id', $suratJalanBongkaran->bl_id)
+                ->orderBy('created_at', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+            $totalPages = $suratJalansForSameBl->count();
+            foreach ($suratJalansForSameBl as $index => $sj) {
+                if ($sj->id == $suratJalanBongkaran->id) {
+                    $pageNumber = $index + 1;
+                    break;
+                }
+            }
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('surat-jalan-bongkaran-batam.print', compact('suratJalanBongkaran', 'pageNumber', 'totalPages'));
+        $pdf->setPaper([0, 0, 609.4488, 396.8504], 'portrait');
+        
+        return $pdf->download('Surat_Jalan_Bongkaran_' . $suratJalanBongkaran->nomor_surat_jalan . '.pdf');
+    }
+
     public function getSuratJalanById($id)
     {
         try {
-            $suratJalan = SuratJalanBongkaran::with('manifest')->find($id);
-            
+            $suratJalan = SuratJalanBongkaranBatam::with('manifest')->find($id);
             if (!$suratJalan) {
                 return response()->json(['error' => 'Surat Jalan not found'], 404);
             }
@@ -1189,25 +906,14 @@ class SuratJalanBongkaranController extends Controller
                 'f_e' => $suratJalan->f_e ?? 'Full',
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error fetching Surat Jalan by ID: ' . $e->getMessage(), [
-                'id' => $id,
-                'trace' => $e->getTraceAsString()
-            ]);
-            return response()->json([
-                'error' => 'Failed to fetch Surat Jalan data',
-                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
-            ], 500);
+            return response()->json(['error' => 'Failed to fetch Surat Jalan data'], 500);
         }
     }
 
-    /**
-     * Get Manifest data by ID (API endpoint for modal)
-     */
     public function getManifestById($id)
     {
         try {
             $manifest = Manifest::find($id);
-            
             if (!$manifest) {
                 return response()->json(['error' => 'Manifest not found'], 404);
             }
@@ -1235,16 +941,7 @@ class SuratJalanBongkaranController extends Controller
                 'jenis_pengiriman' => $manifest->jenis_pengiriman ?? '',
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error fetching Manifest by ID: ' . $e->getMessage(), [
-                'id' => $id,
-                'trace' => $e->getTraceAsString()
-            ]);
-            return response()->json([
-                'error' => 'Failed to fetch Manifest data',
-                'message' => config('app.debug') ? $e->getMessage() : 'Internal server error'
-            ], 500);
+            return response()->json(['error' => 'Failed to fetch Manifest data'], 500);
         }
     }
-
 }
-

@@ -1084,6 +1084,40 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Uang Jalan Bongkaran --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Uang Jalan Bongkaran</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Uang Jalan Bongkaran Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-blue-600 font-bold">Uang Jalan Bongkaran Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran-batam][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran-batam][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran-batam][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran-batam][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pranota Uang Jalan --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">
@@ -1116,6 +1150,40 @@
                                 <td class="text-center text-gray-400">-</td>
                                 <td>-</td>
                                 <td>-</td>
+                            </tr>
+
+                            {{-- Surat Jalan Bongkaran --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Surat Jalan Bongkaran</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][view]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran.view')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][create]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran.create')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][update]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran.update')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][delete]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran.delete')) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][print]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran.print')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran.export')) checked @endif></td>
+                            </tr>
+
+                            {{-- Surat Jalan Bongkaran Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-blue-600 font-bold">Surat Jalan Bongkaran Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.view')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.create')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.update')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.delete')) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][print]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.print')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.export')) checked @endif></td>
                             </tr>
 
                             {{-- Pranota Lembur --}}
@@ -1167,6 +1235,23 @@
                                 <td>-</td>
                                 <td>-</td>
                             </tr>
+                            {{-- Tanda Terima Bongkaran --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Tanda Terima Bongkaran</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][view]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.view')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][create]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.create')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][update]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.update')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][delete]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.delete')) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][print]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.print')) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-bongkaran.export')) checked @endif></td>
+                            </tr>
+
                             {{-- Tanda Terima Bongkaran Batam --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

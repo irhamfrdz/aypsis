@@ -1252,6 +1252,23 @@
                                 <td><input type="checkbox" name="permissions[surat-jalan-bongkaran][export]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran.export') || (isset($userMatrixPermissions['surat-jalan-bongkaran']['export']) && $userMatrixPermissions['surat-jalan-bongkaran']['export']) || ($user && $user->can('surat-jalan-bongkaran-export'))) checked @endif></td>
                             </tr>
 
+                            {{-- Surat Jalan Bongkaran Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-blue-600 font-bold">Surat Jalan Bongkaran Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.view') || (isset($userMatrixPermissions['surat-jalan-bongkaran-batam']['view']) && $userMatrixPermissions['surat-jalan-bongkaran-batam']['view']) || ($user && $user->can('surat-jalan-bongkaran-batam-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.create') || (isset($userMatrixPermissions['surat-jalan-bongkaran-batam']['create']) && $userMatrixPermissions['surat-jalan-bongkaran-batam']['create']) || ($user && $user->can('surat-jalan-bongkaran-batam-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.update') || (isset($userMatrixPermissions['surat-jalan-bongkaran-batam']['update']) && $userMatrixPermissions['surat-jalan-bongkaran-batam']['update']) || ($user && $user->can('surat-jalan-bongkaran-batam-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.delete') || (isset($userMatrixPermissions['surat-jalan-bongkaran-batam']['delete']) && $userMatrixPermissions['surat-jalan-bongkaran-batam']['delete']) || ($user && $user->can('surat-jalan-bongkaran-batam-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][print]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.print') || (isset($userMatrixPermissions['surat-jalan-bongkaran-batam']['print']) && $userMatrixPermissions['surat-jalan-bongkaran-batam']['print']) || ($user && $user->can('surat-jalan-bongkaran-batam-print'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.export') || (isset($userMatrixPermissions['surat-jalan-bongkaran-batam']['export']) && $userMatrixPermissions['surat-jalan-bongkaran-batam']['export']) || ($user && $user->can('surat-jalan-bongkaran-batam-export'))) checked @endif></td>
+                            </tr>
+
                             {{-- Surat Jalan Batam --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">
@@ -1297,6 +1314,23 @@
                                 <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran']['create']) && $userMatrixPermissions['uang-jalan-bongkaran']['create']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran']['update']) && $userMatrixPermissions['uang-jalan-bongkaran']['update']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[uang-jalan-bongkaran][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran']['delete']) && $userMatrixPermissions['uang-jalan-bongkaran']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Uang Jalan Bongkaran Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-blue-600 font-bold">Uang Jalan Bongkaran Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran-batam']['view']) && $userMatrixPermissions['uang-jalan-bongkaran-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran-batam']['create']) && $userMatrixPermissions['uang-jalan-bongkaran-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran-batam']['update']) && $userMatrixPermissions['uang-jalan-bongkaran-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan-bongkaran-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['uang-jalan-bongkaran-batam']['delete']) && $userMatrixPermissions['uang-jalan-bongkaran-batam']['delete']) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

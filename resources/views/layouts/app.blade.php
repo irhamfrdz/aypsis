@@ -1527,9 +1527,18 @@
                         @endif
 
                         {{-- Tanda Terima Surat Jalan Bongkaran Batam --}}
-                        <a href="{{ route('tanda-terima-bongkaran-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-bongkaran-batam.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                            <span class="text-xs">Tanda Terima Surat Jalan Bongkaran Batam</span>
-                        </a>
+                        @if($user && ($user->can('tanda-terima-bongkaran-batam-view') || $user->can('tanda-terima-bongkaran-batam-create')))
+                            <a href="{{ route('tanda-terima-bongkaran-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-bongkaran-batam.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Tanda Terima Surat Jalan Bongkaran Batam</span>
+                            </a>
+                        @endif
+
+                        {{-- Surat Jalan Bongkaran Batam --}}
+                        @if($user && ($user->can('surat-jalan-bongkaran-batam-view') || $user->can('surat-jalan-bongkaran-batam-create')))
+                            <a href="{{ route('surat-jalan-bongkaran-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran-batam.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Surat Jalan Bongkaran Batam</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
                 @endif

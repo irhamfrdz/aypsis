@@ -587,6 +587,7 @@ class UserController extends Controller
             // e.g. 'tanda-terima-batam' before 'tanda-terima', otherwise strpos will
             // match the short prefix first and mis-parse the permission name.
             $operationalModules = [
+                'surat-jalan-bongkaran-batam' => 'surat-jalan-bongkaran-batam',
                 'surat-jalan-bongkaran' => 'surat-jalan-bongkaran',
                 'surat-jalan-batam' => 'surat-jalan-batam',
                 'surat-jalan' => 'surat-jalan',

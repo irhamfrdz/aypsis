@@ -2969,6 +2969,55 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan-bongkaran.export')
          ->middleware('can:surat-jalan-bongkaran-view');
 
+    Route::get('/surat-jalan-bongkaran/{suratJalanBongkaran}/download', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'downloadPdf'])->name('surat-jalan-bongkaran.download');
+
+    // Surat Jalan Bongkaran Batam
+    Route::get('/surat-jalan-bongkaran-batam/select-kapal', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'selectKapal'])
+         ->name('surat-jalan-bongkaran-batam.select-kapal')
+         ->middleware('can:surat-jalan-bongkaran-batam-create');
+    Route::get('/surat-jalan-bongkaran-batam/api/bl-data', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'getBlData'])
+         ->name('surat-jalan-bongkaran-batam.get-bl-data')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam/select-ship', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'selectShip'])
+         ->name('surat-jalan-bongkaran-batam.select-ship')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam/get-voyages', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'getVoyages'])
+         ->name('surat-jalan-bongkaran-batam.get-voyages')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'selectShip'])
+         ->name('surat-jalan-bongkaran-batam.index')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam/list', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'index'])
+         ->name('surat-jalan-bongkaran-batam.list')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam/export', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'export'])
+         ->name('surat-jalan-bongkaran-batam.export')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam/create', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'create'])
+         ->name('surat-jalan-bongkaran-batam.create')
+         ->middleware('can:surat-jalan-bongkaran-batam-create');
+    Route::post('/surat-jalan-bongkaran-batam', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'store'])
+         ->name('surat-jalan-bongkaran-batam.store')
+         ->middleware('can:surat-jalan-bongkaran-batam-create');
+    Route::get('/surat-jalan-bongkaran-batam/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'show'])
+         ->name('surat-jalan-bongkaran-batam.show')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam/{suratJalanBongkaran}/edit', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'edit'])
+         ->name('surat-jalan-bongkaran-batam.edit')
+         ->middleware('can:surat-jalan-bongkaran-batam-update');
+    Route::put('/surat-jalan-bongkaran-batam/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'update'])
+         ->name('surat-jalan-bongkaran-batam.update')
+         ->middleware('can:surat-jalan-bongkaran-batam-update');
+    Route::delete('/surat-jalan-bongkaran-batam/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'destroy'])
+         ->name('surat-jalan-bongkaran-batam.destroy')
+         ->middleware('can:surat-jalan-bongkaran-batam-delete');
+    Route::get('/surat-jalan-bongkaran-batam/{suratJalanBongkaran}/print', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'print'])
+         ->name('surat-jalan-bongkaran-batam.print')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam/{suratJalanBongkaran}/download', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'downloadPdf'])
+         ->name('surat-jalan-bongkaran-batam.download')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+
     Route::get('surat-jalan-bongkaran/create', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'create'])
          ->name('surat-jalan-bongkaran.create')
          ->middleware('can:surat-jalan-bongkaran-create');

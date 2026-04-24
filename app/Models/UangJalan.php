@@ -16,6 +16,7 @@ class UangJalan extends Model
         'tanggal_uang_jalan',
         'surat_jalan_id',
         'surat_jalan_bongkaran_id',
+        'surat_jalan_bongkaran_batam_id',
         'kegiatan_bongkar_muat',
         'jumlah_uang_jalan',
         'jumlah_mel',
@@ -60,6 +61,14 @@ class UangJalan extends Model
     public function suratJalanBongkaran()
     {
         return $this->belongsTo(SuratJalanBongkaran::class, 'surat_jalan_bongkaran_id');
+    }
+
+    /**
+     * Relationship dengan SuratJalanBongkaranBatam
+     */
+    public function suratJalanBongkaranBatam()
+    {
+        return $this->belongsTo(SuratJalanBongkaranBatam::class, 'surat_jalan_bongkaran_batam_id');
     }
 
     /**

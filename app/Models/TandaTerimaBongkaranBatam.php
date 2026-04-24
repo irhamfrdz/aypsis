@@ -42,7 +42,7 @@ class TandaTerimaBongkaranBatam extends Model
      */
     public function suratJalanBongkaran(): BelongsTo
     {
-        return $this->belongsTo(SuratJalanBongkaran::class, 'surat_jalan_bongkaran_id');
+        return $this->belongsTo(SuratJalanBongkaranBatam::class, 'surat_jalan_bongkaran_id');
     }
 
     /**
