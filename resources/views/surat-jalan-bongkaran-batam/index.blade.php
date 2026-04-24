@@ -1255,7 +1255,7 @@ const destinations = {
     batam: [
         @foreach($pricelistUangJalanBatams as $item)
         { 
-            label: "{{ $item->expedisi }} - {{ $item->ring }}", 
+            label: "{{ $item->expedisi }} - {{ $item->ring }} (Ring {{ $item->ring }})", 
             value: "{{ $item->expedisi }} - {{ $item->ring }}", 
             uj20_full: {{ $item->tarif_20ft_full ?? 0 }},
             uj20_empty: {{ $item->tarif_20ft_empty ?? 0 }},
