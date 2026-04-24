@@ -98,33 +98,46 @@
                     </select>
                 </div>
 
-                <div>
+                <div class="relative pengirim-dropdown-container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                    <select name="pengirim" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">Pilih Pengirim</option>
-                        @foreach($allPenerimas as $p)
-                            <option value="{{ $p->nama_penerima }}" {{ old('pengirim', $selectedOrder->pengirim->nama_pengirim ?? '') == $p->nama_penerima ? 'selected' : '' }}>
-                                {{ $p->nama_penerima }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div class="relative">
+                        <input type="text" id="pengirim_search" placeholder="Cari pengirim..." autocomplete="off"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="hidden" name="pengirim" id="pengirim_value" value="{{ old('pengirim', $selectedOrder->pengirim->nama_pengirim ?? '') }}">
+                        <div id="pengirim_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                            <div class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic pengirim-item" data-value="">Pilih Pengirim</div>
+                            @foreach($allPenerimas as $p)
+                                <div class="px-4 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 pengirim-item" 
+                                     data-value="{{ $p->nama_penerima }}">
+                                    <div class="font-medium">{{ $p->nama_penerima }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
 
-                <div>
+                <div class="relative penerima-dropdown-container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-                    <select name="penerima" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">Pilih Penerima</option>
-                        @foreach($allPenerimas as $p)
-                            <option value="{{ $p->nama_penerima }}" {{ old('penerima') == $p->nama_penerima ? 'selected' : '' }}>
-                                {{ $p->nama_penerima }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div class="relative">
+                        <input type="text" id="penerima_search" placeholder="Cari penerima..." autocomplete="off"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <input type="hidden" name="penerima" id="penerima_value" value="{{ old('penerima') }}">
+                        <div id="penerima_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                            <div class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-500 italic penerima-item" data-value="">Pilih Penerima</div>
+                            @foreach($allPenerimas as $p)
+                                <div class="px-4 py-2 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 penerima-item" 
+                                     data-value="{{ $p->nama_penerima }}"
+                                     data-alamat="{{ $p->alamat }}">
+                                    <div class="font-medium">{{ $p->nama_penerima }}</div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Alamat / Tujuan Alamat</label>
-                    <input type="text" name="alamat" value="{{ old('alamat', $selectedOrder->alamat_penerima ?? '') }}"
+                    <input type="text" name="alamat" id="alamat_input" value="{{ old('alamat', $selectedOrder->alamat_penerima ?? '') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
@@ -533,6 +546,31 @@
         'jenis_barang_list',
         'jenis_barang_value',
         'jenis-barang-item'
+    );
+
+    // Initialize Pengirim Dropdown
+    setupSearchableDropdown(
+        'pengirim-dropdown-container',
+        'pengirim_search',
+        'pengirim_list',
+        'pengirim_value',
+        'pengirim-item'
+    );
+
+    // Initialize Penerima Dropdown
+    setupSearchableDropdown(
+        'penerima-dropdown-container',
+        'penerima_search',
+        'penerima_list',
+        'penerima_value',
+        'penerima-item',
+        (item) => {
+            const alamat = item.getAttribute('data-alamat');
+            if (alamat) {
+                const alamatInput = document.getElementById('alamat_input');
+                if (alamatInput) alamatInput.value = alamat;
+            }
+        }
     );
 
     // Initialize Krani Dropdown
