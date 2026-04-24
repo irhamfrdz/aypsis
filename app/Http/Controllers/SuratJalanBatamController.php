@@ -166,7 +166,22 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'jenisBarangs', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers'));
+        $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'value' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
+                    'label' => 'Ring ' . $item->ring . ' ' . $item->expedisi
+                ];
+            })
+            ->unique('value')
+            ->values();
+        
+        $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
+        
+        $allPenerimas = \App\Models\Penerima::orderBy('nama_penerima')->get();
+        
+        return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'jenisBarangs', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers', 'pricelistRings', 'masterTujuanKirims', 'allPenerimas'));
     }
 
     /**
@@ -289,7 +304,22 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        return view('surat-jalan-batam.edit', compact('suratJalan', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'jenisBarangs', 'ukuranKontainers', 'daftarKontainers'));
+        $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'value' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
+                    'label' => 'Ring ' . $item->ring . ' ' . $item->expedisi
+                ];
+            })
+            ->unique('value')
+            ->values();
+
+        $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
+
+        $allPenerimas = \App\Models\Penerima::orderBy('nama_penerima')->get();
+
+        return view('surat-jalan-batam.edit', compact('suratJalan', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'jenisBarangs', 'ukuranKontainers', 'daftarKontainers', 'pricelistRings', 'masterTujuanKirims', 'allPenerimas'));
     }
 
     /**

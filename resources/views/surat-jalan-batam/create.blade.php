@@ -88,7 +88,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
-                    <select name="aktifitas" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <select name="aktifitas" id="aktifitas_select" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">Pilih Aktifitas</option>
                         @foreach($masterKegiatans as $kegiatan)
                             <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('aktifitas') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
@@ -100,14 +100,26 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                    <input type="text" name="pengirim" value="{{ old('pengirim', $selectedOrder->pengirim->nama_pengirim ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <select name="pengirim" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Pilih Pengirim</option>
+                        @foreach($allPenerimas as $p)
+                            <option value="{{ $p->nama_penerima }}" {{ old('pengirim', $selectedOrder->pengirim->nama_pengirim ?? '') == $p->nama_penerima ? 'selected' : '' }}>
+                                {{ $p->nama_penerima }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-                    <input type="text" name="penerima" value="{{ old('penerima') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <select name="penerima" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Pilih Penerima</option>
+                        @foreach($allPenerimas as $p)
+                            <option value="{{ $p->nama_penerima }}" {{ old('penerima') == $p->nama_penerima ? 'selected' : '' }}>
+                                {{ $p->nama_penerima }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="md:col-span-2">
@@ -138,14 +150,26 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
-                    <input type="text" name="tujuan_pengambilan" value="{{ old('tujuan_pengambilan', $selectedOrder->tujuan_ambil ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <select name="tujuan_pengambilan" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Pilih Tujuan Pengambilan</option>
+                        @foreach($pricelistRings as $ring)
+                            <option value="{{ $ring['value'] }}" {{ old('tujuan_pengambilan', $selectedOrder->tujuan_ambil ?? '') == $ring['value'] ? 'selected' : '' }}>
+                                {{ $ring['label'] }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                    <input type="text" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $selectedOrder->tujuan_kirim ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <select name="tujuan_pengiriman" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Pilih Tujuan Pengiriman</option>
+                        @foreach($masterTujuanKirims as $tk)
+                            <option value="{{ $tk->nama_tujuan }}" {{ old('tujuan_pengiriman', $selectedOrder->tujuan_kirim ?? '') == $tk->nama_tujuan ? 'selected' : '' }}>
+                                {{ $tk->nama_tujuan }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <!-- Section: Transport -->
@@ -536,5 +560,19 @@
             }
         }
     );
+
+    // Auto-fill Jenis Barang for TARIK KOSONG
+    const aktifitasSelect = document.getElementById('aktifitas_select');
+    const jenisBarangSearch = document.getElementById('jenis_barang_search');
+    const jenisBarangValue = document.getElementById('jenis_barang_value');
+
+    if (aktifitasSelect) {
+        aktifitasSelect.addEventListener('change', function() {
+            if (this.value === 'TARIK KOSONG') {
+                jenisBarangSearch.value = 'empty container';
+                jenisBarangValue.value = 'empty container';
+            }
+        });
+    }
 </script>
 @endpush
