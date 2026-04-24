@@ -6,8 +6,8 @@
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 border-b border-gray-200">
             <div>
-                <h1 class="text-xl font-semibold text-gray-900">Tambah Surat Jalan Batam</h1>
-                <p class="text-xs text-gray-600 mt-1">Buat surat jalan baru untuk pengiriman Batam</p>
+                <h1 class="text-xl font-semibold text-gray-900">Tambah Surat Jalan Batam {{ $selectedOrder ? '' : '(Tanpa Order)' }}</h1>
+                <p class="text-xs text-gray-600 mt-1">Buat surat jalan baru untuk pengiriman Batam {{ $selectedOrder ? 'berdasarkan Order ' . $selectedOrder->nomor_order : 'manual' }}</p>
             </div>
             <a href="{{ route('surat-jalan-batam.index') }}"
                class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm">
@@ -77,25 +77,25 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
                     <input type="text" name="pengirim" value="{{ old('pengirim', $selectedOrder->pengirim->nama_pengirim ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
                     <input type="text" name="jenis_barang" value="{{ old('jenis_barang', $selectedOrder->jenisBarang->nama_barang ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
                     <input type="text" name="tujuan_pengambilan" value="{{ old('tujuan_pengambilan', $selectedOrder->tujuan_ambil ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
                     <input type="text" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $selectedOrder->tujuan_kirim ?? '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
                 <!-- Section: Transport -->
