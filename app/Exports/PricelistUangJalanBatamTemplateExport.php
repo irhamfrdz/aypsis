@@ -26,7 +26,6 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 150000,     // tarif_20ft_empty
                 200000,     // tarif_40ft_full
                 180000,     // tarif_40ft_empty
-                50000,      // tarif_antar_lokasi
                 'AQUA',     // status
             ],
             [
@@ -36,7 +35,6 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 140000,
                 190000,
                 170000,
-                0,
                 'CHASIS PB',
             ],
             [
@@ -46,7 +44,6 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 160000,
                 210000,
                 190000,
-                60000,
                 '',
             ],
         ]);
@@ -64,7 +61,6 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
             'Tarif 20FT Empty',
             'Tarif 40FT Full',
             'Tarif 40FT Empty',
-            'Tarif Antar Lokasi',
             'Status',
         ];
     }
@@ -81,8 +77,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
             'D' => 18,  // Tarif 20FT Empty
             'E' => 18,  // Tarif 40FT Full
             'F' => 18,  // Tarif 40FT Empty
-            'G' => 20,  // Tarif Antar Lokasi
-            'H' => 15,  // Status
+            'G' => 15,  // Status
         ];
     }
 
@@ -92,7 +87,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:H1')->applyFromArray([
+        $sheet->getStyle('A1:G1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -115,7 +110,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
         ]);
 
         // Style data rows
-        $sheet->getStyle('A2:H4')->applyFromArray([
+        $sheet->getStyle('A2:G4')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -129,17 +124,16 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
 
         // Center align for specific columns
         $sheet->getStyle('B2:B4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2:G4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('C2:F4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
         // Add notes below the data
         $sheet->setCellValue('A6', 'CATATAN PENTING:');
         $sheet->setCellValue('A7', '1. Expedisi: Wajib diisi (contoh: ATB, AYP)');
         $sheet->setCellValue('A8', '2. Ring: Wajib diisi (contoh: 1, 2, 3)');
         $sheet->setCellValue('A9', '3. Tarif: Isi nominal sesuai kolom (20FT Full, 20FT Empty, dst)');
-        $sheet->setCellValue('A10', '4. Tarif Antar Lokasi: Opsional, isi dengan nominal tambahan antar lokasi');
-        $sheet->setCellValue('A11', '5. Status: Opsional, pilih AQUA atau CHASIS PB (tidak case-sensitive), atau kosongkan');
-        $sheet->setCellValue('A12', '6. Hapus 3 baris contoh data sebelum import');
-        $sheet->setCellValue('A13', '7. Data duplikat (expedisi+ring sama) akan otomatis diupdate');
+        $sheet->setCellValue('A10', '4. Status: Opsional, pilih AQUA atau CHASIS PB (tidak case-sensitive), atau kosongkan');
+        $sheet->setCellValue('A11', '5. Hapus 3 baris contoh data sebelum import');
+        $sheet->setCellValue('A12', '6. Data duplikat (expedisi+ring sama) akan otomatis diupdate');
 
         // Style notes
         $sheet->getStyle('A6')->applyFromArray([
@@ -149,7 +143,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 'color' => ['rgb' => 'DC2626'], // Red color
             ],
         ]);
-        $sheet->getStyle('A7:A13')->applyFromArray([
+        $sheet->getStyle('A7:A12')->applyFromArray([
             'font' => [
                 'size' => 9,
                 'color' => ['rgb' => '6B7280'], // Gray color

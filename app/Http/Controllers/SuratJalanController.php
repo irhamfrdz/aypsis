@@ -462,9 +462,12 @@ class SuratJalanController extends Controller
 
             // NOTE: Units will be processed when surat jalan is approved, not when created
             // This ensures completion percentage only increases after proper approval workflow
-            // If created with supir customer flag, immediately create prospek entries
-            if (!empty($suratJalan->is_supir_customer)) {
+            // If created with supir customer or supir vendor flag, immediately create prospek entries
+            if (!empty($suratJalan->is_supir_customer) || $request->is_supir_vendor == 1) {
                 try {
+                    $isSupirVendor = $request->is_supir_vendor == 1;
+                    $keteranganSuffix = $isSupirVendor ? 'Supir Vendor' : 'Supir Customer';
+                    
                     $jumlahKontainer = $suratJalan->jumlah_kontainer ?? 1;
                     $nomorKontainerArray = [];
                     $noSealArray = [];
@@ -493,17 +496,17 @@ class SuratJalanController extends Controller
                             'no_seal' => $noSealIni,
                             'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
                             'nama_kapal' => null,
-                               'keterangan' => 'Auto generated from Surat Jalan (Supir Customer): ' . ($suratJalan->no_surat_jalan ?? '-'),
+                            'keterangan' => "Auto generated from Surat Jalan ({$keteranganSuffix}): " . ($suratJalan->no_surat_jalan ?? '-'),
                             'status' => Prospek::STATUS_AKTIF,
                             'created_by' => Auth::id(),
                             'updated_by' => Auth::id()
                         ];
 
                         $createdProspek = Prospek::create($prospekData);
-                        Log::info('Prospek created from Supir Customer Surat Jalan', ['prospek_id' => $createdProspek->id, 'surat_jalan_id' => $suratJalan->id]);
+                        Log::info("Prospek created from {$keteranganSuffix} Surat Jalan", ['prospek_id' => $createdProspek->id, 'surat_jalan_id' => $suratJalan->id]);
                     }
                 } catch (\Exception $e) {
-                    Log::error('Error creating prospek from supir customer surat jalan: ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
+                    Log::error("Error creating prospek from {$keteranganSuffix} surat jalan: " . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
                 }
             }
             // Redirect to surat jalan index page
@@ -857,6 +860,57 @@ class SuratJalanController extends Controller
                 }
             }
 
+            // If updated with supir customer or supir vendor flag, ensure prospek entries exist
+            if (!empty($suratJalan->is_supir_customer) || $request->is_supir_vendor == 1) {
+                try {
+                    // Only create if NOT already exists
+                    if (!Prospek::where('surat_jalan_id', $suratJalan->id)->exists()) {
+                        $isSupirVendor = $request->is_supir_vendor == 1;
+                        $keteranganSuffix = $isSupirVendor ? 'Supir Vendor' : 'Supir Customer';
+                        
+                        $jumlahKontainer = $suratJalan->jumlah_kontainer ?? 1;
+                        $nomorKontainerArray = [];
+                        $noSealArray = [];
+
+                        if (!empty($suratJalan->no_kontainer)) {
+                            $nomorKontainerArray = array_filter(array_map('trim', explode(',', $suratJalan->no_kontainer)));
+                        }
+                        if (!empty($suratJalan->no_seal)) {
+                            $noSealArray = array_filter(array_map('trim', explode(',', $suratJalan->no_seal)));
+                        }
+
+                        for ($i = 0; $i < max(1, (int)$jumlahKontainer); $i++) {
+                            $nomorKontainerIni = isset($nomorKontainerArray[$i]) ? $nomorKontainerArray[$i] : null;
+                            $noSealIni = isset($noSealArray[$i]) ? $noSealArray[$i] : null;
+
+                            $prospekData = [
+                                'tanggal' => $suratJalan->tanggal_surat_jalan ?? now(),
+                                'nama_supir' => $suratJalan->supir,
+                                'barang' => $suratJalan->jenis_barang ?? null,
+                                'pt_pengirim' => $suratJalan->pengirim ?? null,
+                                'ukuran' => $suratJalan->size ?? null,
+                                'tipe' => $suratJalan->tipe_kontainer ?? null,
+                                'no_surat_jalan' => $suratJalan->no_surat_jalan ?? null,
+                                'surat_jalan_id' => $suratJalan->id,
+                                'nomor_kontainer' => $nomorKontainerIni,
+                                'no_seal' => $noSealIni,
+                                'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
+                                'nama_kapal' => null,
+                                'keterangan' => "Auto generated from Surat Jalan ({$keteranganSuffix}) [Updated]: " . ($suratJalan->no_surat_jalan ?? '-'),
+                                'status' => Prospek::STATUS_AKTIF,
+                                'created_by' => Auth::id(),
+                                'updated_by' => Auth::id()
+                            ];
+
+                            $createdProspek = Prospek::create($prospekData);
+                            Log::info("Prospek created from {$keteranganSuffix} Surat Jalan Update", ['prospek_id' => $createdProspek->id, 'surat_jalan_id' => $suratJalan->id]);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Error creating prospek from surat jalan update: " . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
+                }
+            }
+
             return redirect()->route('surat-jalan.index')
                            ->with('success', 'Surat jalan berhasil diupdate.');
 
@@ -1189,15 +1243,17 @@ class SuratJalanController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
-            // If supir is a customer or explicit flag is set, create prospek for it
+            // If supir is a customer, vendor, or explicit flag is set, create prospek for it
             $isSupirCustomer = $request->input('is_supir_customer') == '1' ||
                                 (isset($request->supir) && stripos($request->supir, 'supir customer') !== false) ||
                                 (isset($request->supir) && $request->supir === '__CUSTOMER__');
+            $isSupirVendor = $request->input('is_supir_vendor') == '1';
 
-            if ($isSupirCustomer) {
+            if ($isSupirCustomer || $isSupirVendor) {
                 try {
+                    $keteranganSuffix = $isSupirVendor ? 'Supir Vendor' : 'Supir Customer';
                     $prospekData = [
-                           'tanggal' => $suratJalan->tanggal_surat_jalan ?? now(),
+                        'tanggal' => $suratJalan->tanggal_surat_jalan ?? now(),
                         'nama_supir' => $suratJalan->supir,
                         'barang' => $suratJalan->jenis_barang ?? null,
                         'pt_pengirim' => $suratJalan->pengirim ?? null,
@@ -1209,15 +1265,15 @@ class SuratJalanController extends Controller
                         'no_seal' => $suratJalan->no_seal ?? null,
                         'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
                         'nama_kapal' => null,
-                        'keterangan' => 'Auto generated from Surat Jalan (Supir Customer): ' . ($suratJalan->no_surat_jalan ?? '-'),
+                        'keterangan' => "Auto generated from Surat Jalan ({$keteranganSuffix}): " . ($suratJalan->no_surat_jalan ?? '-'),
                         'status' => Prospek::STATUS_AKTIF,
                         'created_by' => Auth::id(),
                         'updated_by' => Auth::id()
                     ];
                     $createdProspek = Prospek::create($prospekData);
-                    Log::info('Prospek created from Supir Customer Surat Jalan (no order)', ['prospek_id' => $createdProspek->id, 'surat_jalan_id' => $suratJalan->id]);
+                    Log::info("Prospek created from {$keteranganSuffix} Surat Jalan (no order)", ['prospek_id' => $createdProspek->id, 'surat_jalan_id' => $suratJalan->id]);
                 } catch (\Exception $e) {
-                    Log::error('Error creating prospek for supir customer (WithoutOrder): ' . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
+                    Log::error("Error creating prospek for {$keteranganSuffix} (WithoutOrder): " . $e->getMessage(), ['surat_jalan_id' => $suratJalan->id]);
                 }
             }
 

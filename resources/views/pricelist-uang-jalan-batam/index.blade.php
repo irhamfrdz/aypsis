@@ -156,7 +156,6 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif 20FT Empty</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif 40FT Full</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif 40FT Empty</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif Antar Lokasi</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
@@ -170,13 +169,6 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">Rp {{ number_format($pricelist->tarif_20ft_empty, 0, ',', '.') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">Rp {{ number_format($pricelist->tarif_40ft_full, 0, ',', '.') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">Rp {{ number_format($pricelist->tarif_40ft_empty, 0, ',', '.') }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        @if($pricelist->tarif_antar_lokasi)
-                            Rp {{ number_format($pricelist->tarif_antar_lokasi, 0, ',', '.') }}
-                        @else
-                            <span class="text-gray-400">-</span>
-                        @endif
-                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         @if($pricelist->status)
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 

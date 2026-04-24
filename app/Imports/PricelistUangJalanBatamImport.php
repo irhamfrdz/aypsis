@@ -38,7 +38,6 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             $tarif_20ft_empty = $this->robustGet($row, ['tarif_20ft_empty', '20ft_empty', '20ft empty', '20_empty']);
             $tarif_40ft_full = $this->robustGet($row, ['tarif_40ft_full', '40ft_full', '40ft full', '40_full']);
             $tarif_40ft_empty = $this->robustGet($row, ['tarif_40ft_empty', '40ft_empty', '40ft empty', '40_empty']);
-            $tarif_antar_lokasi = $this->robustGet($row, ['tarif_antar_lokasi', 'antar_lokasi', 'biaya_antar']);
             $status = $this->robustGet($row, ['status', 'keterangan', 'ket']);
             
             // Clean data
@@ -48,7 +47,6 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             $tarif_20ft_empty = !empty($tarif_20ft_empty) ? $this->cleanTarif($tarif_20ft_empty) : 0;
             $tarif_40ft_full = !empty($tarif_40ft_full) ? $this->cleanTarif($tarif_40ft_full) : 0;
             $tarif_40ft_empty = !empty($tarif_40ft_empty) ? $this->cleanTarif($tarif_40ft_empty) : 0;
-            $tarif_antar_lokasi = !empty($tarif_antar_lokasi) ? $this->cleanTarif($tarif_antar_lokasi) : 0;
             $status = !empty($status) ? trim($status) : null;
 
             // Skip if crucial fields are empty
@@ -93,7 +91,6 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                     'tarif_40ft_full_base' => $tarif_40ft_full,
                     'tarif_40ft_empty' => $tarif_40ft_empty,
                     'tarif_40ft_empty_base' => $tarif_40ft_empty,
-                    'tarif_antar_lokasi' => $tarif_antar_lokasi,
                     'status' => $status ?? $exists->status,
                 ]);
                 $this->updatedCount++;
@@ -113,7 +110,6 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 'tarif_40ft_full_base' => $tarif_40ft_full,
                 'tarif_40ft_empty' => $tarif_40ft_empty,
                 'tarif_40ft_empty_base' => $tarif_40ft_empty,
-                'tarif_antar_lokasi' => $tarif_antar_lokasi,
                 'status' => $status,
             ]);
 

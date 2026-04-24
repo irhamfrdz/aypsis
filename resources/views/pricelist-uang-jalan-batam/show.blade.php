@@ -93,19 +93,7 @@
                 </dd>
             </div>
 
-            <!-- Tarif Antar Lokasi -->
-            <div class="sm:col-span-1">
-                <dt class="text-sm font-medium text-gray-500">
-                    Tarif Antar Lokasi
-                </dt>
-                <dd class="mt-1 text-lg text-gray-900 font-bold">
-                    @if($pricelistUangJalanBatam->tarif_antar_lokasi)
-                        Rp {{ number_format($pricelistUangJalanBatam->tarif_antar_lokasi, 2, ',', '.') }}
-                    @else
-                        <span class="text-sm text-gray-400 italic">Tidak ada tarif antar lokasi</span>
-                    @endif
-                </dd>
-            </div>
+
 
             <!-- Status -->
             <div class="sm:col-span-1">

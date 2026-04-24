@@ -551,6 +551,16 @@ class PembayaranPranotaUangJalanController extends Controller
                     continue;
                 }
 
+                // CHECK: If prospek already exists for this surat_jalan_id, skip it to avoid duplicates
+                // This happens for is_supir_customer and is_supir_vendor which are created at Surat Jalan creation
+                if (Prospek::where('surat_jalan_id', $suratJalan->id)->exists()) {
+                    Log::info('Skipping prospek creation for Surat Jalan as it already exists', [
+                        'surat_jalan_id' => $suratJalan->id,
+                        'no_surat_jalan' => $suratJalan->no_surat_jalan
+                    ]);
+                    continue;
+                }
+
                 // Get jumlah kontainer untuk surat jalan ini
                 $jumlahKontainer = $suratJalan->jumlah_kontainer ?? 1;
                 
