@@ -54,6 +54,8 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
             $pricelist->tarif_20ft_empty,
             $pricelist->tarif_40ft_full,
             $pricelist->tarif_40ft_empty,
+            $pricelist->tarif_antarlokasi_20ft,
+            $pricelist->tarif_antarlokasi_40ft,
             $pricelist->status,
         ];
     }
@@ -67,6 +69,8 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
             'Tarif 20FT Empty',
             'Tarif 40FT Full',
             'Tarif 40FT Empty',
+            'Tarif Antarlokasi 20FT',
+            'Tarif Antarlokasi 40FT',
             'Status',
         ];
     }
@@ -80,14 +84,16 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
             'D' => 18, // Tarif 20FT Empty
             'E' => 18, // Tarif 40FT Full
             'F' => 18, // Tarif 40FT Empty
-            'G' => 15, // Status
+            'G' => 20, // Tarif Antarlokasi 20FT
+            'H' => 20, // Tarif Antarlokasi 40FT
+            'I' => 15, // Status
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:G1')->applyFromArray([
+        $sheet->getStyle('A1:I1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -110,7 +116,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         ]);
 
         // Auto filter for headings
-        $sheet->setAutoFilter('A1:G1');
+        $sheet->setAutoFilter('A1:I1');
 
         return [];
     }

@@ -57,6 +57,8 @@ class PricelistUangJalanBatamController extends Controller
             'tarif_20ft_empty' => 'nullable|numeric|min:0',
             'tarif_40ft_full' => 'nullable|numeric|min:0',
             'tarif_40ft_empty' => 'nullable|numeric|min:0',
+            'tarif_antarlokasi_20ft' => 'nullable|numeric|min:0',
+            'tarif_antarlokasi_40ft' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:AQUA,CHASIS PB',
         ]);
 
@@ -100,6 +102,8 @@ class PricelistUangJalanBatamController extends Controller
             'tarif_20ft_empty' => 'nullable|numeric|min:0',
             'tarif_40ft_full' => 'nullable|numeric|min:0',
             'tarif_40ft_empty' => 'nullable|numeric|min:0',
+            'tarif_antarlokasi_20ft' => 'nullable|numeric|min:0',
+            'tarif_antarlokasi_40ft' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:AQUA,CHASIS PB',
         ]);
 

@@ -154,6 +154,42 @@
                 @enderror
             </div>
 
+            <!-- Tarif Antarlokasi 20FT -->
+            <div>
+                <label for="tarif_antarlokasi_20ft" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tarif Antarlokasi 20FT (Rp)
+                </label>
+                <input type="number" 
+                       name="tarif_antarlokasi_20ft" 
+                       id="tarif_antarlokasi_20ft" 
+                       value="{{ old('tarif_antarlokasi_20ft', $pricelistUangJalanBatam->tarif_antarlokasi_20ft) }}"
+                       placeholder="Masukkan tarif antarlokasi 20ft"
+                       min="0"
+                       step="0.01"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('tarif_antarlokasi_20ft') border-red-300 @enderror">
+                @error('tarif_antarlokasi_20ft')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Tarif Antarlokasi 40FT -->
+            <div>
+                <label for="tarif_antarlokasi_40ft" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tarif Antarlokasi 40FT (Rp)
+                </label>
+                <input type="number" 
+                       name="tarif_antarlokasi_40ft" 
+                       id="tarif_antarlokasi_40ft" 
+                       value="{{ old('tarif_antarlokasi_40ft', $pricelistUangJalanBatam->tarif_antarlokasi_40ft) }}"
+                       placeholder="Masukkan tarif antarlokasi 40ft"
+                       min="0"
+                       step="0.01"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('tarif_antarlokasi_40ft') border-red-300 @enderror">
+                @error('tarif_antarlokasi_40ft')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- Status -->
             <div>
                 <label for="status" class="block text-sm font-medium text-gray-700 mb-2">

@@ -22,6 +22,8 @@ class PricelistUangJalanBatam extends Model
         'tarif_40ft_full_base',
         'tarif_40ft_empty',
         'tarif_40ft_empty_base',
+        'tarif_antarlokasi_20ft',
+        'tarif_antarlokasi_40ft',
         'status',
     ];
 
@@ -34,6 +36,8 @@ class PricelistUangJalanBatam extends Model
         'tarif_40ft_full_base' => 'decimal:2',
         'tarif_40ft_empty' => 'decimal:2',
         'tarif_40ft_empty_base' => 'decimal:2',
+        'tarif_antarlokasi_20ft' => 'decimal:2',
+        'tarif_antarlokasi_40ft' => 'decimal:2',
     ];
 
     /**

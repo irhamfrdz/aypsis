@@ -93,6 +93,26 @@
                 </dd>
             </div>
 
+            <!-- Tarif Antarlokasi 20FT -->
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-500">
+                    Tarif Antarlokasi 20FT
+                </dt>
+                <dd class="mt-1 text-lg text-gray-900 font-bold">
+                    Rp {{ number_format($pricelistUangJalanBatam->tarif_antarlokasi_20ft, 0, ',', '.') }}
+                </dd>
+            </div>
+
+            <!-- Tarif Antarlokasi 40FT -->
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-500">
+                    Tarif Antarlokasi 40FT
+                </dt>
+                <dd class="mt-1 text-lg text-gray-900 font-bold">
+                    Rp {{ number_format($pricelistUangJalanBatam->tarif_antarlokasi_40ft, 0, ',', '.') }}
+                </dd>
+            </div>
+
 
 
             <!-- Status -->

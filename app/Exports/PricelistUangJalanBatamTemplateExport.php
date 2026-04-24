@@ -26,6 +26,8 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 150000,     // tarif_20ft_empty
                 200000,     // tarif_40ft_full
                 180000,     // tarif_40ft_empty
+                50000,      // tarif_antarlokasi_20ft
+                75000,      // tarif_antarlokasi_40ft
                 'AQUA',     // status
             ],
             [
@@ -35,6 +37,8 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 140000,
                 190000,
                 170000,
+                45000,
+                70000,
                 'CHASIS PB',
             ],
             [
@@ -44,6 +48,8 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 160000,
                 210000,
                 190000,
+                55000,
+                80000,
                 '',
             ],
         ]);
@@ -61,6 +67,8 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
             'Tarif 20FT Empty',
             'Tarif 40FT Full',
             'Tarif 40FT Empty',
+            'Tarif Antarlokasi 20FT',
+            'Tarif Antarlokasi 40FT',
             'Status',
         ];
     }
@@ -77,7 +85,9 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
             'D' => 18,  // Tarif 20FT Empty
             'E' => 18,  // Tarif 40FT Full
             'F' => 18,  // Tarif 40FT Empty
-            'G' => 15,  // Status
+            'G' => 20,  // Tarif Antarlokasi 20FT
+            'H' => 20,  // Tarif Antarlokasi 40FT
+            'I' => 15,  // Status
         ];
     }
 
@@ -87,7 +97,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:G1')->applyFromArray([
+        $sheet->getStyle('A1:I1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -110,7 +120,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
         ]);
 
         // Style data rows
-        $sheet->getStyle('A2:G4')->applyFromArray([
+        $sheet->getStyle('A2:I4')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -124,7 +134,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
 
         // Center align for specific columns
         $sheet->getStyle('B2:B4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2:F4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('C2:H4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
         // Add notes below the data
         $sheet->setCellValue('A6', 'CATATAN PENTING:');

@@ -38,6 +38,8 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             $tarif_20ft_empty = $this->robustGet($row, ['tarif_20ft_empty', '20ft_empty', '20ft empty', '20_empty']);
             $tarif_40ft_full = $this->robustGet($row, ['tarif_40ft_full', '40ft_full', '40ft full', '40_full']);
             $tarif_40ft_empty = $this->robustGet($row, ['tarif_40ft_empty', '40ft_empty', '40ft empty', '40_empty']);
+            $tarif_antarlokasi_20ft = $this->robustGet($row, ['tarif_antarlokasi_20ft', 'antarlokasi_20ft', 'al_20ft', 'al 20ft']);
+            $tarif_antarlokasi_40ft = $this->robustGet($row, ['tarif_antarlokasi_40ft', 'antarlokasi_40ft', 'al_40ft', 'al 40ft']);
             $status = $this->robustGet($row, ['status', 'keterangan', 'ket']);
             
             // Clean data
@@ -47,6 +49,8 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             $tarif_20ft_empty = !empty($tarif_20ft_empty) ? $this->cleanTarif($tarif_20ft_empty) : 0;
             $tarif_40ft_full = !empty($tarif_40ft_full) ? $this->cleanTarif($tarif_40ft_full) : 0;
             $tarif_40ft_empty = !empty($tarif_40ft_empty) ? $this->cleanTarif($tarif_40ft_empty) : 0;
+            $tarif_antarlokasi_20ft = !empty($tarif_antarlokasi_20ft) ? $this->cleanTarif($tarif_antarlokasi_20ft) : 0;
+            $tarif_antarlokasi_40ft = !empty($tarif_antarlokasi_40ft) ? $this->cleanTarif($tarif_antarlokasi_40ft) : 0;
             $status = !empty($status) ? trim($status) : null;
 
             // Skip if crucial fields are empty
@@ -91,6 +95,8 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                     'tarif_40ft_full_base' => $tarif_40ft_full,
                     'tarif_40ft_empty' => $tarif_40ft_empty,
                     'tarif_40ft_empty_base' => $tarif_40ft_empty,
+                    'tarif_antarlokasi_20ft' => $tarif_antarlokasi_20ft,
+                    'tarif_antarlokasi_40ft' => $tarif_antarlokasi_40ft,
                     'status' => $status ?? $exists->status,
                 ]);
                 $this->updatedCount++;
@@ -110,6 +116,8 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 'tarif_40ft_full_base' => $tarif_40ft_full,
                 'tarif_40ft_empty' => $tarif_40ft_empty,
                 'tarif_40ft_empty_base' => $tarif_40ft_empty,
+                'tarif_antarlokasi_20ft' => $tarif_antarlokasi_20ft,
+                'tarif_antarlokasi_40ft' => $tarif_antarlokasi_40ft,
                 'status' => $status,
             ]);
 
