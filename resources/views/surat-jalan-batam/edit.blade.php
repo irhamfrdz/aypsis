@@ -238,12 +238,7 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nominal Uang Jalan</label>
-                    <input type="text" name="uang_jalan" id="uang_jalan" 
-                           value="{{ old('uang_jalan', number_format($suratJalan->uang_jalan, 0, ',', '.')) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 money-format">
-                </div>
+
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Insentif Driver</label>
@@ -400,14 +395,13 @@
 
                 <div></div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="draft" {{ old('status', $suratJalan->status) == 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="active" {{ old('status', $suratJalan->status) == 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="completed" {{ old('status', $suratJalan->status) == 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="cancelled" {{ old('status', $suratJalan->status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                    </select>
+                <input type="hidden" name="status" value="{{ $suratJalan->status }}">
+                
+                <div class="md:col-span-2 mt-4 pt-4 border-t">
+                    <label class="block text-sm font-bold text-gray-800 mb-1">Nominal Uang Jalan</label>
+                    <input type="text" name="uang_jalan" id="uang_jalan" 
+                           value="{{ old('uang_jalan', number_format($suratJalan->uang_jalan, 0, ',', '.')) }}"
+                           class="w-full px-4 py-3 border border-indigo-300 bg-indigo-50 rounded-lg text-lg font-bold text-indigo-900 focus:ring-indigo-500 money-format shadow-inner">
                 </div>
             </div>
 
@@ -555,7 +549,11 @@
             
             if (size) {
                 const sizeSelect = document.getElementById('size_select');
-                if (sizeSelect) sizeSelect.value = size;
+                if (sizeSelect) {
+                    sizeSelect.value = size;
+                    // Trigger change event to update Uang Jalan
+                    sizeSelect.dispatchEvent(new Event('change'));
+                }
             }
         }
     );
@@ -618,5 +616,8 @@
     if (tujuanSelect) tujuanSelect.addEventListener('change', calculateUangJalan);
     if (sizeSelect) sizeSelect.addEventListener('change', calculateUangJalan);
     if (feSelect) feSelect.addEventListener('change', calculateUangJalan);
+
+    // Initial calculation if values are present
+    calculateUangJalan();
 </script>
 @endpush
