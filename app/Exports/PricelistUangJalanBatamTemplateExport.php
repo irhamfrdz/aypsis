@@ -22,24 +22,30 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
             [
                 'ATB',      // expedisi
                 '1',        // ring
-                170500,     // tarif
-                170500,     // tarif_base
+                170500,     // tarif_20ft_full
+                150000,     // tarif_20ft_empty
+                200000,     // tarif_40ft_full
+                180000,     // tarif_40ft_empty
                 50000,      // tarif_antar_lokasi
                 'AQUA',     // status
             ],
             [
                 'AYP',
                 '2',
-                150000,
-                150000,
+                160000,
+                140000,
+                190000,
+                170000,
                 0,
                 'CHASIS PB',
             ],
             [
                 'ATB',
                 '3',
-                200000,
-                200000,
+                180000,
+                160000,
+                210000,
+                190000,
                 60000,
                 '',
             ],
@@ -54,8 +60,10 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
         return [
             'Expedisi',
             'Ring',
-            'Tarif',
-            'Tarif Base',
+            'Tarif 20FT Full',
+            'Tarif 20FT Empty',
+            'Tarif 40FT Full',
+            'Tarif 40FT Empty',
             'Tarif Antar Lokasi',
             'Status',
         ];
@@ -69,10 +77,12 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
         return [
             'A' => 15,  // Expedisi
             'B' => 10,  // Ring
-            'C' => 15,  // Tarif
-            'D' => 15,  // Tarif Base
-            'E' => 18,  // Tarif Antar Lokasi
-            'F' => 15,  // Status
+            'C' => 18,  // Tarif 20FT Full
+            'D' => 18,  // Tarif 20FT Empty
+            'E' => 18,  // Tarif 40FT Full
+            'F' => 18,  // Tarif 40FT Empty
+            'G' => 20,  // Tarif Antar Lokasi
+            'H' => 15,  // Status
         ];
     }
 
@@ -82,7 +92,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:F1')->applyFromArray([
+        $sheet->getStyle('A1:H1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -105,7 +115,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
         ]);
 
         // Style data rows
-        $sheet->getStyle('A2:F4')->applyFromArray([
+        $sheet->getStyle('A2:H4')->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -119,18 +129,17 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
 
         // Center align for specific columns
         $sheet->getStyle('B2:B4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2:E4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('C2:G4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
         // Add notes below the data
         $sheet->setCellValue('A6', 'CATATAN PENTING:');
         $sheet->setCellValue('A7', '1. Expedisi: Wajib diisi (contoh: ATB, AYP)');
         $sheet->setCellValue('A8', '2. Ring: Wajib diisi (contoh: 1, 2, 3)');
-        $sheet->setCellValue('A9', '3. Tarif: Wajib diisi, bisa format apa saja (170500 atau 170.500,00 atau 170,500.00)');
-        $sheet->setCellValue('A10', '4. Tarif Base: Nominal dasar tarif');
-        $sheet->setCellValue('A11', '5. Tarif Antar Lokasi: Opsional, isi dengan nominal tambahan antar lokasi');
-        $sheet->setCellValue('A12', '6. Status: Opsional, pilih AQUA atau CHASIS PB (tidak case-sensitive), atau kosongkan');
-        $sheet->setCellValue('A13', '7. Hapus 3 baris contoh data sebelum import');
-        $sheet->setCellValue('A14', '8. Data duplikat (expedisi+ring sama) akan otomatis diupdate');
+        $sheet->setCellValue('A9', '3. Tarif: Isi nominal sesuai kolom (20FT Full, 20FT Empty, dst)');
+        $sheet->setCellValue('A10', '4. Tarif Antar Lokasi: Opsional, isi dengan nominal tambahan antar lokasi');
+        $sheet->setCellValue('A11', '5. Status: Opsional, pilih AQUA atau CHASIS PB (tidak case-sensitive), atau kosongkan');
+        $sheet->setCellValue('A12', '6. Hapus 3 baris contoh data sebelum import');
+        $sheet->setCellValue('A13', '7. Data duplikat (expedisi+ring sama) akan otomatis diupdate');
 
         // Style notes
         $sheet->getStyle('A6')->applyFromArray([
@@ -140,7 +149,7 @@ class PricelistUangJalanBatamTemplateExport implements FromCollection, WithHeadi
                 'color' => ['rgb' => 'DC2626'], // Red color
             ],
         ]);
-        $sheet->getStyle('A7:A14')->applyFromArray([
+        $sheet->getStyle('A7:A13')->applyFromArray([
             'font' => [
                 'size' => 9,
                 'color' => ['rgb' => '6B7280'], // Gray color

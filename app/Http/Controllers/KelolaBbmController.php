@@ -96,67 +96,92 @@ class KelolaBbmController extends Controller
      */
     private function updatePricelistTarif($persentaseBbm, $kelolaBbmId = null)
     {
-        // Get all pricelist
         $pricelists = PricelistUangJalanBatam::all();
-        
-        // Jika persentase di bawah 5%, kembalikan tarif ke nilai base (awal)
+        $fields = [
+            'tarif_20ft_full' => 'tarif_20ft_full_base',
+            'tarif_20ft_empty' => 'tarif_20ft_empty_base',
+            'tarif_40ft_full' => 'tarif_40ft_full_base',
+            'tarif_40ft_empty' => 'tarif_40ft_empty_base',
+        ];
+
+        // Jika persentase di bawah 5%, kembalikan tarif ke nilai base
         if ($persentaseBbm < 5) {
             foreach ($pricelists as $pricelist) {
-                $tarifLama = $pricelist->tarif;
-                $tarifBase = $pricelist->tarif_base ?? $tarifLama;
-                
-                // Hanya update jika tarif saat ini berbeda dengan tarif base
-                if ($tarifLama != $tarifBase) {
-                    $pricelist->update(['tarif' => $tarifBase]);
-                    
-                    // Catat history perubahan
-                    PricelistTarifHistory::create([
-                        'pricelist_uang_jalan_batam_id' => $pricelist->id,
-                        'kelola_bbm_id' => $kelolaBbmId,
-                        'tarif_lama' => $tarifLama,
-                        'tarif_baru' => $tarifBase,
-                        'persentase_perubahan' => 0,
-                        'persentase_bbm' => $persentaseBbm,
-                        'keterangan' => "Tarif dikembalikan ke nilai awal (Rp " . number_format($tarifBase, 0, ',', '.') . ") karena persentase BBM {$persentaseBbm}% (di bawah threshold 5%)",
-                    ]);
+                $updateData = [];
+                $historyLogs = [];
+
+                foreach ($fields as $tarifField => $baseField) {
+                    $tarifLama = $pricelist->$tarifField;
+                    $tarifBase = $pricelist->$baseField ?? $tarifLama;
+
+                    if ($tarifLama != $tarifBase) {
+                        $updateData[$tarifField] = $tarifBase;
+                        $historyLogs[] = [
+                            'field' => $tarifField,
+                            'old' => $tarifLama,
+                            'new' => $tarifBase
+                        ];
+                    }
+                }
+
+                if (!empty($updateData)) {
+                    $pricelist->update($updateData);
+
+                    foreach ($historyLogs as $log) {
+                        PricelistTarifHistory::create([
+                            'pricelist_uang_jalan_batam_id' => $pricelist->id,
+                            'kelola_bbm_id' => $kelolaBbmId,
+                            'tarif_lama' => $log['old'],
+                            'tarif_baru' => $log['new'],
+                            'persentase_perubahan' => 0,
+                            'persentase_bbm' => $persentaseBbm,
+                            'keterangan' => "Tarif {$log['field']} dikembalikan ke nilai awal karena persentase BBM {$persentaseBbm}%",
+                        ]);
+                    }
                 }
             }
             return;
         }
-        
-        // Jika persentase sama dengan 5%, tidak ada perubahan
-        if ($persentaseBbm == 5) {
-            return;
-        }
-        
-        // Jika persentase di atas 5%, hitung kenaikan tarif
-        // Hitung persentase perubahan tarif (persentase BBM - 5%)
+
+        if ($persentaseBbm == 5) return;
+
         $perubahanTarif = $persentaseBbm - 5;
-        
-        // Faktor pengali untuk tarif (contoh: 7% BBM = 2% kenaikan tarif)
         $faktorPengali = 1 + ($perubahanTarif / 100);
-        
-        // Update semua tarif di pricelist uang jalan Batam
+
         foreach ($pricelists as $pricelist) {
-            $tarifBase = $pricelist->tarif_base ?? $pricelist->tarif;
-            $tarifLama = $pricelist->tarif;
-            
-            // Hitung tarif baru berdasarkan tarif base
-            $tarifBaru = round($tarifBase * $faktorPengali);
-            
-            // Update tarif
-            $pricelist->update(['tarif' => $tarifBaru]);
-            
-            // Catat history perubahan
-            PricelistTarifHistory::create([
-                'pricelist_uang_jalan_batam_id' => $pricelist->id,
-                'kelola_bbm_id' => $kelolaBbmId,
-                'tarif_lama' => $tarifLama,
-                'tarif_baru' => $tarifBaru,
-                'persentase_perubahan' => $perubahanTarif,
-                'persentase_bbm' => $persentaseBbm,
-                'keterangan' => "Tarif diupdate otomatis karena persentase BBM {$persentaseBbm}% (di atas threshold 5%). Kenaikan tarif: {$perubahanTarif}%",
-            ]);
+            $updateData = [];
+            $historyLogs = [];
+
+            foreach ($fields as $tarifField => $baseField) {
+                $tarifBase = $pricelist->$baseField ?? $pricelist->$tarifField;
+                $tarifLama = $pricelist->$tarifField;
+                $tarifBaru = round($tarifBase * $faktorPengali);
+
+                if ($tarifLama != $tarifBaru) {
+                    $updateData[$tarifField] = $tarifBaru;
+                    $historyLogs[] = [
+                        'field' => $tarifField,
+                        'old' => $tarifLama,
+                        'new' => $tarifBaru
+                    ];
+                }
+            }
+
+            if (!empty($updateData)) {
+                $pricelist->update($updateData);
+
+                foreach ($historyLogs as $log) {
+                    PricelistTarifHistory::create([
+                        'pricelist_uang_jalan_batam_id' => $pricelist->id,
+                        'kelola_bbm_id' => $kelolaBbmId,
+                        'tarif_lama' => $log['old'],
+                        'tarif_baru' => $log['new'],
+                        'persentase_perubahan' => $perubahanTarif,
+                        'persentase_bbm' => $persentaseBbm,
+                        'keterangan' => "Tarif {$log['field']} diupdate otomatis (BBM {$persentaseBbm}%, Kenaikan {$perubahanTarif}%)",
+                    ]);
+                }
+            }
         }
     }
 

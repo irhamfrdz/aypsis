@@ -53,13 +53,43 @@
 
 
 
-            <!-- Tarif -->
+            <!-- Tarif 20FT Full -->
             <div class="sm:col-span-1">
                 <dt class="text-sm font-medium text-gray-500">
-                    Tarif
+                    Tarif 20FT Full
                 </dt>
                 <dd class="mt-1 text-lg text-gray-900 font-bold">
-                    Rp {{ number_format($pricelistUangJalanBatam->tarif, 2, ',', '.') }}
+                    Rp {{ number_format($pricelistUangJalanBatam->tarif_20ft_full, 0, ',', '.') }}
+                </dd>
+            </div>
+
+            <!-- Tarif 20FT Empty -->
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-500">
+                    Tarif 20FT Empty
+                </dt>
+                <dd class="mt-1 text-lg text-gray-900 font-bold">
+                    Rp {{ number_format($pricelistUangJalanBatam->tarif_20ft_empty, 0, ',', '.') }}
+                </dd>
+            </div>
+
+            <!-- Tarif 40FT Full -->
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-500">
+                    Tarif 40FT Full
+                </dt>
+                <dd class="mt-1 text-lg text-gray-900 font-bold">
+                    Rp {{ number_format($pricelistUangJalanBatam->tarif_40ft_full, 0, ',', '.') }}
+                </dd>
+            </div>
+
+            <!-- Tarif 40FT Empty -->
+            <div class="sm:col-span-1">
+                <dt class="text-sm font-medium text-gray-500">
+                    Tarif 40FT Empty
+                </dt>
+                <dd class="mt-1 text-lg text-gray-900 font-bold">
+                    Rp {{ number_format($pricelistUangJalanBatam->tarif_40ft_empty, 0, ',', '.') }}
                 </dd>
             </div>
 

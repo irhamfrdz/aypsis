@@ -50,8 +50,10 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         return [
             $pricelist->expedisi,
             $pricelist->ring,
-            $pricelist->tarif,
-            $pricelist->tarif_base,
+            $pricelist->tarif_20ft_full,
+            $pricelist->tarif_20ft_empty,
+            $pricelist->tarif_40ft_full,
+            $pricelist->tarif_40ft_empty,
             $pricelist->tarif_antar_lokasi,
             $pricelist->status,
         ];
@@ -62,8 +64,10 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         return [
             'Expedisi',
             'Ring',
-            'Tarif',
-            'Tarif Base',
+            'Tarif 20FT Full',
+            'Tarif 20FT Empty',
+            'Tarif 40FT Full',
+            'Tarif 40FT Empty',
             'Tarif Antar Lokasi',
             'Status',
         ];
@@ -74,17 +78,19 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         return [
             'A' => 15, // Expedisi
             'B' => 10, // Ring
-            'C' => 15, // Tarif
-            'D' => 15, // Tarif Base
-            'E' => 18, // Tarif Antar Lokasi
-            'F' => 15, // Status
+            'C' => 18, // Tarif 20FT Full
+            'D' => 18, // Tarif 20FT Empty
+            'E' => 18, // Tarif 40FT Full
+            'F' => 18, // Tarif 40FT Empty
+            'G' => 20, // Tarif Antar Lokasi
+            'H' => 15, // Status
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:F1')->applyFromArray([
+        $sheet->getStyle('A1:H1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -107,7 +113,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         ]);
 
         // Auto filter for headings
-        $sheet->setAutoFilter('A1:F1');
+        $sheet->setAutoFilter('A1:H1');
 
         return [];
     }

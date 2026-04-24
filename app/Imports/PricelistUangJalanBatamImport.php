@@ -34,16 +34,20 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             // More robust column matching
             $expedisi = $this->robustGet($row, ['expedisi', 'expe', 'vendor']);
             $ring = $this->robustGet($row, ['ring', 'wilayah', 'area']);
-            $tarif = $this->robustGet($row, ['tarif', 'harga', 'price', 'total']);
-            $tarif_base = $this->robustGet($row, ['tarif_base', 'base_tarif', 'base_price', 'tarif_asli']);
+            $tarif_20ft_full = $this->robustGet($row, ['tarif_20ft_full', '20ft_full', '20ft full', '20_full']);
+            $tarif_20ft_empty = $this->robustGet($row, ['tarif_20ft_empty', '20ft_empty', '20ft empty', '20_empty']);
+            $tarif_40ft_full = $this->robustGet($row, ['tarif_40ft_full', '40ft_full', '40ft full', '40_full']);
+            $tarif_40ft_empty = $this->robustGet($row, ['tarif_40ft_empty', '40ft_empty', '40ft empty', '40_empty']);
             $tarif_antar_lokasi = $this->robustGet($row, ['tarif_antar_lokasi', 'antar_lokasi', 'biaya_antar']);
             $status = $this->robustGet($row, ['status', 'keterangan', 'ket']);
             
             // Clean data
             $expedisi = !empty($expedisi) ? trim($expedisi) : '';
             $ring = !empty($ring) ? trim($ring) : '';
-            $tarif = $this->cleanTarif($tarif);
-            $tarif_base = !empty($tarif_base) ? $this->cleanTarif($tarif_base) : null;
+            $tarif_20ft_full = !empty($tarif_20ft_full) ? $this->cleanTarif($tarif_20ft_full) : 0;
+            $tarif_20ft_empty = !empty($tarif_20ft_empty) ? $this->cleanTarif($tarif_20ft_empty) : 0;
+            $tarif_40ft_full = !empty($tarif_40ft_full) ? $this->cleanTarif($tarif_40ft_full) : 0;
+            $tarif_40ft_empty = !empty($tarif_40ft_empty) ? $this->cleanTarif($tarif_40ft_empty) : 0;
             $tarif_antar_lokasi = !empty($tarif_antar_lokasi) ? $this->cleanTarif($tarif_antar_lokasi) : 0;
             $status = !empty($status) ? trim($status) : null;
 
@@ -80,17 +84,18 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 ->first();
 
             if ($exists) {
-                $updateData = [
-                    'tarif' => $tarif,
+                $exists->update([
+                    'tarif_20ft_full' => $tarif_20ft_full,
+                    'tarif_20ft_full_base' => $tarif_20ft_full,
+                    'tarif_20ft_empty' => $tarif_20ft_empty,
+                    'tarif_20ft_empty_base' => $tarif_20ft_empty,
+                    'tarif_40ft_full' => $tarif_40ft_full,
+                    'tarif_40ft_full_base' => $tarif_40ft_full,
+                    'tarif_40ft_empty' => $tarif_40ft_empty,
+                    'tarif_40ft_empty_base' => $tarif_40ft_empty,
                     'tarif_antar_lokasi' => $tarif_antar_lokasi,
                     'status' => $status ?? $exists->status,
-                ];
-                
-                // Update data if provided in Excel
-
-                if ($tarif_base !== null) $updateData['tarif_base'] = $tarif_base;
-
-                $exists->update($updateData);
+                ]);
                 $this->updatedCount++;
                 return null;
             }
@@ -100,8 +105,14 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
             return new PricelistUangJalanBatam([
                 'expedisi' => $expedisi,
                 'ring' => $ring,
-                'tarif' => $tarif,
-                'tarif_base' => $tarif_base ?? $tarif,
+                'tarif_20ft_full' => $tarif_20ft_full,
+                'tarif_20ft_full_base' => $tarif_20ft_full,
+                'tarif_20ft_empty' => $tarif_20ft_empty,
+                'tarif_20ft_empty_base' => $tarif_20ft_empty,
+                'tarif_40ft_full' => $tarif_40ft_full,
+                'tarif_40ft_full_base' => $tarif_40ft_full,
+                'tarif_40ft_empty' => $tarif_40ft_empty,
+                'tarif_40ft_empty_base' => $tarif_40ft_empty,
                 'tarif_antar_lokasi' => $tarif_antar_lokasi,
                 'status' => $status,
             ]);

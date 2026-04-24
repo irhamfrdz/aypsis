@@ -14,15 +14,27 @@ class PricelistUangJalanBatam extends Model
     protected $fillable = [
         'expedisi',
         'ring',
-        'tarif',
-        'tarif_base',
+        'tarif_20ft_full',
+        'tarif_20ft_full_base',
+        'tarif_20ft_empty',
+        'tarif_20ft_empty_base',
+        'tarif_40ft_full',
+        'tarif_40ft_full_base',
+        'tarif_40ft_empty',
+        'tarif_40ft_empty_base',
         'tarif_antar_lokasi',
         'status',
     ];
 
     protected $casts = [
-        'tarif' => 'decimal:2',
-        'tarif_base' => 'decimal:2',
+        'tarif_20ft_full' => 'decimal:2',
+        'tarif_20ft_full_base' => 'decimal:2',
+        'tarif_20ft_empty' => 'decimal:2',
+        'tarif_20ft_empty_base' => 'decimal:2',
+        'tarif_40ft_full' => 'decimal:2',
+        'tarif_40ft_full_base' => 'decimal:2',
+        'tarif_40ft_empty' => 'decimal:2',
+        'tarif_40ft_empty_base' => 'decimal:2',
         'tarif_antar_lokasi' => 'decimal:2',
     ];
 
@@ -54,18 +66,13 @@ class PricelistUangJalanBatam extends Model
         return $query->where('status', $status);
     }
 
-    /**
-     * Mendapatkan tarif berdasarkan parameter
-     */
     public static function getTarif($expedisi, $ring, $status = null)
     {
-        $query = self::where('expedisi', $expedisi)
-            ->where('ring', $ring);
-
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        return $query->first();
+        return self::where('expedisi', $expedisi)
+            ->where('ring', $ring)
+            ->when($status, function($q) use ($status) {
+                return $q->where('status', $status);
+            })
+            ->first();
     }
 }

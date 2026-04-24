@@ -53,12 +53,21 @@ class PricelistUangJalanBatamController extends Controller
         $validated = $request->validate([
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
-            'tarif' => 'required|numeric|min:0',
+            'tarif_20ft_full' => 'nullable|numeric|min:0',
+            'tarif_20ft_empty' => 'nullable|numeric|min:0',
+            'tarif_40ft_full' => 'nullable|numeric|min:0',
+            'tarif_40ft_empty' => 'nullable|numeric|min:0',
             'tarif_antar_lokasi' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:AQUA,CHASIS PB',
         ]);
 
-        PricelistUangJalanBatam::create($validated);
+        $data = $validated;
+        $data['tarif_20ft_full_base'] = $data['tarif_20ft_full'] ?? 0;
+        $data['tarif_20ft_empty_base'] = $data['tarif_20ft_empty'] ?? 0;
+        $data['tarif_40ft_full_base'] = $data['tarif_40ft_full'] ?? 0;
+        $data['tarif_40ft_empty_base'] = $data['tarif_40ft_empty'] ?? 0;
+
+        PricelistUangJalanBatam::create($data);
 
         return redirect()->route('pricelist-uang-jalan-batam.index')
             ->with('success', 'Pricelist berhasil ditambahkan!');
@@ -88,12 +97,21 @@ class PricelistUangJalanBatamController extends Controller
         $validated = $request->validate([
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
-            'tarif' => 'required|numeric|min:0',
+            'tarif_20ft_full' => 'nullable|numeric|min:0',
+            'tarif_20ft_empty' => 'nullable|numeric|min:0',
+            'tarif_40ft_full' => 'nullable|numeric|min:0',
+            'tarif_40ft_empty' => 'nullable|numeric|min:0',
             'tarif_antar_lokasi' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:AQUA,CHASIS PB',
         ]);
 
-        $pricelistUangJalanBatam->update($validated);
+        $data = $validated;
+        $data['tarif_20ft_full_base'] = $data['tarif_20ft_full'] ?? 0;
+        $data['tarif_20ft_empty_base'] = $data['tarif_20ft_empty'] ?? 0;
+        $data['tarif_40ft_full_base'] = $data['tarif_40ft_full'] ?? 0;
+        $data['tarif_40ft_empty_base'] = $data['tarif_40ft_empty'] ?? 0;
+
+        $pricelistUangJalanBatam->update($data);
 
         return redirect()->route('pricelist-uang-jalan-batam.index')
             ->with('success', 'Pricelist berhasil diupdate!');

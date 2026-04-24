@@ -82,20 +82,74 @@
 
 
 
-            <!-- Tarif -->
+            <!-- Tarif 20FT Full -->
             <div>
-                <label for="tarif" class="block text-sm font-medium text-gray-700 mb-2">
-                    Tarif (Rp) <span class="text-red-500">*</span>
+                <label for="tarif_20ft_full" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tarif 20FT Full (Rp)
                 </label>
                 <input type="number" 
-                       name="tarif" 
-                       id="tarif" 
-                       value="{{ old('tarif', $pricelistUangJalanBatam->tarif) }}"
+                       name="tarif_20ft_full" 
+                       id="tarif_20ft_full" 
+                       value="{{ old('tarif_20ft_full', $pricelistUangJalanBatam->tarif_20ft_full) }}"
                        placeholder="Contoh: 170500"
                        min="0"
                        step="0.01"
-                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('tarif') border-red-300 @enderror">
-                @error('tarif')
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('tarif_20ft_full') border-red-300 @enderror">
+                @error('tarif_20ft_full')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Tarif 20FT Empty -->
+            <div>
+                <label for="tarif_20ft_empty" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tarif 20FT Empty (Rp)
+                </label>
+                <input type="number" 
+                       name="tarif_20ft_empty" 
+                       id="tarif_20ft_empty" 
+                       value="{{ old('tarif_20ft_empty', $pricelistUangJalanBatam->tarif_20ft_empty) }}"
+                       placeholder="Contoh: 150000"
+                       min="0"
+                       step="0.01"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('tarif_20ft_empty') border-red-300 @enderror">
+                @error('tarif_20ft_empty')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Tarif 40FT Full -->
+            <div>
+                <label for="tarif_40ft_full" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tarif 40FT Full (Rp)
+                </label>
+                <input type="number" 
+                       name="tarif_40ft_full" 
+                       id="tarif_40ft_full" 
+                       value="{{ old('tarif_40ft_full', $pricelistUangJalanBatam->tarif_40ft_full) }}"
+                       placeholder="Contoh: 200000"
+                       min="0"
+                       step="0.01"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('tarif_40ft_full') border-red-300 @enderror">
+                @error('tarif_40ft_full')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Tarif 40FT Empty -->
+            <div>
+                <label for="tarif_40ft_empty" class="block text-sm font-medium text-gray-700 mb-2">
+                    Tarif 40FT Empty (Rp)
+                </label>
+                <input type="number" 
+                       name="tarif_40ft_empty" 
+                       id="tarif_40ft_empty" 
+                       value="{{ old('tarif_40ft_empty', $pricelistUangJalanBatam->tarif_40ft_empty) }}"
+                       placeholder="Contoh: 180000"
+                       min="0"
+                       step="0.01"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('tarif_40ft_empty') border-red-300 @enderror">
+                @error('tarif_40ft_empty')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
