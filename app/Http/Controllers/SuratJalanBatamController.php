@@ -110,7 +110,12 @@ class SuratJalanBatamController extends Controller
 
         $supirs = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->get();
         $keneks = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'KENEK')->get();
-        // Just a basic list for now, ideally we'd filter for supir/kenek roles
+        $kranis = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'KRANI')->get();
+        $terms = \App\Models\Term::orderBy('kode')->get();
+        $masterKegiatans = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
+                                         ->where('status', 'aktif')
+                                         ->orderBy('nama_kegiatan')
+                                         ->get();
         
         // Calculate default uang jalan from pricelist
         $defaultUangJalan = 0;
@@ -159,7 +164,7 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers'));
+        return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers'));
     }
 
     /**
@@ -171,19 +176,33 @@ class SuratJalanBatamController extends Controller
             'order_batam_id' => 'nullable|exists:order_batams,id',
             'no_surat_jalan' => 'required|unique:surat_jalan_batams,no_surat_jalan',
             'tanggal_surat_jalan' => 'required|date',
+            'term' => 'nullable|string',
+            'aktifitas' => 'nullable|string',
             'pengirim' => 'nullable|string',
+            'penerima' => 'nullable|string',
+            'alamat' => 'nullable|string',
+            'jenis_barang' => 'nullable|string',
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',
-            'jenis_barang' => 'nullable|string',
-            'tipe_kontainer' => 'nullable|string',
-            'no_kontainer' => 'nullable|string',
             'no_plat' => 'nullable|string',
             'supir' => 'nullable|string',
             'supir2' => 'nullable|string',
             'kenek' => 'nullable|string',
+            'krani' => 'nullable|string',
             'uang_jalan' => 'nullable|string',
+            'lembur' => 'nullable|boolean',
+            'nginap' => 'nullable|boolean',
+            'is_supir_customer' => 'nullable|boolean',
+            'size' => 'nullable|string',
+            'tipe_kontainer' => 'nullable|string',
+            'no_kontainer' => 'nullable|string',
+            'no_seal' => 'nullable|string',
+            'f_e' => 'nullable|string',
+            'rit' => 'nullable|string',
+            'karton' => 'nullable|string',
+            'plastik' => 'nullable|string',
+            'terpal' => 'nullable|string',
             'status' => 'required|in:draft,active,completed,cancelled',
-            'size' => 'nullable|string', // Added validation rule for 'size'
         ]);
 
         if ($request->filled('uang_jalan')) {
@@ -223,6 +242,12 @@ class SuratJalanBatamController extends Controller
         $suratJalan = SuratJalanBatam::findOrFail($id);
         $supirs = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->get();
         $keneks = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'KENEK')->get();
+        $kranis = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'KRANI')->get();
+        $terms = \App\Models\Term::orderBy('kode')->get();
+        $masterKegiatans = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
+                                         ->where('status', 'aktif')
+                                         ->orderBy('nama_kegiatan')
+                                         ->get();
         
         $ukuranKontainers = StockKontainer::select('ukuran')
             ->distinct()
@@ -260,7 +285,7 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        return view('surat-jalan-batam.edit', compact('suratJalan', 'supirs', 'keneks', 'ukuranKontainers', 'daftarKontainers'));
+        return view('surat-jalan-batam.edit', compact('suratJalan', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'ukuranKontainers', 'daftarKontainers'));
     }
 
     /**
@@ -273,16 +298,32 @@ class SuratJalanBatamController extends Controller
         $validated = $request->validate([
             'no_surat_jalan' => 'required|unique:surat_jalan_batams,no_surat_jalan,' . $id,
             'tanggal_surat_jalan' => 'required|date',
+            'term' => 'nullable|string',
+            'aktifitas' => 'nullable|string',
             'pengirim' => 'nullable|string',
+            'penerima' => 'nullable|string',
+            'alamat' => 'nullable|string',
+            'jenis_barang' => 'nullable|string',
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',
-            'jenis_barang' => 'nullable|string',
-            'tipe_kontainer' => 'nullable|string',
-            'no_kontainer' => 'nullable|string',
             'no_plat' => 'nullable|string',
             'supir' => 'nullable|string',
             'supir2' => 'nullable|string',
             'kenek' => 'nullable|string',
+            'krani' => 'nullable|string',
+            'uang_jalan' => 'nullable|string',
+            'lembur' => 'nullable|boolean',
+            'nginap' => 'nullable|boolean',
+            'is_supir_customer' => 'nullable|boolean',
+            'size' => 'nullable|string',
+            'tipe_kontainer' => 'nullable|string',
+            'no_kontainer' => 'nullable|string',
+            'no_seal' => 'nullable|string',
+            'f_e' => 'nullable|string',
+            'rit' => 'nullable|string',
+            'karton' => 'nullable|string',
+            'plastik' => 'nullable|string',
+            'terpal' => 'nullable|string',
             'status' => 'required|in:draft,active,completed,cancelled',
         ]);
 
