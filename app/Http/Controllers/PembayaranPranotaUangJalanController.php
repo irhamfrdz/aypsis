@@ -8,6 +8,7 @@ use App\Models\Coa;
 use App\Models\NomorTerakhir;
 use App\Models\Prospek;
 use App\Models\SuratJalan;
+use App\Models\CoaTransaction;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
