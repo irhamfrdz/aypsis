@@ -314,16 +314,10 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">F/E</label>
-                    <div class="flex space-x-4 mt-2">
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="f_e" value="Full" class="form-radio text-indigo-600" checked>
-                            <span class="ml-2 text-sm text-gray-700">Full</span>
-                        </label>
-                        <label class="inline-flex items-center">
-                            <input type="radio" name="f_e" value="Empty" class="form-radio text-indigo-600">
-                            <span class="ml-2 text-sm text-gray-700">Empty</span>
-                        </label>
-                    </div>
+                    <select name="f_e" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="Full" {{ old('f_e') == 'Full' ? 'selected' : '' }}>Full</option>
+                        <option value="Empty" {{ old('f_e') == 'Empty' ? 'selected' : '' }}>Empty</option>
+                    </select>
                 </div>
 
                 <div>

@@ -76,6 +76,10 @@
                 <span class="info-value">{{ $suratJalan->supir ?: '-' }}</span>
             </div>
             <div class="info-row">
+                <span class="info-label">F/E:</span>
+                <span class="info-value">{{ $suratJalan->f_e ?: '-' }}</span>
+            </div>
+            <div class="info-row">
                 <span class="info-label">Kenek:</span>
                 <span class="info-value">{{ $suratJalan->kenek ?: '-' }}</span>
             </div>

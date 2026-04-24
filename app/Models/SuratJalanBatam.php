@@ -36,6 +36,7 @@ class SuratJalanBatam extends Model
         'no_kontainer',
         'no_seal',
         'size',
+        'f_e',
         'jumlah_kontainer',
         'karton',
         'plastik',

@@ -98,6 +98,10 @@
                             <dt class="text-sm text-gray-500">No. Seal</dt>
                             <dd class="text-sm font-medium text-gray-900">{{ $suratJalan->no_seal ?: '-' }}</dd>
                         </div>
+                        <div class="flex justify-between">
+                            <dt class="text-sm text-gray-500">F/E</dt>
+                            <dd class="text-sm font-medium text-gray-900">{{ $suratJalan->f_e ?: '-' }}</dd>
+                        </div>
                     </dl>
 
                     <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider mt-8 mb-4 border-b pb-2">Order Referensi</h3>
