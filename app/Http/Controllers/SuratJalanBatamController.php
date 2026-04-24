@@ -166,12 +166,18 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status')
+        $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty')
             ->get()
             ->map(function($item) {
                 return [
                     'value' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
-                    'label' => 'Ring ' . $item->ring . ' ' . $item->expedisi
+                    'label' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
+                    'rates' => [
+                        '20_Full' => $item->tarif_20ft_full,
+                        '20_Empty' => $item->tarif_20ft_empty,
+                        '40_Full' => $item->tarif_40ft_full,
+                        '40_Empty' => $item->tarif_40ft_empty,
+                    ]
                 ];
             })
             ->unique('value')
@@ -304,12 +310,18 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status')
+        $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty')
             ->get()
             ->map(function($item) {
                 return [
                     'value' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
-                    'label' => 'Ring ' . $item->ring . ' ' . $item->expedisi
+                    'label' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
+                    'rates' => [
+                        '20_Full' => $item->tarif_20ft_full,
+                        '20_Empty' => $item->tarif_20ft_empty,
+                        '40_Full' => $item->tarif_40ft_full,
+                        '40_Empty' => $item->tarif_40ft_empty,
+                    ]
                 ];
             })
             ->unique('value')

@@ -163,10 +163,12 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
-                    <select name="tujuan_pengambilan" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <select name="tujuan_pengambilan" id="tujuan_pengambilan_select" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">Pilih Tujuan Pengambilan</option>
                         @foreach($pricelistRings as $ring)
-                            <option value="{{ $ring['value'] }}" {{ old('tujuan_pengambilan', $selectedOrder->tujuan_ambil ?? '') == $ring['value'] ? 'selected' : '' }}>
+                            <option value="{{ $ring['value'] }}" 
+                                    data-rates="{{ json_encode($ring['rates']) }}"
+                                    {{ old('tujuan_pengambilan', $selectedOrder->tujuan_ambil ?? '') == $ring['value'] ? 'selected' : '' }}>
                                 {{ $ring['label'] }}
                             </option>
                         @endforeach
@@ -259,7 +261,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nominal Uang Jalan</label>
                     <input type="text" name="uang_jalan" id="uang_jalan" 
                            value="{{ old('uang_jalan', number_format($defaultUangJalan, 0, ',', '.')) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 money-format">
@@ -351,7 +353,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">F/E</label>
-                    <select name="f_e" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <select name="f_e" id="f_e_select" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="Full" {{ old('f_e') == 'Full' ? 'selected' : '' }}>Full</option>
                         <option value="Empty" {{ old('f_e') == 'Empty' ? 'selected' : '' }}>Empty</option>
                     </select>
@@ -609,8 +611,52 @@
             if (this.value === 'TARIK KOSONG') {
                 jenisBarangSearch.value = 'empty container';
                 jenisBarangValue.value = 'empty container';
+                
+                if (feSelect) {
+                    feSelect.value = 'Empty';
+                    // Trigger calculation since F/E changed
+                    calculateUangJalan();
+                }
             }
         });
     }
+    // Auto-calculate Uang Jalan
+    const tujuanSelect = document.getElementById('tujuan_pengambilan_select');
+    const sizeSelect = document.getElementById('size_select');
+    const feSelect = document.getElementById('f_e_select');
+    const uangJalanInput = document.getElementById('uang_jalan');
+
+    function calculateUangJalan() {
+        if (!tujuanSelect || !sizeSelect || !feSelect || !uangJalanInput) return;
+
+        const selectedOption = tujuanSelect.options[tujuanSelect.selectedIndex];
+        if (!selectedOption) return;
+        
+        const ratesData = selectedOption.getAttribute('data-rates');
+        if (!ratesData) return;
+
+        try {
+            const rates = JSON.parse(ratesData);
+            const size = sizeSelect.value; // e.g., "20FT" or "40FT"
+            const fe = feSelect.value; // "Full" or "Empty"
+
+            if (!size || !fe) return;
+
+            // Clean size to get 20 or 40
+            const sizeNum = size.replace(/\D/g, '');
+            const key = `${sizeNum}_${fe}`;
+            const amount = rates[key];
+
+            if (amount !== undefined && amount !== null) {
+                uangJalanInput.value = new Intl.NumberFormat('id-ID').format(amount);
+            }
+        } catch (e) {
+            console.error('Error parsing rates data', e);
+        }
+    }
+
+    if (tujuanSelect) tujuanSelect.addEventListener('change', calculateUangJalan);
+    if (sizeSelect) sizeSelect.addEventListener('change', calculateUangJalan);
+    if (feSelect) feSelect.addEventListener('change', calculateUangJalan);
 </script>
 @endpush
