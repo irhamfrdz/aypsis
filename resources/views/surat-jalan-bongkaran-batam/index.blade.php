@@ -477,7 +477,7 @@
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Pilih Lokasi</option>
                                 <option value="jakarta">Jakarta</option>
-                                <option value="batam">Batam</option>
+                                <option value="batam" selected>Batam</option>
                             </select>
                         </div>
 
@@ -1369,6 +1369,7 @@ function buatSuratJalanManual() {
     document.getElementById('modal_jenis_barang').value = '';
     document.getElementById('modal_penerima').value = '';
     document.getElementById('modal_tujuan_alamat').value = '';
+    document.getElementById('modal_lokasi').value = 'batam';
     
     // Remove readonly from fields
     document.getElementById('modal_no_bl').removeAttribute('readonly');
@@ -1426,6 +1427,7 @@ function buatSuratJalan(manifestId) {
             
             // Nomor surat jalan dikosongkan
             document.getElementById('modal_nomor_surat_jalan').value = '';
+            document.getElementById('modal_lokasi').value = 'batam';
             
             // Set default tanggal to today
             document.getElementById('modal_tanggal_surat_jalan').value = new Date().toISOString().split('T')[0];
