@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\Auditable;
+
 class StockBanLuarBatam extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'stock_ban_luar_batams';
 

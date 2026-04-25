@@ -67,11 +67,13 @@ class StockBanController extends Controller
 
     /**
      * Display input harian view for Stock Ban and Stock Ban Luar Batam.
+     * Shows all activities (created, updated, deleted) for the selected date.
      */
     public function inputHarian(Request $request)
     {
         $date = $request->input('date', date('Y-m-d'));
         
+        // Fetch original creations (existing behavior)
         $stockBans = StockBan::with(['mobil', 'alatBerat', 'penerima', 'kapal', 'namaStockBan', 'createdBy'])
             ->whereDate('created_at', $date)
             ->latest()
@@ -82,7 +84,14 @@ class StockBanController extends Controller
             ->latest()
             ->get();
 
-        return view('stock-ban.input-harian', compact('stockBans', 'stockBanLuarBatams', 'date'));
+        // Fetch all activities from Audit Logs for these models
+        $activities = \App\Models\AuditLog::with(['user', 'auditable'])
+            ->whereIn('auditable_type', [StockBan::class, \App\Models\StockBanLuarBatam::class])
+            ->whereDate('created_at', $date)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('stock-ban.input-harian', compact('stockBans', 'stockBanLuarBatams', 'activities', 'date'));
     }
 
     /**

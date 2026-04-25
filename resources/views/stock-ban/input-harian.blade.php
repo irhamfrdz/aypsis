@@ -129,5 +129,87 @@
             </table>
         </div>
     </div>
+    <!-- Activities Section -->
+    <div class="bg-white rounded-lg shadow overflow-hidden mt-8 border border-gray-200">
+        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-800">Riwayat Perubahan & Aktivitas</h2>
+            <span class="bg-gray-600 text-white text-xs px-2 py-1 rounded-full font-bold">{{ $activities->count() }} Aktivitas</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data / Item</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perubahan</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($activities as $activity)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $activity->created_at->format('H:i:s') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
+                            {{ $activity->getUserDisplayName() }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            @php
+                                $badgeClass = match($activity->action) {
+                                    'created' => 'bg-green-100 text-green-800',
+                                    'updated' => 'bg-blue-100 text-blue-800',
+                                    'deleted' => 'bg-red-100 text-red-800',
+                                    default => 'bg-gray-100 text-gray-800'
+                                };
+                            @endphp
+                            <span class="px-2 py-1 rounded-full text-xs font-bold {{ $badgeClass }}">
+                                {{ strtoupper($activity->action) }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            <div class="font-medium text-gray-800">
+                                {{ class_basename($activity->auditable_type) == 'StockBan' ? 'Jakarta' : 'Batam' }}
+                            </div>
+                            @if($activity->auditable)
+                                <div class="text-xs">{{ $activity->auditable->nomor_seri ?? 'No Seri: -' }}</div>
+                                <div class="text-[10px] text-gray-400">{{ $activity->auditable->merk }} {{ $activity->auditable->ukuran }}</div>
+                            @else
+                                <div class="text-xs text-red-400 italic">Data telah dihapus</div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-xs text-gray-500">
+                            @if($activity->action === 'updated' && $activity->getFormattedChanges())
+                                <ul class="list-disc pl-4 space-y-1">
+                                    @foreach($activity->getFormattedChanges() as $change)
+                                        @if(!in_array($change['field'], ['updated_at', 'created_at', 'updated_by', 'created_by']))
+                                            <li>
+                                                <span class="font-medium text-gray-700">{{ $change['field'] }}</span>: 
+                                                <span class="text-red-500 line-through">{{ $change['old'] ?: '(kosong)' }}</span> 
+                                                <i class="fas fa-arrow-right mx-1 text-gray-400"></i>
+                                                <span class="text-green-600 font-bold">{{ $newValue = is_array($change['new']) ? json_encode($change['new']) : $change['new'] }}</span>
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            @elseif($activity->action === 'created')
+                                <span class="text-green-600 italic">Input data baru</span>
+                            @elseif($activity->action === 'deleted')
+                                <span class="text-red-600 italic">Menghapus data</span>
+                            @else
+                                -
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">Tidak ada riwayat aktivitas pada hari ini.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 @endsection
