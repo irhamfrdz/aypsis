@@ -13,7 +13,7 @@ class EnsurePermission
      * Handle an incoming request.
      * Usage: middleware('permission:permission-name')
      */
-    public function handle(Request $request, Closure $next, string $permission)
+    public function handle(Request $request, Closure $next, string $permissions)
     {
         /** @var User|null $user */
         $user = Auth::user();
@@ -22,9 +22,19 @@ class EnsurePermission
             abort(403, 'Access denied. Please login first.');
         }
 
-        // Check if user has the specific permission
-        if (!$user->hasPermissionTo($permission)) {
-            abort(403, "Access denied. You don't have permission: {$permission}");
+        // Support multiple permissions separated by | (OR logic)
+        $permissionArray = explode('|', $permissions);
+        $hasPermission = false;
+
+        foreach ($permissionArray as $perm) {
+            if ($user->hasPermissionTo(trim($perm))) {
+                $hasPermission = true;
+                break;
+            }
+        }
+
+        if (!$hasPermission) {
+            abort(403, "Access denied. You don't have permission: " . str_replace('|', ' or ', $permissions));
         }
 
         return $next($request);

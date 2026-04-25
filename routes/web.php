@@ -2931,23 +2931,23 @@ Route::middleware(['auth'])->group(function () {
     // API endpoint for getting BL data
     Route::get('/surat-jalan-bongkaran/api/bl-data', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getBlData'])
          ->name('surat-jalan-bongkaran.bl-data')
-         ->middleware('can:surat-jalan-bongkaran-create');
+         ->middleware('permission:surat-jalan-bongkaran-create|surat-jalan-bongkaran-batam-create');
     
     // Surat Jalan Bongkaran Management with permissions - Separate routes to avoid middleware conflicts
     // API endpoint to fetch Manifest data (new primary method)
     Route::get('api/manifest/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getManifestById'])
          ->name('api.manifest.show')
-         ->middleware('can:surat-jalan-bongkaran-view');
+         ->middleware('permission:surat-jalan-bongkaran-view|surat-jalan-bongkaran-batam-view');
     
     // API endpoint to fetch BL data (backward compatibility)
     Route::get('api/bl/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getBlById'])
          ->name('api.bl.show')
-         ->middleware('can:surat-jalan-bongkaran-view');
+         ->middleware('permission:surat-jalan-bongkaran-view|surat-jalan-bongkaran-batam-view');
     
     // API endpoint to fetch Surat Jalan Bongkaran data
     Route::get('api/surat-jalan-bongkaran/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getSuratJalanById'])
          ->name('api.surat-jalan-bongkaran.show')
-         ->middleware('can:surat-jalan-bongkaran-view');
+         ->middleware('permission:surat-jalan-bongkaran-view|surat-jalan-bongkaran-batam-view');
     
     Route::get('surat-jalan-bongkaran/select-ship', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectShip'])
          ->name('surat-jalan-bongkaran.select-ship')
