@@ -13,8 +13,15 @@
             <p class="text-gray-500">Berikut adalah ringkasan aktivitas sistem Anda.</p>
         </div>
         
-        @if(auth()->check() && auth()->user()->username === 'kiky')
-        <div class="mt-4 sm:mt-0">
+        @if(auth()->check() && strtolower(auth()->user()->username) === 'kiky')
+        <div class="mt-4 sm:mt-0 flex space-x-2">
+            <form action="{{ route('master.user.reset-all-permissions') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus semua permission user (kecuali Kiky)? Tindakan ini tidak dapat dibatalkan.')">
+                @csrf
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                    <i class="fas fa-user-shield mr-2"></i>
+                    Reset All Permissions
+                </button>
+            </form>
             <a href="{{ route('backup.database') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                 <i class="fas fa-database mr-2"></i>
                 Backup Database

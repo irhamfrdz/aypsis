@@ -198,6 +198,46 @@ class UserController extends Controller
     }
 
     /**
+     * Menghapus semua permission user kecuali user kiky.
+     * Fitur ini hanya dapat diakses oleh user Kiky.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function resetAllPermissions()
+    {
+        $user = auth()->user();
+        $username = strtolower((string) ($user->username ?? ''));
+
+        if ($username !== 'kiky') {
+            abort(403, 'Fitur ini hanya dapat diakses oleh user Kiky.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Get user kiky's ID - 'name' is an accessor, not a column
+            $kiky = User::where('username', 'kiky')->first();
+            $kikyId = $kiky ? $kiky->id : null;
+
+            if (!$kikyId) {
+                throw new \Exception("User 'kiky' tidak ditemukan.");
+            }
+
+            // Delete all user_permissions except for kiky
+            DB::table('user_permissions')
+                ->where('user_id', '!=', $kikyId)
+                ->delete();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Semua permission user (kecuali Kiky) berhasil dihapus!');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Assign permissions from a template to a user.
      *
      * @param  \Illuminate\Http\Request  $request

@@ -299,6 +299,10 @@ Route::middleware([
         Route::get('user/{user}', [UserController::class, 'show'])
              ->name('user.show')
              ->middleware('can:master-user-view');
+
+        Route::post('user/reset-all-permissions', [UserController::class, 'resetAllPermissions'])
+             ->name('user.reset-all-permissions')
+             ->middleware('only.kiky');
         
         Route::get('user/{user}/edit', [UserController::class, 'edit'])
              ->name('user.edit')
