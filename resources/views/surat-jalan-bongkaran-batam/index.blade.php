@@ -1941,7 +1941,7 @@ function openEditModal(suratJalanId) {
             }
             
             // Set form action URL
-            document.getElementById('formEditSuratJalan').action = `/surat-jalan-bongkaran/${suratJalanId}`;
+            document.getElementById('formEditSuratJalan').action = `/surat-jalan-bongkaran-batam/${suratJalanId}`;
             
             // Populate form fields
             document.getElementById('edit_modal_nomor_surat_jalan').value = data.nomor_surat_jalan || '';
@@ -2332,7 +2332,7 @@ function deleteSuratJalan(suratJalanId) {
         // Create a form to submit delete request
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/surat-jalan-bongkaran/' + suratJalanId;
+        form.action = '/surat-jalan-bongkaran-batam/' + suratJalanId;
         form.style.display = 'none';
 
         // Add CSRF token

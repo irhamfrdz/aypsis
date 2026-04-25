@@ -607,6 +607,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
         $validatedData['input_by'] = Auth::id();
         $validatedData['lokasi'] = 'batam';
+        $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
 
         try {
             DB::beginTransaction();
@@ -728,6 +729,7 @@ class SuratJalanBongkaranBatamController extends Controller
         }
 
         try {
+            $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
             DB::beginTransaction();
 
             $suratJalanBongkaran->update($validatedData);
