@@ -37,6 +37,13 @@
                         <i class="fas fa-times-circle"></i>
                     </a>
                 </div>
+            @elseif(isset($duplicateCount) && $duplicateCount > 0)
+                <a href="{{ route('prospek.index', ['show_duplicates' => 1]) }}" 
+                   class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-sm font-bold flex items-center border border-red-200 transition-all duration-200">
+                    <i class="fas fa-clone mr-2"></i>
+                    Ada {{ $duplicateCount }} No. SJ Kembar
+                    <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                </a>
             @endif
         </div>
     </div>
@@ -204,6 +211,11 @@
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
                                 {{ $prospek->no_surat_jalan ?? '-' }}
+                                @if(isset($duplicateNos) && in_array($prospek->no_surat_jalan, $duplicateNos))
+                                    <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 border border-red-200" title="Ada Nomor Surat Jalan yang sama">
+                                        KEMBAR
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $prospek->tanggal ? (is_string($prospek->tanggal) ? \Carbon\Carbon::parse($prospek->tanggal)->format('d/M/Y') : $prospek->tanggal->format('d/M/Y')) : '-' }}

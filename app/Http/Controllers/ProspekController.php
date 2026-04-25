@@ -127,7 +127,17 @@ class ProspekController extends Controller
                 return view('prospek.index_mobile', compact('prospeks', 'totalBelumMuat', 'totalSudahMuat', 'totalBatal'));
             }
 
-            return view('prospek.index', compact('prospeks', 'totalBelumMuat', 'totalSudahMuat', 'totalBatal'));
+            $duplicateNos = Prospek::select('no_surat_jalan')
+                ->whereNotNull('no_surat_jalan')
+                ->where('no_surat_jalan', '!=', '')
+                ->groupBy('no_surat_jalan')
+                ->havingRaw('COUNT(no_surat_jalan) > 1')
+                ->pluck('no_surat_jalan')
+                ->toArray();
+            
+            $duplicateCount = count($duplicateNos);
+
+            return view('prospek.index', compact('prospeks', 'totalBelumMuat', 'totalSudahMuat', 'totalBatal', 'duplicateCount', 'duplicateNos'));
 
         } catch (\Exception $e) {
             return back()->with('error', 'Error loading data prospek: ' . $e->getMessage());
