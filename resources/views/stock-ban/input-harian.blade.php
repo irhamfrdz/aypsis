@@ -1,58 +1,5 @@
 @extends('layouts.app')
 
-@push('styles')
-<style>
-    .activity-log-table th {
-        background-color: #f8fafc;
-        border-bottom: 2px solid #e2e8f0;
-    }
-    .change-item {
-        display: flex;
-        align-items: flex-start;
-        padding: 4px 0;
-        border-bottom: 1px solid #f1f5f9;
-    }
-    .change-item:last-child {
-        border-bottom: none;
-    }
-    .change-field {
-        min-width: 100px;
-        font-weight: 600;
-        color: #64748b;
-    }
-    .change-values {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .old-value {
-        color: #94a3b8;
-        text-decoration: line-through;
-        background-color: #f1f5f9;
-        padding: 1px 6px;
-        border-radius: 4px;
-        font-size: 11px;
-    }
-    .new-value {
-        color: #059669;
-        font-weight: 600;
-        background-color: #ecfdf5;
-        padding: 1px 6px;
-        border-radius: 4px;
-        font-size: 11px;
-    }
-    .data-item-box {
-        background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        padding: 6px 10px;
-        display: inline-block;
-        min-width: 140px;
-    }
-</style>
-@endpush
-
 @section('title', 'Laporan Input Harian Ban')
 @section('page_title', 'Laporan Input Harian Ban')
 
@@ -189,105 +136,75 @@
             <span class="bg-gray-600 text-white text-xs px-2 py-1 rounded-full font-bold">{{ $activities->count() }} Aktivitas</span>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 activity-log-table">
+            <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Waktu</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Data / Item</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Detail Perubahan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data / Item</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perubahan</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-100">
+                <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($activities as $activity)
-                    <tr class="hover:bg-blue-50/30 transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ $activity->created_at->format('H:i') }}</div>
-                            <div class="text-[10px] text-gray-400 font-mono">{{ $activity->created_at->format('s') }}s</div>
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $activity->created_at->format('H:i:s') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="h-7 w-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 mr-2 border border-teal-200">
-                                    <i class="fas fa-user text-[10px]"></i>
-                                </div>
-                                <span class="text-sm text-gray-700 font-medium">{{ $activity->getUserDisplayName() }}</span>
-                            </div>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
+                            {{ $activity->getUserDisplayName() }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
                             @php
                                 $badgeClass = match($activity->action) {
-                                    'created' => 'bg-green-100 text-green-800 border-green-200',
-                                    'updated' => 'bg-blue-100 text-blue-800 border-blue-200',
-                                    'deleted' => 'bg-red-100 text-red-800 border-red-200',
-                                    default => 'bg-gray-100 text-gray-800 border-gray-200'
-                                };
-                                $icon = match($activity->action) {
-                                    'created' => 'fa-plus-circle',
-                                    'updated' => 'fa-edit',
-                                    'deleted' => 'fa-trash-alt',
-                                    default => 'fa-info-circle'
+                                    'created' => 'bg-green-100 text-green-800',
+                                    'updated' => 'bg-blue-100 text-blue-800',
+                                    'deleted' => 'bg-red-100 text-red-800',
+                                    default => 'bg-gray-100 text-gray-800'
                                 };
                             @endphp
-                            <span class="px-2.5 py-1 rounded-md text-[10px] font-black border {{ $badgeClass }} flex items-center w-fit">
-                                <i class="fas {{ $icon }} mr-1.5 opacity-70"></i>
+                            <span class="px-2 py-1 rounded-full text-xs font-bold {{ $badgeClass }}">
                                 {{ strtoupper($activity->action) }}
                             </span>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="data-item-box shadow-sm">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded {{ class_basename($activity->auditable_type) == 'StockBan' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700' }}">
-                                        {{ class_basename($activity->auditable_type) == 'StockBan' ? 'JAKARTA' : 'BATAM' }}
-                                    </span>
-                                </div>
-                                @if($activity->auditable)
-                                    <div class="text-xs font-bold text-gray-800 font-mono">{{ $activity->auditable->nomor_seri ?? '-' }}</div>
-                                    <div class="text-[10px] text-gray-500 truncate max-w-[150px]">{{ $activity->auditable->merk }} {{ $activity->auditable->ukuran }}</div>
-                                @else
-                                    <div class="text-xs text-red-500 italic font-medium">Data Terhapus</div>
-                                @endif
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            <div class="font-medium text-gray-800">
+                                {{ class_basename($activity->auditable_type) == 'StockBan' ? 'Jakarta' : 'Batam' }}
                             </div>
+                            @if($activity->auditable)
+                                <div class="text-xs">{{ $activity->auditable->nomor_seri ?? 'No Seri: -' }}</div>
+                                <div class="text-[10px] text-gray-400">{{ $activity->auditable->merk }} {{ $activity->auditable->ukuran }}</div>
+                            @else
+                                <div class="text-xs text-red-400 italic">Data telah dihapus</div>
+                            @endif
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 text-xs text-gray-500">
                             @if($activity->action === 'updated' && $activity->getFormattedChanges())
-                                <div class="space-y-0.5 max-w-xl">
+                                <ul class="list-disc pl-4 space-y-1">
                                     @foreach($activity->getFormattedChanges() as $change)
                                         @if(!in_array($change['field'], ['updated_at', 'created_at', 'updated_by', 'created_by']))
-                                            <div class="change-item">
-                                                <div class="change-field text-[10px] uppercase tracking-tight">{{ str_replace('_', ' ', $change['field']) }}</div>
-                                                <div class="change-values text-[11px]">
-                                                    <span class="old-value">{{ $change['old'] ?: '(kosong)' }}</span> 
-                                                    <i class="fas fa-long-arrow-alt-right text-gray-300 text-xs"></i>
-                                                    <span class="new-value">{{ is_array($change['new']) ? json_encode($change['new']) : $change['new'] }}</span>
-                                                </div>
-                                            </div>
+                                            <li>
+                                                <span class="font-medium text-gray-700">{{ $change['field'] }}</span>: 
+                                                <span class="text-red-500 line-through">{{ $change['old'] ?: '(kosong)' }}</span> 
+                                                <i class="fas fa-arrow-right mx-1 text-gray-400"></i>
+                                                <span class="text-green-600 font-bold">{{ $newValue = is_array($change['new']) ? json_encode($change['new']) : $change['new'] }}</span>
+                                            </li>
                                         @endif
                                     @endforeach
-                                </div>
+                                </ul>
                             @elseif($activity->action === 'created')
-                                <div class="flex items-center text-green-600 text-xs font-semibold">
-                                    <i class="fas fa-check-circle mr-1.5"></i>
-                                    Berhasil input ban baru ke sistem
-                                </div>
+                                <span class="text-green-600 italic">Input data baru</span>
                             @elseif($activity->action === 'deleted')
-                                <div class="flex items-center text-red-500 text-xs font-semibold">
-                                    <i class="fas fa-exclamation-triangle mr-1.5"></i>
-                                    Menghapus data ban dari database
-                                </div>
+                                <span class="text-red-600 italic">Menghapus data</span>
                             @else
-                                <span class="text-gray-400">-</span>
+                                -
                             @endif
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center">
-                                <i class="fas fa-history text-gray-200 text-4xl mb-3"></i>
-                                <p class="text-gray-400 font-medium">Belum ada aktivitas tercatat hari ini.</p>
-                            </div>
-                        </td>
+                        <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">Tidak ada riwayat aktivitas pada hari ini.</td>
                     </tr>
                     @endforelse
                 </tbody>
