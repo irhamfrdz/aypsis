@@ -413,7 +413,7 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
                         <option value="">Pilih Lokasi</option>
                         @foreach($gudangs ?? [] as $gudang)
-                            <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                            <option value="{{ $gudang->id }}" {{ $gudang->nama_gudang == 'Gudang Bayangan' ? 'selected' : '' }}>{{ $gudang->nama_gudang }}</option>
                         @endforeach
                     </select>
                 </div>
