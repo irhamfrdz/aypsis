@@ -1402,7 +1402,7 @@ function buatSuratJalan(manifestId) {
     document.getElementById('modalBuatSuratJalan').classList.remove('hidden');
     
     // Fetch Manifest data
-    fetch(`/api/manifest/${manifestId}`)
+    fetch(`/api/manifest-batam/${manifestId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1915,7 +1915,7 @@ function openEditModal(suratJalanId) {
     document.getElementById('modalEditSuratJalan').classList.remove('hidden');
     
     // Fetch Surat Jalan data
-    fetch(`/api/surat-jalan-bongkaran/${suratJalanId}`)
+    fetch(`/api/surat-jalan-bongkaran-batam/${suratJalanId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);

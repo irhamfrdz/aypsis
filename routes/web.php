@@ -2942,6 +2942,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('api/manifest/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getManifestById'])
          ->name('api.manifest.show')
          ->middleware('permission:surat-jalan-bongkaran-view|surat-jalan-bongkaran-batam-view');
+
+    // API endpoint to fetch Manifest data for Batam
+    Route::get('api/manifest-batam/{id}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'getManifestById'])
+         ->name('api.manifest-batam.show')
+         ->middleware('permission:surat-jalan-bongkaran-batam-view');
     
     // API endpoint to fetch BL data (backward compatibility)
     Route::get('api/bl/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getBlById'])
@@ -2952,6 +2957,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('api/surat-jalan-bongkaran/{id}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getSuratJalanById'])
          ->name('api.surat-jalan-bongkaran.show')
          ->middleware('permission:surat-jalan-bongkaran-view|surat-jalan-bongkaran-batam-view');
+
+    // API endpoint to fetch Surat Jalan Bongkaran Batam data
+    Route::get('api/surat-jalan-bongkaran-batam/{id}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'getSuratJalanById'])
+         ->name('api.surat-jalan-bongkaran-batam.show')
+         ->middleware('permission:surat-jalan-bongkaran-batam-view');
     
     Route::get('surat-jalan-bongkaran/select-ship', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectShip'])
          ->name('surat-jalan-bongkaran.select-ship')
