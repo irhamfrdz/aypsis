@@ -105,7 +105,8 @@ class SuratJalanController extends Controller
                             ->orderBy('created_at', 'desc')
                             ->orderBy('tanggal_surat_jalan', 'desc')
                             ->orderBy('id', 'desc')
-                            ->paginate(15);
+                            ->paginate(15)
+                            ->withQueryString();
 
         return view('surat-jalan.index', compact('suratJalans'));
     }
@@ -197,7 +198,8 @@ class SuratJalanController extends Controller
 
         $orders = $query->orderBy('tanggal_order', 'desc')
                        ->orderBy('created_at', 'desc')
-                       ->paginate(15);
+                       ->paginate(15)
+                       ->withQueryString();
 
         return view('surat-jalan.select-order', compact('orders'));
     }

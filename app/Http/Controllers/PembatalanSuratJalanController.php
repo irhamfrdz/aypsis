@@ -32,7 +32,9 @@ class PembatalanSuratJalanController extends Controller
             });
         }
 
-        $pembatalans = $query->orderBy('created_at', 'desc')->paginate(15);
+        $pembatalans = $query->orderBy('created_at', 'desc')
+                            ->paginate(15)
+                            ->withQueryString();
 
         // Check which cancellations are already in COA
         $syncedReferences = \App\Models\CoaTransaction::whereIn('nomor_referensi', $pembatalans->pluck('nomor_pembayaran'))

@@ -64,7 +64,9 @@ class PembayaranPranotaSuratJalanController extends Controller
             });
         }
 
-        $pembayaran = $query->orderBy('tanggal_pembayaran', 'desc')->paginate(15);
+        $pembayaran = $query->orderBy('tanggal_pembayaran', 'desc')
+                            ->paginate(15)
+                            ->withQueryString();
 
         $statuses = PembayaranPranotaSuratJalan::getStatuses();
         $methods = PembayaranPranotaSuratJalan::getPaymentMethods();
