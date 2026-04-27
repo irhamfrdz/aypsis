@@ -15,18 +15,137 @@
         
         @if(auth()->check() && strtolower(auth()->user()->username) === 'kiky')
         <div class="mt-4 sm:mt-0 flex space-x-2">
-            <form action="{{ route('master.user.reset-all-permissions') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus semua permission user (kecuali Kiky)? Tindakan ini tidak dapat dibatalkan.')">
+            <!-- Form is hidden, but will be submitted by JS -->
+            <form id="reset-permissions-form" action="{{ route('master.user.reset-all-permissions') }}" method="POST" class="hidden">
                 @csrf
-                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
-                    <i class="fas fa-user-shield mr-2"></i>
-                    Reset All Permissions
-                </button>
+                <input type="hidden" name="password" id="reset-password-input">
             </form>
-            <a href="{{ route('backup.database') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+            
+            <button type="button" onclick="openResetModal()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200">
+                <i class="fas fa-user-shield mr-2"></i>
+                Reset All Permissions
+            </button>
+            
+            <a href="{{ route('backup.database') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200">
                 <i class="fas fa-database mr-2"></i>
                 Backup Database
             </a>
         </div>
+
+        <!-- Modal Reset Permission -->
+        <div id="resetPermissionModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Background overlay -->
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="closeResetModal()"></div>
+
+                <!-- This element is to trick the browser into centering the modal contents. -->
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <!-- Modal panel -->
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-orange-200">
+                    <div class="bg-orange-600 px-4 py-3 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Konfirmasi Keamanan
+                        </h3>
+                        <button type="button" class="text-white hover:text-orange-200 transition-colors focus:outline-none" onclick="closeResetModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white px-6 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="fas fa-shield-alt text-orange-600"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-600 leading-relaxed">
+                                        Anda akan menghapus semua permission user (kecuali Kiky). Tindakan ini <span class="font-bold text-red-600 underline decoration-red-300 decoration-2">tidak dapat dibatalkan</span>.
+                                    </p>
+                                    <p class="mt-2 text-xs text-gray-500 italic">
+                                        Masukkan password login Anda untuk mengonfirmasi tindakan ini.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <label for="modal-password" class="block text-sm font-bold text-gray-700 mb-2">Password Anda</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-key text-gray-400 group-focus-within:text-orange-500 transition-colors"></i>
+                                </div>
+                                <input type="password" id="modal-password" 
+                                       class="block w-full pl-11 pr-12 py-3.5 border-2 border-gray-100 rounded-2xl focus:ring-0 focus:border-orange-500 text-sm transition-all bg-gray-50 focus:bg-white placeholder-gray-300" 
+                                       placeholder="Masukkan password konfirmasi..."
+                                       onkeyup="if(event.key === 'Enter') submitResetForm()">
+                                <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-orange-600 transition-colors focus:outline-none">
+                                    <i id="password-toggle-icon" class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse gap-3">
+                        <button type="button" onclick="submitResetForm()"
+                                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-md px-6 py-2.5 bg-orange-600 text-base font-semibold text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:w-auto sm:text-sm transition-all hover:-translate-y-0.5">
+                            Reset Sekarang
+                        </button>
+                        <button type="button" onclick="closeResetModal()"
+                                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-6 py-2.5 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:mt-0 sm:w-auto sm:text-sm transition-all">
+                            Batal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openResetModal() {
+                document.getElementById('resetPermissionModal').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('modal-password').focus();
+                }, 100);
+            }
+
+            function closeResetModal() {
+                document.getElementById('resetPermissionModal').classList.add('hidden');
+                document.getElementById('modal-password').value = '';
+                // Reset input type and icon
+                const input = document.getElementById('modal-password');
+                const icon = document.getElementById('password-toggle-icon');
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+
+            function togglePasswordVisibility() {
+                const input = document.getElementById('modal-password');
+                const icon = document.getElementById('password-toggle-icon');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+
+            function submitResetForm() {
+                const password = document.getElementById('modal-password').value;
+                if (!password) {
+                    alert('Silakan masukkan password Anda.');
+                    document.getElementById('modal-password').focus();
+                    return;
+                }
+                
+                document.getElementById('reset-password-input').value = password;
+                document.getElementById('reset-permissions-form').submit();
+            }
+        </script>
         @endif
     </div>
 

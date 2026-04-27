@@ -203,13 +203,18 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function resetAllPermissions()
+    public function resetAllPermissions(Request $request)
     {
         $user = auth()->user();
         $username = strtolower((string) ($user->username ?? ''));
 
         if ($username !== 'kiky') {
             abort(403, 'Fitur ini hanya dapat diakses oleh user Kiky.');
+        }
+
+        // Check password
+        if (!$request->password || !Hash::check($request->password, $user->password)) {
+            return redirect()->back()->with('error', 'Password salah atau tidak diisi. Gagal mereset permission.');
         }
 
         try {
