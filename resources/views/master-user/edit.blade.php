@@ -1099,6 +1099,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist Temas --}}
+                            <tr class="submodule-row" data-parent="master-tarif">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-blue-600 font-bold">Pricelist Temas</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-temas][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-temas']['view']) && $userMatrixPermissions['master-pricelist-temas']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-temas][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-temas']['create']) && $userMatrixPermissions['master-pricelist-temas']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-temas][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-temas']['update']) && $userMatrixPermissions['master-pricelist-temas']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-temas][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-temas']['delete']) && $userMatrixPermissions['master-pricelist-temas']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pricelist Biaya LOLO --}}
                             <tr class="submodule-row" data-parent="master-tarif">
                                 <td class="submodule">

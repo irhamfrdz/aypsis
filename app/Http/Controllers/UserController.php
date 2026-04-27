@@ -1209,6 +1209,12 @@ class UserController extends Controller
                             $action = str_replace('pricelist-meratus-', '', $action);
                             $module = 'master-pricelist-meratus';
                         }
+                        // Special handling for master-pricelist-temas permissions
+                        elseif (strpos($action, 'pricelist-temas-') === 0) {
+                            // For master-pricelist-temas-view, extract the action
+                            $action = str_replace('pricelist-temas-', '', $action);
+                            $module = 'master-pricelist-temas';
+                        }
                         // Special handling for master-tipe-akun permissions
                         elseif (strpos($action, 'tipe-akun-') === 0) {
                             // For master-tipe-akun-view, extract the action
@@ -2859,6 +2865,26 @@ class UserController extends Controller
                             'create' => 'master-pricelist-meratus-create',
                             'update' => 'master-pricelist-meratus-update',
                             'delete' => 'master-pricelist-meratus-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-temas permissions explicitly
+                    if ($module === 'master-pricelist-temas' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-temas-view',
+                            'create' => 'master-pricelist-temas-create',
+                            'update' => 'master-pricelist-temas-update',
+                            'delete' => 'master-pricelist-temas-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

@@ -1038,6 +1038,26 @@ Route::middleware([
              ->name('pricelist-meratus.destroy')
              ->middleware('can:master-pricelist-meratus-delete');
 
+        // Pricelist Temas
+        Route::get('pricelist-temas', [\App\Http\Controllers\PricelistTemasController::class, 'index'])
+             ->name('pricelist-temas.index')
+             ->middleware('can:master-pricelist-temas-view');
+        Route::get('pricelist-temas/create', [\App\Http\Controllers\PricelistTemasController::class, 'create'])
+             ->name('pricelist-temas.create')
+             ->middleware('can:master-pricelist-temas-create');
+        Route::post('pricelist-temas', [\App\Http\Controllers\PricelistTemasController::class, 'store'])
+             ->name('pricelist-temas.store')
+             ->middleware('can:master-pricelist-temas-create');
+        Route::get('pricelist-temas/{id}/edit', [\App\Http\Controllers\PricelistTemasController::class, 'edit'])
+             ->name('pricelist-temas.edit')
+             ->middleware('can:master-pricelist-temas-update');
+        Route::put('pricelist-temas/{id}', [\App\Http\Controllers\PricelistTemasController::class, 'update'])
+             ->name('pricelist-temas.update')
+             ->middleware('can:master-pricelist-temas-update');
+        Route::delete('pricelist-temas/{id}', [\App\Http\Controllers\PricelistTemasController::class, 'destroy'])
+             ->name('pricelist-temas.destroy')
+             ->middleware('can:master-pricelist-temas-delete');
+
         // Master Pricelist LOLO
         Route::get('pricelist-lolo', [\App\Http\Controllers\MasterPricelistLoloController::class, 'index'])
              ->name('pricelist-lolo.index')
