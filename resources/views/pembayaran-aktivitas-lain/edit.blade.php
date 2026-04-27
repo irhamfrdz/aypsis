@@ -24,6 +24,15 @@
                     <input type="text" value="{{ $pembayaranAktivitasLain->nomor }}" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm">
                 </div>
 
+                <!-- Nomor Accurate -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Accurate</label>
+                    <input type="text" name="nomor_accurate" value="{{ old('nomor_accurate', $pembayaranAktivitasLain->nomor_accurate) }}" placeholder="Masukkan nomor accurate" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('nomor_accurate') border-red-500 @enderror">
+                    @error('nomor_accurate')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Tanggal -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal <span class="text-red-500">*</span></label>

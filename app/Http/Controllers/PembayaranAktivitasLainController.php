@@ -644,6 +644,7 @@ class PembayaranAktivitasLainController extends Controller
     public function update(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
         $validated = $request->validate([
+            'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
             'jenis_penyesuaian' => 'nullable|string|max:255',
@@ -753,6 +754,27 @@ class PembayaranAktivitasLainController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal memperbarui jumlah: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update only the accurate number of the payment
+     */
+    public function updateNomorAccurate(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
+    {
+        $request->validate([
+            'nomor_accurate' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $pembayaranAktivitasLain->update([
+                'nomor_accurate' => $request->nomor_accurate
+            ]);
+
+            return redirect()->route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain)
+                ->with('success', 'Nomor Accurate berhasil diperbarui');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memperbarui Nomor Accurate: ' . $e->getMessage());
         }
     }
 

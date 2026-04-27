@@ -61,6 +61,40 @@
                     </div>
 
                     <div>
+                        <label class="block text-sm font-medium text-gray-500">Nomor Accurate</label>
+                        <div class="flex items-center gap-2 mt-1">
+                            <p id="nomor-accurate-display" class="text-base font-semibold text-gray-900 text-blue-600">{{ $pembayaranAktivitasLain->nomor_accurate ?? '-' }}</p>
+                            @can('pembayaran-aktivitas-lain-update')
+                                <button onclick="toggleEditNomorAccurate()" class="text-gray-400 hover:text-blue-600 transition" title="Edit Nomor Accurate">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                            @endcan
+                        </div>
+
+                        @can('pembayaran-aktivitas-lain-update')
+                            <form id="edit-nomor-accurate-form" action="{{ route('pembayaran-aktivitas-lain.update-nomor-accurate', $pembayaranAktivitasLain) }}" method="POST" class="hidden mt-2 flex items-center gap-2">
+                                @csrf
+                                @method('PATCH')
+                                <input type="text" name="nomor_accurate" value="{{ $pembayaranAktivitasLain->nomor_accurate }}" 
+                                       class="px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-48" 
+                                       placeholder="Nomor Accurate">
+                                <button type="submit" class="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </button>
+                                <button type="button" onclick="toggleEditNomorAccurate()" class="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        @endcan
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-medium text-gray-500">Tanggal</label>
                         <p class="mt-1 text-base text-gray-900">{{ $pembayaranAktivitasLain->tanggal->format('d F Y') }}</p>
                     </div>
@@ -210,6 +244,19 @@
     function toggleEditJumlah() {
         const display = document.getElementById('jumlah-display').parentElement;
         const form = document.getElementById('edit-jumlah-form');
+        
+        if (form.classList.contains('hidden')) {
+            form.classList.remove('hidden');
+            display.classList.add('hidden');
+        } else {
+            form.classList.add('hidden');
+            display.classList.remove('hidden');
+        }
+    }
+
+    function toggleEditNomorAccurate() {
+        const display = document.getElementById('nomor-accurate-display').parentElement;
+        const form = document.getElementById('edit-nomor-accurate-form');
         
         if (form.classList.contains('hidden')) {
             form.classList.remove('hidden');
