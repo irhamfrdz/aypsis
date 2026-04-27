@@ -25,6 +25,7 @@ use App\Models\MasterPricelistBiayaStorage;
 use App\Models\BiayaKapalFreight;
 use App\Models\BiayaKapalPerijinan;
 use App\Models\BiayaKapalMeratus;
+use App\Models\BiayaKapalTemas;
 use App\Models\PricelistMeratus;
 use App\Models\MasterPricelistFreight;
 use App\Models\TandaTerima;
@@ -2352,6 +2353,12 @@ class BiayaKapalController extends Controller
     {
         $meratusDetails = BiayaKapalMeratus::where('biaya_kapal_id', $biayaKapal->id)->get();
         return view('biaya-kapal.print-meratus', compact('biayaKapal', 'meratusDetails'));
+    }
+
+    public function printTemas(BiayaKapal $biayaKapal)
+    {
+        $temasDetails = BiayaKapalTemas::where('biaya_kapal_id', $biayaKapal->id)->get();
+        return view('biaya-kapal.print-temas', compact('biayaKapal', 'temasDetails'));
     }
 
     public function printStuffing(BiayaKapal $biayaKapal)

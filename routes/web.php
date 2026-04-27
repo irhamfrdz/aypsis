@@ -1762,6 +1762,9 @@ Route::middleware([
     Route::get('biaya-kapal/{biayaKapal}/print-meratus', [\App\Http\Controllers\BiayaKapalController::class, 'printMeratus'])
          ->name('biaya-kapal.print-meratus')
          ->middleware('can:biaya-kapal-view');
+    Route::get('biaya-kapal/{biayaKapal}/print-temas', [\App\Http\Controllers\BiayaKapalController::class, 'printTemas'])
+         ->name('biaya-kapal.print-temas')
+         ->middleware('can:biaya-kapal-view');
 
     Route::get('biaya-kapal', [\App\Http\Controllers\BiayaKapalController::class, 'index'])
          ->name('biaya-kapal.index')
