@@ -292,10 +292,11 @@ use Illuminate\Support\Str;
 
                                             {{-- Tombol Delete --}}
                                             <div class="border-t border-gray-100"></div>
-                                            <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" method="POST" class="inline w-full" onsubmit="return deleteItem(event, this)">
+                                            <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" method="POST" class="inline w-full">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
+                                                    onclick="event.stopPropagation(); return confirm('Yakin ingin menghapus surat jalan ini?')"
                                                     class="group flex items-center w-full px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 hover:text-red-900 whitespace-nowrap">
                                                     <svg class="mr-2 h-4 w-4 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -465,10 +466,11 @@ use Illuminate\Support\Str;
                                     @endcan
 
                                     {{-- Tombol Delete --}}
-                                    <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" method="POST" class="inline" onsubmit="return deleteItem(event, this)">
+                                    <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
+                                            onclick="return confirm('Yakin ingin menghapus surat jalan ini?')"
                                             class="text-red-600 hover:text-red-900 transition-colors duration-200 whitespace-nowrap"
                                                 title="Hapus Surat Jalan">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -623,7 +625,6 @@ function updateStatus(suratJalanId, status) {
 function printPreprinted(suratJalanId) {
     window.open(`/surat-jalan/${suratJalanId}/print-preprinted`, '_blank');
 }
-
 
 // Close dropdown when clicking outside
 document.addEventListener('click', function(event) {
