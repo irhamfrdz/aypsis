@@ -1505,7 +1505,7 @@ class TandaTerimaController extends Controller
     /**
      * Remove the specified tanda terima from storage
      */
-    public function destroy(TandaTerima $tandaTerima)
+    public function destroy(Request $request, TandaTerima $tandaTerima)
     {
         DB::beginTransaction();
         try {
@@ -1530,12 +1530,27 @@ class TandaTerimaController extends Controller
                 $successMessage .= " ({$deletedProspekCount} prospek terkait juga dihapus)";
             }
             
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $successMessage
+                ]);
+            }
+
             return redirect()->route('tanda-terima.index')
                 ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting tanda terima: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus tanda terima: ' . $e->getMessage()
+                ], 500);
+            }
+
             return back()->with('error', 'Gagal menghapus tanda terima: ' . $e->getMessage());
         }
     }

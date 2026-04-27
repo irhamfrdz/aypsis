@@ -570,10 +570,17 @@ class OrderController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
         $order = Order::findOrFail($id);
         $order->delete();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Order berhasil dihapus.'
+            ]);
+        }
 
         return redirect()->route('orders.index')->with('success', 'Order berhasil dihapus.');
     }

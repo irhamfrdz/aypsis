@@ -718,7 +718,7 @@
                                                 <form action="{{ route('tanda-terima.destroy', $tandaTerima->id) }}"
                                                       method="POST"
                                                       class="block"
-                                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima ini?\n\nNo. Surat Jalan: {{ $tandaTerima->no_surat_jalan }}');">
+                                                      onsubmit="return deleteItem(event, this)">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
