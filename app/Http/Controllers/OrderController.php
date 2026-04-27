@@ -110,13 +110,7 @@ class OrderController extends Controller
             $rules['unit_kontainer'] = 'nullable|integer|min:1';
         }
 
-        // Debug: Log the request data
-        \Log::info('Order Store Request:', [
-            'tipe_kontainer' => $request->tipe_kontainer,
-            'size_kontainer' => $request->size_kontainer,
-            'unit_kontainer' => $request->unit_kontainer,
-            'all_data' => $request->all()
-        ]);
+
 
         $request->validate($rules);
 
@@ -461,13 +455,7 @@ class OrderController extends Controller
             // Update all related surat jalans
             $order->suratJalans()->update($syncData);
             
-            // Log the sync activity
-            \Log::info('SuratJalan data synced', [
-                'order_id' => $order->id,
-                'surat_jalan_count' => $suratJalans->count(),
-                'synced_fields' => array_keys($syncData),
-                'user_id' => auth()->id()
-            ]);
+
         }
     }
 
