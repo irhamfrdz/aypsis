@@ -208,6 +208,9 @@ class BiayaKapalController extends Controller
         // Get pricelist meratus
         $pricelistMeratus = \App\Models\PricelistMeratus::where('status', 'Aktif')->orderBy('jenis_biaya')->get();
 
+        // Get pricelist temas
+        $pricelistTemas = \App\Models\PricelistTemas::where('status', 'Aktif')->orderBy('jenis_biaya')->get();
+
         return view('biaya-kapal.create', compact(
             'kapals', 
             'klasifikasiBiayas', 
@@ -228,7 +231,8 @@ class BiayaKapalController extends Controller
             'pricelistFreightVendors',
             'dokumenPerijinans',
             'pricelistPerijinans',
-            'pricelistMeratus'
+            'pricelistMeratus',
+            'pricelistTemas'
         ));
     }
 
@@ -436,6 +440,28 @@ class BiayaKapalController extends Controller
             foreach ($data['meratus'] as &$section) {
                 $numericMeratus = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
                 foreach ($numericMeratus as $f) {
+                    if (isset($section[$f]) && is_string($section[$f])) {
+                        $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    }
+                }
+                // custom_prices come from type="number" inputs - no formatting needed
+                if (isset($section['quantities']) && is_array($section['quantities'])) {
+                    foreach ($section['quantities'] as &$qty) {
+                        if (is_string($qty)) {
+                            $qty = str_replace(',', '.', str_replace('.', '', $qty));
+                        }
+                    }
+                    unset($qty);
+                }
+            }
+            unset($section);
+        }
+
+        // Temas Sections Cleaning
+        if (isset($data['temas']) && is_array($data['temas'])) {
+            foreach ($data['temas'] as &$section) {
+                $numericTemas = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
+                foreach ($numericTemas as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                     }
@@ -694,6 +720,32 @@ class BiayaKapalController extends Controller
             'meratus.*.nomor_rekening' => 'nullable|string|max:100',
             'meratus.*.tanggal_invoice_vendor' => 'nullable|date',
             'meratus.*.keterangan' => 'nullable|string',
+
+            // Biaya Temas sections validation
+            'temas' => 'nullable|array',
+            'temas.*.kapal' => 'nullable|string|max:255',
+            'temas.*.voyage' => 'nullable|string|max:255',
+            'temas.*.types' => 'nullable|array',
+            'temas.*.manual_names' => 'nullable|array',
+            'temas.*.custom_prices' => 'nullable|array',
+            'temas.*.quantities' => 'nullable|array',
+            'temas.*.lokasi_items' => 'nullable|array',
+            'temas.*.size_items' => 'nullable|array',
+            'temas.*.is_muat' => 'nullable|array',
+            'temas.*.is_bongkar' => 'nullable|array',
+            'temas.*.sub_total' => 'nullable|numeric|min:0',
+            'temas.*.pph' => 'nullable|numeric|min:0',
+            'temas.*.ppn' => 'nullable|numeric|min:0',
+            'temas.*.pph_active' => 'nullable',
+            'temas.*.ppn_active' => 'nullable',
+            'temas.*.biaya_materai' => 'nullable|numeric',
+            'temas.*.adjustment' => 'nullable|numeric',
+            'temas.*.grand_total' => 'nullable|numeric',
+            'temas.*.nomor_referensi' => 'nullable|string|max:100',
+            'temas.*.penerima' => 'nullable|string|max:255',
+            'temas.*.nomor_rekening' => 'nullable|string|max:100',
+            'temas.*.tanggal_invoice_vendor' => 'nullable|date',
+            'temas.*.keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -1223,6 +1275,100 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for Meratus from section totals
                 $totalMeratus = BiayaKapalMeratus::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
                 $biayaKapal->update(['nominal' => $totalMeratus]);
+            }
+
+            // BIAYA TEMAS SECTIONS: Store Temas details
+            if ($request->has('temas') && !empty($request->temas)) {
+                foreach ($request->temas as $sectionIndex => $section) {
+                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                        continue;
+                    }
+
+                    if (isset($section['types']) && is_array($section['types'])) {
+                        foreach ($section['types'] as $typeIndex => $typeId) {
+                            $jenisBiaya = '';
+                            $price = floatval($section['custom_prices'][$typeIndex] ?? 0);
+                            $qty = floatval($section['quantities'][$typeIndex] ?? 0);
+                            $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
+                            $sizeItem = $section['size_items'][$typeIndex] ?? null;
+                            $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
+                            $isBongkar = isset($section['is_bongkar'][$typeIndex]) && $section['is_bongkar'][$typeIndex] == '1';
+                            
+                            $pricelistId = null;
+                            if ($typeId === 'MANUAL') {
+                                $jenisBiaya = $section['manual_names'][$typeIndex] ?? 'MANUAL';
+                            } else {
+                                $masterType = \App\Models\PricelistTemas::find($typeId);
+                                $jenisBiaya = $masterType ? $masterType->jenis_biaya : 'N/A';
+                                $pricelistId = $typeId;
+                            }
+
+                            $subTotal = $price * $qty;
+                            
+                            // Extract section-level values (only for the first item to avoid double counting)
+                            $pph = 0;
+                            $ppn = 0;
+                            $pphActive = false;
+                            $ppnActive = false;
+                            $biayaMaterai = 0;
+                            $adjustment = 0;
+                            
+                            if ($typeIndex == 0) {
+                                $pphRaw = $section['pph'] ?? 0;
+                                $pph = floatval($pphRaw);
+                                
+                                $ppnRaw = $section['ppn'] ?? 0;
+                                $ppn = floatval($ppnRaw);
+
+                                // Checkboxes in Laravel are only present if checked
+                                $pphActive = isset($section['pph_active']);
+                                $ppnActive = isset($section['ppn_active']);
+                                
+                                $biayaMateraiRaw = $section['biaya_materai'] ?? 0;
+                                $biayaMaterai = floatval($biayaMateraiRaw);
+
+                                $adjustmentRaw = $section['adjustment'] ?? 0;
+                                $adjustment = floatval($adjustmentRaw);
+                            }
+                            
+                            $pphForCalc = $pphActive ? $pph : 0;
+                            $ppnForCalc = $ppnActive ? $ppn : 0;
+                            
+                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
+
+                            \App\Models\BiayaKapalTemas::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'kapal' => $section['kapal'] ?? null,
+                                'voyage' => $section['voyage'] ?? null,
+                                'pricelist_temas_id' => $pricelistId,
+                                'jenis_biaya' => $jenisBiaya,
+                                'lokasi' => $lokasiItem,
+                                'size' => $sizeItem,
+                                'is_muat' => $isMuat,
+                                'is_bongkar' => $isBongkar,
+                                'harga' => $price,
+                                'kuantitas' => $qty,
+                                'sub_total' => $subTotal,
+                                'pph' => $pph,
+                                'ppn' => $ppn,
+                                'pph_active' => $pphActive,
+                                'ppn_active' => $ppnActive,
+                                'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
+                                'adjustment' => $typeIndex == 0 ? $adjustment : 0,
+                                'grand_total' => $grandTotal,
+                                'penerima' => $section['penerima'] ?? null,
+                                'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                'keterangan' => $section['keterangan'] ?? null,
+                            ]);
+                        }
+                    }
+                }
+
+                // Auto-calculate nominal for Temas from section totals
+                $totalTemas = \App\Models\BiayaKapalTemas::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
+                $biayaKapal->update(['nominal' => $totalTemas]);
             }
 
             // Store barang details - Handle both old and new structure
@@ -2577,6 +2723,28 @@ class BiayaKapalController extends Controller
             unset($section);
         }
         
+        // Temas Sections Cleaning
+        if (isset($data['temas']) && is_array($data['temas'])) {
+            foreach ($data['temas'] as &$section) {
+                $numericTemas = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
+                foreach ($numericTemas as $f) {
+                    if (isset($section[$f]) && is_string($section[$f])) {
+                        $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    }
+                }
+                // quantities
+                if (isset($section['quantities']) && is_array($section['quantities'])) {
+                    foreach ($section['quantities'] as &$qty) {
+                        if (is_string($qty)) {
+                            $qty = str_replace(',', '.', str_replace('.', '', $qty));
+                        }
+                    }
+                    unset($qty);
+                }
+            }
+            unset($section);
+        }
+
         $request->replace($data);
 
         $validated = $request->validate([
@@ -2743,6 +2911,32 @@ class BiayaKapalController extends Controller
             'meratus.*.nomor_rekening' => 'nullable|string|max:100',
             'meratus.*.tanggal_invoice_vendor' => 'nullable|date',
             'meratus.*.keterangan' => 'nullable|string',
+
+            // Biaya Temas sections validation
+            'temas' => 'nullable|array',
+            'temas.*.kapal' => 'nullable|string|max:255',
+            'temas.*.voyage' => 'nullable|string|max:255',
+            'temas.*.types' => 'nullable|array',
+            'temas.*.manual_names' => 'nullable|array',
+            'temas.*.custom_prices' => 'nullable|array',
+            'temas.*.quantities' => 'nullable|array',
+            'temas.*.lokasi_items' => 'nullable|array',
+            'temas.*.size_items' => 'nullable|array',
+            'temas.*.is_muat' => 'nullable|array',
+            'temas.*.is_bongkar' => 'nullable|array',
+            'temas.*.sub_total' => 'nullable|numeric|min:0',
+            'temas.*.pph' => 'nullable|numeric|min:0',
+            'temas.*.ppn' => 'nullable|numeric|min:0',
+            'temas.*.pph_active' => 'nullable',
+            'temas.*.ppn_active' => 'nullable',
+            'temas.*.biaya_materai' => 'nullable|numeric',
+            'temas.*.adjustment' => 'nullable|numeric',
+            'temas.*.grand_total' => 'nullable|numeric',
+            'temas.*.nomor_referensi' => 'nullable|string|max:100',
+            'temas.*.penerima' => 'nullable|string|max:255',
+            'temas.*.nomor_rekening' => 'nullable|string|max:100',
+            'temas.*.tanggal_invoice_vendor' => 'nullable|date',
+            'temas.*.keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -3370,6 +3564,102 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for Meratus from section totals
                 $totalMeratus = BiayaKapalMeratus::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
                 $biayaKapal->update(['nominal' => $totalMeratus]);
+            }
+
+            // TEMAS UPDATE
+            if ($request->has('temas')) {
+                \App\Models\BiayaKapalTemas::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                if (!empty($request->temas)) {
+                    foreach ($request->temas as $sectionIndex => $section) {
+                        if (empty($section['kapal']) && empty($section['voyage'])) {
+                            continue;
+                        }
+
+                        if (isset($section['types']) && is_array($section['types'])) {
+                            foreach ($section['types'] as $typeIndex => $typeId) {
+                                $jenisBiaya = '';
+                                $price = floatval($section['custom_prices'][$typeIndex] ?? 0);
+                                $qty = floatval($section['quantities'][$typeIndex] ?? 0);
+                                $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
+                                $sizeItem = $section['size_items'][$typeIndex] ?? null;
+                                $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
+                                $isBongkar = isset($section['is_bongkar'][$typeIndex]) && $section['is_bongkar'][$typeIndex] == '1';
+                                
+                                $pricelistId = null;
+                                if ($typeId === 'MANUAL') {
+                                    $jenisBiaya = $section['manual_names'][$typeIndex] ?? 'MANUAL';
+                                } else {
+                                    $masterType = \App\Models\PricelistTemas::find($typeId);
+                                    $jenisBiaya = $masterType ? $masterType->jenis_biaya : 'N/A';
+                                    $pricelistId = $typeId;
+                                }
+
+                                $subTotal = $price * $qty;
+                                
+                                // Extract section-level values (only for the first item)
+                                $pph = 0;
+                                $ppn = 0;
+                                $pphActive = false;
+                                $ppnActive = false;
+                                $biayaMaterai = 0;
+                                $adjustment = 0;
+                                
+                                if ($typeIndex == 0) {
+                                    $pphRaw = $section['pph'] ?? 0;
+                                    $pph = floatval($pphRaw);
+                                    
+                                    $ppnRaw = $section['ppn'] ?? 0;
+                                    $ppn = floatval($ppnRaw);
+
+                                    $pphActive = isset($section['pph_active']);
+                                    $ppnActive = isset($section['ppn_active']);
+                                    
+                                    $biayaMateraiRaw = $section['biaya_materai'] ?? 0;
+                                    $biayaMaterai = floatval($biayaMateraiRaw);
+
+                                    $adjustmentRaw = $section['adjustment'] ?? 0;
+                                    $adjustment = floatval($adjustmentRaw);
+                                }
+                                
+                                $pphForCalc = $pphActive ? $pph : 0;
+                                $ppnForCalc = $ppnActive ? $ppn : 0;
+                                
+                                $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
+
+                                \App\Models\BiayaKapalTemas::create([
+                                    'biaya_kapal_id' => $biayaKapal->id,
+                                    'kapal' => $section['kapal'] ?? null,
+                                    'voyage' => $section['voyage'] ?? null,
+                                    'pricelist_temas_id' => $pricelistId,
+                                    'jenis_biaya' => $jenisBiaya,
+                                    'lokasi' => $lokasiItem,
+                                    'size' => $sizeItem,
+                                    'is_muat' => $isMuat,
+                                    'is_bongkar' => $isBongkar,
+                                    'harga' => $price,
+                                    'kuantitas' => $qty,
+                                    'sub_total' => $subTotal,
+                                    'pph' => $pph,
+                                    'ppn' => $ppn,
+                                    'pph_active' => $pphActive,
+                                    'ppn_active' => $ppnActive,
+                                    'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
+                                    'adjustment' => $typeIndex == 0 ? $adjustment : 0,
+                                    'grand_total' => $grandTotal,
+                                    'penerima' => $section['penerima'] ?? null,
+                                    'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                    'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                    'keterangan' => $section['keterangan'] ?? null,
+                                ]);
+                            }
+                        }
+                    }
+                }
+                
+                // Auto-calculate nominal for Temas from section totals
+                $totalTemas = \App\Models\BiayaKapalTemas::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
+                $biayaKapal->update(['nominal' => $totalTemas]);
             }
 
             // PERIJINAN UPDATE

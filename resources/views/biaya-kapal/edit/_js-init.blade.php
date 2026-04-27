@@ -228,10 +228,17 @@
     const addPerijinanSectionBtn = document.getElementById('add_perijinan_section_btn');
     const addPerijinanSectionBottomBtn = document.getElementById('add_perijinan_section_bottom_btn');
 
+    // Meratus & Temas wrappers
+    const meratusWrapper = document.getElementById('meratus_wrapper');
+    const temasWrapper = document.getElementById('temas_wrapper');
+
     // Pricelist Perijinan data
     var pricelistPerijinansData = {!! json_encode($pricelistPerijinans) !!};
 
     // Pricelist Meratus data
     var pricelistMeratusData = {!! json_encode($pricelistMeratus ?? []) !!};
+
+    // Pricelist Temas data
+    var pricelistTemasData = {!! json_encode($pricelistTemas ?? []) !!};
 
     // Format nominal input with thousand separator

@@ -5,6 +5,7 @@
         $editTkbmSections = [];
         $editOperasionalSections = [];
         $editMeratusSections = [];
+        $editTemasSections = [];
 
         // Group Buruh
         if($biayaKapal->barangDetails->count() > 0) {
@@ -227,6 +228,49 @@
                  }
             }
         }
+
+        // Map Temas
+        if($biayaKapal->temasDetails->count() > 0) {
+            $groupedTemas = $biayaKapal->temasDetails->groupBy(function($item) {
+                $tgl = $item->tanggal_invoice_vendor ? \Carbon\Carbon::parse($item->tanggal_invoice_vendor)->format('Y-m-d') : '';
+                return ($item->kapal ?? '') . '|||' . ($item->voyage ?? '') . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl . '|||' . ($item->keterangan ?? '');
+            });
+            foreach($groupedTemas as $key => $items) {
+                 $parts = explode('|||', $key);
+                 if(count($parts) >= 2) {
+                     $firstItem = $items->first();
+                     $editTemasSections[] = [
+                         'kapal' => $parts[0],
+                         'voyage' => $parts[1],
+                         'penerima' => $parts[2],
+                         'nomor_rekening' => $parts[3],
+                         'nomor_referensi' => $parts[4],
+                         'tanggal_invoice_vendor' => $parts[5],
+                         'keterangan' => $parts[6],
+                         'types' => $items->map(function($i){
+                             return [
+                                 'type_id' => $i->pricelist_temas_id ?? 'MANUAL',
+                                 'manual_name' => $i->jenis_biaya,
+                                 'lokasi' => $i->lokasi,
+                                 'size' => $i->size,
+                                 'harga' => $i->harga,
+                                 'kuantitas' => $i->kuantitas,
+                                 'is_muat' => $i->is_muat,
+                                 'is_bongkar' => $i->is_bongkar
+                             ];
+                         })->toArray(),
+                         'sub_total' => $firstItem->sub_total ?? 0,
+                         'pph' => $firstItem->pph ?? 0,
+                         'ppn' => $firstItem->ppn ?? 0,
+                         'pph_active' => ($firstItem->pph > 0) || (($firstItem->sub_total ?? 0) > 0 && ($firstItem->pph ?? 0) != 0),
+                         'ppn_active' => ($firstItem->ppn > 0),
+                         'biaya_materai' => $firstItem->biaya_materai ?? 0,
+                         'adjustment' => $firstItem->adjustment ?? 0,
+                         'grand_total' => $firstItem->grand_total ?? 0,
+                     ];
+                 }
+            }
+        }
     @endphp
 
     var existingKapalSections = @json($editKapalSections);
@@ -238,6 +282,7 @@
     var existingLabuhTambatSections = @json($editLabuhTambatSections);
     var existingPerijinanSections = @json($editPerijinanSections);
     var existingMeratusSections = @json($editMeratusSections);
+    var existingTemasSections = @json($editTemasSections);
 
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(initializeEditMode, 500);
@@ -606,6 +651,14 @@
             if (typeof clearAllMeratusSections === 'function') clearAllMeratusSections();
             existingMeratusSections.forEach(myData => {
                 if (typeof addMeratusSection === 'function') addMeratusSection(myData);
+            });
+        }
+        
+        // 11. TEMAS SECTIONS
+        if (existingTemasSections.length > 0) {
+            if (typeof clearAllTemasSections === 'function') clearAllTemasSections();
+            existingTemasSections.forEach(myData => {
+                if (typeof addTemasSection === 'function') addTemasSection(myData);
             });
         }
     }

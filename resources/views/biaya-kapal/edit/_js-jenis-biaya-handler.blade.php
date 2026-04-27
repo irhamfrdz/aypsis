@@ -79,6 +79,8 @@
         if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
         if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
         if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
+        if(meratusWrapper) meratusWrapper.classList.add('hidden');
+        if(temasWrapper) temasWrapper.classList.add('hidden');
         
         // Reset required attributes
         if(nominalInput) nominalInput.setAttribute('required', 'required');
@@ -972,10 +974,103 @@
             // Hide Storage
             if (storageWrapper) storageWrapper.classList.add('hidden');
             clearAllStorageSections();
+        } 
+        // Show Temas wrapper if "Temas" is selected
+        else if (selectedText.toLowerCase().includes('temas')) {
+            if (temasWrapper) temasWrapper.classList.remove('hidden');
+            if (temasSectionsContainer && temasSectionsContainer.children.length === 0) {
+                initializeTemasSections();
+            }
+            
+            // Hide standard fields
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Hide other standard fields
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) {
+                penerimaWrapper.classList.add('hidden');
+                if(penerimaInput) {
+                    penerimaInput.removeAttribute('required');
+                    penerimaInput.value = '';
+                }
+            }
+            if(namaVendorWrapper) {
+                namaVendorWrapper.classList.add('hidden');
+                const vendorInput = document.getElementById('nama_vendor');
+                if (vendorInput) vendorInput.value = '';
+            }
+            if(nomorRekeningWrapper) {
+                nomorRekeningWrapper.classList.add('hidden');
+                const rekInput = document.getElementById('nomor_rekening');
+                if (rekInput) rekInput.value = '';
+            }
+            if(nominalInput) nominalInput.removeAttribute('required');
+            
+            // Hide other type-specific fields
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            
+            // Hide perijinan
+            if (perijinanWrapper) perijinanWrapper.classList.add('hidden');
+            clearAllPerijinanSections();
+            
+            // Hide Operasional
+            if (operasionalWrapper) operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+
+            // Hide Labuh Tambat
+            if (labuhTambatWrapper) labuhTambatWrapper.classList.add('hidden');
+            clearAllLabuhTambatSections();
+
+            // Hide Trucking
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
+
+            // Hide Stuffing
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+
+            // Hide THC
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+
+            // Hide LOLO
+            if (loloWrapper) loloWrapper.classList.add('hidden');
+            clearAllLoloSections();
+
+            // Hide Storage
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
+
+            // Hide Meratus
+            if (meratusWrapper) meratusWrapper.classList.add('hidden');
+            clearAllMeratusSections();
         } else {
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
             
+            // Hide Meratus & Temas
+            if (meratusWrapper) meratusWrapper.classList.add('hidden');
+            clearAllMeratusSections();
+            if (temasWrapper) temasWrapper.classList.add('hidden');
+            clearAllTemasSections();
             // Hide TKBM wrapper for other types
             if (document.getElementById('tkbm_wrapper')) {
                 document.getElementById('tkbm_wrapper').classList.add('hidden');

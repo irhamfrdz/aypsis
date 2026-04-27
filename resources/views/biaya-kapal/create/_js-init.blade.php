@@ -25,3 +25,6 @@
 
     // Store pricelist meratus data
     const pricelistMeratusData = {!! json_encode($pricelistMeratus ?? []) !!};
+
+    // Store pricelist temas data
+    const pricelistTemasData = {!! json_encode($pricelistTemas ?? []) !!};

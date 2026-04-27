@@ -907,6 +907,186 @@
     </div>
     @endif
 
+    @if($biayaKapal->meratusDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Tagihan Meratus</h3>
+        <div class="space-y-6">
+            @php
+                $groupedMeratus = $biayaKapal->meratusDetails->groupBy(function($item) {
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                });
+            @endphp
+            @foreach($groupedMeratus as $groupKey => $details)
+                @php
+                    list($kapal, $voyage) = explode('|', $groupKey);
+                    $first = $details->first();
+                @endphp
+                <div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $kapal }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $voyage }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jenis Biaya</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lokasi/Size</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Kuantitas</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Harga</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($details as $item)
+                                    <tr>
+                                        <td class="px-4 py-2 text-sm text-gray-900">{{ $item->jenis_biaya }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600">{{ $item->lokasi }} / {{ $item->size }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ number_format($item->kuantitas, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->sub_total, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="bg-gray-50 font-bold">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">Subtotal</td>
+                                    <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('sub_total'), 0, ',', '.') }}</td>
+                                </tr>
+                                @if($first->ppn_active)
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">PPN</td>
+                                    <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($first->ppn, 0, ',', '.') }}</td>
+                                </tr>
+                                @endif
+                                @if($first->pph_active)
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">PPH</td>
+                                    <td class="px-4 py-2 text-sm text-right text-red-600">- Rp {{ number_format($first->pph, 0, ',', '.') }}</td>
+                                </tr>
+                                @endif
+                                @if($first->biaya_materai > 0)
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">Materai</td>
+                                    <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($first->biaya_materai, 0, ',', '.') }}</td>
+                                </tr>
+                                @endif
+                                @if($first->adjustment != 0)
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">Adjustment</td>
+                                    <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($first->adjustment, 0, ',', '.') }}</td>
+                                </tr>
+                                @endif
+                                <tr class="bg-indigo-100">
+                                    <td colspan="4" class="px-4 py-2 text-base text-right font-black">Grand Total</td>
+                                    <td class="px-4 py-2 text-base text-right font-black text-indigo-800">Rp {{ number_format($first->grand_total, 0, ',', '.') }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    @if($biayaKapal->temasDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Tagihan Temas</h3>
+        <div class="space-y-6">
+            @php
+                $groupedTemas = $biayaKapal->temasDetails->groupBy(function($item) {
+                     return ($item->kapal ?? '-') . '|' . ($item->voyage ?? '-');
+                });
+            @endphp
+            @foreach($groupedTemas as $groupKey => $details)
+                @php
+                    list($kapal, $voyage) = explode('|', $groupKey);
+                    $first = $details->first();
+                @endphp
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $kapal }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $voyage }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jenis Biaya</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Lokasi/Size</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Kuantitas</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Harga</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($details as $item)
+                                    <tr>
+                                        <td class="px-4 py-2 text-sm text-gray-900">{{ $item->jenis_biaya }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600">{{ $item->lokasi }} / {{ $item->size }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ number_format($item->kuantitas, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->sub_total, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="bg-gray-50 font-bold">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">Subtotal</td>
+                                    <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($details->sum('sub_total'), 0, ',', '.') }}</td>
+                                </tr>
+                                @if($first->ppn_active)
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">PPN</td>
+                                    <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($first->ppn, 0, ',', '.') }}</td>
+                                </tr>
+                                @endif
+                                @if($first->pph_active)
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">PPH</td>
+                                    <td class="px-4 py-2 text-sm text-right text-red-600">- Rp {{ number_format($first->pph, 0, ',', '.') }}</td>
+                                </tr>
+                                @endif
+                                @if($first->biaya_materai > 0)
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">Materai</td>
+                                    <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($first->biaya_materai, 0, ',', '.') }}</td>
+                                </tr>
+                                @endif
+                                @if($first->adjustment != 0)
+                                <tr>
+                                    <td colspan="4" class="px-4 py-2 text-sm text-right">Adjustment</td>
+                                    <td class="px-4 py-2 text-sm text-right">Rp {{ number_format($first->adjustment, 0, ',', '.') }}</td>
+                                </tr>
+                                @endif
+                                <tr class="bg-blue-100">
+                                    <td colspan="4" class="px-4 py-2 text-base text-right font-black">Grand Total</td>
+                                    <td class="px-4 py-2 text-base text-right font-black text-blue-800">Rp {{ number_format($first->grand_total, 0, ',', '.') }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     @can('biaya-kapal-delete')
     <div class="mt-8 pt-6 border-t border-gray-200">
         <form action="{{ route('biaya-kapal.destroy', $biayaKapal->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');" class="inline">

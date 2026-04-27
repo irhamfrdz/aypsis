@@ -195,6 +195,11 @@
     const meratusSectionsContainer = document.getElementById('meratus_sections_container');
     const addMeratusSectionBtn = document.getElementById('add_meratus_section_btn');
     
+    // Tagihan Temas multi-section
+    const temasWrapper = document.getElementById('temas_wrapper');
+    const temasSectionsContainer = document.getElementById('temas_sections_container');
+    const addTemasSectionBtn = document.getElementById('add_temas_section_btn');
+    
     // Standard field wrappers
     const nominalWrapper = document.getElementById('nominal_wrapper');
     const penerimaWrapper = document.getElementById('penerima_wrapper');
