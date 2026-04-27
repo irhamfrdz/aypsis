@@ -95,6 +95,11 @@ class SuratJalanController extends Controller
             $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
         }
 
+        // Filter by belum tanda terima
+        if ($request->has('belum_tanda_terima') && $request->belum_tanda_terima == 1) {
+            $query->whereDoesntHave('tandaTerima');
+        }
+
         $suratJalans = $query->with(['order', 'tagihanSupirVendor.invoice'])
                     ->withCount('pranotaUangRit')
                             ->orderBy('created_at', 'desc')
@@ -151,7 +156,7 @@ class SuratJalanController extends Controller
         }
 
         try {
-            $filters = $request->only(['search', 'status', 'status_pembayaran', 'tipe_kontainer', 'start_date', 'end_date']);
+            $filters = $request->only(['search', 'status', 'status_pembayaran', 'tipe_kontainer', 'start_date', 'end_date', 'belum_tanda_terima']);
             $fileName = 'surat_jalan_export_' . date('Ymd_His') . '.xlsx';
             $export = new SuratJalanExport($filters, []);
             return Excel::download($export, $fileName);
