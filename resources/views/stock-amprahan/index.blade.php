@@ -248,6 +248,8 @@
                                 <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-purple-100 text-purple-700 uppercase tracking-wider shadow-sm">Perlengkapan</span>
                             @elseif($item->type_amprahan == 'Transportasi')
                                 <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-pink-100 text-pink-700 uppercase tracking-wider shadow-sm">Transportasi</span>
+                            @elseif($item->type_amprahan == 'Peralatan')
+                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-cyan-100 text-cyan-700 uppercase tracking-wider shadow-sm">Peralatan</span>
                             @else
                                 <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-gray-100 text-gray-700 uppercase tracking-wider">-</span>
                             @endif
@@ -576,6 +578,9 @@
                                                  <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="KANTOR GARASI PLUIT" onclick="selectKantor('KANTOR GARASI PLUIT')">KANTOR GARASI PLUIT</div>
                                                  <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="KANTOR PELABUHAN" onclick="selectKantor('KANTOR PELABUHAN')">KANTOR PELABUHAN</div>
                                                  <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="KANTOR GARASI SEMUT" onclick="selectKantor('KANTOR GARASI SEMUT')">KANTOR GARASI SEMUT</div>
+                                                 <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="GARASI SEMUT" onclick="selectKantor('GARASI SEMUT')">GARASI SEMUT</div>
+                                                 <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="GARASI PLUIT" onclick="selectKantor('GARASI PLUIT')">GARASI PLUIT</div>
+                                                 <div class="kantor-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" data-value="PELABUHAN SUNDA KELAPA" onclick="selectKantor('PELABUHAN SUNDA KELAPA')">PELABUHAN SUNDA KELAPA</div>
                                                  <div id="kantor_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada saran yang cocok</div>
                                              </div>
                                           </div>

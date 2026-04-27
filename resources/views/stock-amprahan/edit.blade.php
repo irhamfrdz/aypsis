@@ -96,6 +96,7 @@
                                     <option value="Pemakaian" {{ old('type_amprahan', $item->type_amprahan) == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
                                     <option value="Perbaikan" {{ old('type_amprahan', $item->type_amprahan) == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
                                     <option value="Perlengkapan" {{ old('type_amprahan', $item->type_amprahan) == 'Perlengkapan' ? 'selected' : '' }}>Perlengkapan</option>
+                                    <option value="Peralatan" {{ old('type_amprahan', $item->type_amprahan) == 'Peralatan' ? 'selected' : '' }}>Peralatan</option>
                                     <option value="Transportasi" {{ old('type_amprahan', $item->type_amprahan) == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
                                 </select>
                                 @error('type_amprahan')
@@ -446,6 +447,9 @@
                                             <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="KANTOR GARASI PLUIT">KANTOR GARASI PLUIT</div>
                                             <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="KANTOR PELABUHAN">KANTOR PELABUHAN</div>
                                             <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="KANTOR GARASI SEMUT">KANTOR GARASI SEMUT</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="GARASI SEMUT">GARASI SEMUT</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="GARASI PLUIT">GARASI PLUIT</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="PELABUHAN SUNDA KELAPA">PELABUHAN SUNDA KELAPA</div>
                                         </div>
                                     </div>
                                     @error('kantor')
