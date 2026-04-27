@@ -2603,5 +2603,61 @@
             });
         }
     </script>
+    <script>
+        function deleteItem(event, form) {
+            event.preventDefault();
+            
+            if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+                return false;
+            }
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalContent = submitBtn ? submitBtn.innerHTML : null;
+            
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<svg class="animate-spin h-4 w-4 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            }
+
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const row = form.closest('tr');
+                    if (row) {
+                        row.style.transition = 'all 0.3s ease-out';
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(20px)';
+                        setTimeout(() => row.remove(), 300);
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalContent;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus data');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalContent;
+                }
+            });
+
+            return false;
+        }
+    </script>
 </body>
 </html>

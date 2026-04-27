@@ -932,7 +932,7 @@ class SuratJalanController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         try {
             $suratJalan = SuratJalan::findOrFail($id);
@@ -1003,11 +1003,26 @@ class SuratJalanController extends Controller
                 }
             }
 
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Surat jalan berhasil dihapus.'
+                ]);
+            }
+
             return redirect()->route('surat-jalan.index')
                            ->with('success', 'Surat jalan berhasil dihapus.');
 
         } catch (\Exception $e) {
             Log::error('Error deleting surat jalan: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus surat jalan: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()
                            ->with('error', 'Gagal menghapus surat jalan: ' . $e->getMessage());
         }
