@@ -248,7 +248,7 @@ class CheckpointController extends Controller
                                 'jenis_kegiatan' => 'Keluar (Checkpoint)',
                                 'tanggal_kegiatan' => $request->input('tanggal_checkpoint') ?? now(),
                                 'asal_gudang_id' => $oldGudangId,
-                                'gudang_id' => null,
+                                'gudang_id' => $request->gudang_tujuan_id,
                                 'keterangan' => 'Dalam Perjalanan (Checkpoint)',
                                 'created_by' => Auth::id(),
                             ]);
@@ -266,7 +266,7 @@ class CheckpointController extends Controller
                                 'jenis_kegiatan' => 'Keluar (Checkpoint)',
                                 'tanggal_kegiatan' => $request->input('tanggal_checkpoint') ?? now(),
                                 'asal_gudang_id' => $oldGudangId,
-                                'gudang_id' => null,
+                                'gudang_id' => $request->gudang_tujuan_id,
                                 'keterangan' => 'Dalam Perjalanan (Checkpoint)',
                                 'created_by' => Auth::id(),
                             ]);
@@ -527,7 +527,7 @@ class CheckpointController extends Controller
                             'jenis_kegiatan' => 'Keluar (Checkpoint SJ)',
                             'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
                             'asal_gudang_id' => $oldGudangId,
-                            'gudang_id' => null,
+                            'gudang_id' => $request->gudang_tujuan_id,
                             'keterangan' => 'Dalam Perjalanan (Checkpoint SJ: ' . $suratJalan->no_surat_jalan . ')',
                             'created_by' => Auth::id(),
                         ]);
@@ -547,7 +547,7 @@ class CheckpointController extends Controller
                             'jenis_kegiatan' => 'Keluar (Checkpoint SJ)',
                             'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
                             'asal_gudang_id' => $oldGudangId,
-                            'gudang_id' => null,
+                            'gudang_id' => $request->gudang_tujuan_id,
                             'keterangan' => 'Dalam Perjalanan (Checkpoint SJ: ' . $suratJalan->no_surat_jalan . ')',
                             'created_by' => Auth::id(),
                         ]);
@@ -943,7 +943,7 @@ class CheckpointController extends Controller
                             'jenis_kegiatan' => 'Keluar (Checkpoint Bongkaran)',
                             'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
                             'asal_gudang_id' => $oldGudangId,
-                            'gudang_id' => null,
+                            'gudang_id' => $request->gudang_tujuan_id,
                             'keterangan' => 'Dalam Perjalanan (Checkpoint Bongkaran ID: ' . $id . ')',
                             'created_by' => Auth::id(),
                         ]);
@@ -963,7 +963,7 @@ class CheckpointController extends Controller
                             'jenis_kegiatan' => 'Keluar (Checkpoint Bongkaran)',
                             'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
                             'asal_gudang_id' => $oldGudangId,
-                            'gudang_id' => null,
+                            'gudang_id' => $request->gudang_tujuan_id,
                             'keterangan' => 'Dalam Perjalanan (Checkpoint Bongkaran ID: ' . $id . ')',
                             'created_by' => Auth::id(),
                         ]);
