@@ -327,6 +327,7 @@
             @php
                 $displayTypes = [
                     'Perlengkapan' => 'Perlengkapan',
+                    'Peralatan' => 'Peralatan',
                     'Transport' => 'Transportasi',
                     'Pemakaian' => 'Pemakaian',
                     'Perbaikan' => 'Perbaikan'
@@ -372,8 +373,8 @@
                 
                 // Split into two groups for two-column display
                 $typeLabels = array_keys($typeTotals);
-                $leftGroup = array_slice($typeLabels, 0, 2);
-                $rightGroup = array_slice($typeLabels, 2);
+                $leftGroup = array_slice($typeLabels, 0, 3);
+                $rightGroup = array_slice($typeLabels, 3);
             @endphp
             
             <div class="summary-columns">
