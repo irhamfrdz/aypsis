@@ -141,7 +141,7 @@
                         @forelse($transactions as $trx)
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                    {{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->format('d/m/Y') }}
+                                    {{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->format('d/M/Y') }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
                                     @if($trx->nomor_accurate)
