@@ -197,12 +197,28 @@
                                     @endcan
                                     
                                     @can('biaya-kapal-view')
-                                    <a href="{{ route('biaya-kapal.print', $biaya->id) }}"
-                                       class="inline-flex items-center px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded transition duration-150"
-                                       title="Print"
-                                       target="_blank">
-                                        <i class="fas fa-print text-xs"></i>
-                                    </a>
+                                        @if($biaya->meratusDetails->count() > 0)
+                                        <a href="{{ route('biaya-kapal.print-meratus', $biaya->id) }}"
+                                           class="inline-flex items-center px-2 py-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded transition duration-150"
+                                           title="Print Meratus"
+                                           target="_blank">
+                                            <i class="fas fa-print text-xs"></i>
+                                        </a>
+                                        @elseif($biaya->temasDetails->count() > 0)
+                                        <a href="{{ route('biaya-kapal.print-temas', $biaya->id) }}"
+                                           class="inline-flex items-center px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition duration-150"
+                                           title="Print Temas"
+                                           target="_blank">
+                                            <i class="fas fa-print text-xs"></i>
+                                        </a>
+                                        @else
+                                        <a href="{{ route('biaya-kapal.print', $biaya->id) }}"
+                                           class="inline-flex items-center px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded transition duration-150"
+                                           title="Print"
+                                           target="_blank">
+                                            <i class="fas fa-print text-xs"></i>
+                                        </a>
+                                        @endif
                                     @endcan
                                     
                                     @can('biaya-kapal-update')

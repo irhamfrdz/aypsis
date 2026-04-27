@@ -44,7 +44,7 @@ class BiayaKapalController extends Controller
      */
     public function index(Request $request)
     {
-        $query = BiayaKapal::with(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'operasionalDetails']);
+        $query = BiayaKapal::with(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'operasionalDetails', 'meratusDetails', 'temasDetails']);
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {
@@ -2086,6 +2086,12 @@ class BiayaKapalController extends Controller
         if ($biayaKapal->klasifikasiBiaya && 
             stripos($biayaKapal->klasifikasiBiaya->nama, 'meratus') !== false) {
             return $this->printMeratus($biayaKapal);
+        }
+
+        // Check if it's Biaya Temas
+        if ($biayaKapal->klasifikasiBiaya && 
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'temas') !== false) {
+            return $this->printTemas($biayaKapal);
         }
 
         // Check if it's Biaya Demurrage
