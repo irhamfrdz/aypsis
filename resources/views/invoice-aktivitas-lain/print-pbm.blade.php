@@ -252,13 +252,7 @@
                 <tr>
                     <td style="width: 15%;">Tanggal</td>
                     <td style="width: 35%;">: {{ \Carbon\Carbon::parse($invoice->tanggal_invoice)->format('d/M/Y') }}</td>
-                    <td style="width: 15%;">Jenis Biaya</td>
-                    <td>: {{ $invoice->klasifikasiBiaya->nama ?? 'BIAYA PBM' }}</td>
-                </tr>
-                <tr>
-                    <td style="width: 15%;">Nomor</td>
-                    <td style="width: 35%;">: {{ $invoice->nomor_invoice }}</td>
-                    <td>Penerima</td>
+                    <td style="width: 15%;">Penerima</td>
                     <td>: 
                         @foreach($uniqueRecipients as $rec)
                             {{ $rec['penerima'] ?: '-' }}{{ !$loop->last ? ', ' : '' }}
@@ -266,6 +260,8 @@
                     </td>
                 </tr>
                 <tr>
+                    <td style="width: 15%;">Nomor</td>
+                    <td style="width: 35%;">: {{ $invoice->nomor_invoice }}</td>
                     <td>No. Rekening</td>
                     <td>: 
                         @foreach($uniqueRecipients as $rec)
