@@ -1303,6 +1303,23 @@
                                 <td><input type="checkbox" name="permissions[surat-jalan-batam][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['surat-jalan-batam']['export']) && $userMatrixPermissions['surat-jalan-batam']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Surat Jalan Tarik Kosong Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-blue-600 font-bold">Surat Jalan Tarik Kosong Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-tarik-kosong-batam][view]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-tarik-kosong-batam.view') || (isset($userMatrixPermissions['surat-jalan-tarik-kosong-batam']['view']) && $userMatrixPermissions['surat-jalan-tarik-kosong-batam']['view']) || ($user && $user->can('surat-jalan-tarik-kosong-batam-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-tarik-kosong-batam][create]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-tarik-kosong-batam.create') || (isset($userMatrixPermissions['surat-jalan-tarik-kosong-batam']['create']) && $userMatrixPermissions['surat-jalan-tarik-kosong-batam']['create']) || ($user && $user->can('surat-jalan-tarik-kosong-batam-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-tarik-kosong-batam][update]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-tarik-kosong-batam.update') || (isset($userMatrixPermissions['surat-jalan-tarik-kosong-batam']['update']) && $userMatrixPermissions['surat-jalan-tarik-kosong-batam']['update']) || ($user && $user->can('surat-jalan-tarik-kosong-batam-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-tarik-kosong-batam][delete]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-tarik-kosong-batam.delete') || (isset($userMatrixPermissions['surat-jalan-tarik-kosong-batam']['delete']) && $userMatrixPermissions['surat-jalan-tarik-kosong-batam']['delete']) || ($user && $user->can('surat-jalan-tarik-kosong-batam-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-tarik-kosong-batam][print]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-tarik-kosong-batam.print') || (isset($userMatrixPermissions['surat-jalan-tarik-kosong-batam']['print']) && $userMatrixPermissions['surat-jalan-tarik-kosong-batam']['print']) || ($user && $user->can('surat-jalan-tarik-kosong-batam-print'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pembatalan Surat Jalan --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

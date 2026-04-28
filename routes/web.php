@@ -2508,6 +2508,35 @@ Route::middleware(['auth'])->group(function () {
          ->name('surat-jalan-batam.generate-number')
          ->middleware('can:surat-jalan-batam-create');
 
+    // 🚛 SURAT JALAN TARIK KOSONG BATAM
+    Route::get('surat-jalan-tarik-kosong-batam', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'index'])
+         ->name('surat-jalan-tarik-kosong-batam.index')
+         ->middleware('can:surat-jalan-tarik-kosong-batam-view');
+    Route::get('surat-jalan-tarik-kosong-batam/create', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'create'])
+         ->name('surat-jalan-tarik-kosong-batam.create')
+         ->middleware('can:surat-jalan-tarik-kosong-batam-create');
+    Route::post('surat-jalan-tarik-kosong-batam', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'store'])
+         ->name('surat-jalan-tarik-kosong-batam.store')
+         ->middleware('can:surat-jalan-tarik-kosong-batam-create');
+    Route::get('surat-jalan-tarik-kosong-batam/{id}', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'show'])
+         ->name('surat-jalan-tarik-kosong-batam.show')
+         ->middleware('can:surat-jalan-tarik-kosong-batam-view');
+    Route::get('surat-jalan-tarik-kosong-batam/{id}/edit', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'edit'])
+         ->name('surat-jalan-tarik-kosong-batam.edit')
+         ->middleware('can:surat-jalan-tarik-kosong-batam-update');
+    Route::put('surat-jalan-tarik-kosong-batam/{id}', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'update'])
+         ->name('surat-jalan-tarik-kosong-batam.update')
+         ->middleware('can:surat-jalan-tarik-kosong-batam-update');
+    Route::delete('surat-jalan-tarik-kosong-batam/{id}', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'destroy'])
+         ->name('surat-jalan-tarik-kosong-batam.destroy')
+         ->middleware('can:surat-jalan-tarik-kosong-batam-delete');
+    Route::post('surat-jalan-tarik-kosong-batam/generate-number', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'generateNumber'])
+         ->name('surat-jalan-tarik-kosong-batam.generate-number')
+         ->middleware('can:surat-jalan-tarik-kosong-batam-create');
+    Route::get('surat-jalan-tarik-kosong-batam/{id}/print', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'print'])
+         ->name('surat-jalan-tarik-kosong-batam.print')
+         ->middleware('can:surat-jalan-tarik-kosong-batam-print');
+
     Route::post('/orders-batam/generate-number', [\App\Http\Controllers\OrderBatamController::class, 'generateOrderBatamNumber'])
          ->name('orders-batam.generate-number')
          ->middleware('can:order-batam-create');

@@ -1,0 +1,177 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\SuratJalanTarikKosongBatam;
+use App\Models\Karyawan;
+use App\Models\Mobil;
+use Carbon\Carbon;
+
+class SuratJalanTarikKosongBatamController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = SuratJalanTarikKosongBatam::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('tanggal_surat_jalan', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
+        }
+
+        $items = $query->orderBy('tanggal_surat_jalan', 'desc')
+                       ->orderBy('created_at', 'desc')
+                       ->paginate(15);
+
+        return view('surat-jalan-tarik-kosong-batam.index', compact('items'));
+    }
+
+    public function create()
+    {
+        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->orderBy('nama_lengkap')->get();
+        $keneks = Karyawan::where('status', 'active')->where('divisi', 'KENEK')->orderBy('nama_lengkap')->get();
+        $mobils = Mobil::orderBy('nomor_polisi')->get();
+        
+        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan',
+            'tanggal_surat_jalan' => 'required|date',
+            'no_tiket_do' => 'nullable|string',
+            'pengirim' => 'nullable|string',
+            'penerima' => 'nullable|string',
+            'alamat' => 'nullable|string',
+            'tujuan_pengambilan' => 'nullable|string',
+            'tujuan_pengiriman' => 'nullable|string',
+            'supir' => 'nullable|string',
+            'supir2' => 'nullable|string',
+            'no_plat' => 'nullable|string',
+            'kenek' => 'nullable|string',
+            'tipe_kontainer' => 'nullable|string',
+            'no_kontainer' => 'nullable|string',
+            'size' => 'nullable|string',
+            'f_e' => 'nullable|string',
+            'uang_jalan' => 'nullable|string',
+            'status' => 'required|in:draft,active,completed,cancelled',
+            'catatan' => 'nullable|string',
+        ]);
+
+        if ($request->filled('uang_jalan')) {
+            $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
+        }
+
+        $validated['input_by'] = Auth::id();
+        $validated['input_date'] = now();
+        $validated['lokasi'] = 'batam';
+
+        SuratJalanTarikKosongBatam::create($validated);
+
+        return redirect()->route('surat-jalan-tarik-kosong-batam.index')->with('success', 'Surat Jalan Tarik Kosong Batam berhasil disimpan');
+    }
+
+    public function show($id)
+    {
+        $item = SuratJalanTarikKosongBatam::findOrFail($id);
+        return view('surat-jalan-tarik-kosong-batam.show', compact('item'));
+    }
+
+    public function edit($id)
+    {
+        $item = SuratJalanTarikKosongBatam::findOrFail($id);
+        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->orderBy('nama_lengkap')->get();
+        $keneks = Karyawan::where('status', 'active')->where('divisi', 'KENEK')->orderBy('nama_lengkap')->get();
+        $mobils = Mobil::orderBy('nomor_polisi')->get();
+
+        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $item = SuratJalanTarikKosongBatam::findOrFail($id);
+
+        $validated = $request->validate([
+            'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan,' . $id,
+            'tanggal_surat_jalan' => 'required|date',
+            'no_tiket_do' => 'nullable|string',
+            'pengirim' => 'nullable|string',
+            'penerima' => 'nullable|string',
+            'alamat' => 'nullable|string',
+            'tujuan_pengambilan' => 'nullable|string',
+            'tujuan_pengiriman' => 'nullable|string',
+            'supir' => 'nullable|string',
+            'supir2' => 'nullable|string',
+            'no_plat' => 'nullable|string',
+            'kenek' => 'nullable|string',
+            'tipe_kontainer' => 'nullable|string',
+            'no_kontainer' => 'nullable|string',
+            'size' => 'nullable|string',
+            'f_e' => 'nullable|string',
+            'uang_jalan' => 'nullable|string',
+            'status' => 'required|in:draft,active,completed,cancelled',
+            'catatan' => 'nullable|string',
+        ]);
+
+        if ($request->filled('uang_jalan')) {
+            $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
+        }
+
+        $item->update($validated);
+
+        return redirect()->route('surat-jalan-tarik-kosong-batam.index')->with('success', 'Surat Jalan Tarik Kosong Batam berhasil diperbarui');
+    }
+
+    public function destroy($id)
+    {
+        $item = SuratJalanTarikKosongBatam::findOrFail($id);
+        $item->delete();
+
+        return redirect()->route('surat-jalan-tarik-kosong-batam.index')->with('success', 'Surat Jalan Tarik Kosong Batam berhasil dihapus');
+    }
+
+    public function generateNumber(Request $request)
+    {
+        $date = $request->date ? Carbon::parse($request->date) : now();
+        $year = $date->format('Y');
+        $month = $date->format('m');
+        
+        $lastSj = SuratJalanTarikKosongBatam::whereYear('tanggal_surat_jalan', $year)
+                                            ->whereMonth('tanggal_surat_jalan', $month)
+                                            ->orderBy('no_surat_jalan', 'desc')
+                                            ->first();
+
+        $nextNumber = 1;
+        if ($lastSj) {
+            $parts = explode('/', $lastSj->no_surat_jalan);
+            $lastNum = (int) end($parts);
+            $nextNumber = $lastNum + 1;
+        }
+
+        $formattedNumber = "SJTK/{$year}/{$month}/" . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        return response()->json(['number' => $formattedNumber]);
+    }
+
+    public function print($id)
+    {
+        $item = SuratJalanTarikKosongBatam::findOrFail($id);
+        return view('surat-jalan-tarik-kosong-batam.print', compact('item'));
+    }
+}
