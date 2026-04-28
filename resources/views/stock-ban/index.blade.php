@@ -2728,8 +2728,6 @@
         
         if (modalBanId) modalBanId.value = id;
         if (modalNomorSeri) modalNomorSeri.textContent = seri || '-';
-        document.getElementById('modal-title-kirim').textContent = 'Kirim Ke ' + destination + ': ';
-        document.getElementById('kirim_destination').value = destination;
         if (modalLokasi) modalLokasi.value = '';
         
         // Set tanggal to today
@@ -2796,8 +2794,6 @@
 
         modalBanId.value = id;
         modalNomorSeri.textContent = seri || '-';
-        document.getElementById('modal-title-kirim').textContent = 'Kirim Ke ' + destination + ': ';
-        document.getElementById('kirim_destination').value = destination;
         modalTanggal.value = new Date().toISOString().split('T')[0];
         modalNamaToko.value = '';
         modalKeterangan.value = '';
@@ -2880,8 +2876,6 @@
 
         modalBanId.value = id;
         modalNomorSeri.textContent = seri || '-';
-        document.getElementById('modal-title-kirim').textContent = 'Kirim Ke ' + destination + ': ';
-        document.getElementById('kirim_destination').value = destination;
         modalLokasi.value = '';
 
         modal.classList.remove('hidden');
@@ -2927,8 +2921,6 @@
 
         modalBanId.value = id;
         modalNomorSeri.textContent = seri || '-';
-        document.getElementById('modal-title-kirim').textContent = 'Kirim Ke ' + destination + ': ';
-        document.getElementById('kirim_destination').value = destination;
         modalPembeli.value = '';
         modalHarga.value = '';
         document.getElementById('jual_tanggal').value = new Date().toISOString().split('T')[0];
