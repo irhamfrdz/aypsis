@@ -26,28 +26,16 @@
                 <div class="space-y-8">
                     <section>
                         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center">
-                            <i class="fas fa-info-circle mr-2 text-indigo-500"></i> INFORMASI PENGIRIMAN
+                            <i class="fas fa-map-marker-alt mr-2 text-indigo-500"></i> RUTE PENGIRIMAN
                         </h3>
                         <div class="space-y-4">
-                            <div class="flex justify-between border-b border-gray-50 pb-2">
-                                <span class="text-sm text-gray-500">Pengirim</span>
-                                <span class="text-sm font-semibold text-gray-800">{{ $item->pengirim ?? '-' }}</span>
-                            </div>
-                            <div class="flex justify-between border-b border-gray-50 pb-2">
-                                <span class="text-sm text-gray-500">Penerima</span>
-                                <span class="text-sm font-semibold text-gray-800">{{ $item->penerima ?? '-' }}</span>
-                            </div>
-                            <div>
-                                <span class="text-sm text-gray-500 block mb-1">Alamat</span>
-                                <p class="text-sm text-gray-800 bg-gray-50 p-3 rounded-lg">{{ $item->alamat ?? 'Tidak ada alamat tercantum' }}</p>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4 pt-2">
+                            <div class="grid grid-cols-2 gap-4">
                                 <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
-                                    <span class="text-[10px] font-bold text-indigo-400 uppercase block mb-1">Dari</span>
+                                    <span class="text-[10px] font-bold text-indigo-400 uppercase block mb-1">Dari (Pengambilan)</span>
                                     <span class="text-sm font-semibold text-indigo-900">{{ $item->tujuan_pengambilan ?? '-' }}</span>
                                 </div>
                                 <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
-                                    <span class="text-[10px] font-bold text-blue-400 uppercase block mb-1">Ke</span>
+                                    <span class="text-[10px] font-bold text-blue-400 uppercase block mb-1">Ke (Pengiriman)</span>
                                     <span class="text-sm font-semibold text-blue-900">{{ $item->tujuan_pengiriman ?? '-' }}</span>
                                 </div>
                             </div>

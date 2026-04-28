@@ -78,33 +78,6 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
 
-                <!-- Pengiriman Information -->
-                <div class="md:col-span-2 mt-4">
-                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Pengiriman</h3>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                    <input type="text"
-                           name="pengirim"
-                           value="{{ old('pengirim', $item->pengirim) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
-                    <input type="text"
-                           name="penerima"
-                           value="{{ old('penerima', $item->penerima) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                    <textarea name="alamat"
-                              rows="2"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">{{ old('alamat', $item->alamat) }}</textarea>
-                </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>

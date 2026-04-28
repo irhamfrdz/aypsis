@@ -56,9 +56,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan',
             'tanggal_surat_jalan' => 'required|date',
             'no_tiket_do' => 'nullable|string',
-            'pengirim' => 'nullable|string',
-            'penerima' => 'nullable|string',
-            'alamat' => 'nullable|string',
+
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',
             'supir' => 'nullable|string',
@@ -111,9 +109,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan,' . $id,
             'tanggal_surat_jalan' => 'required|date',
             'no_tiket_do' => 'nullable|string',
-            'pengirim' => 'nullable|string',
-            'penerima' => 'nullable|string',
-            'alamat' => 'nullable|string',
+
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',
             'supir' => 'nullable|string',

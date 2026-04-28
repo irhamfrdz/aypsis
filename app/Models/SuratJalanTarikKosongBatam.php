@@ -13,9 +13,7 @@ class SuratJalanTarikKosongBatam extends Model
         'tanggal_surat_jalan',
         'no_surat_jalan',
         'no_tiket_do',
-        'pengirim',
-        'penerima',
-        'alamat',
+
         'tujuan_pengambilan',
         'tujuan_pengiriman',
         'supir',
