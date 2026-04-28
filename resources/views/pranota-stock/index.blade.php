@@ -19,10 +19,18 @@
 
     <!-- Form Filter -->
     <form action="{{ route('pranota-stock.index') }}" method="GET" class="mb-6 p-4 border rounded-lg bg-gray-50">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <label for="search" class="block text-sm font-medium text-gray-700">Cari Nomor Pranota / Accurate</label>
                 <input type="text" name="search" id="search" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="{{ request('search') }}" placeholder="Masukkan kata kunci...">
+            </div>
+            <div>
+                <label for="from_date" class="block text-sm font-medium text-gray-700">Dari Tanggal</label>
+                <input type="date" name="from_date" id="from_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="{{ request('from_date') }}">
+            </div>
+            <div>
+                <label for="to_date" class="block text-sm font-medium text-gray-700">Sampai Tanggal</label>
+                <input type="date" name="to_date" id="to_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="{{ request('to_date') }}">
             </div>
             <div class="flex items-end space-x-2">
                 <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -42,6 +50,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pranota</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Accurate</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -58,6 +67,9 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $item->nomor_accurate ?? '-' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ $item->penerima ?? '-' }}
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-500">
                         @if(is_array($item->items))
@@ -101,7 +113,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
                         Belum ada data pranota.
                     </td>
                 </tr>

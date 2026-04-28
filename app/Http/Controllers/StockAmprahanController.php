@@ -893,7 +893,15 @@ class StockAmprahanController extends Controller
                   ->orWhere('nomor_accurate', 'like', "%{$search}%");
         }
 
-        $items = $query->paginate(20);
+        if ($request->filled('from_date')) {
+            $query->whereDate('tanggal_pranota', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('tanggal_pranota', '<=', $request->to_date);
+        }
+
+        $items = $query->paginate(20)->withQueryString();
         return view('pranota-stock.index', compact('items'));
     }
 
