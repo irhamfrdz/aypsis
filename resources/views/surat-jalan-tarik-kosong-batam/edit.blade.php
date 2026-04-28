@@ -4,10 +4,10 @@
 
 @push('styles')
 <style>
-    .kontainer-option:hover {
+    .kontainer-option:hover, .location-option:hover, .warehouse-option:hover {
         background-color: #f3f4f6;
     }
-    .kontainer-option.selected {
+    .kontainer-option.selected, .location-option.selected, .warehouse-option.selected {
         background-color: #eef2ff;
         border-left: 4px solid #4f46e5;
     }
@@ -84,34 +84,71 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none @error('no_surat_jalan') border-red-500 @enderror">
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Tiket / DO</label>
-                    <input type="text"
-                           name="no_tiket_do"
-                           value="{{ old('no_tiket_do', $item->no_tiket_do) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                </div>
 
 
-                <div>
+
+                <div class="relative">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
+                    @php
+                        $currentPickup = old('tujuan_pengambilan', $item->tujuan_pengambilan);
+                    @endphp
                     <input type="text"
                            name="tujuan_pengambilan"
-                           value="{{ old('tujuan_pengambilan', $item->tujuan_pengambilan) }}"
+                           id="tujuan_pengambilan_search"
+                           placeholder="Cari lokasi pengambilan..."
+                           autocomplete="off"
+                           value="{{ $currentPickup }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                    <div id="tujuan_pengambilan_dropdown" class="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto mt-1">
+                        @foreach($locations as $loc)
+                            <div class="location-option px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-50 text-sm {{ $currentPickup == $loc ? 'selected' : '' }}"
+                                 data-value="{{ $loc }}">
+                                {{ $loc }}
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
 
-                <div>
+                <div class="relative">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
+                    @php
+                        $currentDelivery = old('tujuan_pengiriman', $item->tujuan_pengiriman);
+                    @endphp
                     <input type="text"
                            name="tujuan_pengiriman"
-                           value="{{ old('tujuan_pengiriman', $item->tujuan_pengiriman) }}"
+                           id="tujuan_pengiriman_search"
+                           placeholder="Cari lokasi pengiriman..."
+                           autocomplete="off"
+                           value="{{ $currentDelivery }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                    <div id="tujuan_pengiriman_dropdown" class="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto mt-1">
+                        @foreach($warehouses as $wh)
+                            <div class="warehouse-option px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-50 text-sm {{ $currentDelivery == $wh ? 'selected' : '' }}"
+                                 data-value="{{ $wh }}">
+                                {{ $wh }}
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
 
                 <!-- Armada Information -->
                 <div class="md:col-span-2 mt-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Armada</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Supir Utama</label>
+                    <select name="supir"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Pilih Supir --</option>
+                        @foreach($supirs as $supir)
+                            <option value="{{ $supir->nama_lengkap }}" 
+                                    data-plat="{{ $supir->plat }}"
+                                    {{ old('supir', $item->supir) == $supir->nama_lengkap ? 'selected' : '' }}>
+                                {{ $supir->nama_lengkap }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div>
@@ -122,19 +159,6 @@
                         @foreach($mobils as $mobil)
                             <option value="{{ $mobil->nomor_polisi }}" {{ old('no_plat', $item->no_plat) == $mobil->nomor_polisi ? 'selected' : '' }}>
                                 {{ $mobil->nomor_polisi }} ({{ $mobil->merek }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Supir Utama</label>
-                    <select name="supir"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Pilih Supir --</option>
-                        @foreach($supirs as $supir)
-                            <option value="{{ $supir->nama_lengkap }}" {{ old('supir', $item->supir) == $supir->nama_lengkap ? 'selected' : '' }}>
-                                {{ $supir->nama_lengkap }}
                             </option>
                         @endforeach
                     </select>
@@ -361,6 +385,100 @@
                     hiddenInput.value = '';
                 }
             }, 200);
+        });
+        // --- Custom Searchable Dropdown for Tujuan Pengambilan ---
+        const pickupSearch = document.getElementById('tujuan_pengambilan_search');
+        const pickupDropdown = document.getElementById('tujuan_pengambilan_dropdown');
+        const pickupOptions = pickupDropdown.querySelectorAll('.location-option');
+
+        pickupSearch.addEventListener('focus', () => {
+            pickupDropdown.classList.remove('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!pickupSearch.contains(e.target) && !pickupDropdown.contains(e.target)) {
+                pickupDropdown.classList.add('hidden');
+            }
+        });
+
+        pickupSearch.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            let hasVisible = false;
+            
+            pickupOptions.forEach(opt => {
+                const text = opt.innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    opt.classList.remove('hidden');
+                    hasVisible = true;
+                } else {
+                    opt.classList.add('hidden');
+                }
+            });
+
+            pickupDropdown.classList.toggle('hidden', !hasVisible);
+        });
+
+        pickupOptions.forEach(opt => {
+            opt.addEventListener('click', function() {
+                pickupSearch.value = this.dataset.value;
+                pickupDropdown.classList.add('hidden');
+                pickupOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // --- Custom Searchable Dropdown for Tujuan Pengiriman ---
+        const deliverySearch = document.getElementById('tujuan_pengiriman_search');
+        const deliveryDropdown = document.getElementById('tujuan_pengiriman_dropdown');
+        const deliveryOptions = deliveryDropdown.querySelectorAll('.warehouse-option');
+
+        deliverySearch.addEventListener('focus', () => {
+            deliveryDropdown.classList.remove('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!deliverySearch.contains(e.target) && !deliveryDropdown.contains(e.target)) {
+                deliveryDropdown.classList.add('hidden');
+            }
+        });
+
+        deliverySearch.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            let hasVisible = false;
+            
+            deliveryOptions.forEach(opt => {
+                const text = opt.innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    opt.classList.remove('hidden');
+                    hasVisible = true;
+                } else {
+                    opt.classList.add('hidden');
+                }
+            });
+
+            deliveryDropdown.classList.toggle('hidden', !hasVisible);
+        });
+
+        deliveryOptions.forEach(opt => {
+            opt.addEventListener('click', function() {
+                deliverySearch.value = this.dataset.value;
+                deliveryDropdown.classList.add('hidden');
+                deliveryOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // --- Auto-fill No. Plat based on Supir ---
+        const supirSelect = document.querySelector('select[name="supir"]');
+        const platSelect = document.querySelector('select[name="no_plat"]');
+
+        supirSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const plat = selectedOption.dataset.plat;
+            
+            if (plat && plat !== 'undefined') {
+                platSelect.value = plat;
+            }
         });
     });
 </script>

@@ -75,8 +75,18 @@ class SuratJalanTarikKosongBatamController extends Controller
             ]);
         }
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
+        
+        $locations = \App\Models\PricelistUangJalanBatam::orderBy('ring')
+            ->get(['ring', 'expedisi'])
+            ->map(function($item) {
+                return "Ring {$item->ring} {$item->expedisi}";
+            })
+            ->unique()
+            ->values();
+            
+        $warehouses = \App\Models\Gudang::orderBy('nama_gudang')->pluck('nama_gudang');
 
-        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers'));
+        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses'));
     }
 
     public function store(Request $request)
@@ -84,7 +94,6 @@ class SuratJalanTarikKosongBatamController extends Controller
         $validated = $request->validate([
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan',
             'tanggal_surat_jalan' => 'required|date',
-            'no_tiket_do' => 'nullable|string',
 
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',
@@ -155,8 +164,18 @@ class SuratJalanTarikKosongBatamController extends Controller
             ]);
         }
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
+        
+        $locations = \App\Models\PricelistUangJalanBatam::orderBy('ring')
+            ->get(['ring', 'expedisi'])
+            ->map(function($item) {
+                return "Ring {$item->ring} {$item->expedisi}";
+            })
+            ->unique()
+            ->values();
 
-        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils', 'kontainers'));
+        $warehouses = \App\Models\Gudang::orderBy('nama_gudang')->pluck('nama_gudang');
+
+        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses'));
     }
 
     public function update(Request $request, $id)
@@ -166,7 +185,6 @@ class SuratJalanTarikKosongBatamController extends Controller
         $validated = $request->validate([
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan,' . $id,
             'tanggal_surat_jalan' => 'required|date',
-            'no_tiket_do' => 'nullable|string',
 
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',

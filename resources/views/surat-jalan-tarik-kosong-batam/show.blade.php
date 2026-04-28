@@ -96,10 +96,7 @@
                                         <span class="text-xs font-bold text-gray-800">{{ $item->f_e == 'E' ? 'Empty' : 'Full' }}</span>
                                     </div>
                                 </div>
-                                <div class="pt-2">
-                                    <span class="text-sm text-gray-500 block mb-1">No. Tiket / DO</span>
-                                    <span class="text-sm font-semibold text-gray-800">{{ $item->no_tiket_do ?? '-' }}</span>
-                                </div>
+
                             </div>
                         </div>
                     </section>

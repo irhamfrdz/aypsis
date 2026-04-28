@@ -277,9 +277,10 @@ class InvoiceAktivitasLainController extends Controller
         }
 
         $request->merge($inputs);
-        // Check if this is utilities or listrik invoice
+        // Check if this is utilities or listrik or PBM invoice
         $isUtilities = false;
         $isBiayaListrik = false;
+        $isPBM = false;
         if ($request->has('klasifikasi_biaya_umum_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
             if ($klasifikasiBiaya) {
@@ -289,11 +290,14 @@ class InvoiceAktivitasLainController extends Controller
                 if (stripos($klasifikasiBiaya->nama, 'listrik') !== false) {
                     $isBiayaListrik = true;
                 }
+                if (stripos($klasifikasiBiaya->nama, 'pbm') !== false) {
+                    $isPBM = true;
+                }
             }
         }
         
         // Conditional validation rules
-        $totalValidation = ($isBiayaListrik || $isUtilities) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
+        $totalValidation = ($isBiayaListrik || $isUtilities || $isPBM) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
         
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {
@@ -869,9 +873,10 @@ class InvoiceAktivitasLainController extends Controller
         
         $request->merge($inputs);
 
-        // Check if this is utilities or listrik invoice
+        // Check if this is utilities or listrik or PBM invoice
         $isUtilities = false;
         $isBiayaListrik = false;
+        $isPBM = false;
         if ($request->has('klasifikasi_biaya_umum_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
             if ($klasifikasiBiaya) {
@@ -881,11 +886,14 @@ class InvoiceAktivitasLainController extends Controller
                 if (stripos($klasifikasiBiaya->nama, 'listrik') !== false) {
                     $isBiayaListrik = true;
                 }
+                if (stripos($klasifikasiBiaya->nama, 'pbm') !== false) {
+                    $isPBM = true;
+                }
             }
         }
         
         // Conditional validation rules
-        $totalValidation = ($isBiayaListrik || $isUtilities) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
+        $totalValidation = ($isBiayaListrik || $isUtilities || $isPBM) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
         
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {

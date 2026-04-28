@@ -1818,6 +1818,8 @@ console.log('Akun COAs data:', akunCoasData);
                             if (tbody && tbody.children.length === 0 && window.addPBMLine) {
                                 window.addPBMLine();
                             }
+                            // Recalculate and sync total
+                            if (window.calculatePBMRows) window.calculatePBMRows();
                         }
                         if (totalWrapper) {
                             totalWrapper.classList.add('hidden');
@@ -3957,11 +3959,14 @@ console.log('Akun COAs data:', akunCoasData);
                 if (totalSumDisplay) totalSumDisplay.textContent = 'Rp ' + totalSum.toLocaleString('id-ID');
                 
                 // Sync with main total field
-                const namaJenisBiaya = $('#jenis_biaya_dropdown option:selected').text().toLowerCase();
-                if (mainTotalInput && namaJenisBiaya.includes('pbm')) {
+                const pbmWrapper = document.getElementById('biaya_pbm_wrapper');
+                if (mainTotalInput && pbmWrapper && !pbmWrapper.classList.contains('hidden')) {
                     mainTotalInput.value = totalSum > 0 ? totalSum.toLocaleString('id-ID') : '';
                 }
             }
+
+            // Expose for use in toggle logic
+            window.calculatePBMRows = calculatePBMRows;
 
             if (addBtn) addBtn.addEventListener('click', () => addPBMLine());
             
