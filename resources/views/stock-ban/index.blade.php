@@ -1477,7 +1477,7 @@
                 </div>
             </div>
             <div class="bg-gray-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
-                <button type="button" onclick="submitKanisirForm(event)" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-orange-600 text-base font-semibold text-white hover:bg-orange-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm">
+                <button type="button" onclick="submitKanisirForm(event)" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-orange-600 text-base font-semibold text-white hover:bg-orange-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm" style="background-color: #ea580c !important; color: white !important;">
                     Simpan
                 </button>
                 <button type="button" onclick="closeKanisirModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-6 py-2 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:mt-0 sm:ml-0 sm:w-auto sm:text-sm">
@@ -1556,7 +1556,8 @@
             <div class="bg-gray-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
                 <button type="button" 
                         onclick="submitReturnForm()" 
-                        class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-indigo-600 text-base font-semibold text-white hover:bg-indigo-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm">
+                        class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-indigo-600 text-base font-semibold text-white hover:bg-indigo-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm"
+                        style="background-color: #4f46e5 !important; color: white !important;">
                     <i class="fas fa-check mr-2"></i> Kembalikan ke Gudang
                 </button>
                 <button type="button" 
@@ -1618,7 +1619,8 @@
             <div class="bg-gray-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
                 <button type="button" 
                         onclick="submitReturnMasakForm()" 
-                        class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-teal-600 text-base font-semibold text-white hover:bg-teal-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm">
+                        class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-teal-600 text-base font-semibold text-white hover:bg-teal-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm"
+                        style="background-color: #0d9488 !important; color: white !important;">
                     Simpan
                 </button>
                 <button type="button" 
@@ -1758,7 +1760,7 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
-                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-blue-600 text-base font-semibold text-white hover:bg-blue-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-2 bg-blue-600 text-base font-semibold text-white hover:bg-blue-700 focus:outline-none transition-all transform hover:scale-105 sm:ml-0 sm:w-auto sm:text-sm" style="background-color: #2563eb !important; color: white !important;">
                         Simpan
                     </button>
                     <button type="button" onclick="closeUsageModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-6 py-2 bg-white text-base font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-all sm:mt-0 sm:ml-0 sm:w-auto sm:text-sm">
@@ -3052,7 +3054,7 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                    <button type="button" onclick="submitKirimBanForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="submitKirimBanForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm" style="background-color: #2563eb !important; color: white !important;">
                         Kirim
                     </button>
                     <button type="button" onclick="closeKirimBanModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
@@ -3105,7 +3107,7 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                    <button type="button" onclick="submitReturnToShopForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="submitReturnToShopForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm" style="background-color: #dc2626 !important; color: white !important;">
                         Kembalikan
                     </button>
                     <button type="button" onclick="closeReturnToShopModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
