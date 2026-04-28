@@ -288,10 +288,10 @@
             <table class="table" style="margin-top: 4px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 5%;">No</th>
+                        <th style="width: 3%;">No</th>
                         <th style="width: 15%;">No. Referensi</th>
-                        <th style="width: 20%;">Voyage</th>
-                        <th style="width: 20%;">Catatan</th>
+                        <th style="width: 12%;">Voyage</th>
+                        <th style="width: 30%;">Catatan</th>
                         <th style="width: 15%;">Nominal Bayar</th>
                         <th style="width: 10%;">Adm</th>
                         <th style="width: 15%;">Total</th>
@@ -317,7 +317,7 @@
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $pbm['referensi'] ?? '-' }}</td>
                             <td>{{ $pbm['nomor_voyage'] ?? '-' }}</td>
-                            <td style="white-space: nowrap;">{{ $pbm['catatan'] ?? '-' }}</td>
+                            <td>{{ $pbm['catatan'] ?? '-' }}</td>
                             <td class="text-right">{{ number_format($nominal, 0, ',', '.') }}</td>
                             <td class="text-right">{{ number_format($admin, 0, ',', '.') }}</td>
                             <td class="text-right">Rp {{ number_format($total, 0, ',', '.') }}</td>
