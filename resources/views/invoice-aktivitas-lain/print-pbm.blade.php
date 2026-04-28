@@ -288,9 +288,9 @@
             <table class="table" style="margin-top: 4px; margin-bottom: 0;">
                 <thead>
                     <tr>
-                        <th style="width: 3%;">No</th>
+                        <th style="width: 5%;">No</th>
                         <th style="width: 15%;">No. Referensi</th>
-                        <th style="width: 12%;">Voyage</th>
+                        <th style="width: 10%;">Voyage</th>
                         <th style="width: 30%;">Catatan</th>
                         <th style="width: 15%;">Nominal Bayar</th>
                         <th style="width: 10%;">Adm</th>
