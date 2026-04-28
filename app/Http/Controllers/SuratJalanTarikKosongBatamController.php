@@ -46,8 +46,37 @@ class SuratJalanTarikKosongBatamController extends Controller
         $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->orderBy('nama_lengkap')->get();
         $keneks = Karyawan::where('status', 'active')->where('divisi', 'KENEK')->orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
+                // Get kontainer data dari 2 table: stock_kontainers dan kontainers
+        $stockKontainersRaw = \App\Models\StockKontainer::whereIn('status', ['available', 'tersedia'])
+                                                     ->orderBy('nomor_seri_gabungan')
+                                                     ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
         
-        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils'));
+        $kontainersRaw = \App\Models\Kontainer::where('status', 'tersedia')
+                                          ->orderBy('nomor_seri_gabungan')
+                                          ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
+        
+        $allKontainers = collect();
+        foreach ($stockKontainersRaw as $stock) {
+            $allKontainers->push((object)[
+                'id' => $stock->nomor_seri_gabungan,
+                'nomor_seri_gabungan' => $stock->nomor_seri_gabungan,
+                'ukuran' => $stock->ukuran,
+                'tipe_kontainer' => $stock->tipe_kontainer,
+                'source' => 'stock_kontainers'
+            ]);
+        }
+        foreach ($kontainersRaw as $kontainer) {
+            $allKontainers->push((object)[
+                'id' => $kontainer->nomor_seri_gabungan,
+                'nomor_seri_gabungan' => $kontainer->nomor_seri_gabungan,
+                'ukuran' => $kontainer->ukuran,
+                'tipe_kontainer' => $kontainer->tipe_kontainer,
+                'source' => 'kontainers'
+            ]);
+        }
+        $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
+
+        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers'));
     }
 
     public function store(Request $request)
@@ -98,7 +127,37 @@ class SuratJalanTarikKosongBatamController extends Controller
         $keneks = Karyawan::where('status', 'active')->where('divisi', 'KENEK')->orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
 
-        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils'));
+        // Get kontainer data
+        $stockKontainersRaw = \App\Models\StockKontainer::whereIn('status', ['available', 'tersedia'])
+                                                     ->orderBy('nomor_seri_gabungan')
+                                                     ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
+        
+        $kontainersRaw = \App\Models\Kontainer::where('status', 'tersedia')
+                                          ->orderBy('nomor_seri_gabungan')
+                                          ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
+        
+        $allKontainers = collect();
+        foreach ($stockKontainersRaw as $stock) {
+            $allKontainers->push((object)[
+                'id' => $stock->nomor_seri_gabungan,
+                'nomor_seri_gabungan' => $stock->nomor_seri_gabungan,
+                'ukuran' => $stock->ukuran,
+                'tipe_kontainer' => $stock->tipe_kontainer,
+                'source' => 'stock_kontainers'
+            ]);
+        }
+        foreach ($kontainersRaw as $kontainer) {
+            $allKontainers->push((object)[
+                'id' => $kontainer->nomor_seri_gabungan,
+                'nomor_seri_gabungan' => $kontainer->nomor_seri_gabungan,
+                'ukuran' => $kontainer->ukuran,
+                'tipe_kontainer' => $kontainer->tipe_kontainer,
+                'source' => 'kontainers'
+            ]);
+        }
+        $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
+
+        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils', 'kontainers'));
     }
 
     public function update(Request $request, $id)

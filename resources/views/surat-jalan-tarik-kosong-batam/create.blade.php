@@ -166,10 +166,19 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Kontainer</label>
-                    <input type="text"
-                           name="no_kontainer"
-                           value="{{ old('no_kontainer') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                    <select name="no_kontainer"
+                            id="no_kontainer_select"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 select2">
+                        <option value="">-- Pilih Kontainer --</option>
+                        @foreach($kontainers as $kontainer)
+                            <option value="{{ $kontainer->nomor_seri_gabungan }}" 
+                                    data-ukuran="{{ $kontainer->ukuran }}"
+                                    data-tipe="{{ $kontainer->tipe_kontainer }}"
+                                    {{ old('no_kontainer') == $kontainer->nomor_seri_gabungan ? 'selected' : '' }}>
+                                {{ $kontainer->nomor_seri_gabungan }} ({{ $kontainer->ukuran }}' {{ $kontainer->tipe_kontainer }})
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div>
@@ -296,6 +305,20 @@
             generateNumber();
         }
         
+        // Auto fill kontainer size and type
+        $('#no_kontainer_select').on('change', function() {
+            var selectedOption = $(this).find('option:selected');
+            var ukuran = selectedOption.data('ukuran');
+            var tipe = selectedOption.data('tipe');
+            
+            if (ukuran) {
+                $('select[name="size"]').val(ukuran);
+            }
+            if (tipe) {
+                $('select[name="tipe_kontainer"]').val(tipe);
+            }
+        });
+
         $('.select2').select2({
             theme: 'bootstrap4',
             width: '100%'
