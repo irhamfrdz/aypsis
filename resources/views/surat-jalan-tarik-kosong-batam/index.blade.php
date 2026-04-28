@@ -63,7 +63,7 @@
                         {{ $item->tanggal_surat_jalan->format('d/m/Y') }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ $item->no_kontainer ?? '-' }} ({{ $item->size ?? '' }} {{ $item->tipe_kontainer ?? '' }})
+                        {{ $item->no_kontainer ?? '-' }} ({{ $item->size ?? '' }} FT)
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $item->supir ?? '-' }}

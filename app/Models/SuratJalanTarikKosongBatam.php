@@ -20,7 +20,6 @@ class SuratJalanTarikKosongBatam extends Model
         'supir2',
         'no_plat',
         'kenek',
-        'tipe_kontainer',
         'no_kontainer',
         'size',
         'f_e',

@@ -86,14 +86,10 @@
                                     <span class="text-sm text-gray-500">Nomor</span>
                                     <span class="text-lg font-black text-indigo-600 tracking-tight">{{ $item->no_kontainer ?? 'BELUM ADA' }}</span>
                                 </div>
-                                <div class="grid grid-cols-3 gap-3">
+                                <div class="grid grid-cols-2 gap-3">
                                     <div class="text-center bg-gray-50 p-2 rounded-lg">
                                         <span class="text-[10px] text-gray-400 uppercase block">Size</span>
                                         <span class="text-xs font-bold text-gray-800">{{ $item->size ?? '-' }} FT</span>
-                                    </div>
-                                    <div class="text-center bg-gray-50 p-2 rounded-lg">
-                                        <span class="text-[10px] text-gray-400 uppercase block">Tipe</span>
-                                        <span class="text-xs font-bold text-gray-800">{{ $item->tipe_kontainer ?? '-' }}</span>
                                     </div>
                                     <div class="text-center bg-gray-50 p-2 rounded-lg">
                                         <span class="text-[10px] text-gray-400 uppercase block">Status</span>

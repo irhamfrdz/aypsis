@@ -1,5 +1,19 @@
 @extends('layouts.app')
 
+@section('title', 'Edit Surat Jalan Tarik Kosong Batam')
+
+@push('styles')
+<style>
+    .kontainer-option:hover {
+        background-color: #f3f4f6;
+    }
+    .kontainer-option.selected {
+        background-color: #eef2ff;
+        border-left: 4px solid #4f46e5;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container mx-auto px-4 py-4">
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
@@ -22,7 +36,7 @@
         </div>
 
         <!-- Form -->
-        <form action="{{ route('surat-jalan-tarik-kosong-batam.update', $item->id) }}" method="POST" class="p-4">
+        <form action="{{ route('surat-jalan-tarik-kosong-batam.update', $item->id) }}" method="POST" class="p-4" id="sjtk-form">
             @csrf
             @method('PUT')
 
@@ -103,7 +117,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Plat / Armada</label>
                     <select name="no_plat"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 select2">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">-- Pilih Armada --</option>
                         @foreach($mobils as $mobil)
                             <option value="{{ $mobil->nomor_polisi }}" {{ old('no_plat', $item->no_plat) == $mobil->nomor_polisi ? 'selected' : '' }}>
@@ -116,7 +130,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir Utama</label>
                     <select name="supir"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 select2">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">-- Pilih Supir --</option>
                         @foreach($supirs as $supir)
                             <option value="{{ $supir->nama_lengkap }}" {{ old('supir', $item->supir) == $supir->nama_lengkap ? 'selected' : '' }}>
@@ -129,7 +143,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir Cadangan</label>
                     <select name="supir2"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 select2">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">-- Pilih Supir --</option>
                         @foreach($supirs as $supir)
                             <option value="{{ $supir->nama_lengkap }}" {{ old('supir2', $item->supir2) == $supir->nama_lengkap ? 'selected' : '' }}>
@@ -142,7 +156,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
                     <select name="kenek"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 select2">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="">-- Pilih Kenek --</option>
                         @foreach($keneks as $kenek)
                             <option value="{{ $kenek->nama_lengkap }}" {{ old('kenek', $item->kenek) == $kenek->nama_lengkap ? 'selected' : '' }}>
@@ -157,31 +171,40 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Kontainer</h3>
                 </div>
 
-                <div>
+                <div class="relative">
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Kontainer</label>
-                    <select name="no_kontainer"
-                            id="no_kontainer_select"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 select2">
-                        <option value="">-- Pilih Kontainer --</option>
-                        @php
-                            $currentNoKontainer = old('no_kontainer', $item->no_kontainer);
-                            $kontainerExists = false;
-                        @endphp
+                    @php
+                        $currentNoKontainer = old('no_kontainer', $item->no_kontainer);
+                    @endphp
+                    <input type="text"
+                           id="no_kontainer_search"
+                           placeholder="Cari nomor kontainer..."
+                           autocomplete="off"
+                           value="{{ $currentNoKontainer }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="hidden" name="no_kontainer" id="no_kontainer_hidden" value="{{ $currentNoKontainer }}">
+                    
+                    <div id="no_kontainer_dropdown" class="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto mt-1">
+                        @php $foundInList = false; @endphp
                         @foreach($kontainers as $kontainer)
-                            @php
-                                if ($currentNoKontainer == $kontainer->nomor_seri_gabungan) $kontainerExists = true;
-                            @endphp
-                            <option value="{{ $kontainer->nomor_seri_gabungan }}" 
-                                    data-ukuran="{{ $kontainer->ukuran }}"
-                                    data-tipe="{{ $kontainer->tipe_kontainer }}"
-                                    {{ $currentNoKontainer == $kontainer->nomor_seri_gabungan ? 'selected' : '' }}>
-                                {{ $kontainer->nomor_seri_gabungan }} ({{ $kontainer->ukuran }}' {{ $kontainer->tipe_kontainer }})
-                            </option>
+                            @if($currentNoKontainer == $kontainer->nomor_seri_gabungan) @php $foundInList = true; @endphp @endif
+                            <div class="kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-50 text-sm {{ $currentNoKontainer == $kontainer->nomor_seri_gabungan ? 'selected' : '' }}"
+                                 data-value="{{ $kontainer->nomor_seri_gabungan }}"
+                                 data-ukuran="{{ $kontainer->ukuran }}">
+                                <div class="font-medium">{{ $kontainer->nomor_seri_gabungan }}</div>
+                                <div class="text-xs text-gray-500">{{ $kontainer->ukuran }}'</div>
+                            </div>
                         @endforeach
-                        @if(!$kontainerExists && $currentNoKontainer)
-                            <option value="{{ $currentNoKontainer }}" selected>{{ $currentNoKontainer }} (Current)</option>
+                        
+                        @if(!$foundInList && $currentNoKontainer)
+                            <div class="kontainer-option px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-50 text-sm selected"
+                                 data-value="{{ $currentNoKontainer }}"
+                                 data-ukuran="{{ $item->size }}">
+                                <div class="font-medium">{{ $currentNoKontainer }}</div>
+                                <div class="text-xs text-gray-500">{{ $item->size }}' (Current)</div>
+                            </div>
                         @endif
-                    </select>
+                    </div>
                 </div>
 
                 <div>
@@ -195,18 +218,7 @@
                     </select>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
-                    <select name="tipe_kontainer"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Pilih Tipe --</option>
-                        <option value="GP" {{ old('tipe_kontainer', $item->tipe_kontainer) == 'GP' ? 'selected' : '' }}>GP (General Purpose)</option>
-                        <option value="HC" {{ old('tipe_kontainer', $item->tipe_kontainer) == 'HC' ? 'selected' : '' }}>HC (High Cube)</option>
-                        <option value="FR" {{ old('tipe_kontainer', $item->tipe_kontainer) == 'FR' ? 'selected' : '' }}>FR (Flat Rack)</option>
-                        <option value="OT" {{ old('tipe_kontainer', $item->tipe_kontainer) == 'OT' ? 'selected' : '' }}>OT (Open Top)</option>
-                        <option value="RF" {{ old('tipe_kontainer', $item->tipe_kontainer) == 'RF' ? 'selected' : '' }}>RF (Reefer)</option>
-                    </select>
-                </div>
+
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">F / E</label>
@@ -273,33 +285,82 @@
 
 @push('scripts')
 <script>
-    $(document).ready(function() {
+    document.addEventListener('DOMContentLoaded', function() {
         // Currency formatting
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('id-ID').format(value.replace(/[^0-9]/g, ''));
-        }
-
-        $('.currency').on('input', function() {
-            $(this).val(formatCurrency($(this).val()));
+        const currencyInputs = document.querySelectorAll('.currency');
+        currencyInputs.forEach(input => {
+            input.addEventListener('input', function(e) {
+                this.value = new Intl.NumberFormat('id-ID').format(this.value.replace(/[^0-9]/g, ''));
+            });
         });
         
-        // Auto fill kontainer size and type
-        $('#no_kontainer_select').on('change', function() {
-            var selectedOption = $(this).find('option:selected');
-            var ukuran = selectedOption.data('ukuran');
-            var tipe = selectedOption.data('tipe');
-            
-            if (ukuran) {
-                $('select[name="size"]').val(ukuran);
-            }
-            if (tipe) {
-                $('select[name="tipe_kontainer"]').val(tipe);
+        // --- Custom Searchable Dropdown for Kontainer ---
+        const searchInput = document.getElementById('no_kontainer_search');
+        const hiddenInput = document.getElementById('no_kontainer_hidden');
+        const dropdown = document.getElementById('no_kontainer_dropdown');
+        const options = dropdown.querySelectorAll('.kontainer-option');
+        const sizeSelect = document.querySelector('select[name="size"]');
+
+        // Show/Hide dropdown
+        searchInput.addEventListener('focus', () => {
+            dropdown.classList.remove('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
             }
         });
 
-        $('.select2').select2({
-            theme: 'bootstrap4',
-            width: '100%'
+        // Filter functionality
+        searchInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            let hasVisible = false;
+            
+            options.forEach(opt => {
+                const text = opt.querySelector('.font-medium').innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    opt.classList.remove('hidden');
+                    hasVisible = true;
+                } else {
+                    opt.classList.add('hidden');
+                }
+            });
+
+            dropdown.classList.toggle('hidden', !hasVisible);
+            
+            // Clear hidden if search is empty
+            if (!this.value) {
+                hiddenInput.value = '';
+            }
+        });
+
+        // Selection functionality
+        options.forEach(opt => {
+            opt.addEventListener('click', function() {
+                const val = this.dataset.value;
+                const ukuran = this.dataset.ukuran;
+
+                searchInput.value = val;
+                hiddenInput.value = val;
+                
+                if (ukuran) sizeSelect.value = ukuran;
+
+                dropdown.classList.add('hidden');
+                
+                // Highlight selected
+                options.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // Ensure search input value matches hidden on blur if not matches
+        searchInput.addEventListener('blur', function() {
+            setTimeout(() => {
+                if (!this.value) {
+                    hiddenInput.value = '';
+                }
+            }, 200);
         });
     });
 </script>
