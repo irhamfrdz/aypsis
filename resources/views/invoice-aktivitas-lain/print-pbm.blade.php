@@ -378,7 +378,7 @@
         <div style="margin-bottom: 2px; border: 1.5px solid #333; padding: 4px; min-height: 40px;">
             <strong style="font-size: 8px;">Keterangan:</strong><br>
             <div style="font-size: 9px;">
-                {!! nl2br(e($invoice->keterangan)) !!}
+                {!! nl2br(e($invoice->catatan)) !!}
             </div>
         </div>
 
