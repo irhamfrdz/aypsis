@@ -74,20 +74,13 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Surat Jalan <span class="text-red-600">*</span></label>
-                    <div class="flex">
-                        <input type="text"
-                               name="no_surat_jalan"
-                               id="no_surat_jalan"
-                               value="{{ old('no_surat_jalan') }}"
-                               required
-                               placeholder="SJTK/YYYY/MM/XXXX"
-                               class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_surat_jalan') border-red-500 @enderror">
-                        <button type="button"
-                                id="btn-generate-number"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-r-lg text-sm">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
+                    <input type="text"
+                           name="no_surat_jalan"
+                           id="no_surat_jalan"
+                           value="{{ old('no_surat_jalan') }}"
+                           required
+                           placeholder="SJTK/YYYY/MM/XXXX"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_surat_jalan') border-red-500 @enderror">
                 </div>
 
 
@@ -304,29 +297,6 @@
             });
         });
 
-        // Auto generate number
-        const btnGenerate = document.getElementById('btn-generate-number');
-        const tanggalInput = document.getElementById('tanggal_surat_jalan');
-        const noSJInput = document.getElementById('no_surat_jalan');
-
-        function generateNumber() {
-            const date = tanggalInput.value;
-            if(!date) return;
-            
-            fetch("{{ route('surat-jalan-tarik-kosong-batam.generate-number') }}?date=" + date)
-                .then(response => response.json())
-                .then(data => {
-                    noSJInput.value = data.number;
-                })
-                .catch(err => console.error('Gagal generate nomor:', err));
-        }
-
-        btnGenerate.addEventListener('click', generateNumber);
-        tanggalInput.addEventListener('change', generateNumber);
-        
-        if (!noSJInput.value) {
-            generateNumber();
-        }
 
         // --- Custom Searchable Dropdown for Kontainer ---
         const searchInput = document.getElementById('no_kontainer_search');

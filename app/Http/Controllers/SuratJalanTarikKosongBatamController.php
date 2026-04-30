@@ -241,28 +241,6 @@ class SuratJalanTarikKosongBatamController extends Controller
         return redirect()->route('surat-jalan-tarik-kosong-batam.index')->with('success', 'Surat Jalan Tarik Kosong Batam berhasil dihapus');
     }
 
-    public function generateNumber(Request $request)
-    {
-        $date = $request->date ? Carbon::parse($request->date) : now();
-        $year = $date->format('Y');
-        $month = $date->format('m');
-        
-        $lastSj = SuratJalanTarikKosongBatam::whereYear('tanggal_surat_jalan', $year)
-                                            ->whereMonth('tanggal_surat_jalan', $month)
-                                            ->orderBy('no_surat_jalan', 'desc')
-                                            ->first();
-
-        $nextNumber = 1;
-        if ($lastSj) {
-            $parts = explode('/', $lastSj->no_surat_jalan);
-            $lastNum = (int) end($parts);
-            $nextNumber = $lastNum + 1;
-        }
-
-        $formattedNumber = "SJTK/{$year}/{$month}/" . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-
-        return response()->json(['number' => $formattedNumber]);
-    }
 
     public function print($id)
     {
