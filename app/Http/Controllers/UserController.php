@@ -707,6 +707,7 @@ class UserController extends Controller
                 'pranota-rit' => 'pranota-rit',
                 'pranota-supir' => 'pranota-supir',
                 'pranota-uang-rit-kenek' => 'pranota-uang-rit-kenek',
+                'pranota-uang-rit-batam' => 'pranota-uang-rit-batam',
                 'pranota-uang-rit' => 'pranota-uang-rit',
                 'prospek-batam' => 'prospek-batam',
                 'prospek' => 'prospek',
@@ -1302,6 +1303,17 @@ class UserController extends Controller
                     if ($module === 'pranota' && strpos($action, 'supir-') === 0) {
                         $action = str_replace('supir-', '', $action);
                         $module = 'pranota-supir';
+                    }
+
+                    // Special handling for pranota-uang-rit-* permissions
+                    if ($module === 'pranota' && strpos($action, 'uang-rit-') === 0) {
+                        if (strpos($action, 'uang-rit-batam-') === 0) {
+                            $action = str_replace('uang-rit-batam-', '', $action);
+                            $module = 'pranota-uang-rit-batam';
+                        } else {
+                            $action = str_replace('uang-rit-', '', $action);
+                            $module = 'pranota-uang-rit';
+                        }
                     }
 
                     // Special handling for pranota-rit-* permissions
@@ -4381,6 +4393,25 @@ class UserController extends Controller
                             'approve' => 'pranota-uang-jalan-batam-approve',
                             'print' => 'pranota-uang-jalan-batam-print',
                             'export' => 'pranota-uang-jalan-batam-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle pranota-uang-rit-batam permissions explicitly
+                    if ($module === 'pranota-uang-rit-batam' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'pranota-uang-rit-batam-view',
+                            'create' => 'pranota-uang-rit-batam-create',
+                            'update' => 'pranota-uang-rit-batam-update',
+                            'delete' => 'pranota-uang-rit-batam-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
