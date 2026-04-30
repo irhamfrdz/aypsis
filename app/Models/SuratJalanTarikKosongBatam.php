@@ -28,6 +28,8 @@ class SuratJalanTarikKosongBatam extends Model
         'input_date',
         'lokasi',
         'status',
+        'rit',
+        'status_pembayaran_uang_rit',
         'catatan',
     ];
 

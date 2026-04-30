@@ -94,7 +94,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div>
                             <label class="{{ $labelClasses }}">Jumlah Surat Jalan</label>
-                            <input type="text" class="{{ $inputClasses }}" value="{{ $pranota->suratJalanBatams->count() }}" readonly>
+                            <input type="text" class="{{ $inputClasses }}" value="{{ $pranota->items->count() }}" readonly>
                         </div>
                         <div>
                             <label class="{{ $labelClasses }}">Total Uang Rit</label>
@@ -122,19 +122,22 @@
                 <h4 class="text-sm font-semibold text-gray-800">🚚 Detail Surat Jalan</h4>
             </div>
 
-            <div class="overflow-x-auto max-h-60">
+            <div class="overflow-x-auto max-h-80">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50 sticky top-0 z-20">
                         <tr>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                             <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan/Ambil</th>
                             <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Rit</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($pranota->suratJalanBatams as $sj)
+                        {{-- Regular SJ --}}
+                        @foreach($pranota->suratJalanBatams as $sj)
                             <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-2 py-2 whitespace-nowrap text-[10px] font-bold text-gray-400">REGULAR</td>
                                 <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $sj->no_surat_jalan }}</td>
                                 <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $sj->tanggal_surat_jalan->format('d/m/Y') }}</td>
                                 <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $sj->tujuan_pengambilan ?? '-' }}</td>
@@ -142,15 +145,43 @@
                                     Rp {{ number_format($sj->pivot->uang_rit, 0, ',', '.') }}
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="px-2 py-4 text-center text-xs text-gray-400">Tidak ada data surat jalan</td>
+                        @endforeach
+
+                        {{-- Bongkaran SJ --}}
+                        @foreach($pranota->suratJalanBongkaranBatams as $sj)
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-2 py-2 whitespace-nowrap text-[10px] font-bold text-indigo-400">BONGKARAN</td>
+                                <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $sj->nomor_surat_jalan }}</td>
+                                <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $sj->tanggal_surat_jalan->format('d/m/Y') }}</td>
+                                <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $sj->jenis_barang ?? '-' }}</td>
+                                <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold text-indigo-600">
+                                    Rp {{ number_format($sj->pivot->uang_rit, 0, ',', '.') }}
+                                </td>
                             </tr>
-                        @endforelse
+                        @endforeach
+
+                        {{-- Tarik Kosong SJ --}}
+                        @foreach($pranota->suratJalanTarikKosongBatams as $sj)
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-2 py-2 whitespace-nowrap text-[10px] font-bold text-green-400">TARIK KOSONG</td>
+                                <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $sj->no_surat_jalan }}</td>
+                                <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $sj->tanggal_surat_jalan->format('d/m/Y') }}</td>
+                                <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $sj->tujuan_pengambilan ?? '-' }}</td>
+                                <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold text-indigo-600">
+                                    Rp {{ number_format($sj->pivot->uang_rit, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                        @endforeach
+
+                        @if($pranota->items->count() == 0)
+                            <tr>
+                                <td colspan="5" class="px-2 py-4 text-center text-xs text-gray-400">Tidak ada data surat jalan</td>
+                            </tr>
+                        @endif
                     </tbody>
                     <tfoot class="bg-gray-100 border-t-2 border-gray-300">
                         <tr class="font-semibold text-gray-800 bg-gray-200">
-                            <td class="px-2 py-3 text-xs font-bold" colspan="3">
+                            <td class="px-2 py-3 text-xs font-bold" colspan="4">
                                 TOTAL UANG RIT
                             </td>
                             <td class="px-2 py-3 text-right text-xs font-bold text-indigo-600">
@@ -158,7 +189,7 @@
                             </td>
                         </tr>
                         <tr class="font-semibold text-gray-800 bg-gray-200">
-                            <td class="px-2 py-3 text-xs font-bold" colspan="3">
+                            <td class="px-2 py-3 text-xs font-bold" colspan="4">
                                 PENYESUAIAN
                             </td>
                             <td class="px-2 py-3 text-right text-xs font-bold text-yellow-600">
@@ -166,7 +197,7 @@
                             </td>
                         </tr>
                         <tr class="font-semibold text-gray-800 bg-purple-200">
-                            <td class="px-2 py-3 text-xs font-bold" colspan="3">
+                            <td class="px-2 py-3 text-xs font-bold" colspan="4">
                                 GRAND TOTAL
                             </td>
                             <td class="px-2 py-3 text-right text-xs font-bold text-purple-600">

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\SuratJalanBatam;
+use App\Models\SuratJalanBongkaranBatam;
+use App\Models\SuratJalanTarikKosongBatam;
 use App\Models\PranotaUangRitBatam;
 use App\Models\PranotaUangRitBatamItem;
 use App\Models\NomorTerakhir;
@@ -21,8 +23,8 @@ class PranotaUangRitBatamController extends Controller
         $user = Auth::user();
 
         // Build query with filters
-        $query = PranotaUangRitBatam::with(['suratJalanBatams'])
-            ->withCount('suratJalanBatams');
+        $query = PranotaUangRitBatam::with(['suratJalanBatams', 'suratJalanBongkaranBatams', 'suratJalanTarikKosongBatams'])
+            ->withCount(['suratJalanBatams', 'suratJalanBongkaranBatams', 'suratJalanTarikKosongBatams']);
 
         // Search filter
         if ($request->filled('search')) {
@@ -84,31 +86,49 @@ class PranotaUangRitBatamController extends Controller
             }
         }
 
-        // Get available surat jalans batam (not in any pranota and rit status is not paid)
-        $query = SuratJalanBatam::whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
+        $startDateObj = \Carbon\Carbon::parse($startDate)->startOfDay();
+        $endDateObj = \Carbon\Carbon::parse($endDate)->endOfDay();
+
+        // 1. Regular Surat Jalan
+        $queryRegular = SuratJalanBatam::whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
             ->where(function($q) {
                 $q->whereNull('status_pembayaran_uang_rit')
                   ->orWhere('status_pembayaran_uang_rit', 'belum_dibayar')
                   ->orWhere('status_pembayaran_uang_rit', 'belum_masuk_pranota');
-            });
+            })
+            ->whereBetween('tanggal_surat_jalan', [$startDateObj, $endDateObj]);
+        $availableRegular = $queryRegular->orderBy('tanggal_surat_jalan', 'desc')->get();
 
-        // Apply date range filter
-        if ($startDate && $endDate) {
-            try {
-                $startDateObj = \Carbon\Carbon::parse($startDate)->startOfDay();
-                $endDateObj = \Carbon\Carbon::parse($endDate)->endOfDay();
-                $query->whereBetween('tanggal_surat_jalan', [$startDateObj, $endDateObj]);
-            } catch (\Exception $e) {
-                // If parsing fails, don't apply date filter
-            }
-        }
+        // 2. Bongkaran Surat Jalan
+        $queryBongkaran = SuratJalanBongkaranBatam::whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
+            ->where(function($q) {
+                $q->whereNull('status_pembayaran_uang_rit')
+                  ->orWhere('status_pembayaran_uang_rit', 'belum_dibayar')
+                  ->orWhere('status_pembayaran_uang_rit', 'belum_masuk_pranota');
+            })
+            ->whereBetween('tanggal_surat_jalan', [$startDateObj, $endDateObj]);
+        $availableBongkaran = $queryBongkaran->orderBy('tanggal_surat_jalan', 'desc')->get();
 
-        $availableSuratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')->get();
+        // 3. Tarik Kosong Surat Jalan
+        $queryTarik = SuratJalanTarikKosongBatam::whereIn('status', ['active', 'completed'])
+            ->where(function($q) {
+                $q->whereNull('status_pembayaran_uang_rit')
+                  ->orWhere('status_pembayaran_uang_rit', 'belum_dibayar')
+                  ->orWhere('status_pembayaran_uang_rit', 'belum_masuk_pranota');
+            })
+            ->whereBetween('tanggal_surat_jalan', [$startDateObj, $endDateObj]);
+        $availableTarik = $queryTarik->orderBy('tanggal_surat_jalan', 'desc')->get();
 
         $viewStartDate = $startDate;
         $viewEndDate = $endDate;
 
-        return view('pranota-uang-rit-batam.create', compact('availableSuratJalans', 'viewStartDate', 'viewEndDate'));
+        return view('pranota-uang-rit-batam.create', compact(
+            'availableRegular', 
+            'availableBongkaran', 
+            'availableTarik', 
+            'viewStartDate', 
+            'viewEndDate'
+        ));
     }
 
     /**
@@ -117,27 +137,34 @@ class PranotaUangRitBatamController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'surat_jalan_ids' => 'required|array|min:1',
+            'surat_jalan_ids' => 'nullable|array',
             'surat_jalan_ids.*' => 'exists:surat_jalan_batams,id',
+            'surat_jalan_bongkaran_ids' => 'nullable|array',
+            'surat_jalan_bongkaran_ids.*' => 'exists:surat_jalan_bongkaran_batams,id',
+            'surat_jalan_tarik_kosong_ids' => 'nullable|array',
+            'surat_jalan_tarik_kosong_ids.*' => 'exists:surat_jalan_tarik_kosong_batams,id',
             'tanggal_pranota' => 'required|date',
             'supir_nama' => 'required|string',
             'catatan' => 'nullable|string|max:500',
             'penyesuaian' => 'nullable|numeric',
         ]);
 
-        $selectedSJs = SuratJalanBatam::whereIn('id', $request->surat_jalan_ids)->get();
+        if (empty($request->surat_jalan_ids) && empty($request->surat_jalan_bongkaran_ids) && empty($request->surat_jalan_tarik_kosong_ids)) {
+            return back()->with('error', 'Silakan pilih minimal satu surat jalan.')->withInput();
+        }
+
+        $selectedRegular = $request->surat_jalan_ids ? SuratJalanBatam::whereIn('id', $request->surat_jalan_ids)->get() : collect();
+        $selectedBongkaran = $request->surat_jalan_bongkaran_ids ? SuratJalanBongkaranBatam::whereIn('id', $request->surat_jalan_bongkaran_ids)->get() : collect();
+        $selectedTarik = $request->surat_jalan_tarik_kosong_ids ? SuratJalanTarikKosongBatam::whereIn('id', $request->surat_jalan_tarik_kosong_ids)->get() : collect();
 
         DB::beginTransaction();
         try {
             $nomorPranota = $this->generateNomorPranota();
             
-            // For now, we assume Uang Rit is taken from the 'rit' field or a default value
-            // Adjust this logic if there's a specific calculation
             $totalRit = 0;
-            foreach ($selectedSJs as $sj) {
-                // Assuming 'rit' field contains the amount or we use a fixed amount
-                $totalRit += is_numeric($sj->rit) ? (float)$sj->rit : 0;
-            }
+            foreach ($selectedRegular as $sj) $totalRit += is_numeric($sj->rit) ? (float)$sj->rit : 0;
+            foreach ($selectedBongkaran as $sj) $totalRit += is_numeric($sj->rit) ? (float)$sj->rit : 0;
+            foreach ($selectedTarik as $sj) $totalRit += is_numeric($sj->rit) ? (float)$sj->rit : 0;
 
             $pranota = PranotaUangRitBatam::create([
                 'nomor_pranota' => $nomorPranota,
@@ -151,17 +178,31 @@ class PranotaUangRitBatamController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
-            foreach ($selectedSJs as $sj) {
+            foreach ($selectedRegular as $sj) {
                 PranotaUangRitBatamItem::create([
                     'pranota_uang_rit_batam_id' => $pranota->id,
                     'surat_jalan_batam_id' => $sj->id,
                     'uang_rit' => is_numeric($sj->rit) ? (float)$sj->rit : 0,
                 ]);
+                $sj->update(['status_pembayaran_uang_rit' => 'sudah_masuk_pranota']);
+            }
 
-                // Update SuratJalan status
-                $sj->update([
-                    'status_pembayaran_uang_rit' => 'sudah_masuk_pranota'
+            foreach ($selectedBongkaran as $sj) {
+                PranotaUangRitBatamItem::create([
+                    'pranota_uang_rit_batam_id' => $pranota->id,
+                    'surat_jalan_bongkaran_batam_id' => $sj->id,
+                    'uang_rit' => is_numeric($sj->rit) ? (float)$sj->rit : 0,
                 ]);
+                $sj->update(['status_pembayaran_uang_rit' => 'sudah_masuk_pranota']);
+            }
+
+            foreach ($selectedTarik as $sj) {
+                PranotaUangRitBatamItem::create([
+                    'pranota_uang_rit_batam_id' => $pranota->id,
+                    'surat_jalan_tarik_kosong_batam_id' => $sj->id,
+                    'uang_rit' => is_numeric($sj->rit) ? (float)$sj->rit : 0,
+                ]);
+                $sj->update(['status_pembayaran_uang_rit' => 'sudah_masuk_pranota']);
             }
 
             DB::commit();
@@ -180,7 +221,12 @@ class PranotaUangRitBatamController extends Controller
      */
     public function show($id)
     {
-        $pranota = PranotaUangRitBatam::with(['suratJalanBatams', 'creator'])->findOrFail($id);
+        $pranota = PranotaUangRitBatam::with([
+            'suratJalanBatams', 
+            'suratJalanBongkaranBatams', 
+            'suratJalanTarikKosongBatams', 
+            'creator'
+        ])->findOrFail($id);
         return view('pranota-uang-rit-batam.show', compact('pranota'));
     }
 
@@ -201,6 +247,12 @@ class PranotaUangRitBatamController extends Controller
             foreach ($pranota->suratJalanBatams as $sj) {
                 $sj->update(['status_pembayaran_uang_rit' => 'belum_masuk_pranota']);
             }
+            foreach ($pranota->suratJalanBongkaranBatams as $sj) {
+                $sj->update(['status_pembayaran_uang_rit' => 'belum_masuk_pranota']);
+            }
+            foreach ($pranota->suratJalanTarikKosongBatams as $sj) {
+                $sj->update(['status_pembayaran_uang_rit' => 'belum_masuk_pranota']);
+            }
 
             $pranota->delete();
 
@@ -208,6 +260,7 @@ class PranotaUangRitBatamController extends Controller
             return redirect()->route('pranota-uang-rit-batam.index')->with('success', 'Pranota berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error deleting pranota rit batam: ' . $e->getMessage());
             return back()->with('error', 'Gagal menghapus pranota.');
         }
     }

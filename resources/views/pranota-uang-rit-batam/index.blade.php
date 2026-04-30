@@ -106,7 +106,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->supir_nama }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                        {{ $item->surat_jalan_batams_count }}
+                                        {{ $item->surat_jalan_batams_count + $item->surat_jalan_bongkaran_batams_count + $item->surat_jalan_tarik_kosong_batams_count }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">Rp {{ number_format($item->total_amount, 0, ',', '.') }}</td>

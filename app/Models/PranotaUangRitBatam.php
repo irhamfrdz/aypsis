@@ -48,6 +48,20 @@ class PranotaUangRitBatam extends Model
                     ->withTimestamps();
     }
 
+    public function suratJalanBongkaranBatams()
+    {
+        return $this->belongsToMany(SuratJalanBongkaranBatam::class, 'pranota_uang_rit_batam_items', 'pranota_uang_rit_batam_id', 'surat_jalan_bongkaran_batam_id')
+                    ->withPivot('uang_rit')
+                    ->withTimestamps();
+    }
+
+    public function suratJalanTarikKosongBatams()
+    {
+        return $this->belongsToMany(SuratJalanTarikKosongBatam::class, 'pranota_uang_rit_batam_items', 'pranota_uang_rit_batam_id', 'surat_jalan_tarik_kosong_batam_id')
+                    ->withPivot('uang_rit')
+                    ->withTimestamps();
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

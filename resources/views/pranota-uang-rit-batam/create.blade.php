@@ -49,8 +49,15 @@
                                 <select name="supir_nama" id="supir_nama" required
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                                     <option value="">-- Pilih Supir --</option>
-                                    @foreach($availableSuratJalans->unique('supir') as $sj)
-                                        <option value="{{ $sj->supir }}">{{ $sj->supir }}</option>
+                                    @php
+                                        $allSupirs = collect($availableRegular)->pluck('supir')
+                                            ->merge(collect($availableBongkaran)->pluck('supir'))
+                                            ->merge(collect($availableTarik)->pluck('supir'))
+                                            ->unique()
+                                            ->sort();
+                                    @endphp
+                                    @foreach($allSupirs as $supir)
+                                        <option value="{{ $supir }}">{{ $supir }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -89,20 +96,23 @@
                                     <th class="px-6 py-3 text-left">
                                         <input type="checkbox" id="checkAll" class="rounded text-blue-600 focus:ring-blue-500">
                                     </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan/Barang</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Rit</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200" id="suratJalanList">
-                                @forelse($availableSuratJalans as $sj)
+                                {{-- Regular SJ --}}
+                                @foreach($availableRegular as $sj)
                                     <tr class="hover:bg-gray-50 transition-colors duration-200 sj-row" data-supir="{{ $sj->supir }}">
                                         <td class="px-6 py-4">
                                             <input type="checkbox" name="surat_jalan_ids[]" value="{{ $sj->id }}" 
                                                    class="sj-checkbox rounded text-blue-600 focus:ring-blue-500"
                                                    data-amount="{{ is_numeric($sj->rit) ? $sj->rit : 0 }}">
                                         </td>
+                                        <td class="px-6 py-4 text-xs font-medium text-gray-500">REGULAR</td>
                                         <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $sj->no_surat_jalan }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->tanggal_surat_jalan->format('d/m/Y') }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->tujuan_pengambilan }}</td>
@@ -110,14 +120,52 @@
                                             Rp {{ number_format(is_numeric($sj->rit) ? $sj->rit : 0, 0, ',', '.') }}
                                         </td>
                                     </tr>
-                                @empty
+                                @endforeach
+
+                                {{-- Bongkaran SJ --}}
+                                @foreach($availableBongkaran as $sj)
+                                    <tr class="hover:bg-gray-50 transition-colors duration-200 sj-row" data-supir="{{ $sj->supir }}">
+                                        <td class="px-6 py-4">
+                                            <input type="checkbox" name="surat_jalan_bongkaran_ids[]" value="{{ $sj->id }}" 
+                                                   class="sj-checkbox rounded text-blue-600 focus:ring-blue-500"
+                                                   data-amount="{{ is_numeric($sj->rit) ? $sj->rit : 0 }}">
+                                        </td>
+                                        <td class="px-6 py-4 text-xs font-medium text-indigo-500">BONGKARAN</td>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $sj->nomor_surat_jalan }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->tanggal_surat_jalan->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->jenis_barang }}</td>
+                                        <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
+                                            Rp {{ number_format(is_numeric($sj->rit) ? $sj->rit : 0, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                                {{-- Tarik Kosong SJ --}}
+                                @foreach($availableTarik as $sj)
+                                    <tr class="hover:bg-gray-50 transition-colors duration-200 sj-row" data-supir="{{ $sj->supir }}">
+                                        <td class="px-6 py-4">
+                                            <input type="checkbox" name="surat_jalan_tarik_kosong_ids[]" value="{{ $sj->id }}" 
+                                                   class="sj-checkbox rounded text-blue-600 focus:ring-blue-500"
+                                                   data-amount="{{ is_numeric($sj->rit) ? $sj->rit : 0 }}">
+                                        </td>
+                                        <td class="px-6 py-4 text-xs font-medium text-green-500">TARIK KOSONG</td>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $sj->no_surat_jalan }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->tanggal_surat_jalan->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->tujuan_pengambilan }}</td>
+                                        <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
+                                            Rp {{ number_format(is_numeric($sj->rit) ? $sj->rit : 0, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                                @if(count($availableRegular) == 0 && count($availableBongkaran) == 0 && count($availableTarik) == 0)
                                     <tr>
-                                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                             <i class="fas fa-inbox text-4xl text-gray-300 mb-3 block"></i>
                                             Tidak ada Surat Jalan tersedia untuk supir ini.
                                         </td>
                                     </tr>
-                                @endforelse
+                                @endif
                             </tbody>
                         </table>
                     </div>

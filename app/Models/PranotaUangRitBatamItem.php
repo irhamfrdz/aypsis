@@ -14,6 +14,8 @@ class PranotaUangRitBatamItem extends Model
     protected $fillable = [
         'pranota_uang_rit_batam_id',
         'surat_jalan_batam_id',
+        'surat_jalan_bongkaran_batam_id',
+        'surat_jalan_tarik_kosong_batam_id',
         'uang_rit'
     ];
 
@@ -25,5 +27,15 @@ class PranotaUangRitBatamItem extends Model
     public function suratJalanBatam()
     {
         return $this->belongsTo(SuratJalanBatam::class, 'surat_jalan_batam_id');
+    }
+
+    public function suratJalanBongkaranBatam()
+    {
+        return $this->belongsTo(SuratJalanBongkaranBatam::class, 'surat_jalan_bongkaran_batam_id');
+    }
+
+    public function suratJalanTarikKosongBatam()
+    {
+        return $this->belongsTo(SuratJalanTarikKosongBatam::class, 'surat_jalan_tarik_kosong_batam_id');
     }
 }
