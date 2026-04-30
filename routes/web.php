@@ -2530,7 +2530,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('surat-jalan-tarik-kosong-batam/{id}', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'destroy'])
          ->name('surat-jalan-tarik-kosong-batam.destroy')
          ->middleware('can:surat-jalan-tarik-kosong-batam-delete');
-    Route::post('surat-jalan-tarik-kosong-batam/generate-number', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'generateNumber'])
+    Route::get('surat-jalan-tarik-kosong-batam/generate-number', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'generateNumber'])
          ->name('surat-jalan-tarik-kosong-batam.generate-number')
          ->middleware('can:surat-jalan-tarik-kosong-batam-create');
     Route::get('surat-jalan-tarik-kosong-batam/{id}/print', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'print'])
