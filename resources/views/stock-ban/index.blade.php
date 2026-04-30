@@ -1903,6 +1903,7 @@
     // Close dropdown on click outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('button[onclick^="DropdownManager.toggle"]') && 
+            !e.target.closest('input[onfocus^="DropdownManager.open"]') &&
             !e.target.closest('.dropdown-menu-custom')) {
             DropdownManager.close();
         }
