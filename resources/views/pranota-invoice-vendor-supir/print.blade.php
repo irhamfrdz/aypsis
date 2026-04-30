@@ -228,6 +228,10 @@
                 <td colspan="3" class="text-right font-bold text-indigo-700">TOTAL UANG MUAT ({{ $totalSJ }} SJ)</td>
                 <td class="text-right font-bold text-indigo-700">+ Rp {{ number_format($pranota->total_uang_muat, 0, ',', '.') }}</td>
             </tr>
+            <tr>
+                <td colspan="3" class="text-right font-bold">SUBTOTAL</td>
+                <td class="text-right font-bold">Rp {{ number_format($pranota->total_nominal + $pranota->pph + $pranota->total_uang_muat, 0, ',', '.') }}</td>
+            </tr>
             @endif
             @if($pranota->pph > 0)
             <tr>
