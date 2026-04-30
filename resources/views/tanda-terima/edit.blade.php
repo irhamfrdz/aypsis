@@ -552,13 +552,13 @@
                                                    type="file" 
                                                    class="sr-only" 
                                                    multiple
-                                                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                                   accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,application/pdf"
                                                    onchange="previewImages(this)">
                                         </label>
                                         <p class="pl-1">atau drag and drop</p>
                                     </div>
                                     <p class="text-xs text-gray-500">
-                                        PNG, JPG, JPEG, GIF, WEBP sampai 10MB per file (max 5 file)
+                                        PNG, JPG, JPEG, GIF, WEBP, PDF sampai 10MB per file (max 5 file)
                                     </p>
                                 </div>
                             </div>
@@ -634,6 +634,16 @@
                                placeholder="Masukkan nomor surat jalan pabrik"
                                value="{{ old('surat_jalan_pabrik', $tandaTerima->surat_jalan_pabrik) }}">
                         @error('surat_jalan_pabrik')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label for="no_dn" class="block text-sm font-medium text-gray-700 mb-2">No. Dn</label>
+                        <input type="text" name="no_dn" id="no_dn"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm font-mono @error('no_dn') border-red-500 @enderror"
+                               placeholder="Masukkan nomor DN"
+                               value="{{ old('no_dn', $tandaTerima->no_dn) }}">
+                        @error('no_dn')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -1218,10 +1228,11 @@
             
             for (let i = 0; i < filesToProcess; i++) {
                 const file = input.files[i];
+                const isPdf = file.type === 'application/pdf';
                 
                 // Validate file type
-                if (!file.type.startsWith('image/')) {
-                    console.warn(`File ${file.name} is not an image`);
+                if (!file.type.startsWith('image/') && !isPdf) {
+                    console.warn(`File ${file.name} is not an image or PDF`);
                     continue;
                 }
                 
@@ -1238,23 +1249,37 @@
                     previewDiv.className = 'relative bg-gray-50 rounded-lg border border-gray-200 p-2 hover:shadow-md transition-shadow image-preview-item';
                     previewDiv.dataset.fileIndex = i;
                     
-                    previewDiv.innerHTML = `
-                        <div class="relative">
+                    let mediaHtml = '';
+                    if (isPdf) {
+                        mediaHtml = `
+                            <div class="w-full h-20 flex flex-col items-center justify-center bg-red-50 rounded border border-red-100">
+                                <i class="fas fa-file-pdf text-red-500 text-2xl mb-1"></i>
+                                <span class="text-[8px] font-bold text-red-600 uppercase">PDF DOCUMENT</span>
+                            </div>
+                        `;
+                    } else {
+                        mediaHtml = `
                             <img src="${e.target.result}" 
                                  alt="Preview ${validFileCount}" 
                                  class="w-full h-20 object-cover rounded hover:opacity-90 transition-opacity">
+                        `;
+                    }
+                    
+                    previewDiv.innerHTML = `
+                        <div class="relative">
+                            ${mediaHtml}
                             <button type="button" 
                                     onclick="removePreview(this, ${i})"
                                     class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm remove-preview-btn"
-                                    title="Hapus gambar">
+                                    title="Hapus file">
                                 ×
                             </button>
-                            <div class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-xs px-1 rounded">
-                                ${validFileCount}
+                            <div class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[8px] px-1 rounded">
+                                FILE ${validFileCount}
                             </div>
                         </div>
-                        <p class="text-xs text-gray-600 mt-1 truncate" title="${file.name}">${file.name}</p>
-                        <p class="text-xs text-gray-400">${formatFileSize(file.size)}</p>
+                        <p class="text-[10px] text-gray-600 mt-1 truncate" title="${file.name}">${file.name}</p>
+                        <p class="text-[9px] text-gray-400">${formatFileSize(file.size)}</p>
                     `;
                     
                     previewGrid.appendChild(previewDiv);
@@ -1351,13 +1376,13 @@
                 // Validate files before setting to input
                 const validFiles = [];
                 const maxSize = 10 * 1024 * 1024; // 10MB
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
                 
                 for (let i = 0; i < Math.min(files.length, 5); i++) {
                     const file = files[i];
                     
                     if (!allowedTypes.includes(file.type)) {
-                        alert(`File ${file.name} bukan format gambar yang diizinkan. Gunakan: JPG, PNG, GIF, atau WEBP.`);
+                        alert(`File ${file.name} bukan format yang diizinkan. Gunakan: JPG, PNG, GIF, WEBP, atau PDF.`);
                         continue;
                     }
                     

@@ -14,6 +14,7 @@ class TandaTerima extends Model
         'surat_jalan_id',
         'no_surat_jalan',
         'surat_jalan_pabrik',
+        'no_dn',
         'tanggal_surat_jalan_pabrik',
         'tanggal_surat_jalan',
         'supir',

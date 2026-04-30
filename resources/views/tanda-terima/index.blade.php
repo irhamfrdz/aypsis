@@ -320,6 +320,7 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SJ Pabrik</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Dn</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
@@ -341,6 +342,7 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. SJ Pabrik</th>
+                            <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Dn</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Tanda Terima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Checkpoint</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
@@ -456,6 +458,9 @@
                                 {{ $item->surat_jalan_pabrik ?: '-' }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $item->no_dn ?: '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $item->tanggal_surat_jalan ? \Carbon\Carbon::parse($item->tanggal_surat_jalan)->format('d/M/Y') : '-' }}
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
@@ -554,6 +559,9 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $tandaTerima->surat_jalan_pabrik ?: '-' }}
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $tandaTerima->no_dn ?: '-' }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 {{ $tandaTerima->tanggal ? \Carbon\Carbon::parse($tandaTerima->tanggal)->format('d/M/Y') : '-' }}

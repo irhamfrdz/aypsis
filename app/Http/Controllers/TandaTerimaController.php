@@ -255,6 +255,7 @@ class TandaTerimaController extends Controller
                     'tt.id as tanda_terima_id',
                     'tt.penerima',
                     'tt.surat_jalan_pabrik',
+                    'tt.no_dn',
                     'tt.created_at',
                     'uj.nomor_uang_jalan',
                     'uj.tanggal_uang_jalan'
@@ -264,7 +265,7 @@ class TandaTerimaController extends Controller
                       ->orWhere('sj.kegiatan', '')
                       ->orWhere('sj.kegiatan', 'NOT LIKE', '%bongkar%');
                 })
-                ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.penerima', 'tt.surat_jalan_pabrik', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
+                ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.penerima', 'tt.surat_jalan_pabrik', 'tt.no_dn', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
 
             // Apply search filter
             if (!empty($search)) {
@@ -302,6 +303,8 @@ class TandaTerimaController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                                     ->orWhere('no_kontainer', 'like', "%{$search}%")
+                                    ->orWhere('no_dn', 'like', "%{$search}%")
+                                    ->orWhere('surat_jalan_pabrik', 'like', "%{$search}%")
                                     ->orWhere('supir', 'like', "%{$search}%")
                                     ->orWhere('no_plat', 'like', "%{$search}%")
                   ->orWhere('penerima', 'like', "%{$search}%")
@@ -510,6 +513,7 @@ class TandaTerimaController extends Controller
             // Field khusus tanda terima
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'nomor_ro' => 'nullable|string|max:255',
+            'no_dn' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
             'tanggal_checkpoint_supir' => 'nullable|date',
             'tanggal_ambil_kontainer' => 'nullable|date',
@@ -541,7 +545,7 @@ class TandaTerimaController extends Controller
             'no_seal.*' => 'nullable|string|max:255',
             // Validation for uploaded images
             'gambar_checkpoint' => 'nullable|array|max:5',
-            'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
+            'gambar_checkpoint.*' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240', // 10MB per file
             'gudang_id' => ($isCargo ? 'nullable' : 'required') . '|exists:gudangs,id',
         ]);
         
@@ -591,6 +595,7 @@ class TandaTerimaController extends Controller
             // Additional data from form
             $tandaTerima->estimasi_nama_kapal = $request->estimasi_nama_kapal;
             $tandaTerima->nomor_ro = $request->nomor_ro;
+            $tandaTerima->no_dn = $request->no_dn;
             $tandaTerima->surat_jalan_pabrik = $request->surat_jalan_pabrik;
             $tandaTerima->tanggal_surat_jalan_pabrik = $request->tanggal_surat_jalan_pabrik;
             $tandaTerima->tanggal = $request->tanggal;
@@ -1094,6 +1099,7 @@ class TandaTerimaController extends Controller
         $request->validate([
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'surat_jalan_pabrik' => 'nullable|string|max:255',
+            'no_dn' => 'nullable|string|max:255',
             'tanggal_surat_jalan_pabrik' => 'nullable|date',
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
@@ -1146,7 +1152,7 @@ class TandaTerimaController extends Controller
             'nama_barang' => 'nullable|array',
             'nama_barang.*' => 'nullable|string|max:5000',
             'gambar_checkpoint' => 'nullable|array|max:5',
-            'gambar_checkpoint.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
+            'gambar_checkpoint.*' => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,pdf|max:10240', // 10MB per file
             'lembur' => 'nullable|boolean',
             'nginap' => 'nullable|boolean',
             'tidak_lembur_nginap' => 'nullable|boolean',
@@ -1191,6 +1197,7 @@ class TandaTerimaController extends Controller
             $updateData = [
                 'estimasi_nama_kapal' => $request->estimasi_nama_kapal,
                 'surat_jalan_pabrik' => $request->surat_jalan_pabrik,
+                'no_dn' => $request->no_dn,
                 'tanggal_surat_jalan_pabrik' => $request->tanggal_surat_jalan_pabrik,
                 'tanggal_ambil_kontainer' => $request->tanggal_ambil_kontainer,
                 'tanggal_terima_pelabuhan' => $request->tanggal_terima_pelabuhan,
