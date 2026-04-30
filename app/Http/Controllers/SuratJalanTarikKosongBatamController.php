@@ -76,17 +76,29 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
         
-        $locations = \App\Models\PricelistUangJalanBatam::orderBy('ring')
-            ->get(['ring', 'expedisi'])
+        $pricelistRings = \App\Models\PricelistUangJalanBatam::orderBy('ring')
+            ->get(['ring', 'expedisi', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
             ->map(function($item) {
-                return "Ring {$item->ring} {$item->expedisi}";
+                return [
+                    'name' => "Ring {$item->ring} {$item->expedisi}",
+                    'rates' => [
+                        '20_F' => $item->tarif_20ft_full,
+                        '20_E' => $item->tarif_20ft_empty,
+                        '40_F' => $item->tarif_40ft_full,
+                        '40_E' => $item->tarif_40ft_empty,
+                        '45_F' => $item->tarif_40ft_full,
+                        '45_E' => $item->tarif_40ft_empty,
+                    ]
+                ];
             })
-            ->unique()
+            ->unique('name')
             ->values();
+
+        $locations = $pricelistRings->pluck('name');
             
         $warehouses = \App\Models\Gudang::orderBy('nama_gudang')->pluck('nama_gudang');
 
-        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses'));
+        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings'));
     }
 
     public function store(Request $request)
@@ -165,17 +177,29 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
         
-        $locations = \App\Models\PricelistUangJalanBatam::orderBy('ring')
-            ->get(['ring', 'expedisi'])
+        $pricelistRings = \App\Models\PricelistUangJalanBatam::orderBy('ring')
+            ->get(['ring', 'expedisi', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
             ->map(function($item) {
-                return "Ring {$item->ring} {$item->expedisi}";
+                return [
+                    'name' => "Ring {$item->ring} {$item->expedisi}",
+                    'rates' => [
+                        '20_F' => $item->tarif_20ft_full,
+                        '20_E' => $item->tarif_20ft_empty,
+                        '40_F' => $item->tarif_40ft_full,
+                        '40_E' => $item->tarif_40ft_empty,
+                        '45_F' => $item->tarif_40ft_full,
+                        '45_E' => $item->tarif_40ft_empty,
+                    ]
+                ];
             })
-            ->unique()
+            ->unique('name')
             ->values();
+
+        $locations = $pricelistRings->pluck('name');
 
         $warehouses = \App\Models\Gudang::orderBy('nama_gudang')->pluck('nama_gudang');
 
-        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses'));
+        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings'));
     }
 
     public function update(Request $request, $id)

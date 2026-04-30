@@ -368,7 +368,10 @@
                 searchInput.value = val;
                 hiddenInput.value = val;
                 
-                if (ukuran) sizeSelect.value = ukuran;
+                if (ukuran) {
+                    sizeSelect.value = ukuran;
+                    updateUangJalan();
+                }
 
                 dropdown.classList.add('hidden');
                 
@@ -424,6 +427,7 @@
                 pickupDropdown.classList.add('hidden');
                 pickupOptions.forEach(o => o.classList.remove('selected'));
                 this.classList.add('selected');
+                updateUangJalan();
             });
         });
 
@@ -467,6 +471,33 @@
                 this.classList.add('selected');
             });
         });
+
+        // --- Auto-fill Uang Jalan ---
+        const pricelistRings = @json($pricelistRings);
+        const uangJalanInput = document.getElementById('uang_jalan');
+        const fESelect = document.querySelector('select[name="f_e"]');
+
+        function updateUangJalan() {
+            const selectedLocation = pickupSearch.value;
+            const selectedSize = sizeSelect.value;
+            const selectedFE = fESelect.value; // F or E
+
+            if (!selectedLocation || !selectedSize || !selectedFE) return;
+
+            const ringData = pricelistRings.find(r => r.name === selectedLocation);
+            if (ringData) {
+                const key = `${selectedSize}_${selectedFE}`;
+                const rate = ringData.rates[key];
+                
+                if (rate) {
+                    uangJalanInput.value = new Intl.NumberFormat('id-ID').format(rate);
+                }
+            }
+        }
+
+        // Add listeners for Uang Jalan updates
+        fESelect.addEventListener('change', updateUangJalan);
+        sizeSelect.addEventListener('change', updateUangJalan);
 
         // --- Auto-fill No. Plat based on Supir ---
         const supirSelect = document.querySelector('select[name="supir"]');
