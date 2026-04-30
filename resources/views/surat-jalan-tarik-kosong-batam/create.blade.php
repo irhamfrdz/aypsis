@@ -80,9 +80,8 @@
                                id="no_surat_jalan"
                                value="{{ old('no_surat_jalan') }}"
                                required
-                               readonly
                                placeholder="SJTK/YYYY/MM/XXXX"
-                               class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_surat_jalan') border-red-500 @enderror">
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_surat_jalan') border-red-500 @enderror">
                         <button type="button"
                                 id="btn-generate-number"
                                 class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-r-lg text-sm">
