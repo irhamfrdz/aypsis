@@ -478,6 +478,8 @@
                                             <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="KANTOR GARASI PLUIT">KANTOR GARASI PLUIT</div>
                                             <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="KANTOR PELABUHAN">KANTOR PELABUHAN</div>
                                             <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="KANTOR GARASI SEMUT">KANTOR GARASI SEMUT</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="KANTOR JAKARTA">KANTOR JAKARTA</div>
+                                            <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="KANTOR BATAM">KANTOR BATAM</div>
                                             <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="GARASI SEMUT">GARASI SEMUT</div>
                                             <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="GARASI PLUIT">GARASI PLUIT</div>
                                             <div class="px-4 py-3 hover:bg-indigo-50 cursor-pointer border-b border-gray-100 option-item text-sm" data-value="PELABUHAN SUNDA KELAPA">PELABUHAN SUNDA KELAPA</div>
