@@ -514,21 +514,24 @@ class StockBanController extends Controller
         $request->validate([
             'mobil_id' => 'required',
             'processed_unit_id' => $isAlatBerat ? 'exists:alat_berats,id' : 'exists:mobils,id',
-            'penerima_id' => 'required|exists:karyawans,id',
+            'penerima_id' => 'required_without:penerima_manual|nullable|exists:karyawans,id',
+            'penerima_manual' => 'required_without:penerima_id|nullable|string|max:255',
             'tanggal_keluar' => 'required|date',
             'tanggal_digunakan' => 'nullable|date',
             'keterangan' => 'nullable|string',
         ], [
             'mobil_id.required' => 'Wajib memilih Mobil atau Alat Berat.',
             'processed_unit_id.exists' => $isAlatBerat ? 'Alat Berat tidak valid.' : 'Mobil tidak valid.',
-            'penerima_id.required' => 'Wajib memilih Penerima (Supir/Kenek).',
+            'penerima_id.required_without' => 'Wajib memilih Penerima atau ketik manual.',
             'penerima_id.exists' => 'Penerima tidak valid.',
+            'penerima_manual.required_without' => 'Wajib memilih Penerima atau ketik manual.',
             'tanggal_keluar.required' => 'Tanggal pasang harus diisi.',
         ]);
 
         $updateData = [
             'status' => 'Terpakai',
             'penerima_id' => $request->penerima_id,
+            'penerima_manual' => $request->penerima_manual,
             'tanggal_keluar' => $request->tanggal_keluar,
             'tanggal_digunakan' => $request->tanggal_digunakan ?? $request->tanggal_keluar,
             'keterangan' => $request->keterangan ? ($stockBan->keterangan . "\n" . "[Pemakaian: " . $request->keterangan . "]") : $stockBan->keterangan,
@@ -577,13 +580,15 @@ class StockBanController extends Controller
         }
 
         $request->validate([
-            'penerima_id' => 'required|exists:karyawans,id',
+            'penerima_id' => 'required_without:penerima_manual|nullable|exists:karyawans,id',
+            'penerima_manual' => 'required_without:penerima_id|nullable|string|max:255',
             'kapal_id' => 'required|exists:master_kapals,id',
             'tanggal_kirim' => 'required|date',
             'keterangan' => 'nullable|string',
         ], [
-            'penerima_id.required' => 'Wajib memilih Penerima.',
+            'penerima_id.required_without' => 'Wajib memilih Penerima atau ketik manual.',
             'penerima_id.exists' => 'Penerima tidak valid.',
+            'penerima_manual.required_without' => 'Wajib memilih Penerima atau ketik manual.',
             'kapal_id.required' => 'Wajib memilih Kapal.',
             'kapal_id.exists' => 'Kapal tidak valid.',
             'tanggal_kirim.required' => 'Tanggal kirim harus diisi.',
@@ -595,6 +600,7 @@ class StockBanController extends Controller
         $stockBan->update([
             'status' => $status,
             'penerima_id' => $request->penerima_id,
+            'penerima_manual' => $request->penerima_manual,
             'kapal_id' => $request->kapal_id,
             'tanggal_kirim' => $request->tanggal_kirim,
             'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $keteranganNote) : $keteranganNote,
@@ -888,7 +894,8 @@ class StockBanController extends Controller
             'item_id' => 'required',
             'item_jenis' => 'required',
             'qty' => 'required|integer|min:1',
-            'penerima_id' => 'required|exists:karyawans,id',
+            'penerima_id' => 'required_without:penerima_manual|nullable|exists:karyawans,id',
+            'penerima_manual' => 'required_without:penerima_id|nullable|string|max:255',
             'gudang_id' => 'nullable|exists:master_gudang_bans,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'tanggal_digunakan' => 'nullable|date',
@@ -933,6 +940,7 @@ class StockBanController extends Controller
                 'stock_ban_dalam_id' => ($tableName == 'stock_ban_dalams') ? $item->id : null,
                 'qty' => $qtyUsed,
                 'penerima_id' => $request->penerima_id,
+                'penerima_manual' => $request->penerima_manual,
                 'gudang_id' => $request->gudang_id,
                 'kapal_id' => $request->kapal_id,
                 'tanggal_keluar' => $request->tanggal_digunakan ?? now(),
@@ -1029,7 +1037,7 @@ class StockBanController extends Controller
                 'jenis_pergerakan' => 'KELUAR',
                 'nama' => $nama,
                 'qty' => $item->qty,
-                'pelaku' => $item->penerima->nama_lengkap ?? '-',
+                'pelaku' => $item->penerima->nama_lengkap ?? $item->penerima_manual ?? '-',
                 'updater' => $item->createdBy->username ?? '-',
                 'tujuan_penerima' => $tujuan,
                 'keterangan' => $item->keterangan ?? '-',

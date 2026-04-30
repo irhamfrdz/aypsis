@@ -531,7 +531,7 @@
                                     {{ $ban->tanggal_digunakan ? $ban->tanggal_digunakan->format('d-m-Y') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $ban->penerima->nama_lengkap ?? '-' }}
+                                    {{ $ban->penerima->nama_lengkap ?? $ban->penerima_manual ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $ban->lokasi ?? '-' }}
@@ -932,7 +932,7 @@
                                     {{ $ban->tanggal_digunakan ? $ban->tanggal_digunakan->format('d-m-Y') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $ban->penerima->nama_lengkap ?? '-' }}
+                                    {{ $ban->penerima->nama_lengkap ?? $ban->penerima_manual ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $ban->lokasi ?? '-' }}
@@ -1719,11 +1719,13 @@
 
                     <div class="mb-4">
                         <label class="form-label-premium">Penerima (Supir/Kenek)</label>
-                        <input type="hidden" name="penerima_id" id="penerima" required>
-                        <button type="button" id="btn-penerima" class="btn-dropdown-premium" onclick="DropdownManager.toggle('penerima', this)">
-                            <span class="block truncate" id="text-penerima">-- Pilih Penerima --</span>
-                            <i class="fas fa-chevron-down text-gray-400"></i>
-                        </button>
+                        <input type="hidden" name="penerima_id" id="penerima">
+                        <div class="relative" id="btn-penerima">
+                            <input type="text" name="penerima_manual" id="text-penerima" class="form-input-premium w-full pr-10" placeholder="Ketik nama atau pilih..." autocomplete="off" onfocus="DropdownManager.open('penerima', this.parentElement)" oninput="document.getElementById('penerima').value=''">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
                         
                         <!-- Dropdown Content (Hidden Loop) -->
                         <div id="dropdown-content-penerima" class="hidden">
@@ -1868,7 +1870,12 @@
             
             const textEl = document.getElementById('text-' + id);
             if (textEl) {
-                textEl.textContent = text;
+                if (textEl.tagName === 'INPUT') {
+                    textEl.value = text;
+                } else {
+                    textEl.textContent = text;
+                }
+                textEl.classList.remove('text-gray-400');
             }
             
             this.close();
@@ -1941,7 +1948,13 @@
         if (mobilInput) mobilInput.value = '';
         if (textMobil) textMobil.textContent = '-- Pilih Mobil --';
         if (penerimaInput) penerimaInput.value = '';
-        if (textPenerima) textPenerima.textContent = '-- Pilih Penerima --';
+        if (textPenerima) {
+            if (textPenerima.tagName === 'INPUT') {
+                textPenerima.value = '';
+            } else {
+                textPenerima.textContent = '-- Pilih Penerima --';
+            }
+        }
         
         console.log('About to show modal, current classes:', usageModal.className);
         usageModal.classList.remove('hidden');
@@ -2168,7 +2181,12 @@
         
         // Reset dropdowns
         document.getElementById('kirim_penerima').value = '';
-        document.getElementById('text-kirim_penerima').textContent = '-- Pilih Penerima --';
+        const textKirimPenerima = document.getElementById('text-kirim_penerima');
+        if (textKirimPenerima.tagName === 'INPUT') {
+            textKirimPenerima.value = '';
+        } else {
+            textKirimPenerima.textContent = '-- Pilih Penerima --';
+        }
         document.getElementById('kirim_kapal').value = '';
         document.getElementById('text-kirim_kapal').textContent = '-- Pilih Kapal --';
         document.getElementById('kirim_tanggal').value = new Date().toISOString().split('T')[0];
@@ -2195,10 +2213,11 @@
     function submitKirimBanForm() {
         const banId = document.getElementById('kirim_ban_id').value;
         const penerimaId = document.getElementById('kirim_penerima').value;
+        const penerimaManual = document.getElementById('text-kirim_penerima').value;
         const kapalId = document.getElementById('kirim_kapal').value;
         const tanggal = document.getElementById('kirim_tanggal').value;
         
-        if (!penerimaId) { alert('Mohon pilih penerima!'); return; }
+        if (!penerimaId && !penerimaManual) { alert('Mohon pilih atau ketik penerima!'); return; }
         if (!kapalId) { alert('Mohon pilih kapal!'); return; }
         if (!tanggal) { alert('Mohon isi tanggal kirim!'); return; }
 
@@ -2443,7 +2462,11 @@
                     @if(old('penerima_id'))
                          const oldPenerimaId = "{{ old('penerima_id') }}";
                          document.getElementById('penerima').value = oldPenerimaId;
-                         document.getElementById('text-penerima').textContent = 'Pilihan Sebelumnya (Mohon Pilih Lagi)';
+                         if (textPenerima.tagName === 'INPUT') {
+                            textPenerima.value = 'Pilihan Sebelumnya (Mohon Pilih Lagi)';
+                         } else {
+                            textPenerima.textContent = 'Pilihan Sebelumnya (Mohon Pilih Lagi)';
+                         }
                     @endif
                 }, 500);
             }
@@ -3000,11 +3023,13 @@
                             <div class="mt-4 space-y-4">
                                 <div>
                                     <label class="form-label-premium">Penerima <span class="text-red-500">*</span></label>
-                                    <input type="hidden" name="penerima_id" id="kirim_penerima" required>
-                                    <button type="button" id="btn-kirim_penerima" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('kirim_penerima', this)">
-                                        <span class="block truncate" id="text-kirim_penerima">-- Pilih Penerima --</span>
-                                        <i class="fas fa-chevron-down text-gray-400"></i>
-                                    </button>
+                                    <input type="hidden" name="penerima_id" id="kirim_penerima">
+                                    <div class="relative" id="btn-kirim_penerima">
+                                        <input type="text" name="penerima_manual" id="text-kirim_penerima" class="form-input-premium w-full pr-10" placeholder="Ketik nama atau pilih..." autocomplete="off" onfocus="DropdownManager.open('kirim_penerima', this.parentElement)" oninput="document.getElementById('kirim_penerima').value=''">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                    </div>
                                     <div id="dropdown-content-kirim_penerima" class="hidden">
                                         <div class="dropdown-search-container">
                                             <input type="text" class="w-full border-gray-300 rounded-lg text-sm p-2" placeholder="Cari penerima..." onkeyup="DropdownManager.filter(this)">
@@ -3260,11 +3285,13 @@
 
                         <div>
                             <label class="form-label-premium">Penerima <span class="text-red-500">*</span></label>
-                            <input type="hidden" name="penerima_id" id="usage_penerima" required>
-                            <button type="button" id="btn-usage_penerima" class="form-input-premium flex justify-between items-center bg-white" onclick="DropdownManager.toggle('usage_penerima', this)">
-                                <span class="block truncate" id="text-usage_penerima">-- Pilih Penerima --</span>
-                                <i class="fas fa-chevron-down text-gray-400"></i>
-                            </button>
+                            <input type="hidden" name="penerima_id" id="usage_penerima">
+                            <div class="relative" id="btn-usage_penerima">
+                                <input type="text" name="penerima_manual" id="text-usage_penerima" class="form-input-premium w-full pr-10" placeholder="Ketik nama atau pilih..." autocomplete="off" onfocus="DropdownManager.open('usage_penerima', this.parentElement)" oninput="document.getElementById('usage_penerima').value=''">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-gray-400"></i>
+                                </div>
+                            </div>
                             <div id="dropdown-content-usage_penerima" class="hidden">
                                 <div class="dropdown-search-container">
                                     <input type="text" class="w-full border-gray-300 rounded-lg text-sm p-2" placeholder="Cari penerima..." onkeyup="DropdownManager.filter(this)">
@@ -3359,7 +3386,12 @@
         
         // Reset selections
         document.getElementById('usage_penerima').value = '';
-        document.getElementById('text-usage_penerima').textContent = '-- Pilih Penerima --';
+        const textUsagePenerima = document.getElementById('text-usage_penerima');
+        if (textUsagePenerima.tagName === 'INPUT') {
+            textUsagePenerima.value = '';
+        } else {
+            textUsagePenerima.textContent = '-- Pilih Penerima --';
+        }
         document.getElementById('usage_gudang').value = '';
         document.getElementById('text-usage_gudang').textContent = '-- Pilih Gudang --';
         document.getElementById('usage_kapal').value = '';

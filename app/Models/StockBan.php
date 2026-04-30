@@ -35,6 +35,7 @@ class StockBan extends Model
         'mobil_id',
         'alat_berat_id',
         'penerima_id',
+        'penerima_manual',
         'kapal_id',
         'tanggal_kirim',
         'tanggal_digunakan',
