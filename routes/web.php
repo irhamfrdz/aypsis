@@ -2852,6 +2852,10 @@ Route::middleware(['auth'])->group(function () {
              'destroy' => 'can:pranota-uang-jalan-batam-delete'
          ]);
 
+    Route::get('pranota-uang-rit-batam/select-date', [\App\Http\Controllers\PranotaUangRitBatamController::class, 'selectDate'])
+         ->name('pranota-uang-rit-batam.select-date')
+         ->middleware('can:pranota-uang-rit-batam-create');
+
     Route::resource('pranota-uang-rit-batam', \App\Http\Controllers\PranotaUangRitBatamController::class);
 
 

@@ -1,133 +1,158 @@
 @extends('layouts.app')
 
+@section('title', 'Buat Pranota Uang Rit Batam')
+
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-700 px-6 py-4">
-            <h2 class="text-xl font-bold text-white flex items-center">
-                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="space-y-6">
+        <!-- Page Header -->
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">💰 Buat Pranota Uang Rit Supir Batam</h1>
+                <p class="text-gray-600 mt-1">
+                    Pilih surat jalan untuk pranota uang rit supir Batam
+                    @if(isset($viewStartDate) && isset($viewEndDate))
+                        <span class="text-sm text-blue-600 font-medium">
+                            (Periode: {{ \Carbon\Carbon::parse($viewStartDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($viewEndDate)->format('d/m/Y') }})
+                        </span>
+                        <a href="{{ route('pranota-uang-rit-batam.select-date') }}" class="text-sm text-indigo-600 hover:text-indigo-800 underline ml-2">Ubah Tanggal</a>
+                    @endif
+                </p>
+            </div>
+            <a href="{{ route('pranota-uang-rit-batam.index') }}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                Buat Pranota Uang Rit Supir Batam
-            </h2>
+                Kembali
+            </a>
         </div>
 
-        <form action="{{ route('pranota-uang-rit-batam.store') }}" method="POST" class="p-6">
+        <form action="{{ route('pranota-uang-rit-batam.store') }}" method="POST">
             @csrf
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <!-- Info Section -->
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Pranota</label>
-                        <input type="date" name="tanggal_pranota" value="{{ date('Y-m-d') }}" required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Pilih Supir</label>
-                        <select name="supir_nama" id="supir_nama" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
-                            <option value="">-- Pilih Supir --</option>
-                            @foreach($availableSuratJalans->unique('supir') as $sj)
-                                <option value="{{ $sj->supir }}">{{ $sj->supir }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Penyesuaian (Opsional)</label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-2 text-gray-500">Rp</span>
-                            <input type="number" name="penyesuaian" id="penyesuaian" value="0"
-                                   class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+            <!-- Info Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">📝 Informasi Pranota</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="tanggal_pranota" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Pranota <span class="text-red-500">*</span></label>
+                                <input type="date" name="tanggal_pranota" id="tanggal_pranota" value="{{ date('Y-m-d') }}" required
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            </div>
+                            <div>
+                                <label for="supir_nama" class="block text-sm font-medium text-gray-700 mb-2">Pilih Supir <span class="text-red-500">*</span></label>
+                                <select name="supir_nama" id="supir_nama" required
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                    <option value="">-- Pilih Supir --</option>
+                                    @foreach($availableSuratJalans->unique('supir') as $sj)
+                                        <option value="{{ $sj->supir }}">{{ $sj->supir }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label for="penyesuaian" class="block text-sm font-medium text-gray-700 mb-2">Penyesuaian (Opsional)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-gray-500 text-sm">Rp</span>
+                                    <input type="number" name="penyesuaian" id="penyesuaian" value="0"
+                                           class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">Catatan</label>
+                                <textarea name="catatan" id="catatan" rows="2"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                          placeholder="Tambahkan catatan jika ada..."></textarea>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan</label>
-                        <textarea name="catatan" rows="2"
-                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                  placeholder="Tambahkan catatan jika ada..."></textarea>
-                    </div>
                 </div>
             </div>
 
-            <!-- Surat Jalan Selection -->
-            <div class="mb-8">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                    </svg>
-                    Pilih Surat Jalan
-                </h3>
-                
-                <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left">
-                                    <input type="checkbox" id="checkAll" class="rounded text-indigo-600 focus:ring-indigo-500">
-                                </th>
-                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
-                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
-                                <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Uang Rit</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200" id="suratJalanList">
-                            @forelse($availableSuratJalans as $sj)
-                                <tr class="hover:bg-indigo-50 transition-colors sj-row" data-supir="{{ $sj->supir }}">
-                                    <td class="px-4 py-4">
-                                        <input type="checkbox" name="surat_jalan_ids[]" value="{{ $sj->id }}" 
-                                               class="sj-checkbox rounded text-indigo-600 focus:ring-indigo-500"
-                                               data-amount="{{ is_numeric($sj->rit) ? $sj->rit : 0 }}">
-                                    </td>
-                                    <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ $sj->no_surat_jalan }}</td>
-                                    <td class="px-4 py-4 text-sm text-gray-600">{{ $sj->tanggal_surat_jalan->format('d/m/Y') }}</td>
-                                    <td class="px-4 py-4 text-sm text-gray-600">{{ $sj->tujuan_pengambilan }}</td>
-                                    <td class="px-4 py-4 text-sm text-right font-bold text-gray-900">
-                                        Rp {{ number_format(is_numeric($sj->rit) ? $sj->rit : 0, 0, ',', '.') }}
-                                    </td>
-                                </tr>
-                            @empty
+            <!-- Surat Jalan Selection Table -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">🚚 Pilih Surat Jalan</h3>
+                </div>
+                <div class="p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <td colspan="5" class="px-4 py-12 text-center text-gray-500 italic">
-                                        Tidak ada Surat Jalan tersedia untuk supir ini.
-                                    </td>
+                                    <th class="px-6 py-3 text-left">
+                                        <input type="checkbox" id="checkAll" class="rounded text-blue-600 focus:ring-blue-500">
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Rit</th>
                                 </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="suratJalanList">
+                                @forelse($availableSuratJalans as $sj)
+                                    <tr class="hover:bg-gray-50 transition-colors duration-200 sj-row" data-supir="{{ $sj->supir }}">
+                                        <td class="px-6 py-4">
+                                            <input type="checkbox" name="surat_jalan_ids[]" value="{{ $sj->id }}" 
+                                                   class="sj-checkbox rounded text-blue-600 focus:ring-blue-500"
+                                                   data-amount="{{ is_numeric($sj->rit) ? $sj->rit : 0 }}">
+                                        </td>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $sj->no_surat_jalan }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->tanggal_surat_jalan->format('d/m/Y') }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">{{ $sj->tujuan_pengambilan }}</td>
+                                        <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
+                                            Rp {{ number_format(is_numeric($sj->rit) ? $sj->rit : 0, 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                            <i class="fas fa-inbox text-4xl text-gray-300 mb-3 block"></i>
+                                            Tidak ada Surat Jalan tersedia untuk supir ini.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- Summary Section -->
-            <div class="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="text-gray-600">
-                        <span id="selectedCount" class="font-bold text-indigo-600">0</span> Surat Jalan terpilih
-                    </div>
-                    <div class="text-2xl font-black text-gray-900">
-                        Total: <span id="totalDisplay" class="text-indigo-600">Rp 0</span>
-                    </div>
-                    <div class="flex gap-3">
-                        <a href="{{ route('pranota-uang-rit-batam.index') }}" 
-                           class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-all font-semibold">
-                            Batal
-                        </a>
-                        <button type="submit" id="submitBtn" disabled
-                                class="px-8 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all font-bold shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Simpan Pranota
-                        </button>
+            <!-- Summary & Submit -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-6">
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="text-gray-600">
+                            <span id="selectedCount" class="font-bold text-blue-600">0</span> Surat Jalan terpilih
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900">
+                            Total: <span id="totalDisplay" class="text-blue-600">Rp 0</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <a href="{{ route('pranota-uang-rit-batam.index') }}" 
+                               class="inline-flex items-center px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200 font-medium">
+                                Batal
+                            </a>
+                            <button type="submit" id="submitBtn" disabled
+                                    class="inline-flex items-center px-8 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-save mr-2"></i> Simpan Pranota
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </form>
     </div>
 </div>
+@endsection
 
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const supirSelect = document.getElementById('supir_nama');
@@ -177,7 +202,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     checkAll.addEventListener('change', function() {
-        const supir = supirSelect.value;
         checkboxes.forEach(cb => {
             const row = cb.closest('.sj-row');
             if (row.style.display !== 'none') {
@@ -193,4 +217,4 @@ document.addEventListener('DOMContentLoaded', function() {
     filterBySupir();
 });
 </script>
-@endsection
+@endpush

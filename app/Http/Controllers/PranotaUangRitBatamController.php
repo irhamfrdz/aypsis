@@ -38,6 +38,11 @@ class PranotaUangRitBatamController extends Controller
             $query->where('status_pembayaran', $request->status);
         }
 
+        // Date range filter
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('tanggal_pranota', [$request->start_date, $request->end_date]);
+        }
+
         // Pagination
         $pranotaUangRitBatams = $query->orderBy('created_at', 'desc')
             ->paginate(20)
@@ -47,21 +52,63 @@ class PranotaUangRitBatamController extends Controller
     }
 
     /**
+     * Show the date selection page for creating a new pranota.
+     */
+    public function selectDate(Request $request)
+    {
+        $start_date = $request->input('start_date');
+        $end_date = $request->input('end_date');
+
+        return view('pranota-uang-rit-batam.select-date', compact('start_date', 'end_date'));
+    }
+
+    /**
      * Show form for creating new pranota.
      */
-    public function create()
+    public function create(Request $request)
     {
+        // Default to last 30 days if no date range is provided
+        $startDate = $request->input('start_date', \Carbon\Carbon::now()->subDays(30)->format('Y-m-d'));
+        $endDate = $request->input('end_date', \Carbon\Carbon::now()->format('Y-m-d'));
+
+        // Validate date inputs
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            try {
+                $startCheck = \Carbon\Carbon::parse($startDate)->startOfDay();
+                $endCheck = \Carbon\Carbon::parse($endDate)->endOfDay();
+                if ($startCheck->gt($endCheck)) {
+                    return redirect()->route('pranota-uang-rit-batam.select-date')->withInput()->with('error', 'Tanggal mulai tidak boleh lebih besar dari tanggal akhir.');
+                }
+            } catch (\Exception $e) {
+                return redirect()->route('pranota-uang-rit-batam.select-date')->withInput()->with('error', 'Format tanggal tidak valid.');
+            }
+        }
+
         // Get available surat jalans batam (not in any pranota and rit status is not paid)
-        $availableSuratJalans = SuratJalanBatam::whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
+        $query = SuratJalanBatam::whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
             ->where(function($q) {
                 $q->whereNull('status_pembayaran_uang_rit')
                   ->orWhere('status_pembayaran_uang_rit', 'belum_dibayar')
                   ->orWhere('status_pembayaran_uang_rit', 'belum_masuk_pranota');
-            })
-            ->orderBy('tanggal_surat_jalan', 'desc')
-            ->get();
+            });
 
-        return view('pranota-uang-rit-batam.create', compact('availableSuratJalans'));
+        // Apply date range filter
+        if ($startDate && $endDate) {
+            try {
+                $startDateObj = \Carbon\Carbon::parse($startDate)->startOfDay();
+                $endDateObj = \Carbon\Carbon::parse($endDate)->endOfDay();
+                $query->whereBetween('tanggal_surat_jalan', [$startDateObj, $endDateObj]);
+            } catch (\Exception $e) {
+                // If parsing fails, don't apply date filter
+            }
+        }
+
+        $availableSuratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')->get();
+
+        $viewStartDate = $startDate;
+        $viewEndDate = $endDate;
+
+        return view('pranota-uang-rit-batam.create', compact('availableSuratJalans', 'viewStartDate', 'viewEndDate'));
     }
 
     /**
