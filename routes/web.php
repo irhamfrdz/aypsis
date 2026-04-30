@@ -2852,6 +2852,10 @@ Route::middleware(['auth'])->group(function () {
              'destroy' => 'can:pranota-uang-jalan-batam-delete'
          ]);
 
+    Route::resource('pranota-uang-rit-batam', \App\Http\Controllers\PranotaUangRitBatamController::class);
+
+
+
      // Pranota Uang Jalan Bongkaran - list & basic management
           Route::get('pranota-uang-jalan-bongkaran', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
                ->name('pranota-uang-jalan-bongkaran.index')
