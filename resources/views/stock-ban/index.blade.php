@@ -731,15 +731,35 @@
                             <div class="text-[10px] text-gray-400">
                                 <i class="far fa-calendar-alt mr-1"></i> {{ date('d/m/y', strtotime($ban->tanggal_masuk)) }}
                             </div>
-                            <div class="flex gap-1">
+                            <div class="flex flex-wrap gap-1">
                                 @if($ban->status == 'Stok' || $ban->status == 'Rusak')
-                                    <button type="button" class="btn-jual-modal w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}"><i class="fas fa-shopping-cart text-xs"></i></button>
+                                    <button type="button" class="btn-jual-modal w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jual Ban"><i class="fas fa-shopping-cart text-xs"></i></button>
                                 @endif
+                                
                                 @if($ban->status == 'Stok')
-                                    <button type="button" class="btn-usage-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}"><i class="fas fa-wrench text-xs"></i></button>
+                                    <button type="button" class="btn-usage-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Pasang Ban"><i class="fas fa-wrench text-xs"></i></button>
+                                    
+                                    <button type="button" class="btn-kirim-batam-modal w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-50 text-cyan-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Kirim ke Batam"><i class="fas fa-truck-loading text-xs"></i></button>
+                                    
+                                    <button type="button" class="btn-kirim-tp-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-destination="Tanjung Pinang" title="Kirim ke Tanjung Pinang"><i class="fas fa-paper-plane text-xs"></i></button>
+                                    
+                                    <button type="button" class="btn-return-shop-modal w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Kembalikan ke Toko"><i class="fas fa-undo-alt text-xs"></i></button>
+                                @elseif($ban->status == 'Terpakai')
+                                    <button type="button" class="btn-return-modal w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}" title="Kembalikan ke Gudang"><i class="fas fa-undo text-xs"></i></button>
+                                @elseif($ban->status == 'Sedang Dimasak')
+                                    <button type="button" class="btn-return-masak-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Selesai Masak"><i class="fas fa-check-circle text-xs"></i></button>
+                                @elseif($ban->status == 'Dikembalikan')
+                                    <button type="button" class="btn-restore-stock-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jadikan Stok Kembali"><i class="fas fa-undo text-xs"></i></button>
                                 @endif
-                                <a href="{{ route('stock-ban.show', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600"><i class="fas fa-eye text-xs"></i></a>
-                                <a href="{{ route('stock-ban.edit', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-edit text-xs"></i></a>
+
+                                <a href="{{ route('stock-ban.show', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600" title="Detail"><i class="fas fa-eye text-xs"></i></a>
+                                <a href="{{ route('stock-ban.edit', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600" title="Edit"><i class="fas fa-edit text-xs"></i></a>
+                                
+                                <form action="{{ route('stock-ban.destroy', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus data ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" title="Hapus"><i class="fas fa-trash text-xs"></i></button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -1221,15 +1241,35 @@
                             <div class="text-[10px] text-gray-400">
                                 <i class="far fa-calendar-alt mr-1"></i> {{ date('d/m/y', strtotime($ban->tanggal_masuk)) }}
                             </div>
-                            <div class="flex gap-1">
+                            <div class="flex flex-wrap gap-1">
                                 @if($ban->status == 'Stok' || $ban->status == 'Rusak')
-                                    <button type="button" class="btn-jual-modal w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}"><i class="fas fa-shopping-cart text-xs"></i></button>
+                                    <button type="button" class="btn-jual-modal w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jual Ban"><i class="fas fa-shopping-cart text-xs"></i></button>
                                 @endif
+                                
                                 @if($ban->status == 'Stok')
-                                    <button type="button" class="btn-usage-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}"><i class="fas fa-wrench text-xs"></i></button>
+                                    <button type="button" class="btn-usage-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Pasang Ban"><i class="fas fa-wrench text-xs"></i></button>
+                                    
+                                    <button type="button" class="btn-kirim-batam-modal w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-50 text-cyan-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Kirim ke Batam"><i class="fas fa-truck-loading text-xs"></i></button>
+                                    
+                                    <button type="button" class="btn-kirim-tp-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-destination="Tanjung Pinang" title="Kirim ke Tanjung Pinang"><i class="fas fa-paper-plane text-xs"></i></button>
+                                    
+                                    <button type="button" class="btn-return-shop-modal w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Kembalikan ke Toko"><i class="fas fa-undo-alt text-xs"></i></button>
+                                @elseif($ban->status == 'Terpakai')
+                                    <button type="button" class="btn-return-modal w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}" title="Kembalikan ke Gudang"><i class="fas fa-undo text-xs"></i></button>
+                                @elseif($ban->status == 'Sedang Dimasak')
+                                    <button type="button" class="btn-return-masak-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Selesai Masak"><i class="fas fa-check-circle text-xs"></i></button>
+                                @elseif($ban->status == 'Dikembalikan')
+                                    <button type="button" class="btn-restore-stock-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jadikan Stok Kembali"><i class="fas fa-undo text-xs"></i></button>
                                 @endif
-                                <a href="{{ route('stock-ban-luar-batam.show', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600"><i class="fas fa-eye text-xs"></i></a>
-                                <a href="{{ route('stock-ban-luar-batam.edit', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-edit text-xs"></i></a>
+
+                                <a href="{{ route('stock-ban-luar-batam.show', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600" title="Detail"><i class="fas fa-eye text-xs"></i></a>
+                                <a href="{{ route('stock-ban-luar-batam.edit', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600" title="Edit"><i class="fas fa-edit text-xs"></i></a>
+                                
+                                <form action="{{ route('stock-ban-luar-batam.destroy', $ban->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus data ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" title="Hapus"><i class="fas fa-trash text-xs"></i></button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -1573,12 +1613,19 @@
                     <h4 class="font-bold text-gray-900 mb-1">{{ $item->nama }}</h4>
                     <p class="text-xs text-gray-500 mb-3"><i class="fas fa-expand-arrows-alt mr-1"></i> {{ $item->ukuran }} | <i class="fas fa-map-marker-alt mr-1"></i> {{ $item->lokasi }}</p>
                     
-                    <div class="flex justify-end gap-2 pt-2 border-t border-gray-50">
+                    <div class="flex flex-wrap justify-end gap-2 pt-2 border-t border-gray-50">
                         @if($item->qty > 0)
-                            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" onclick="openStockUsageModal('{{ $item->id }}', '{{ $item->jenis }}', '{{ $item->nama }}', '{{ $item->qty }}')"><i class="fas fa-sign-out-alt text-xs"></i></button>
+                            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" onclick="openStockUsageModal('{{ $item->id }}', '{{ $item->jenis }}', '{{ $item->nama }}', '{{ $item->qty }}')" title="Gunakan Stock"><i class="fas fa-sign-out-alt text-xs"></i></button>
                         @endif
-                        <a href="{{ $item->url_detail }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-eye text-xs"></i></a>
-                        <a href="{{ $item->url_edit }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-600"><i class="fas fa-edit text-xs"></i></a>
+                        <a href="{{ $item->url_detail }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600" title="Informasi Lengkap"><i class="fas fa-eye text-xs"></i></a>
+                        <a href="{{ $item->url_detail }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600" title="Riwayat Keluar/Masuk"><i class="fas fa-history text-xs"></i></a>
+                        <a href="{{ $item->url_edit }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-600" title="Edit Data"><i class="fas fa-edit text-xs"></i></a>
+                        
+                        <form action="{{ $item->url_destroy }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus data ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" title="Hapus Data"><i class="fas fa-trash text-xs"></i></button>
+                        </form>
                     </div>
                 </div>
                 @empty
