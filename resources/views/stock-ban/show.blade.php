@@ -29,10 +29,6 @@
             <div class="absolute top-0 right-0 w-32 h-full bg-indigo-800 opacity-20 transform skew-x-12 translate-x-10"></div>
             
             <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <div class="flex items-center gap-5">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-600 rounded-2xl flex items-center justify-center border border-indigo-500 shadow-inner">
-                        <i class="fas fa-circle-notch text-white text-3xl sm:text-4xl"></i>
-                    </div>
                     <div>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-800 text-indigo-100 mb-2 uppercase tracking-widest border border-indigo-600">
                             Ban ID #{{ $stockBan->id }}
@@ -44,7 +40,6 @@
                             <i class="fas fa-tag opacity-70"></i> {{ $stockBan->namaStockBan->nama ?? 'Stock Ban Luar' }}
                         </p>
                     </div>
-                </div>
                 
                 <div class="flex flex-col items-start md:items-end gap-2">
                     <span class="px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-tighter shadow-lg
