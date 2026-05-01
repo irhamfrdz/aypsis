@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tanda_terima_surat_jalan_tarik_kosong_batams', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('surat_jalan_tarik_kosong_batam_id')->nullable();
-            $table->string('no_tanda_terima')->unique();
+            $table->string('no_tanda_terima')->unique('tt_sjtkb_no_unique');
             $table->date('tanggal_tanda_terima');
             
             // Redundant fields for easier reporting/viewing (pattern used in this repo)

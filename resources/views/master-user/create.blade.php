@@ -1269,6 +1269,24 @@
                                 <td>-</td>
                                 <td>-</td>
                             </tr>
+
+                            {{-- Tanda Terima SJ Tarik Kosong Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-blue-600 font-bold">Tanda Terima SJ Tarik Kosong Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-tarik-kosong-batam][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-tarik-kosong-batam][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-tarik-kosong-batam][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-tarik-kosong-batam][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-tarik-kosong-batam][print]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Tanda Terima Bongkaran --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

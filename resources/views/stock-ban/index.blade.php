@@ -420,7 +420,7 @@
                      </button>
                 </div>
                 
-                <div class="overflow-x-auto">
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -662,6 +662,95 @@
                     </table>
                 </div>
 
+                <!-- Mobile View: Ban Luar -->
+                <div class="md:hidden space-y-4">
+                    @forelse($stockBans as $ban)
+                    <div class="mobile-card bg-white rounded-xl border border-gray-100 shadow-sm p-4 overflow-hidden" 
+                         data-status="{{ strtolower($ban->status) }}" 
+                         data-kondisi="{{ strtolower($ban->kondisi) }}"
+                         data-lokasi="{{ strtolower($ban->lokasi ?? '') }}">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex items-center gap-2">
+                                @if($ban->status == 'Stok' && $ban->kondisi != 'afkir')
+                                <input type="checkbox" name="ids[]" value="{{ $ban->id }}" 
+                                    data-type="{{ ucfirst($ban->kondisi) }}" 
+                                    data-ukuran="{{ $ban->ukuran }}"
+                                    data-status-luar="{{ $ban->status_ban_luar }}"
+                                    data-harga="{{ number_format($ban->harga_beli, 0, ',', '.') }}"
+                                    class="check-item rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                @endif
+                                <div>
+                                    <h4 class="font-bold text-gray-900 leading-tight">{{ $ban->nomor_seri ?? '-' }}</h4>
+                                    <p class="text-[10px] text-gray-500">{{ $ban->nomor_faktur ?? '-' }}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 text-[10px] font-bold rounded-full 
+                                {{ $ban->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
+                                   ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
+                                   ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
+                                   (($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') ? 'bg-cyan-100 text-cyan-800' : 
+                                   ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
+                                   ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
+                                {{ $ban->status }}
+                            </span>
+                        </div>
+
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-500">Merk / Ukuran</span>
+                                <span class="font-semibold text-gray-800 text-right">{{ $ban->merk ?? $ban->merkBan->nama ?? '-' }} <br> <span class="text-[10px] font-normal text-gray-400">{{ $ban->ukuran ?? '-' }}</span></span>
+                            </div>
+                            <div class="flex justify-between text-xs items-center">
+                                <span class="text-gray-500">Kondisi</span>
+                                <span class="px-2 py-0.5 font-bold rounded-full text-[10px]
+                                    {{ $ban->kondisi == 'asli' ? 'bg-green-100 text-green-800' : 
+                                       ($ban->kondisi == 'kanisir' ? 'bg-yellow-100 text-yellow-800' : 
+                                       ($ban->kondisi == 'afkir' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')) }}">
+                                    {{ ucfirst($ban->kondisi) }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-500">Lokasi / Posisi</span>
+                                <span class="text-gray-800 font-medium">{{ $ban->lokasi ?? '-' }}</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-500">Unit / Tujuan</span>
+                                <span class="text-gray-800 font-medium">
+                                    @if($ban->mobil)
+                                        <i class="fas fa-truck text-blue-500 mr-1"></i> {{ $ban->mobil->nomor_polisi }}
+                                    @elseif($ban->alatBerat)
+                                        <i class="fas fa-tractor text-orange-500 mr-1"></i> {{ $ban->alatBerat->nama }}
+                                    @else
+                                        -
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-50">
+                            <div class="text-[10px] text-gray-400">
+                                <i class="far fa-calendar-alt mr-1"></i> {{ date('d/m/y', strtotime($ban->tanggal_masuk)) }}
+                            </div>
+                            <div class="flex gap-1">
+                                @if($ban->status == 'Stok' || $ban->status == 'Rusak')
+                                    <button type="button" class="btn-jual-modal w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}"><i class="fas fa-shopping-cart text-xs"></i></button>
+                                @endif
+                                @if($ban->status == 'Stok')
+                                    <button type="button" class="btn-usage-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}"><i class="fas fa-wrench text-xs"></i></button>
+                                @endif
+                                <a href="{{ route('stock-ban.show', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600"><i class="fas fa-eye text-xs"></i></a>
+                                <a href="{{ route('stock-ban.edit', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-edit text-xs"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                        <i class="fas fa-folder-open text-gray-300 text-3xl mb-2"></i>
+                        <p class="text-sm text-gray-500">Tidak ada data stock ban</p>
+                    </div>
+                    @endforelse
+                </div>
+
         </div>
 
 
@@ -821,7 +910,7 @@
                     </div>
                 </div>
             </div>
-<div class="overflow-x-auto">
+                <div class="hidden md:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
@@ -1062,6 +1151,95 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Mobile View: Ban Luar Batam -->
+                <div class="md:hidden space-y-4">
+                    @forelse($banBatamList as $ban)
+                    <div class="mobile-card bg-white rounded-xl border border-gray-100 shadow-sm p-4 overflow-hidden" 
+                         data-status="{{ strtolower($ban->status) }}" 
+                         data-kondisi="{{ strtolower($ban->kondisi) }}"
+                         data-lokasi="{{ strtolower($ban->lokasi ?? '') }}">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex items-center gap-2">
+                                @if($ban->status == 'Stok' && $ban->kondisi != 'afkir')
+                                <input type="checkbox" name="ids[]" value="{{ $ban->id }}" 
+                                    data-type="{{ ucfirst($ban->kondisi) }}" 
+                                    data-ukuran="{{ $ban->ukuran }}"
+                                    data-status-luar="{{ $ban->status_ban_luar }}"
+                                    data-harga="{{ number_format($ban->harga_beli, 0, ',', '.') }}"
+                                    class="check-item rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                @endif
+                                <div>
+                                    <h4 class="font-bold text-gray-900 leading-tight">{{ $ban->nomor_seri ?? '-' }}</h4>
+                                    <p class="text-[10px] text-gray-500">{{ $ban->nomor_faktur ?? '-' }}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 text-[10px] font-bold rounded-full 
+                                {{ $ban->status == 'Stok' ? 'bg-blue-100 text-blue-800' : 
+                                   ($ban->status == 'Terpakai' ? 'bg-purple-100 text-purple-800' : 
+                                   ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
+                                   (($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') ? 'bg-cyan-100 text-cyan-800' : 
+                                   ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
+                                   ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
+                                {{ $ban->status }}
+                            </span>
+                        </div>
+
+                        <div class="space-y-2 mb-4">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-500">Merk / Ukuran</span>
+                                <span class="font-semibold text-gray-800 text-right">{{ $ban->merk ?? $ban->merkBan->nama ?? '-' }} <br> <span class="text-[10px] font-normal text-gray-400">{{ $ban->ukuran ?? '-' }}</span></span>
+                            </div>
+                            <div class="flex justify-between text-xs items-center">
+                                <span class="text-gray-500">Kondisi</span>
+                                <span class="px-2 py-0.5 font-bold rounded-full text-[10px]
+                                    {{ $ban->kondisi == 'asli' ? 'bg-green-100 text-green-800' : 
+                                       ($ban->kondisi == 'kanisir' ? 'bg-yellow-100 text-yellow-800' : 
+                                       ($ban->kondisi == 'afkir' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')) }}">
+                                    {{ ucfirst($ban->kondisi) }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-500">Lokasi / Posisi</span>
+                                <span class="text-gray-800 font-medium">{{ $ban->lokasi ?? '-' }}</span>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-500">Unit / Tujuan</span>
+                                <span class="text-gray-800 font-medium">
+                                    @if($ban->mobil)
+                                        <i class="fas fa-truck text-blue-500 mr-1"></i> {{ $ban->mobil->nomor_polisi }}
+                                    @elseif($ban->alatBerat)
+                                        <i class="fas fa-tractor text-orange-500 mr-1"></i> {{ $ban->alatBerat->nama }}
+                                    @else
+                                        -
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-50">
+                            <div class="text-[10px] text-gray-400">
+                                <i class="far fa-calendar-alt mr-1"></i> {{ date('d/m/y', strtotime($ban->tanggal_masuk)) }}
+                            </div>
+                            <div class="flex gap-1">
+                                @if($ban->status == 'Stok' || $ban->status == 'Rusak')
+                                    <button type="button" class="btn-jual-modal w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}"><i class="fas fa-shopping-cart text-xs"></i></button>
+                                @endif
+                                @if($ban->status == 'Stok')
+                                    <button type="button" class="btn-usage-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}"><i class="fas fa-wrench text-xs"></i></button>
+                                @endif
+                                <a href="{{ route('stock-ban-luar-batam.show', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600"><i class="fas fa-eye text-xs"></i></a>
+                                <a href="{{ route('stock-ban-luar-batam.edit', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-edit text-xs"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                        <i class="fas fa-folder-open text-gray-300 text-3xl mb-2"></i>
+                        <p class="text-sm text-gray-500">Tidak ada data stock ban</p>
+                    </div>
+                    @endforelse
+                </div>
         </div>
 
         <!-- Tab: Barang Lainnya (Gabungan semua dalam satu tabel) -->
@@ -1156,7 +1334,7 @@
             </div>
             @endif
 
-            <div class="overflow-x-auto">
+            <div class="hidden md:block overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -1368,6 +1546,46 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Mobile View: Barang Lainnya -->
+            <div class="md:hidden space-y-3">
+                @forelse($allItems as $item)
+                <div class="mobile-card bg-white rounded-xl border border-gray-100 shadow-sm p-4" data-nama="{{ strtoupper($item->nama) }}">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
+                            {{ $item->jenis == 'Ban Dalam' ? 'bg-blue-100 text-blue-800' : '' }}
+                            {{ $item->jenis == 'Ban Perut' ? 'bg-purple-100 text-purple-800' : '' }}
+                            {{ $item->jenis == 'Lock Kontainer' ? 'bg-green-100 text-green-800' : '' }}
+                            {{ $item->jenis == 'Ring Velg' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                            {{ $item->jenis == 'Velg' ? 'bg-indigo-100 text-indigo-800' : '' }}
+                            {{ $item->jenis == 'Cat' ? 'bg-pink-100 text-pink-800' : '' }}
+                            {{ $item->jenis == 'Majun' ? 'bg-gray-100 text-gray-800' : '' }}
+                            {{ $item->jenis == 'Thinner' ? 'bg-cyan-100 text-cyan-800' : '' }}
+                            {{ $item->jenis == 'Lainnya' ? 'bg-cyan-100 text-cyan-800' : '' }}">
+                            {{ $item->jenis }}
+                        </span>
+                        <div class="text-right">
+                            <span class="text-lg font-black text-gray-800">{{ $item->qty }}</span>
+                            <span class="text-[10px] text-gray-400 uppercase">{{ $item->type }}</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-gray-900 mb-1">{{ $item->nama }}</h4>
+                    <p class="text-xs text-gray-500 mb-3"><i class="fas fa-expand-arrows-alt mr-1"></i> {{ $item->ukuran }} | <i class="fas fa-map-marker-alt mr-1"></i> {{ $item->lokasi }}</p>
+                    
+                    <div class="flex justify-end gap-2 pt-2 border-t border-gray-50">
+                        @if($item->qty > 0)
+                            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" onclick="openStockUsageModal('{{ $item->id }}', '{{ $item->jenis }}', '{{ $item->nama }}', '{{ $item->qty }}')"><i class="fas fa-sign-out-alt text-xs"></i></button>
+                        @endif
+                        <a href="{{ $item->url_detail }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-eye text-xs"></i></a>
+                        <a href="{{ $item->url_edit }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-600"><i class="fas fa-edit text-xs"></i></a>
+                    </div>
+                </div>
+                @empty
+                <div class="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                    <p class="text-sm text-gray-500">Tidak ada data barang lainnya</p>
+                </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -2565,6 +2783,157 @@
         let searchTimeout;
 
         function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const activeTab = document.querySelector('.tab-content.active');
+            
+            if (!activeTab) return;
+
+            const tableRows = activeTab.querySelectorAll('tbody tr');
+            const mobileCards = activeTab.querySelectorAll('.mobile-card');
+            let visibleCount = 0;
+            let rowNumber = 1;
+
+            const isBarangLainnya = activeTab.id === 'tab-barang-lainnya';
+
+            // Process Table Rows
+            tableRows.forEach(row => {
+                if (row.querySelector('td[colspan]')) {
+                    row.style.display = 'none';
+                    return;
+                }
+
+                let nomorSeri, merk, status, kondisi, mobil, tanggalDigunakan, penerima, lokasi;
+
+                if (isBarangLainnya) {
+                    nomorSeri = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+                    merk = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
+                    status = '';
+                    kondisi = '';
+                    mobil = '';
+                    tanggalDigunakan = '';
+                    penerima = '';
+                    lokasi = row.querySelector('td:nth-child(6)')?.textContent.toLowerCase() || '';
+                } else {
+                    nomorSeri = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
+                    merk = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
+                    const statusSpan = row.querySelector('td:nth-child(7) span');
+                    status = statusSpan ? statusSpan.textContent.trim().toLowerCase() : '';
+                    const kondisiSpan = row.querySelector('td:nth-child(6) span');
+                    kondisi = kondisiSpan ? kondisiSpan.textContent.trim().toLowerCase() : '';
+                    mobil = row.querySelector('td:nth-child(8)')?.textContent.toLowerCase() || '';
+                    tanggalDigunakan = row.querySelector('td:nth-child(9)')?.textContent.toLowerCase() || '';
+                    penerima = row.querySelector('td:nth-child(10)')?.textContent.toLowerCase() || '';
+                    lokasi = row.querySelector('td:nth-child(11)')?.textContent.toLowerCase() || '';
+                }
+
+                const textMatch = nomorSeri.includes(searchTerm) || merk.includes(searchTerm) || lokasi.includes(searchTerm) || mobil.includes(searchTerm) || tanggalDigunakan.includes(searchTerm) || penerima.includes(searchTerm);
+                let filterMatch = true;
+                if (currentCardFilter !== 'total') {
+                    if (currentCardFilter === 'stok') filterMatch = status === 'stok';
+                    else if (currentCardFilter === 'terpakai') filterMatch = status === 'terpakai';
+                    else if (currentCardFilter === 'sedang-dimasak') filterMatch = status === 'sedang dimasak';
+                    else if (currentCardFilter === 'asli') filterMatch = kondisi === 'asli';
+                    else if (currentCardFilter === 'kanisir') {
+                        if (activeTab.id === 'tab-ban-luar') filterMatch = kondisi === 'kanisir' && lokasi.includes('ruko 10') && status === 'stok';
+                        else filterMatch = kondisi === 'kanisir' && status === 'stok';
+                    }
+                    else if (currentCardFilter === 'afkir') filterMatch = kondisi === 'afkir';
+                    else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
+                    else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
+                    else if (currentCardFilter === 'gudang-batam') filterMatch = lokasi.includes('gudang batam') && status === 'stok';
+                    else if (currentCardFilter === 'asli-stok') filterMatch = kondisi === 'asli' && status === 'stok';
+                    else if (currentCardFilter === 'dikirim') filterMatch = status === 'dikirim ke batam';
+                    else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
+                    else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
+                    else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
+                }
+
+                if ((textMatch || searchTerm === '') && filterMatch) {
+                    row.style.display = '';
+                    const numberCell = row.querySelector('.row-number');
+                    if(numberCell) numberCell.textContent = rowNumber++;
+                    if (window.innerWidth >= 768) visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Process Mobile Cards
+            mobileCards.forEach(card => {
+                let nomorSeri, merk, status, kondisi, lokasi;
+                if (isBarangLainnya) {
+                    nomorSeri = card.querySelector('h4')?.textContent.toLowerCase() || '';
+                    merk = card.querySelector('p')?.textContent.toLowerCase() || '';
+                    lokasi = merk;
+                    status = '';
+                    kondisi = '';
+                } else {
+                    nomorSeri = card.querySelector('h4')?.textContent.toLowerCase() || '';
+                    merk = card.innerText.toLowerCase();
+                    status = card.getAttribute('data-status') || '';
+                    kondisi = card.getAttribute('data-kondisi') || '';
+                    lokasi = card.getAttribute('data-lokasi') || '';
+                }
+
+                const textMatch = nomorSeri.includes(searchTerm) || merk.includes(searchTerm) || lokasi.includes(searchTerm);
+                let filterMatch = true;
+                if (currentCardFilter !== 'total') {
+                    if (currentCardFilter === 'stok') filterMatch = status === 'stok';
+                    else if (currentCardFilter === 'terpakai') filterMatch = status === 'terpakai';
+                    else if (currentCardFilter === 'sedang-dimasak') filterMatch = status === 'sedang dimasak';
+                    else if (currentCardFilter === 'asli') filterMatch = kondisi === 'asli';
+                    else if (currentCardFilter === 'kanisir') {
+                        if (activeTab.id === 'tab-ban-luar') filterMatch = kondisi === 'kanisir' && lokasi.includes('ruko 10') && status === 'stok';
+                        else filterMatch = kondisi === 'kanisir' && status === 'stok';
+                    }
+                    else if (currentCardFilter === 'afkir') filterMatch = kondisi === 'afkir';
+                    else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
+                    else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
+                    else if (currentCardFilter === 'gudang-batam') filterMatch = lokasi.includes('gudang batam') && status === 'stok';
+                    else if (currentCardFilter === 'asli-stok') filterMatch = kondisi === 'asli' && status === 'stok';
+                    else if (currentCardFilter === 'dikirim') filterMatch = status === 'dikirim ke batam';
+                    else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
+                    else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
+                    else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
+                }
+
+                if ((textMatch || searchTerm === '') && filterMatch) {
+                    card.style.display = '';
+                    if (window.innerWidth < 768) visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show "no results" message if needed
+            const tbody = activeTab.querySelector('tbody');
+            let noResultsRow = tbody ? tbody.querySelector('.no-results-row') : null;
+            const mobileNoResults = activeTab.querySelector('.mobile-no-results');
+            
+            if (visibleCount === 0) {
+                if (window.innerWidth >= 768) {
+                    if (tbody && !noResultsRow) {
+                        noResultsRow = document.createElement('tr');
+                        noResultsRow.className = 'no-results-row';
+                        noResultsRow.innerHTML = `<td colspan="13" class="px-6 py-8 text-center"><p class="text-gray-500 font-medium">Tidak ada data ditemukan</p></td>`;
+                        tbody.appendChild(noResultsRow);
+                    }
+                } else {
+                    if (!mobileNoResults) {
+                        const div = document.createElement('div');
+                        div.className = 'mobile-no-results text-center py-8 text-gray-500';
+                        div.innerHTML = '<i class="fas fa-search text-3xl mb-2"></i><p>Tidak ada data ditemukan</p>';
+                        activeTab.appendChild(div);
+                    }
+                }
+            } else {
+                if (noResultsRow) noResultsRow.remove();
+                if (mobileNoResults) mobileNoResults.remove();
+            }
+
+            clearButton.classList.toggle('hidden', searchTerm === '');
+        }
+
             const searchTerm = searchInput.value.toLowerCase().trim();
             const activeTab = document.querySelector('.tab-content.active');
             
