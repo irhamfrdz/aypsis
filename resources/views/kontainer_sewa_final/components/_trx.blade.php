@@ -3,7 +3,7 @@
         <h4>✏️ Edit Transaksi</h4>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
             <input type="hidden" id="edx-idx">
-            <select id="edx-no"></select>
+            <input type="text" id="edx-no" list="list-u" placeholder="No Unit...">
             <input type="text" id="edx-s" placeholder="Ambil (dd/mm/yyyy)">
             <input type="text" id="edx-e" placeholder="Kembali (dd/mm/yyyy)">
             <select id="edx-st-t">
