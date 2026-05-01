@@ -286,7 +286,15 @@
                     <tr>
                         <td class="text-center">{{ $i++ }}</td>
                         <td class="text-center">{{ isset($item['tanggal']) ? \Carbon\Carbon::parse($item['tanggal'])->format('d/M/Y') : '-' }}</td>
-                        <td>{{ str_ireplace('Truck: ', '', $item['reference'] ?? '-') }}</td>
+                        <td>
+                            @php
+                                $pemakai = str_ireplace('Truck: ', '', $item['reference'] ?? '-');
+                                if (stripos($pemakai, 'Buntut') !== false) {
+                                    $pemakai = trim(preg_replace('/.*Buntut\s*:?\s*/i', '', $pemakai));
+                                }
+                            @endphp
+                            {{ $pemakai }}
+                        </td>
                         <td><span class="font-bold">{{ $item['nama_barang'] ?? ($item['nama'] ?? '-') }}</span></td>
                         <td>{{ $item['keterangan'] ?? '-' }}</td>
                         <td class="text-right">{{ number_format($totalBelanja, 0, ',', '.') }}</td>
