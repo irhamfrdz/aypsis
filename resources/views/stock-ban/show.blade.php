@@ -22,20 +22,19 @@
     </nav>
 
     <!-- Main Card -->
-    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-2xl">
-        <!-- Premium Header Section -->
-        <div class="relative bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 px-6 py-10 sm:px-10 overflow-hidden">
-            <!-- Abstract background shapes -->
-            <div class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
-            <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-48 h-48 bg-indigo-400 opacity-20 rounded-full blur-2xl"></div>
-
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <!-- Header Section -->
+        <div class="bg-indigo-700 px-6 py-10 sm:px-10 relative">
+            <!-- Background Decoration -->
+            <div class="absolute top-0 right-0 w-32 h-full bg-indigo-800 opacity-20 transform skew-x-12 translate-x-10"></div>
+            
             <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div class="flex items-center gap-5">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner">
-                        <i class="fas fa-circle-notch text-white text-3xl sm:text-4xl animate-pulse"></i>
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-600 rounded-2xl flex items-center justify-center border border-indigo-500 shadow-inner">
+                        <i class="fas fa-circle-notch text-white text-3xl sm:text-4xl"></i>
                     </div>
                     <div>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-white/20 text-white border border-white/30 mb-2 uppercase tracking-widest">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-800 text-indigo-100 mb-2 uppercase tracking-widest border border-indigo-600">
                             Ban ID #{{ $stockBan->id }}
                         </span>
                         <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
@@ -55,7 +54,7 @@
                         <i class="fas {{ $stockBan->status == 'Stok' ? 'fa-check-circle' : 'fa-info-circle' }} mr-1.5"></i>
                         {{ $stockBan->status }}
                     </span>
-                    <div class="text-white/80 text-[10px] font-bold uppercase tracking-widest">Kondisi: {{ ucfirst($stockBan->kondisi) }}</div>
+                    <div class="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">Kondisi: {{ ucfirst($stockBan->kondisi) }}</div>
                 </div>
             </div>
         </div>
@@ -63,16 +62,15 @@
         <div class="p-6 sm:p-10">
             <!-- Info Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-                <!-- Left Column: Specs & Condition -->
+                <!-- Left Column -->
                 <div class="space-y-6">
                     <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
                         <span class="w-8 h-[2px] bg-indigo-500"></span> Spesifikasi & Kondisi
                     </h3>
                     
                     <div class="grid grid-cols-1 gap-4">
-                        <!-- Merk -->
-                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-hover hover:bg-white hover:shadow-md group">
-                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-indigo-500 shadow-sm">
                                 <i class="fas fa-copyright text-xl"></i>
                             </div>
                             <div>
@@ -81,9 +79,8 @@
                             </div>
                         </div>
 
-                        <!-- Ukuran -->
-                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-hover hover:bg-white hover:shadow-md group">
-                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-blue-500 shadow-sm group-hover:bg-blue-500 group-hover:text-white transition-all">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-blue-500 shadow-sm">
                                 <i class="fas fa-expand-arrows-alt text-xl"></i>
                             </div>
                             <div>
@@ -92,10 +89,9 @@
                             </div>
                         </div>
 
-                        <!-- Kondisi -->
-                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-hover hover:bg-white hover:shadow-md group">
-                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center shadow-sm transition-all
-                                {{ $stockBan->kondisi == 'asli' ? 'text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white' : 'text-amber-500 group-hover:bg-amber-500 group-hover:text-white' }}">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center shadow-sm
+                                {{ $stockBan->kondisi == 'asli' ? 'text-emerald-500' : 'text-amber-500' }}">
                                 <i class="fas fa-shield-alt text-xl"></i>
                             </div>
                             <div>
@@ -106,16 +102,15 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Location & Value -->
+                <!-- Right Column -->
                 <div class="space-y-6">
                     <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
                         <span class="w-8 h-[2px] bg-indigo-500"></span> Lokasi & Nilai
                     </h3>
 
                     <div class="grid grid-cols-1 gap-4">
-                        <!-- Lokasi -->
-                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-hover hover:bg-white hover:shadow-md group">
-                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-red-500 shadow-sm group-hover:bg-red-500 group-hover:text-white transition-all">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-red-500 shadow-sm">
                                 <i class="fas fa-map-marker-alt text-xl"></i>
                             </div>
                             <div class="flex-1">
@@ -127,9 +122,8 @@
                             </div>
                         </div>
 
-                        <!-- Harga -->
-                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-hover hover:bg-white hover:shadow-md group">
-                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-green-600 shadow-sm group-hover:bg-green-600 group-hover:text-white transition-all">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-green-600 shadow-sm">
                                 <i class="fas fa-money-bill-wave text-xl"></i>
                             </div>
                             <div>
@@ -138,9 +132,8 @@
                             </div>
                         </div>
 
-                        <!-- Supplier -->
-                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-hover hover:bg-white hover:shadow-md group">
-                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-purple-500 shadow-sm group-hover:bg-purple-500 group-hover:text-white transition-all">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div class="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-purple-500 shadow-sm">
                                 <i class="fas fa-store text-xl"></i>
                             </div>
                             <div>
@@ -152,67 +145,39 @@
                 </div>
             </div>
 
-            <!-- Time & History Cards -->
-            <div class="bg-indigo-50/50 rounded-3xl p-6 sm:p-8 mb-10 border border-indigo-100">
-                <h3 class="text-xs font-black text-indigo-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+            <!-- Timeline -->
+            <div class="bg-gray-50 rounded-3xl p-6 sm:p-8 mb-10 border border-gray-100">
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                     <i class="fas fa-history text-indigo-500"></i> Riwayat & Timeline
                 </h3>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
                         <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Tgl Masuk</p>
-                        <div class="flex items-center">
-                            <input type="date" 
-                                value="{{ $stockBan->tanggal_masuk ? $stockBan->tanggal_masuk->format('Y-m-d') : '' }}" 
-                                class="bg-transparent border-none p-0 text-sm font-black text-gray-800 focus:ring-0 date-history-editor w-full"
-                                data-table="stock_bans"
-                                data-id="{{ $stockBan->id }}"
-                                data-field="tanggal_masuk">
-                        </div>
+                        <input type="date" value="{{ $stockBan->tanggal_masuk ? $stockBan->tanggal_masuk->format('Y-m-d') : '' }}" class="bg-transparent border-none p-0 text-sm font-black text-gray-800 focus:ring-0 date-history-editor w-full" data-table="stock_bans" data-id="{{ $stockBan->id }}" data-field="tanggal_masuk">
                     </div>
 
                     @if($stockBan->tanggal_keluar)
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
                         <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Tgl Pasang</p>
-                        <div class="flex items-center">
-                            <input type="date" 
-                                value="{{ $stockBan->tanggal_keluar ? $stockBan->tanggal_keluar->format('Y-m-d') : '' }}" 
-                                class="bg-transparent border-none p-0 text-sm font-black text-gray-800 focus:ring-0 date-history-editor w-full"
-                                data-table="stock_bans"
-                                data-id="{{ $stockBan->id }}"
-                                data-field="tanggal_keluar">
-                        </div>
+                        <input type="date" value="{{ $stockBan->tanggal_keluar ? $stockBan->tanggal_keluar->format('Y-m-d') : '' }}" class="bg-transparent border-none p-0 text-sm font-black text-gray-800 focus:ring-0 date-history-editor w-full" data-table="stock_bans" data-id="{{ $stockBan->id }}" data-field="tanggal_keluar">
                     </div>
                     @endif
 
                     @if($stockBan->tanggal_digunakan)
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-indigo-50">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
                         <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Tgl Digunakan</p>
-                        <div class="flex items-center">
-                            <input type="date" 
-                                value="{{ $stockBan->tanggal_digunakan ? $stockBan->tanggal_digunakan->format('Y-m-d') : '' }}" 
-                                class="bg-transparent border-none p-0 text-sm font-black text-gray-800 focus:ring-0 date-history-editor w-full"
-                                data-table="stock_bans"
-                                data-id="{{ $stockBan->id }}"
-                                data-field="tanggal_digunakan">
-                        </div>
+                        <input type="date" value="{{ $stockBan->tanggal_digunakan ? $stockBan->tanggal_digunakan->format('Y-m-d') : '' }}" class="bg-transparent border-none p-0 text-sm font-black text-gray-800 focus:ring-0 date-history-editor w-full" data-table="stock_bans" data-id="{{ $stockBan->id }}" data-field="tanggal_digunakan">
                     </div>
                     @endif
                 </div>
 
-                <!-- Shipping Info (Conditional) -->
                 @if($stockBan->status == 'Dikirim Ke Batam' || $stockBan->kapal)
-                <div class="mt-6 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-                    <i class="fas fa-ship absolute right-[-10px] bottom-[-10px] text-7xl opacity-20 transform -rotate-12"></i>
+                <div class="mt-6 bg-indigo-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
                     <div class="relative">
                         <p class="text-[10px] font-black uppercase tracking-widest opacity-80 mb-2">Informasi Pengiriman</p>
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-vessel-tight"></i>
-                                </div>
-                                <span class="font-bold">{{ $stockBan->kapal->nama_kapal ?? 'Tanpa Nama Kapal' }}</span>
-                            </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 font-bold">
+                            <div><i class="fas fa-ship mr-2"></i> {{ $stockBan->kapal->nama_kapal ?? 'Tanpa Nama Kapal' }}</div>
                             @if($stockBan->tanggal_kirim)
                             <div class="text-xs opacity-90"><i class="far fa-calendar-alt mr-1"></i> {{ \Carbon\Carbon::parse($stockBan->tanggal_kirim)->format('d M Y') }}</div>
                             @endif
@@ -225,154 +190,76 @@
                 @endif
             </div>
 
-            <!-- Notes & Additional Info -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                @if($stockBan->keterangan)
-                <div class="md:col-span-2">
-                    <div class="bg-amber-50 border border-amber-100 rounded-3xl p-6 h-full">
-                        <h3 class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <i class="fas fa-sticky-note"></i> Catatan Khusus
-                        </h3>
-                        <p class="text-sm text-amber-900 leading-relaxed italic whitespace-pre-wrap">"{{ $stockBan->keterangan }}"</p>
-                    </div>
-                </div>
-                @endif
+            <!-- Notes -->
+            @if($stockBan->keterangan)
+            <div class="bg-amber-50 border border-amber-100 rounded-3xl p-6 mb-10">
+                <h3 class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <i class="fas fa-sticky-note"></i> Catatan
+                </h3>
+                <p class="text-sm text-amber-900 leading-relaxed italic whitespace-pre-wrap">"{{ $stockBan->keterangan }}"</p>
+            </div>
+            @endif
 
-                <div class="{{ $stockBan->keterangan ? 'md:col-span-1' : 'md:col-span-3' }}">
-                    <div class="bg-gray-50 border border-gray-100 rounded-3xl p-6">
-                        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <i class="fas fa-fingerprint text-gray-500"></i> Audit Traill
-                        </h3>
-                        <div class="space-y-4">
-                            <div class="flex items-start gap-3">
-                                <div class="w-2 h-2 mt-1.5 rounded-full bg-indigo-400"></div>
-                                <div class="text-xs">
-                                    <p class="text-gray-400 font-bold uppercase tracking-tighter">Dibuat</p>
-                                    <p class="text-gray-700 font-black">{{ $stockBan->created_at->format('d/m/Y H:i') }}</p>
-                                    <p class="text-indigo-500 font-bold">{{ $stockBan->createdBy->name ?? 'System' }}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <div class="w-2 h-2 mt-1.5 rounded-full bg-emerald-400"></div>
-                                <div class="text-xs">
-                                    <p class="text-gray-400 font-bold uppercase tracking-tighter">Update Terakhir</p>
-                                    <p class="text-gray-700 font-black">{{ $stockBan->updated_at->format('d/m/Y H:i') }}</p>
-                                    <p class="text-emerald-500 font-bold">{{ $stockBan->updatedBy->name ?? 'System' }}</p>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Audit -->
+            <div class="bg-gray-50 border border-gray-100 rounded-3xl p-6 mb-10">
+                <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="fas fa-fingerprint text-gray-500"></i> Audit Traill
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <p class="text-gray-400 font-bold uppercase tracking-tighter">Dibuat</p>
+                        <p class="text-gray-700 font-black">{{ $stockBan->created_at->format('d/m/Y H:i') }} oleh {{ $stockBan->createdBy->name ?? 'System' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 font-bold uppercase tracking-tighter">Update</p>
+                        <p class="text-gray-700 font-black">{{ $stockBan->updated_at->format('d/m/Y H:i') }} oleh {{ $stockBan->updatedBy->name ?? 'System' }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Modern Footer Actions -->
+            <!-- Footer Actions -->
             <div class="flex flex-col sm:flex-row items-center gap-4 pt-8 border-t border-gray-100">
-                <a href="{{ route('stock-ban.index') }}" 
-                   class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border-2 border-gray-200 text-sm font-black rounded-2xl text-gray-600 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95">
+                <a href="{{ route('stock-ban.index') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border-2 border-gray-200 text-sm font-black rounded-2xl text-gray-600 bg-white hover:bg-gray-50 transition-all">
                     <i class="fas fa-arrow-left mr-2"></i> KEMBALI
                 </a>
-
                 <div class="flex w-full sm:w-auto gap-3 flex-1 sm:justify-end">
                     @can('stock-ban-update')
-                        <a href="{{ route('stock-ban.edit', $stockBan->id) }}" 
-                           class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-black rounded-2xl shadow-lg shadow-amber-200 text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transition-all active:scale-95">
-                            <i class="fas fa-edit mr-2"></i> EDIT
-                        </a>
+                    <a href="{{ route('stock-ban.edit', $stockBan->id) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-3 text-sm font-black rounded-2xl text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-200 transition-all">
+                        <i class="fas fa-edit mr-2"></i> EDIT
+                    </a>
                     @endcan
-
                     @can('stock-ban-delete')
-                        <form action="{{ route('stock-ban.destroy', $stockBan->id) }}" method="POST" class="flex-1 sm:flex-none" onsubmit="return confirm('Apakah Anda yakin ingin menghapus stock ban ini?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" 
-                                    class="w-full inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-black rounded-2xl shadow-lg shadow-red-200 text-white bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 transition-all active:scale-95">
-                                <i class="fas fa-trash-alt mr-2"></i> HAPUS
-                            </button>
-                        </form>
+                    <form action="{{ route('stock-ban.destroy', $stockBan->id) }}" method="POST" class="flex-1 sm:flex-none" onsubmit="return confirm('Hapus data ini?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="w-full inline-flex items-center justify-center px-6 py-3 text-sm font-black rounded-2xl text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200 transition-all">
+                            <i class="fas fa-trash-alt mr-2"></i> HAPUS
+                        </button>
+                    </form>
                     @endcan
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Alert Success -->
-@if(session('success'))
-<div id="success-alert" class="fixed bottom-10 right-10 left-10 sm:left-auto z-50 transform transition-all duration-500 translate-y-20 opacity-0">
-    <div class="bg-emerald-500 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4">
-        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-            <i class="fas fa-check"></i>
-        </div>
-        <div>
-            <p class="font-black text-sm uppercase tracking-widest">Berhasil!</p>
-            <p class="text-xs opacity-90">{{ session('success') }}</p>
-        </div>
-        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-white/50 hover:text-white">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
-</div>
-@endif
 @endsection
 
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Show alert with animation
-    const alert = document.getElementById('success-alert');
-    if (alert) {
-        setTimeout(() => {
-            alert.classList.remove('translate-y-20', 'opacity-0');
-        }, 100);
-        setTimeout(() => {
-            alert.classList.add('translate-y-20', 'opacity-0');
-        }, 5000);
-    }
-
     $('.date-history-editor').on('change', function() {
         const input = $(this);
-        const sourceTable = input.data('table');
-        const originalId = input.data('id');
-        const field = input.data('field');
-        const newDate = input.val();
-
-        if (!newDate) return;
-
-        if (!confirm('Apakah Anda yakin ingin memperbarui tanggal?')) {
-            window.location.reload();
-            return;
-        }
-
+        if (!confirm('Perbarui tanggal?')) { window.location.reload(); return; }
         input.addClass('opacity-50 pointer-events-none');
-
         $.ajax({
             url: "{{ route('stock-ban.update-history-date') }}",
             type: "POST",
-            data: {
-                _token: "{{ csrf_token() }}",
-                source_table: sourceTable,
-                original_id: originalId,
-                field: field,
-                new_date: newDate
-            },
+            data: { _token: "{{ csrf_token() }}", source_table: input.data('table'), original_id: input.data('id'), field: input.data('field'), new_date: input.val() },
             success: function(response) {
-                if (response.success) {
-                    // Show success notification instead of alert
-                    const toast = document.createElement('div');
-                    toast.className = 'fixed top-20 right-5 z-[9999] bg-indigo-600 text-white px-6 py-3 rounded-xl shadow-2xl animate-bounce';
-                    toast.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Tanggal diperbarui!';
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 3000);
-                    input.removeClass('opacity-50 pointer-events-none');
-                } else {
-                    alert(response.message || 'Terjadi kesalahan saat memperbarui tanggal');
-                    window.location.reload();
-                }
+                if (response.success) { alert('Tanggal diperbarui!'); input.removeClass('opacity-50 pointer-events-none'); }
+                else { alert(response.message); window.location.reload(); }
             },
-            error: function(xhr) {
-                alert('Gagal menghubungi server.');
-                window.location.reload();
-            }
+            error: function() { alert('Gagal menghubungi server.'); window.location.reload(); }
         });
     });
 });
