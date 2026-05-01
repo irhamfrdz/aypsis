@@ -272,6 +272,7 @@ class KontainerSewaFinalController extends Controller
         $noInv = $request->no_invoice;
         $tglInv = $request->tgl_invoice;
         $cartData = $request->cart;
+        $statusOverride = $request->status_override;
 
         if (empty($cartData)) {
             return response()->json(['success' => false, 'message' => 'Keranjang kosong']);
@@ -311,7 +312,7 @@ class KontainerSewaFinalController extends Controller
                     'ppn' => $ppn,
                     'pph' => $pph,
                     'grand_total' => $grand,
-                    'status' => 'PENDING'
+                    'status' => $statusOverride ?? 'PENDING'
                 ]);
 
                 foreach ($cartData as $c) {

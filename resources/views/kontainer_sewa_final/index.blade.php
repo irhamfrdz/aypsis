@@ -526,9 +526,12 @@ function switchAuditTab(tab) {
     currentAuditTab = tab;
     document.getElementById('btn-outstanding').classList.toggle('active', tab === 'outstanding');
     document.getElementById('btn-keranjang').classList.toggle('active', tab === 'keranjang');
+    document.getElementById('btn-bulk-lunas').classList.toggle('active', tab === 'bulk-lunas');
     document.getElementById('area-outstanding').style.display = tab === 'outstanding' ? 'block' : 'none';
     document.getElementById('area-keranjang').style.display = tab === 'keranjang' ? 'block' : 'none';
+    document.getElementById('area-bulk-lunas').style.display = tab === 'bulk-lunas' ? 'block' : 'none';
     if(tab === 'keranjang') renderCart();
+    if(tab === 'bulk-lunas') renderBulkLunas();
 }
 
 function hasOutstandingPeriods(x, idInduk) {
@@ -905,6 +908,213 @@ window.onload = () => {
         showTab(null, 'tab-rekon');
     }
 };
+
+// ==========================================
+// BULK IMPORT LUNAS FEATURE
+// ==========================================
+let bulkLunasData = []; // Array of {idp, unit, vendor, ambil, kembali, masa, biaya, checked}
+
+function getAllOutstandingPeriods(x, idInduk) {
+    const dAmbil = parseD(x.s);
+    const dAkhir = x.e ? parseD(x.e) : new Date();
+    const mu = db.u.find(unit => unit.no === x.no);
+    const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z) : null;
+    const biayaSnapshot = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0));
+    const vendorName = mu ? mu.v : '-';
+    
+    let periods = [];
+    let curr = new Date(dAmbil), p = 1;
+    
+    while (true) {
+        let sP = new Date(curr);
+        let eP = new Date(curr.getFullYear(), curr.getMonth() + 1, curr.getDate() - 1);
+        if (sP > dAkhir) break;
+        if (x.e && eP > dAkhir) eP = dAkhir;
+
+        const diff = Math.ceil((eP - sP) / 86400000) + 1;
+        const nilaiAYPSIS = (diff >= 28) ? biayaSnapshot : Math.round((diff/30)*biayaSnapshot);
+        const masa_p = `${fmtTglDB(sP)} - ${fmtTglDB(eP)}`;
+        const idp = `${idInduk}-${masa_p}`;
+        const isAssigned = db.audits_map.includes(idp);
+
+        if (!isAssigned && !db.cart.some(c => c.idp === idp)) {
+            periods.push({
+                idp: idp,
+                unit: x.no,
+                vendor: vendorName,
+                ambil: x.s,
+                kembali: x.e || '-',
+                masa: masa_p,
+                biaya: nilaiAYPSIS,
+                checked: false
+            });
+        }
+
+        if (x.e && eP >= dAkhir) break;
+        curr.setMonth(curr.getMonth() + 1); p++;
+    }
+    return periods;
+}
+
+function renderBulkLunas() {
+    const vendorFilter = document.getElementById('bulk-vendor')?.value || '';
+    
+    // Populate vendor dropdown
+    const vSelect = document.getElementById('bulk-vendor');
+    if (vSelect) {
+        const currentVal = vSelect.value;
+        const vendorOptions = db.v.filter(v => v.act !== false).map(v => v.val || v);
+        let opts = '<option value="">-- Semua Vendor --</option>';
+        vendorOptions.forEach(v => { opts += `<option value="${v}" ${v === currentVal ? 'selected' : ''}>${v}</option>`; });
+        vSelect.innerHTML = opts;
+    }
+    
+    // Collect all outstanding periods from SELESAI containers only
+    const oldChecked = {};
+    bulkLunasData.forEach(b => { oldChecked[b.idp] = b.checked; });
+    bulkLunasData = [];
+    db.x.filter(x => x.e).forEach(x => { // only SELESAI (has end date)
+        const idTrx = x.no + toExcelSerial(x.s);
+        const periods = getAllOutstandingPeriods(x, idTrx);
+        periods.forEach(p => {
+            if (!vendorFilter || p.vendor === vendorFilter) {
+                // Preserve checked state from previous render
+                p.checked = oldChecked[p.idp] || false;
+                bulkLunasData.push(p);
+            }
+        });
+    });
+    
+    const body = document.getElementById('body-bulk-lunas');
+    if (!body) return;
+    
+    if (bulkLunasData.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center; color: #94a3b8; padding: 40px;">✅ Tidak ada kontainer SELESAI yang masih outstanding. Semua sudah terdaftar di pranota.</td></tr>';
+        updateBulkCounter();
+        return;
+    }
+    
+    body.innerHTML = bulkLunasData.map((p, i) => `
+        <tr style="${p.checked ? 'background: #f0fdf4;' : ''}">
+            <td style="text-align:center;"><input type="checkbox" ${p.checked ? 'checked' : ''} onchange="toggleBulkItem(${i}, this.checked)"></td>
+            <td><b>${p.unit}</b></td>
+            <td>${p.vendor}</td>
+            <td>${p.ambil}</td>
+            <td>${p.kembali}</td>
+            <td>${p.masa}</td>
+            <td style="text-align:right;">${fmtRibuan(p.biaya)}</td>
+        </tr>
+    `).join('');
+    
+    updateBulkCounter();
+}
+
+function toggleBulkItem(idx, checked) {
+    bulkLunasData[idx].checked = checked;
+    updateBulkCounter();
+    // Re-render for visual feedback
+    renderBulkLunas();
+}
+
+function toggleBulkSelectAll(forceChecked) {
+    const newState = forceChecked !== undefined ? forceChecked : !bulkLunasData.every(p => p.checked);
+    bulkLunasData.forEach(p => p.checked = newState);
+    const chkAll = document.getElementById('bulk-check-all');
+    if (chkAll) chkAll.checked = newState;
+    renderBulkLunas();
+}
+
+function updateBulkCounter() {
+    const selected = bulkLunasData.filter(p => p.checked);
+    const count = selected.length;
+    const total = selected.reduce((s, p) => s + p.biaya, 0);
+    
+    const countEl = document.getElementById('bulk-selected-count');
+    const totalEl = document.getElementById('bulk-selected-total');
+    if (countEl) countEl.textContent = count;
+    if (totalEl) totalEl.textContent = 'Rp ' + fmtRibuan(total);
+}
+
+function submitBulkLunas() {
+    const selected = bulkLunasData.filter(p => p.checked);
+    if (selected.length === 0) return alert('Pilih minimal 1 periode untuk di-import!');
+    
+    // Group by vendor
+    const byVendor = {};
+    selected.forEach(p => {
+        if (!byVendor[p.vendor]) byVendor[p.vendor] = [];
+        byVendor[p.vendor].push(p);
+    });
+    
+    const vendorNames = Object.keys(byVendor);
+    const totalBiaya = selected.reduce((s, p) => s + p.biaya, 0);
+    
+    let msg = `Akan membuat ${vendorNames.length} pranota LUNAS:\n\n`;
+    vendorNames.forEach(v => {
+        const items = byVendor[v];
+        const subtotal = items.reduce((s, p) => s + p.biaya, 0);
+        msg += `• ${v}: ${items.length} periode — Rp ${fmtRibuan(subtotal)}\n`;
+    });
+    msg += `\nTotal keseluruhan: Rp ${fmtRibuan(totalBiaya)}`;
+    msg += `\n\nPranota akan langsung berstatus PAID. Lanjutkan?`;
+    
+    if (!confirm(msg)) return;
+    
+    const noInv = document.getElementById('bulk-no-inv')?.value || '';
+    const tglInv = document.getElementById('bulk-tgl-inv')?.value || '';
+    
+    // Submit per vendor
+    let completed = 0;
+    let errors = [];
+    
+    vendorNames.forEach(vendorName => {
+        const items = byVendor[vendorName];
+        const cart = items.map(p => ({
+            idp: p.idp,
+            unit: p.unit,
+            masa: p.masa,
+            aypsis: p.biaya,
+            vendorBill: p.biaya,
+            note: 'Bulk Import Lunas'
+        }));
+        
+        fetch('{{ route('kontainer-sewa-final.submit-pranota') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                vendor: vendorName,
+                no_invoice: noInv,
+                tgl_invoice: tglInv,
+                cart: cart,
+                status_override: 'PAID'
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            completed++;
+            if (!d.success) errors.push(`${vendorName}: ${d.message}`);
+            if (completed === vendorNames.length) {
+                if (errors.length > 0) {
+                    alert('Selesai dengan error:\n' + errors.join('\n'));
+                } else {
+                    alert(`Berhasil! ${vendorNames.length} pranota lunas telah dibuat.`);
+                }
+                location.reload();
+            }
+        })
+        .catch(e => {
+            completed++;
+            errors.push(`${vendorName}: Network error`);
+            if (completed === vendorNames.length) {
+                alert('Selesai dengan error:\n' + errors.join('\n'));
+                location.reload();
+            }
+        });
+    });
+}
 </script>
 </body>
 </html>

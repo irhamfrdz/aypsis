@@ -934,6 +934,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         }
 
         try {
+            DB::beginTransaction();
             $validated['updated_by'] = Auth::user()->name;
 
             // Map edit blade inputs to correct database fields
@@ -1122,11 +1123,86 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 unset($validated['tonase']);
             }
 
+            // Capture old receipt number before update for sync
+            $oldNo = $tandaTerimaTanpaSuratJalan->no_tanda_terima ?: $tandaTerimaTanpaSuratJalan->nomor_tanda_terima;
+
             $tandaTerimaTanpaSuratJalan->update($validated);
+
+            $newNo = $tandaTerimaTanpaSuratJalan->no_tanda_terima ?: $tandaTerimaTanpaSuratJalan->nomor_tanda_terima;
+
+            // SYNC RELATED DATA (Prospek, Manifest, etc.)
+            if ($oldNo) {
+                // 1. Prospek
+                $prospeks = \App\Models\Prospek::where('no_surat_jalan', $oldNo)
+                    ->orWhere('keterangan', 'like', "%Tanda Terima Tanpa Surat Jalan: {$oldNo}%")
+                    ->get();
+                
+                $prospekIds = $prospeks->pluck('id')->toArray();
+
+                foreach ($prospeks as $prospek) {
+                    $prospekUpdate = [
+                        'no_surat_jalan' => $newNo,
+                        'keterangan' => str_replace($oldNo, $newNo, $prospek->keterangan),
+                        'tanggal' => $tandaTerimaTanpaSuratJalan->tanggal_tanda_terima,
+                        'nama_supir' => $tandaTerimaTanpaSuratJalan->supir ?: 'Supir Customer',
+                        'barang' => $tandaTerimaTanpaSuratJalan->nama_barang ?? $tandaTerimaTanpaSuratJalan->jenis_barang ?? 'Barang',
+                        'pt_pengirim' => $tandaTerimaTanpaSuratJalan->pengirim,
+                        'nomor_kontainer' => $tandaTerimaTanpaSuratJalan->no_kontainer,
+                        'no_seal' => $tandaTerimaTanpaSuratJalan->no_seal,
+                        'tujuan_pengiriman' => $tandaTerimaTanpaSuratJalan->tujuan_pengiriman,
+                        'nama_kapal' => $tandaTerimaTanpaSuratJalan->estimasi_naik_kapal,
+                        'total_ton' => $tandaTerimaTanpaSuratJalan->tonase,
+                        'total_volume' => $tandaTerimaTanpaSuratJalan->meter_kubik,
+                        'kuantitas' => $tandaTerimaTanpaSuratJalan->jumlah_barang ?? 1,
+                        'updated_by' => Auth::id()
+                    ];
+                    
+                    if (!empty($tandaTerimaTanpaSuratJalan->size_kontainer)) {
+                        $sizeStr = $tandaTerimaTanpaSuratJalan->size_kontainer;
+                        if (strpos($sizeStr, '20') !== false) $prospekUpdate['ukuran'] = '20';
+                        elseif (strpos($sizeStr, '40') !== false) $prospekUpdate['ukuran'] = '40';
+                        elseif (strpos($sizeStr, '45') !== false) $prospekUpdate['ukuran'] = '45';
+                        elseif (strpos($sizeStr, '53') !== false) $prospekUpdate['ukuran'] = '53';
+                    }
+                    
+                    $prospek->update($prospekUpdate);
+                }
+
+                // 2. Manifests
+                \App\Models\Manifest::where('nomor_tanda_terima', $oldNo)
+                    ->update([
+                        'nomor_tanda_terima' => $newNo,
+                        'nomor_kontainer' => $tandaTerimaTanpaSuratJalan->no_kontainer,
+                        'no_seal' => $tandaTerimaTanpaSuratJalan->no_seal,
+                        'pengirim' => $tandaTerimaTanpaSuratJalan->pengirim,
+                        'penerima' => $tandaTerimaTanpaSuratJalan->penerima,
+                        'updated_by' => Auth::id()
+                    ]);
+                
+                // If we have prospek IDs, sync more tables
+                if (!empty($prospekIds)) {
+                     // BLs
+                     DB::table('bls')->whereIn('prospek_id', $prospekIds)->update([
+                         'pengirim' => $tandaTerimaTanpaSuratJalan->pengirim,
+                         'penerima' => $tandaTerimaTanpaSuratJalan->penerima,
+                         'updated_at' => now()
+                     ]);
+                     
+                     // Naik Kapal
+                     DB::table('naik_kapal')->whereIn('prospek_id', $prospekIds)->update([
+                         'pengirim' => $tandaTerimaTanpaSuratJalan->pengirim,
+                         'penerima' => $tandaTerimaTanpaSuratJalan->penerima,
+                         'updated_at' => now()
+                     ]);
+                }
+            }
+
+            DB::commit();
 
             return redirect()->route('tanda-terima-tanpa-surat-jalan.index')
                            ->with('success', 'Tanda terima berhasil diupdate.');
         } catch (\Exception $e) {
+            DB::rollback();
             return back()->withInput()
                         ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }

@@ -23,6 +23,10 @@
                     class="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm font-bold text-gray-700 outline-none" 
                     onchange="this.form.submit()">
             </form>
+            <a href="{{ route('admin.cek-kendaraan.daily.export', ['date' => $date]) }}" class="px-4 py-2.5 bg-emerald-600 text-white rounded-2xl shadow-sm hover:bg-emerald-700 transition-all text-sm font-bold flex items-center gap-2">
+                <i class="fas fa-file-excel"></i>
+                <span>Export Excel</span>
+            </a>
             <button onclick="window.location.reload()" class="p-2.5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:bg-gray-50 text-gray-600 transition-all tooltip" title="Refresh Data">
                 <i class="fas fa-sync-alt"></i>
             </button>
