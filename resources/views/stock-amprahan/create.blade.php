@@ -451,7 +451,7 @@
                                         <select name="alat_berat_id" id="alat_berat_id" class="hidden">
                                             <option value="">-- Pilih Alat Berat --</option>
                                             @foreach($alatBerats as $ab)
-                                                <option value="{{ $ab->id }}" {{ old('alat_berat_id') == $ab->id ? 'selected' : '' }}>{{ $ab->kode_alat }} - {{ $ab->nama }}{{ $ab->merk ? ' - ' . $ab->merk : '' }}</option>
+                                                <option value="{{ $ab->id }}" {{ old('alat_berat_id') == $ab->id ? 'selected' : '' }}>{{ $ab->nama }}{{ $ab->merk ? ' - ' . $ab->merk : '' }}{{ $ab->warna ? ' - ' . $ab->warna : '' }}</option>
                                             @endforeach
                                         </select>
                                         <div id="dropdown_options_alat_berat" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>

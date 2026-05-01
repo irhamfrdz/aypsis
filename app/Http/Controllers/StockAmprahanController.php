@@ -932,7 +932,7 @@ class StockAmprahanController extends Controller
                             $refType = 'Kapal';
                         }
                         if ($firstUsage->alatBerat) {
-                            $refItems[] = $firstUsage->alatBerat->nama;
+                            $refItems[] = $firstUsage->alatBerat->nama . ($firstUsage->alatBerat->warna ? ' - ' . $firstUsage->alatBerat->warna : '');
                             if (!$refType) $refType = 'Alat Berat';
                         }
                         if ($firstUsage->kendaraan) {
