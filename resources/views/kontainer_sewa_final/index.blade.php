@@ -737,7 +737,30 @@ function renderPg(id, tot, pgVar, func) { const pgs = Math.ceil(tot/rPP); let h 
 function delU(i) { if(confirm("Set Off?")) { db.u[i].act = false; updateDB(); } }
 function delM(k, i) { if(confirm("Set Off?")) { if(typeof db[k][i] === 'object') db[k][i].act = false; else db[k][i] = {val:db[k][i], act:false}; updateDB(); } }
 function delR(i) { if(confirm("Set Off?")) { db.r[i].act = false; updateDB(); } }
-function delX(i) { if(confirm("Hapus Trx?")) { db.x.splice(i, 1); updateDB(); } }
+function delX(i) { 
+    const item = db.x[i];
+    if (confirm("Hapus Trx?")) {
+        if (item && item.id) {
+            fetch('{{ url("/kontainer-sewa-final/transaction") }}/' + item.id, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    db.x.splice(i, 1);
+                    updateDB();
+                } else {
+                    alert('Gagal hapus: ' + d.message);
+                }
+            })
+            .catch(e => { console.error(e); alert('Terjadi kesalahan.'); });
+        } else {
+            db.x.splice(i, 1);
+            updateDB();
+        }
+    } 
+}
 function loadFile(e) { 
     if (!e.target.files || e.target.files.length === 0) return;
     const fr = new FileReader(); 

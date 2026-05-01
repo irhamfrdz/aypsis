@@ -465,6 +465,20 @@ class KontainerSewaFinalController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function destroyTransaction($id)
+    {
+        $transaction = BtmSewaTransaction::findOrFail($id);
+        
+        // Check if there are linked audits
+        $hasAudits = BtmSewaAudit::where('transaction_id', $id)->exists();
+        if ($hasAudits) {
+            return response()->json(['success' => false, 'message' => 'Transaksi tidak bisa dihapus karena sudah memiliki data audit/rekon.']);
+        }
+
+        $transaction->delete();
+        return response()->json(['success' => true]);
+    }
+
     public function destroyPranota($id)
     {
         $pranota = BtmSewaPranota::findOrFail($id);
