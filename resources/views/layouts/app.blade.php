@@ -374,7 +374,7 @@
                 {{-- Monitoring Section --}}
                 @php
                     $isMonitoringRoute = Request::routeIs('admin.cek-kendaraan.*');
-                    $hasMonitoringPermissions = $user && ($user->can('monitoring-cek-kendaraan-view') || $user->can('monitoring-cek-kendaraan-daily-view'));
+                    $hasMonitoringPermissions = $user && ($user->can('monitoring-cek-kendaraan-view') || $user->can('monitoring-cek-kendaraan-daily-view') || $user->can('monitoring-cek-kendaraan-weekly-view'));
                 @endphp
 
                 @if($hasMonitoringPermissions)
@@ -395,6 +395,12 @@
                         @if($user && $user->can('monitoring-cek-kendaraan-daily-view'))
                             <a href="{{ route('admin.cek-kendaraan.daily') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.daily') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                                 <span class="text-xs font-medium">Dashboard Cek Harian</span>
+                            </a>
+                        @endif
+
+                        @if($user && $user->can('monitoring-cek-kendaraan-weekly-view'))
+                            <a href="{{ route('admin.cek-kendaraan.weekly') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('admin.cek-kendaraan.weekly') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">Dashboard Cek Mingguan</span>
                             </a>
                         @endif
                     </div>

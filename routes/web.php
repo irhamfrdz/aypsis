@@ -5833,6 +5833,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                     ->name('cek-kendaraan.daily.export')
                     ->middleware('can:monitoring-cek-kendaraan-daily-view');
 
+                Route::get('cek-kendaraan-weekly', [\App\Http\Controllers\CekKendaraanController::class, 'weeklyDashboard'])
+                    ->name('cek-kendaraan.weekly')
+                    ->middleware('can:monitoring-cek-kendaraan-weekly-view');
+
+                Route::get('cek-kendaraan-weekly/export', [\App\Http\Controllers\CekKendaraanController::class, 'exportWeekly'])
+                    ->name('cek-kendaraan.weekly.export')
+                    ->middleware('can:monitoring-cek-kendaraan-weekly-view');
+
                 Route::get('cek-kendaraan/{cekKendaraan}', [\App\Http\Controllers\CekKendaraanController::class, 'show'])
                     ->name('cek-kendaraan.show')
                     ->middleware('can:monitoring-cek-kendaraan-view');
