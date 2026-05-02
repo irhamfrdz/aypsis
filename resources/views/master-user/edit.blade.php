@@ -1487,6 +1487,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Monitoring Cek Mingguan --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Dashboard Cek Mingguan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan-weekly][view]" value="1" class="permission-checkbox" @if(old('permissions.monitoring-cek-kendaraan-weekly.view') || (isset($userMatrixPermissions['monitoring-cek-kendaraan-weekly']['view']) && $userMatrixPermissions['monitoring-cek-kendaraan-weekly']['view']) || ($user && $user->can('monitoring-cek-kendaraan-weekly-view'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
                             {{-- Gate In --}}
                             <tr class="submodule-row" data-parent="operational">

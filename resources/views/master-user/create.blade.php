@@ -1351,6 +1351,57 @@
                                 <td class="empty-cell text-center text-gray-400">-</td>
                                 <td class="empty-cell text-center text-gray-400">-</td>
                             </tr>
+                            
+                            {{-- Monitoring Cek Kendaraan --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Monitoring Cek Kendaraan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan][view]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Monitoring Cek Harian --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Dashboard Cek Harian</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan-daily][view]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Monitoring Cek Mingguan --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Dashboard Cek Mingguan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[monitoring-cek-kendaraan-weekly][view]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
 
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">

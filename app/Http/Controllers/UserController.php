@@ -659,6 +659,7 @@ class UserController extends Controller
                 'pembayaran-pranota-invoice-vendor-supir' => 'pembayaran-pranota-invoice-vendor-supir',
                 'pranota-stock' => 'pranota-stock',
                 'monitoring-cek-kendaraan-daily' => 'monitoring-cek-kendaraan-daily',
+                'monitoring-cek-kendaraan-weekly' => 'monitoring-cek-kendaraan-weekly',
                 'monitoring-cek-kendaraan' => 'monitoring-cek-kendaraan',
                 'dashboard-dokumen-kapal-alexindo' => 'dashboard-dokumen-kapal-alexindo',
                 'asuransi-tanda-terima' => 'asuransi-tanda-terima',
@@ -4757,6 +4758,22 @@ class UserController extends Controller
                     if ($module === 'monitoring-cek-kendaraan-daily' && in_array($action, ['view'])) {
                         $actionMap = [
                             'view' => 'monitoring-cek-kendaraan-daily-view',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle monitoring-cek-kendaraan-weekly permissions explicitly
+                    if ($module === 'monitoring-cek-kendaraan-weekly' && in_array($action, ['view'])) {
+                        $actionMap = [
+                            'view' => 'monitoring-cek-kendaraan-weekly-view',
                         ];
 
                         if (isset($actionMap[$action])) {
