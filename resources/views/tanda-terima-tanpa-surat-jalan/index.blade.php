@@ -260,42 +260,24 @@
                                         <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                     </th>
                                 @endif
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    No. Tanda Terima
+                                <th scope="col" class="px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                                    Info Tanda Terima
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    No. Kontainer
+                                <th scope="col" class="px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                                    Unit / Kontainer
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Tipe
+                                <th scope="col" class="px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                                    Relasi (Penerima/Pengirim)
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Tanggal
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Penerima
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Pengirim
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Barang
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Asal
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Tujuan
+                                <th scope="col" class="px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                                    Barang & Rute
                                 </th>
                                 @if(request('tipe') == 'lcl' && isset($isLclData) && $isLclData)
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Volume & Tonase
+                                    <th scope="col" class="px-2 py-2 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                                        Volume/Tonase
                                     </th>
                                 @endif
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Sumber
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th scope="col" class="px-2 py-2 text-center text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                                     Aksi
                                 </th>
                             </tr>
@@ -304,242 +286,97 @@
                             @foreach($tandaTerimas as $tandaTerima)
                                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                                     @if(request('tipe') == 'lcl' && isset($isLclData) && $isLclData)
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-2 py-2 whitespace-nowrap">
                                             <input type="checkbox" name="selected_items[]" value="{{ $tandaTerima->id }}" 
                                                    class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                         </td>
                                     @endif
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if(isset($isLclData) && $isLclData)
-                                            <div class="text-sm font-medium text-gray-900">{{ $tandaTerima->nomor_tanda_terima }}</div>
-                                        @else
-                                            <div class="text-sm font-medium text-gray-900">{{ $tandaTerima->no_tanda_terima }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if(isset($isLclData) && $isLclData)
-                                            @if($tandaTerima->kontainerPivot && $tandaTerima->kontainerPivot->count() > 0)
-                                                <div class="text-sm text-gray-900">
-                                                    {{ $tandaTerima->kontainerPivot->first()->nomor_kontainer }}
-                                                    @if($tandaTerima->kontainerPivot->count() > 1)
-                                                        <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800" title="{{ $tandaTerima->kontainerPivot->count() }} kontainer">
-                                                            +{{ $tandaTerima->kontainerPivot->count() - 1 }}
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-sm text-gray-500">-</span>
-                                            @endif
-                                        @else
-                                            <div class="text-sm text-gray-900">{{ $tandaTerima->no_kontainer ?? '-' }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if(isset($isLclData) && $isLclData)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                LCL
+                                    <td class="px-2 py-2 whitespace-nowrap">
+                                        <div class="text-[11px] font-bold text-gray-900">
+                                            {{ (isset($isLclData) && $isLclData) ? $tandaTerima->nomor_tanda_terima : $tandaTerima->no_tanda_terima }}
+                                        </div>
+                                        <div class="flex items-center gap-1 mt-0.5">
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                                                {{ (isset($isLclData) && $isLclData) ? 'LCL' : (strtoupper($tandaTerima->tipe_kontainer) ?: '-') }}
                                             </span>
-                                        @else
-                                            @if($tandaTerima->tipe_kontainer)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                    {{ strtoupper($tandaTerima->tipe_kontainer) }}
-                                                </span>
+                                            <span class="text-[10px] text-gray-500">{{ $tandaTerima->tanggal_tanda_terima->format('d/m/y') }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap">
+                                        <div class="text-[11px] font-medium text-gray-900">
+                                            @if(isset($isLclData) && $isLclData)
+                                                {{ $tandaTerima->kontainerPivot->first()->nomor_kontainer ?? '-' }}
+                                                @if($tandaTerima->kontainerPivot && $tandaTerima->kontainerPivot->count() > 1)
+                                                    <span class="text-[10px] text-blue-600 font-bold">+{{ $tandaTerima->kontainerPivot->count() - 1 }}</span>
+                                                @endif
                                             @else
-                                                <span class="text-sm text-gray-500">-</span>
+                                                {{ $tandaTerima->no_kontainer ?? '-' }}
                                             @endif
-                                        @endif
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5">
+                                            {{ (isset($isLclData) && $isLclData) ? 'LCL Data' : 'Standard' }}
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $tandaTerima->tanggal_tanda_terima->format('d/M/Y') }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if(isset($isLclData) && $isLclData)
-                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->nama_penerima ?? '-' }}">
-                                                {{ $tandaTerima->nama_penerima ?? '-' }}
+                                    <td class="px-2 py-2 whitespace-nowrap">
+                                        <div class="flex flex-col">
+                                            <div class="text-[11px] font-semibold text-indigo-700 truncate max-w-[150px]" title="Penerima: {{ (isset($isLclData) && $isLclData) ? ($tandaTerima->nama_penerima ?? '-') : $tandaTerima->penerima }}">
+                                                <i class="fas fa-user-check mr-1 opacity-50"></i>{{ (isset($isLclData) && $isLclData) ? ($tandaTerima->nama_penerima ?? '-') : $tandaTerima->penerima }}
                                             </div>
-                                        @else
-                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->penerima }}">{{ $tandaTerima->penerima }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if(isset($isLclData) && $isLclData)
-                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->nama_pengirim ?? '-' }}">
-                                                {{ $tandaTerima->nama_pengirim ?? '-' }}
+                                            <div class="text-[10px] text-gray-500 truncate max-w-[150px]" title="Pengirim: {{ (isset($isLclData) && $isLclData) ? ($tandaTerima->nama_pengirim ?? '-') : $tandaTerima->pengirim }}">
+                                                <i class="fas fa-truck-loading mr-1 opacity-50"></i>{{ (isset($isLclData) && $isLclData) ? ($tandaTerima->nama_pengirim ?? '-') : $tandaTerima->pengirim }}
                                             </div>
-                                        @else
-                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->pengirim }}">{{ $tandaTerima->pengirim }}</div>
-                                        @endif
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if(isset($isLclData) && $isLclData)
-                                            @if($tandaTerima->items && $tandaTerima->items->count() > 0)
-                                                @php
-                                                    $namaBarang = $tandaTerima->items->pluck('nama_barang')->filter()->unique();
-                                                @endphp
-                                                <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $namaBarang->implode(', ') }}">
+                                    <td class="px-2 py-2">
+                                        <div class="text-[11px] text-gray-900 font-medium truncate max-w-[180px]">
+                                            @if(isset($isLclData) && $isLclData)
+                                                @if($tandaTerima->items && $tandaTerima->items->count() > 0)
+                                                    @php $namaBarang = $tandaTerima->items->pluck('nama_barang')->filter()->unique(); @endphp
                                                     {{ $namaBarang->first() ?? '-' }}
-                                                    @if($namaBarang->count() > 1)
-                                                        <span class="ml-1 text-xs text-blue-600">+{{ $namaBarang->count() - 1 }}</span>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-sm text-gray-500">-</span>
-                                            @endif
-                                        @else
-                                            <div class="text-sm text-gray-900">{{ $tandaTerima->jenis_barang }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if(isset($isLclData) && $isLclData)
-                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->alamat_pengirim ?? '-' }}">
-                                                {{ Str::limit($tandaTerima->alamat_pengirim ?? '-', 30) }}
-                                            </div>
-                                        @else
-                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuan_pengambilan }}">{{ $tandaTerima->tujuan_pengambilan }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if(isset($isLclData) && $isLclData)
-                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuanKirim->nama_tujuan ?? '' }}">{{ $tandaTerima->tujuanKirim->nama_tujuan ?? 'Tidak ada' }}</div>
-                                        @else
-                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuan_pengiriman }}">{{ $tandaTerima->tujuan_pengiriman }}</div>
-                                        @endif
+                                                    @if($namaBarang->count() > 1) <span class="text-blue-600 font-bold">+{{ $namaBarang->count() - 1 }}</span> @endif
+                                                @else - @endif
+                                            @else {{ $tandaTerima->jenis_barang }} @endif
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
+                                            <span class="truncate max-w-[80px]" title="{{ (isset($isLclData) && $isLclData) ? ($tandaTerima->alamat_pengirim ?? '-') : $tandaTerima->tujuan_pengambilan }}">
+                                                {{ (isset($isLclData) && $isLclData) ? ($tandaTerima->alamat_pengirim ?? '-') : $tandaTerima->tujuan_pengambilan }}
+                                            </span>
+                                            <i class="fas fa-arrow-right text-[8px] opacity-30"></i>
+                                            <span class="truncate max-w-[80px]" title="{{ (isset($isLclData) && $isLclData) ? ($tandaTerima->tujuanKirim->nama_tujuan ?? '-') : $tandaTerima->tujuan_pengiriman }}">
+                                                {{ (isset($isLclData) && $isLclData) ? ($tandaTerima->tujuanKirim->nama_tujuan ?? '-') : $tandaTerima->tujuan_pengiriman }}
+                                            </span>
+                                        </div>
                                     </td>
                                     @if(request('tipe') == 'lcl' && isset($isLclData) && $isLclData)
-                                        <!-- Volume & Tonase Status -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-2 py-2 whitespace-nowrap">
                                             @php
-                                                $hasVolumeData = $tandaTerima->items && $tandaTerima->items->where('meter_kubik', '>', 0)->count() > 0;
-                                                $hasTonaseData = $tandaTerima->items && $tandaTerima->items->where('tonase', '>', 0)->count() > 0;
+                                                $hasVol = $tandaTerima->items && $tandaTerima->items->where('meter_kubik', '>', 0)->count() > 0;
+                                                $hasTon = $tandaTerima->items && $tandaTerima->items->where('tonase', '>', 0)->count() > 0;
                                             @endphp
-                                            @if($hasVolumeData && $hasTonaseData)
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    Lengkap
-                                                </span>
-                                            @elseif($hasVolumeData || $hasTonaseData)
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    Sebagian
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    Belum Input
-                                                </span>
-                                            @endif
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold {{ $hasVol && $hasTon ? 'bg-green-50 text-green-700 border border-green-100' : ($hasVol || $hasTon ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' : 'bg-red-50 text-red-700 border border-red-100') }}">
+                                                {{ $hasVol && $hasTon ? 'Lengkap' : ($hasVol || $hasTon ? 'Sebagian' : 'N/A') }}
+                                            </span>
                                         </td>
                                     @endif
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if(isset($isLclData) && $isLclData)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                LCL Data
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                Standard
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <div class="flex justify-center gap-2">
+                                    <td class="px-2 py-2 whitespace-nowrap text-center">
+                                        <div class="flex justify-center gap-1.5">
                                             @if(isset($isLclData) && $isLclData)
-                                                <a href="{{ route('tanda-terima-lcl.show', $tandaTerima) }}"
-                                                   class="text-indigo-600 hover:text-indigo-900" title="Lihat Detail">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                    </svg>
-                                                </a>
+                                                <a href="{{ route('tanda-terima-lcl.show', $tandaTerima) }}" class="text-indigo-600 hover:text-indigo-900 transition-colors" title="Detail"><i class="fas fa-eye text-xs"></i></a>
                                                 @can('tanda-terima-tanpa-surat-jalan-update')
-                                                    <a href="{{ route('tanda-terima-lcl.edit', $tandaTerima) }}"
-                                                       class="text-yellow-600 hover:text-yellow-900" title="Edit">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                        </svg>
-                                                    </a>
-                                                    
-                                                    <form action="{{ route('tanda-terima-lcl.add-to-prospek', $tandaTerima) }}" method="POST" class="inline" onsubmit="return confirm('Kirim data ini ke Prospek?')">
-                                                        @csrf
-                                                        <button type="submit" class="text-purple-600 hover:text-purple-900" title="Kirim ke Prospek">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
-
-                                                    <form action="{{ route('tanda-terima-lcl.sync-penerima-pengirim', $tandaTerima->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin melakukan sinkronisasi data penerima dan pengirim ke Prospek, Naik Kapal, Manifest, dan BL?')">
-                                                        @csrf
-                                                        <button type="submit" class="text-blue-600 hover:text-blue-900" title="Sync Penerima & Pengirim">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
+                                                    <a href="{{ route('tanda-terima-lcl.edit', $tandaTerima) }}" class="text-amber-600 hover:text-amber-900 transition-colors" title="Edit"><i class="fas fa-edit text-xs"></i></a>
+                                                    <form action="{{ route('tanda-terima-lcl.add-to-prospek', $tandaTerima) }}" method="POST" class="inline">@csrf<button type="submit" class="text-purple-600 hover:text-purple-900" title="Prospek"><i class="fas fa-clipboard-list text-xs"></i></button></form>
                                                 @endcan
                                                 @can('tanda-terima-tanpa-surat-jalan-delete')
-                                                    <form action="{{ route('tanda-terima-lcl.destroy', $tandaTerima) }}" method="POST" class="inline"
-                                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima LCL ini?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
+                                                    <form action="{{ route('tanda-terima-lcl.destroy', $tandaTerima) }}" method="POST" class="inline" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button type="submit" class="text-red-600 hover:text-red-900" title="Hapus"><i class="fas fa-trash text-xs"></i></button></form>
                                                 @endcan
                                             @else
-                                                <a href="{{ route('tanda-terima-tanpa-surat-jalan.show', $tandaTerima) }}"
-                                                   class="text-indigo-600 hover:text-indigo-900" title="Lihat Detail">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                    </svg>
-                                                </a>
+                                                <a href="{{ route('tanda-terima-tanpa-surat-jalan.show', $tandaTerima) }}" class="text-indigo-600 hover:text-indigo-900 transition-colors" title="Detail"><i class="fas fa-eye text-xs"></i></a>
                                                 @can('tanda-terima-tanpa-surat-jalan-update')
-                                                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.edit', $tandaTerima) }}"
-                                                       class="text-yellow-600 hover:text-yellow-900" title="Edit">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                        </svg>
-                                                    </a>
-                                                    
-                                                    <form action="{{ route('tanda-terima-tanpa-surat-jalan.add-to-prospek', $tandaTerima) }}" method="POST" class="inline" onsubmit="return confirm('Kirim data ini ke Prospek?')">
-                                                        @csrf
-                                                        <button type="submit" class="text-purple-600 hover:text-purple-900" title="Kirim ke Prospek">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
-
-                                                    <form action="{{ route('tanda-terima-tanpa-surat-jalan.sync-penerima-pengirim', $tandaTerima->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin melakukan sinkronisasi data penerima dan pengirim ke Prospek, Naik Kapal, Manifest, dan BL?')">
-                                                        @csrf
-                                                        <button type="submit" class="text-blue-600 hover:text-blue-900" title="Sync Penerima & Pengirim">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
+                                                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.edit', $tandaTerima) }}" class="text-amber-600 hover:text-amber-900 transition-colors" title="Edit"><i class="fas fa-edit text-xs"></i></a>
+                                                    <form action="{{ route('tanda-terima-tanpa-surat-jalan.add-to-prospek', $tandaTerima) }}" method="POST" class="inline">@csrf<button type="submit" class="text-purple-600 hover:text-purple-900" title="Prospek"><i class="fas fa-clipboard-list text-xs"></i></button></form>
                                                 @endcan
                                                 @can('tanda-terima-tanpa-surat-jalan-delete')
-                                                    <form action="{{ route('tanda-terima-tanpa-surat-jalan.destroy', $tandaTerima) }}" method="POST" class="inline"
-                                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima ini?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                            </svg>
-                                                        </button>
-                                                    </form>
+                                                    <form action="{{ route('tanda-terima-tanpa-surat-jalan.destroy', $tandaTerima) }}" method="POST" class="inline" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button type="submit" class="text-red-600 hover:text-red-900" title="Hapus"><i class="fas fa-trash text-xs"></i></button></form>
                                                 @endcan
                                             @endif
                                         </div>
