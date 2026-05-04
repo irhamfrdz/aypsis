@@ -125,7 +125,9 @@
             <tr>
                 <th style="width: 80px;">Tanggal</th>
                 <th>Tipe</th>
-                <th>No. Faktur</th>
+                <th>Nama Barang</th>
+                <th>No. Bukti</th>
+                <th>Dikeluarkan Ke</th>
                 <th class="right">Kts. Masuk</th>
                 <th class="right">Nilai masuk</th>
                 <th class="right">Kts. Keluar</th>
@@ -151,7 +153,9 @@
                 <tr class="row-separator">
                     <td>{{ $trx->tanggal }}</td>
                     <td>{{ $trx->tipe }}</td>
+                    <td>{{ $trx->nama_barang }}</td>
                     <td>{{ $trx->no_faktur }}</td>
+                    <td>{{ $trx->referensi }}</td>
                     <td class="right">{{ $trx->kts_masuk > 0 ? number_format($trx->kts_masuk, 0, ',', '.') : '0' }}</td>
                     <td class="right">{{ $trx->nilai_masuk > 0 ? number_format($trx->nilai_masuk, 0, ',', '.') : '0' }}</td>
                     <td class="right">{{ $trx->kts_keluar > 0 ? number_format($trx->kts_keluar, 0, ',', '.') : '0' }}</td>
@@ -161,11 +165,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="center" style="padding: 20px;">Tidak ada transaksi dalam periode ini.</td>
+                    <td colspan="11" class="center" style="padding: 20px;">Tidak ada transaksi dalam periode ini.</td>
                 </tr>
             @endforelse
             <tr class="totals-row">
-                <td colspan="3"></td>
+                <td colspan="5"></td>
                 <td class="right">{{ number_format($totalKtsMasuk, 0, ',', '.') }}</td>
                 <td class="right">{{ number_format($totalNilaiMasuk, 0, ',', '.') }}</td>
                 <td class="right">{{ number_format($totalKtsKeluar, 0, ',', '.') }}</td>
