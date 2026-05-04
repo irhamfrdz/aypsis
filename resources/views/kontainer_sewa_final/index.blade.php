@@ -325,7 +325,6 @@ function smartDate(v) {
 }
 
 let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:{}, history:[] };
-const normIdp = (s) => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
 let pgU = 1, pgX = 1; const rPP = 15;
 let expAudit = null;
 let currentAuditTab = 'outstanding';
@@ -355,7 +354,8 @@ function genPeriode(x, idInduk) {
         const safeId = idp.replace(/[\/\s-]/g, '_');
         
         // Status checks
-        const pInfo = db.audits_map[normIdp(idp)];
+        console.log('DEBUG idp:', idp, '| audits_map keys:', Object.keys(db.audits_map), '| match:', db.audits_map[idp]);
+        const pInfo = db.audits_map[idp];
         const inCart = db.cart.find(c => c.idp === idp);
         
         let stPranota = '-';
@@ -584,7 +584,7 @@ function renderAudit() {
 
 function toggleAudit(id) { expAudit = (expAudit === id) ? null : id; renderAudit(); }
 function parseD(s) { if(!s) return new Date(); const [d,m,y] = s.split('/').map(Number); return new Date(y, m-1, d); }
-function toExcelSerial(d) { if(!d||!d.includes('/')) return "0"; const [dd,mm,yy]=d.split('/').map(Number); return Math.floor((Date.UTC(yy,mm-1,dd)-Date.UTC(1899,11,30))/86400000).toString(); }
+function toExcelSerial(d) { if(!d||!d.includes('/')) return "0"; const [dd,mm,yy]=d.split('/').map(Number); return Math.floor((new Date(yy,mm-1,dd)-new Date(1899,11,30))/86400000); }
 
 // --- MENU 1-4 ---
 function renderVTZ() { ['v','t','z'].forEach(k => { const body = document.querySelector(`#tbl-${k} tbody`); if(body) body.innerHTML = db[k].map((x,i) => `<tr class="${x.act===false?'non-aktif':''}"><td>${i+1}</td><td>${x.val||x}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="edM('${k}',${i})">Edit</button> ${x.act!==false?`<button class="btn btn-red" style="padding: 4px 10px;" onclick="delM('${k}',${i})">Off</button>`:''}</td></tr>`).join(''); }); }
@@ -946,7 +946,7 @@ function getAllOutstandingPeriods(x, idInduk) {
         const nilaiAYPSIS = (diff >= 28) ? biayaSnapshot : Math.round((diff/30)*biayaSnapshot);
         const masa_p = `${fmtTglDB(sP)} - ${fmtTglDB(eP)}`;
         const idp = `${idInduk}-${masa_p}`;
-        const isAssigned = normIdp(idp) in db.audits_map;
+        const isAssigned = idp in db.audits_map;
 
         if (!isAssigned && !db.cart.some(c => c.idp === idp)) {
             periods.push({
