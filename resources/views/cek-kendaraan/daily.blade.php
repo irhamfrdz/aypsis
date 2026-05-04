@@ -187,6 +187,7 @@
                                             @endif
                                         </div>
                                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">NIK: {{ $driver->nik ?? 'N/A' }}</p>
+                                        <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{{ $driver->pekerjaan }}</p>
                                     </div>
                                 </div>
                             </td>
@@ -244,7 +245,7 @@
                                         <i class="fas fa-users-slash text-3xl text-gray-200"></i>
                                     </div>
                                     <h3 class="text-lg font-bold text-gray-400">Tidak ada data driver ditemukan</h3>
-                                    <p class="text-gray-300 text-sm mt-1">Pastikan divisi/pekerjaan driver sudah diatur dengan benar.</p>
+                                    <p class="text-gray-300 text-sm mt-1">Hanya menampilkan supir dengan pekerjaan 'SUPIR TRUCK' atau 'SUPIR TRAILER'.</p>
                                 </div>
                             </td>
                         </tr>
@@ -281,6 +282,7 @@
                                     @endif
                                 </div>
                                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">NIK: {{ $driver->nik ?? 'N/A' }}</p>
+                                <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{{ $driver->pekerjaan }}</p>
                             </div>
                         </div>
                         @if($check)

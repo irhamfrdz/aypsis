@@ -34,10 +34,7 @@ class CekKendaraanController extends Controller
         
         // Use the same definition of Supir as User::isSupir()
         // Divisi is 'SUPIR' or 'DRIVER'
-        $query = \App\Models\Karyawan::where(function($query) {
-                $query->whereIn(DB::raw('UPPER(TRIM(divisi))'), ['SUPIR', 'DRIVER'])
-                      ->orWhereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR', 'DRIVER']);
-            })
+        $query = \App\Models\Karyawan::whereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR TRUCK', 'SUPIR TRAILER'])
             ->whereNull('tanggal_berhenti');
 
         if ($cabang) {
@@ -58,10 +55,7 @@ class CekKendaraanController extends Controller
         $date = $request->get('date', date('Y-m-d'));
         $cabang = $request->get('cabang');
         
-        $query = \App\Models\Karyawan::where(function($query) {
-                $query->whereIn(DB::raw('UPPER(TRIM(divisi))'), ['SUPIR', 'DRIVER'])
-                      ->orWhereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR', 'DRIVER']);
-            })
+        $query = \App\Models\Karyawan::whereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR TRUCK', 'SUPIR TRAILER'])
             ->whereNull('tanggal_berhenti');
 
         if ($cabang) {
@@ -95,10 +89,7 @@ class CekKendaraanController extends Controller
             $weekDays->push($weekStart->copy()->addDays($i));
         }
 
-        $query = \App\Models\Karyawan::where(function($query) {
-                $query->whereIn(DB::raw('UPPER(TRIM(divisi))'), ['SUPIR', 'DRIVER'])
-                      ->orWhereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR', 'DRIVER']);
-            })
+        $query = \App\Models\Karyawan::whereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR TRUCK', 'SUPIR TRAILER'])
             ->whereNull('tanggal_berhenti');
 
         if ($cabang) {
@@ -126,10 +117,7 @@ class CekKendaraanController extends Controller
         }
         $weekEnd = $weekStart->copy()->addDays(6)->endOfDay();
 
-        $query = \App\Models\Karyawan::where(function($query) {
-                $query->whereIn(DB::raw('UPPER(TRIM(divisi))'), ['SUPIR', 'DRIVER'])
-                      ->orWhereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR', 'DRIVER']);
-            })
+        $query = \App\Models\Karyawan::whereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR TRUCK', 'SUPIR TRAILER'])
             ->whereNull('tanggal_berhenti');
 
         if ($cabang) {

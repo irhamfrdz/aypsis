@@ -39,6 +39,7 @@ class CekKendaraanWeeklyExport implements FromCollection, WithHeadings, WithMapp
                 'No',
                 'Nama Supir',
                 'NIK',
+                'Pekerjaan',
                 'Senin',
                 'Selasa',
                 'Rabu',
@@ -59,7 +60,8 @@ class CekKendaraanWeeklyExport implements FromCollection, WithHeadings, WithMapp
         $row = [
             $no,
             $driver->nama_lengkap,
-            $driver->nik ?? '-'
+            $driver->nik ?? '-',
+            $driver->pekerjaan ?? '-'
         ];
 
         $totalCek = 0;
