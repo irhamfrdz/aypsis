@@ -454,7 +454,7 @@ class KontainerController extends Controller
         
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => \"attachment; filename=\\\"{$filename}\\\"\",
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0',
