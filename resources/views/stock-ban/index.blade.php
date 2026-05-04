@@ -120,9 +120,7 @@
         outline: none;
     }
 
-    .hidden {
-        display: none !important;
-    }
+
 </style>
 @endpush
 
