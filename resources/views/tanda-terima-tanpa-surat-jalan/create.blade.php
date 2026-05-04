@@ -406,7 +406,7 @@
 
                     <div id="dimensi-container-new">
                         <div class="dimensi-row-new mb-4 pb-4 border-b border-purple-200">
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                                 <div>
                                     <label for="nama_barang_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Nama Barang <span class="text-red-500">*</span>
@@ -414,12 +414,13 @@
                                     <input type="text"
                                            name="nama_barang[]" 
                                            id="nama_barang_0"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                           class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
                                            placeholder="Nama barang"
                                            value="{{ old('nama_barang.0') }}"
-                                           required>
+                                           required
+                                           oninput="toggleUkuranField(this)">
                                 </div>
-                                <div>
+                                <div class="ukuran-container hidden">
                                     <label for="ukuran_0" class="block text-xs font-medium text-gray-500 mb-2">
                                         Ukuran
                                     </label>
@@ -2061,12 +2062,12 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang <span class="text-red-500">*</span></label>
-                            <input type="text" name="nama_barang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required>
+                            <input type="text" name="nama_barang[]" class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required oninput="toggleUkuranField(this)">
                         </div>
-                        <div>
+                        <div class="ukuran-container hidden">
                             <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran</label>
                             <input type="text" name="ukuran[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 40x40">
                         </div>
@@ -2606,6 +2607,44 @@
             
             console.log('✓ New penerima/pengirim added:', newData.nama);
         }
+    });
+
+    /**
+     * Toggles the visibility of the "Ukuran" field based on the "Nama Barang" input value.
+     * Only shows if the value contains "keramik" (case-insensitive).
+     */
+    function toggleUkuranField(input) {
+        const row = input.closest('.dimensi-row') || input.closest('.dimensi-row-new') || input.closest('.dimensi-row-edit');
+        if (!row) return;
+
+        const ukuranContainer = row.querySelector('.ukuran-container');
+        const gridContainer = row.querySelector('.dimensi-info-grid');
+        const value = input.value.toLowerCase();
+        
+        if (value.includes('keramik')) {
+            if (ukuranContainer) {
+                ukuranContainer.classList.remove('hidden');
+            }
+            if (gridContainer) {
+                gridContainer.classList.remove('md:grid-cols-3');
+                gridContainer.classList.add('md:grid-cols-4');
+            }
+        } else {
+            if (ukuranContainer) {
+                ukuranContainer.classList.add('hidden');
+            }
+            if (gridContainer) {
+                gridContainer.classList.remove('md:grid-cols-4');
+                gridContainer.classList.add('md:grid-cols-3');
+            }
+        }
+    }
+
+    // Initialize existing rows for ukuran visibility
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.nama-barang-input').forEach(input => {
+            toggleUkuranField(input);
+        });
     });
 </script>
 

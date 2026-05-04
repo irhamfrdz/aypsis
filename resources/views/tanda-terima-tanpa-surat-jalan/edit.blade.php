@@ -385,12 +385,12 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
                                     </button>
-                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang <span class="text-red-500">*</span></label>
-                                            <input type="text" name="nama_barang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required value="{{ old('nama_barang.'.$idx) }}">
+                                            <input type="text" name="nama_barang[]" class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required value="{{ old('nama_barang.'.$idx) }}" oninput="toggleUkuranField(this)">
                                         </div>
-                                        <div>
+                                        <div class="ukuran-container hidden">
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran</label>
                                             <input type="text" name="ukuran[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 40x40" value="{{ old('ukuran.'.$idx) }}">
                                         </div>
@@ -435,12 +435,12 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
                                     </button>
-                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                                         <div>
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang <span class="text-red-500">*</span></label>
-                                            <input type="text" name="nama_barang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required value="{{ old('nama_barang', $item['nama_barang'] ?? $item->nama_barang ?? '') }}">
+                                            <input type="text" name="nama_barang[]" class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required value="{{ old('nama_barang', $item['nama_barang'] ?? $item->nama_barang ?? '') }}" oninput="toggleUkuranField(this)">
                                         </div>
-                                        <div>
+                                        <div class="ukuran-container hidden">
                                             <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran</label>
                                             <input type="text" name="ukuran[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 40x40" value="{{ old('ukuran', $item['ukuran'] ?? $item->ukuran ?? '') }}">
                                         </div>
@@ -480,12 +480,12 @@
                         @else
                             <!-- Keep an empty single initial row to match create behavior -->
                             <div class="dimensi-row-edit mb-4 pb-4 border-b border-purple-200">
-                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang <span class="text-red-500">*</span></label>
-                                        <input type="text" name="nama_barang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required>
+                                        <input type="text" name="nama_barang[]" class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required oninput="toggleUkuranField(this)">
                                     </div>
-                                    <div>
+                                    <div class="ukuran-container hidden">
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran</label>
                                         <input type="text" name="ukuran[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 40x40">
                                     </div>
@@ -1567,10 +1567,23 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang <span class="text-red-500">*</span></label><input type="text" name="nama_barang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required></div>
-                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Jumlah <span class="text-red-500">*</span></label><input type="number" name="jumlah[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="1" required oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))"></div>
-                        <div><label class="block text-xs font-medium text-gray-500 mb-2">Satuan <span class="text-red-500">*</span></label><input type="text" name="satuan[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Pcs, Kg, Box" value="unit" required></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang <span class="text-red-500">*</span></label>
+                            <input type="text" name="nama_barang[]" class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang" required oninput="toggleUkuranField(this)">
+                        </div>
+                        <div class="ukuran-container hidden">
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran</label>
+                            <input type="text" name="ukuran[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 40x40">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah <span class="text-red-500">*</span></label>
+                            <input type="number" name="jumlah[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="1" step="1" value="1" required oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Satuan <span class="text-red-500">*</span></label>
+                            <input type="text" name="satuan[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Pcs, Kg, Box" value="unit" required>
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div><label class="block text-xs font-medium text-gray-500 mb-2">Panjang (m) <span class="text-xs text-gray-400">*dalam meter</span></label><input type="number" name="panjang[]" class="dimensi-input-edit w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Contoh: 1.5" min="0" step="0.001" oninput="calculateVolumeEdit(this.closest('.dimensi-row-edit'))"></div>
@@ -1662,6 +1675,41 @@
             }
         });
 
+        // Initialize existing rows for ukuran visibility
+        document.querySelectorAll('.nama-barang-input').forEach(input => {
+            toggleUkuranField(input);
+        });
+
+        /**
+         * Toggles the visibility of the "Ukuran" field based on the "Nama Barang" input value.
+         * Only shows if the value contains "keramik" (case-insensitive).
+         */
+        function toggleUkuranField(input) {
+            const row = input.closest('.dimensi-row') || input.closest('.dimensi-row-new') || input.closest('.dimensi-row-edit');
+            if (!row) return;
+
+            const ukuranContainer = row.querySelector('.ukuran-container');
+            const gridContainer = row.querySelector('.dimensi-info-grid');
+            const value = input.value.toLowerCase();
+            
+            if (value.includes('keramik')) {
+                if (ukuranContainer) {
+                    ukuranContainer.classList.remove('hidden');
+                }
+                if (gridContainer) {
+                    gridContainer.classList.remove('md:grid-cols-3');
+                    gridContainer.classList.add('md:grid-cols-4');
+                }
+            } else {
+                if (ukuranContainer) {
+                    ukuranContainer.classList.add('hidden');
+                }
+                if (gridContainer) {
+                    gridContainer.classList.remove('md:grid-cols-4');
+                    gridContainer.classList.add('md:grid-cols-3');
+                }
+            }
+        }
     </script>
 @endpush
 
