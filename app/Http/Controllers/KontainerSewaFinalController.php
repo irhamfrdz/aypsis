@@ -33,9 +33,9 @@ class KontainerSewaFinalController extends Controller
     {
         if (!$date) return "0";
         try {
-            $dt = \Carbon\Carbon::parse($date);
-            $baseDate = \Carbon\Carbon::create(1899, 12, 30);
-            return (int)$dt->diffInDays($baseDate);
+            $dt = \Carbon\Carbon::parse($date)->startOfDay();
+            $baseDate = \Carbon\Carbon::create(1899, 12, 30)->startOfDay();
+            return (string)$dt->diffInDays($baseDate);
         } catch (\Exception $e) {
             return "0";
         }
@@ -108,7 +108,9 @@ class KontainerSewaFinalController extends Controller
                     $x = $i->transaction ?: \App\Models\BtmSewaTransaction::where('unit_number', $i->unit_number)->orderBy('date_in', 'desc')->first();
                     $idp = ($x ? ($x->unit_number . $this->toExcelSerial($x->date_in)) : $i->unit_number) . '-' . $i->period_name;
                 }
-                return [$idp => [
+                // Normalize key: remove all non-alphanumeric for matching
+                $key = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $idp));
+                return [$key => [
                     'nomor' => $i->pranota->nomor ?? '-',
                     'status' => $i->pranota->status ?? '-',
                 ]];
