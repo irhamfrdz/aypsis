@@ -97,9 +97,6 @@
                             <td class="px-4 py-3 text-xs text-gray-600">
                                 @if($detail->no_bl) <span class="block">B/L: {{ $detail->no_bl }}</span> @endif
                                 @if($detail->no_sj) <span class="block">S/J: {{ $detail->no_sj }}</span> @endif
-                                @if($detail->dept) <span class="block">Dept: {{ $detail->dept }}</span> @endif
-                                @if($detail->proyek) <span class="block">Proyek: {{ $detail->proyek }}</span> @endif
-                                @if($detail->sn) <span class="block">S/N: {{ $detail->sn }}</span> @endif
                             </td>
                         </tr>
                     @endforeach

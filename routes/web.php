@@ -5338,6 +5338,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
 
 // API Routes for AJAX calls (no middleware needed for these specific routes)
 Route::get('/api/manifests/voyages/{namaKapal}', [App\Http\Controllers\ManifestController::class, 'getVoyagesByShip']);
+Route::get('/api/kwitansi/voyages/{namaKapal}', [App\Http\Controllers\KwitansiController::class, 'getVoyagesByShip']);
 
 // ═══════════════════════════════════════════════════════════════════════
 // 📊 AUDIT LOG ROUTES - Universal audit trail system
@@ -5888,6 +5889,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
          ]);
 
     // 📦 KWITANSI MODULE
+    Route::get('kwitansi/select-ship', [App\Http\Controllers\KwitansiController::class, 'selectShip'])->name('kwitansi.select-ship');
     Route::resource('kwitansi', App\Http\Controllers\KwitansiController::class)->middleware([
         'index'   => 'can:kwitansi-view',
         'create'  => 'can:kwitansi-create',

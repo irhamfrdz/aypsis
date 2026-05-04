@@ -11,7 +11,7 @@ class KwitansiDetail extends Model
 
     protected $fillable = [
         'kwitansi_id', 'item_kode', 'item_description', 'qty', 'unit_price', 
-        'amount', 'no_bl', 'no_sj', 'dept', 'proyek', 'sn'
+        'amount', 'no_bl', 'no_sj'
     ];
 
     public function kwitansi()

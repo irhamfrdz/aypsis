@@ -31,17 +31,17 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pelanggan</label>
                         <div class="flex gap-2">
-                            <input type="text" name="pelanggan_kode" value="{{ $kwitansi->pelanggan_kode }}" class="w-1/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="Kode">
-                            <input type="text" name="pelanggan_nama" value="{{ $kwitansi->pelanggan_nama }}" class="w-2/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="Nama Pelanggan">
+                            <input type="text" name="pelanggan_kode" value="{{ $kwitansi->pelanggan_kode }}" class="w-1/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode">
+                            <input type="text" name="pelanggan_nama" value="{{ $kwitansi->pelanggan_nama }}" class="w-2/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10" placeholder="Nama Pelanggan">
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Terima Dari</label>
-                        <textarea name="terima_dari" rows="2" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">{{ $kwitansi->terima_dari }}</textarea>
+                        <textarea name="terima_dari" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">{{ $kwitansi->terima_dari }}</textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kirim Ke</label>
-                        <textarea name="kirim_ke" rows="2" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">{{ $kwitansi->kirim_ke }}</textarea>
+                        <textarea name="kirim_ke" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">{{ $kwitansi->kirim_ke }}</textarea>
                     </div>
                 </div>
 
@@ -53,15 +53,15 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tgl. Inv.</label>
-                        <input type="date" name="tgl_inv" value="{{ $kwitansi->tgl_inv ? \Carbon\Carbon::parse($kwitansi->tgl_inv)->format('Y-m-d') : '' }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <input type="date" name="tgl_inv" value="{{ $kwitansi->tgl_inv ? \Carbon\Carbon::parse($kwitansi->tgl_inv)->format('Y-m-d') : '' }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">No. PO</label>
-                        <input type="text" name="no_po" value="{{ $kwitansi->no_po }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <input type="text" name="no_po" value="{{ $kwitansi->no_po }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tgl. Kirim</label>
-                        <input type="date" name="tgl_kirim" value="{{ $kwitansi->tgl_kirim ? \Carbon\Carbon::parse($kwitansi->tgl_kirim)->format('Y-m-d') : '' }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <input type="date" name="tgl_kirim" value="{{ $kwitansi->tgl_kirim ? \Carbon\Carbon::parse($kwitansi->tgl_kirim)->format('Y-m-d') : '' }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                 </div>
 
@@ -69,26 +69,26 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">FOB</label>
-                        <input type="text" name="fob" value="{{ $kwitansi->fob }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <input type="text" name="fob" value="{{ $kwitansi->fob }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Syarat Pembayaran</label>
-                        <input type="text" name="syarat_pembayaran" value="{{ $kwitansi->syarat_pembayaran }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <input type="text" name="syarat_pembayaran" value="{{ $kwitansi->syarat_pembayaran }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                        <input type="text" name="pengirim" value="{{ $kwitansi->pengirim }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <input type="text" name="pengirim" value="{{ $kwitansi->pengirim }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Penjual</label>
-                        <input type="text" name="penjual" value="{{ $kwitansi->penjual }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <input type="text" name="penjual" value="{{ $kwitansi->penjual }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                 </div>
             </div>
 
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                <textarea name="keterangan" rows="2" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">{{ $kwitansi->keterangan }}</textarea>
+                <textarea name="keterangan" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">{{ $kwitansi->keterangan }}</textarea>
             </div>
         </div>
 
@@ -105,15 +105,14 @@
                 <table class="min-w-full divide-y divide-gray-200" id="detail-table">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Item (Kode & Deskripsi)</th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Item Code</th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">Description</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Qty</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Unit Price</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Amount</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. B/L</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. S/J</th>
-                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dept.</th>
-                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proyek</th>
-                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S/N</th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. S/J</th>
                             <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">Aksi</th>
                         </tr>
                     </thead>
@@ -121,34 +120,25 @@
                         @foreach($kwitansi->details as $index => $detail)
                         <tr class="detail-row">
                             <td class="px-2 py-2">
-                                <div class="flex flex-col gap-1">
-                                    <input type="text" name="details[{{ $index }}][item_kode]" value="{{ $detail->item_kode }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs" placeholder="Kode Item">
-                                    <input type="text" name="details[{{ $index }}][item_description]" value="{{ $detail->item_description }}" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs" placeholder="Deskripsi Item">
-                                </div>
+                                <input type="text" name="details[{{ $index }}][item_kode]" value="{{ $detail->item_kode }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode Item">
                             </td>
                             <td class="px-2 py-2">
-                                <input type="number" name="details[{{ $index }}][qty]" value="{{ $detail->qty }}" min="0" step="1" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs text-right qty-input">
+                                <input type="text" name="details[{{ $index }}][item_description]" value="{{ $detail->item_description }}" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Deskripsi Item">
                             </td>
                             <td class="px-2 py-2">
-                                <input type="text" name="details[{{ $index }}][unit_price]" value="{{ number_format($detail->unit_price, 0, '.', '') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs text-right price-input number-format">
+                                <input type="number" name="details[{{ $index }}][qty]" value="{{ $detail->qty }}" min="0" step="1" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 text-right qty-input">
+                            </td>
+                            <td class="px-2 py-2">
+                                <input type="text" name="details[{{ $index }}][unit_price]" value="{{ number_format($detail->unit_price, 0, '.', '') }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 text-right price-input number-format">
                             </td>
                             <td class="px-2 py-2">
                                 <input type="text" name="details[{{ $index }}][amount]" value="{{ number_format($detail->amount, 0, '.', '') }}" readonly class="w-full bg-gray-50 rounded-md border-gray-300 shadow-sm text-xs text-right amount-input number-format">
                             </td>
                             <td class="px-2 py-2">
-                                <input type="text" name="details[{{ $index }}][no_bl]" value="{{ $detail->no_bl }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
+                                <input type="text" name="details[{{ $index }}][no_bl]" value="{{ $detail->no_bl }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
                             </td>
                             <td class="px-2 py-2">
-                                <input type="text" name="details[{{ $index }}][no_sj]" value="{{ $detail->no_sj }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
-                            </td>
-                            <td class="px-2 py-2">
-                                <input type="text" name="details[{{ $index }}][dept]" value="{{ $detail->dept }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
-                            </td>
-                            <td class="px-2 py-2">
-                                <input type="text" name="details[{{ $index }}][proyek]" value="{{ $detail->proyek }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
-                            </td>
-                            <td class="px-2 py-2">
-                                <input type="text" name="details[{{ $index }}][sn]" value="{{ $detail->sn }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
+                                <input type="text" name="details[{{ $index }}][no_sj]" value="{{ $detail->no_sj }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
                             </td>
                             <td class="px-2 py-2 text-center">
                                 <button type="button" class="text-red-500 hover:text-red-700 btn-remove-item">
@@ -162,34 +152,25 @@
                         <!-- Fallback jika tidak ada detail -->
                         <tr class="detail-row">
                             <td class="px-2 py-2">
-                                <div class="flex flex-col gap-1">
-                                    <input type="text" name="details[0][item_kode]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs" placeholder="Kode Item">
-                                    <input type="text" name="details[0][item_description]" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs" placeholder="Deskripsi Item">
-                                </div>
+                                <input type="text" name="details[0][item_kode]" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode Item">
                             </td>
                             <td class="px-2 py-2">
-                                <input type="number" name="details[0][qty]" min="0" step="1" value="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs text-right qty-input">
+                                <input type="text" name="details[0][item_description]" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Deskripsi Item">
                             </td>
                             <td class="px-2 py-2">
-                                <input type="text" name="details[0][unit_price]" value="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs text-right price-input number-format">
+                                <input type="number" name="details[0][qty]" min="0" step="1" value="0" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 text-right qty-input">
+                            </td>
+                            <td class="px-2 py-2">
+                                <input type="text" name="details[0][unit_price]" value="0" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 text-right price-input number-format">
                             </td>
                             <td class="px-2 py-2">
                                 <input type="text" name="details[0][amount]" value="0" readonly class="w-full bg-gray-50 rounded-md border-gray-300 shadow-sm text-xs text-right amount-input number-format">
                             </td>
                             <td class="px-2 py-2">
-                                <input type="text" name="details[0][no_bl]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
+                                <input type="text" name="details[0][no_bl]" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
                             </td>
                             <td class="px-2 py-2">
-                                <input type="text" name="details[0][no_sj]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
-                            </td>
-                            <td class="px-2 py-2">
-                                <input type="text" name="details[0][dept]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
-                            </td>
-                            <td class="px-2 py-2">
-                                <input type="text" name="details[0][proyek]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
-                            </td>
-                            <td class="px-2 py-2">
-                                <input type="text" name="details[0][sn]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
+                                <input type="text" name="details[0][no_sj]" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
                             </td>
                             <td class="px-2 py-2 text-center">
                                 <button type="button" class="text-red-500 hover:text-red-700 btn-remove-item">
@@ -208,7 +189,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Akun Piutang</label>
-                    <input type="text" name="akun_piutang" value="{{ $kwitansi->akun_piutang }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <input type="text" name="akun_piutang" value="{{ $kwitansi->akun_piutang }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                 </div>
                 
                 <div class="space-y-3">
@@ -221,16 +202,16 @@
                         <label class="text-sm font-medium text-gray-700 w-1/3">Discount</label>
                         <div class="w-2/3 flex gap-2">
                             <div class="relative w-1/3">
-                                <input type="number" name="discount_persen" id="discount_persen" value="{{ $kwitansi->discount_persen }}" min="0" max="100" step="0.01" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-right pr-6">
+                                <input type="number" name="discount_persen" id="discount_persen" value="{{ $kwitansi->discount_persen }}" min="0" max="100" step="0.01" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10 text-right pr-6">
                                 <span class="absolute right-2 top-2 text-gray-500 text-sm">%</span>
                             </div>
-                            <input type="text" name="discount_nominal" id="discount_nominal" value="{{ number_format($kwitansi->discount_nominal, 0, '.', '') }}" class="w-2/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-right number-format">
+                            <input type="text" name="discount_nominal" id="discount_nominal" value="{{ number_format($kwitansi->discount_nominal, 0, '.', '') }}" class="w-2/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10 text-right number-format">
                         </div>
                     </div>
                     
                     <div class="flex items-center justify-between">
                         <label class="text-sm font-medium text-gray-700 w-1/3">Biaya Kirim</label>
-                        <input type="text" name="biaya_kirim" id="biaya_kirim" value="{{ number_format($kwitansi->biaya_kirim, 0, '.', '') }}" class="w-2/3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm text-right number-format">
+                        <input type="text" name="biaya_kirim" id="biaya_kirim" value="{{ number_format($kwitansi->biaya_kirim, 0, '.', '') }}" class="w-2/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10 text-right number-format">
                     </div>
                     
                     <div class="flex items-center justify-between pt-3 border-t border-gray-200">
@@ -340,34 +321,25 @@
             const newRow = `
                 <tr class="detail-row">
                     <td class="px-2 py-2">
-                        <div class="flex flex-col gap-1">
-                            <input type="text" name="details[${index}][item_kode]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs" placeholder="Kode Item">
-                            <input type="text" name="details[${index}][item_description]" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs" placeholder="Deskripsi Item">
-                        </div>
+                        <input type="text" name="details[${index}][item_kode]" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode Item">
                     </td>
                     <td class="px-2 py-2">
-                        <input type="number" name="details[${index}][qty]" min="0" step="1" value="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs text-right qty-input">
+                        <input type="text" name="details[${index}][item_description]" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Deskripsi Item">
                     </td>
                     <td class="px-2 py-2">
-                        <input type="text" name="details[${index}][unit_price]" value="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs text-right price-input number-format">
+                        <input type="number" name="details[${index}][qty]" min="0" step="1" value="0" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 text-right qty-input">
+                    </td>
+                    <td class="px-2 py-2">
+                        <input type="text" name="details[${index}][unit_price]" value="0" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 text-right price-input number-format">
                     </td>
                     <td class="px-2 py-2">
                         <input type="text" name="details[${index}][amount]" value="0" readonly class="w-full bg-gray-50 rounded-md border-gray-300 shadow-sm text-xs text-right amount-input number-format">
                     </td>
                     <td class="px-2 py-2">
-                        <input type="text" name="details[${index}][no_bl]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
+                        <input type="text" name="details[${index}][no_bl]" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
                     </td>
                     <td class="px-2 py-2">
-                        <input type="text" name="details[${index}][no_sj]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
-                    </td>
-                    <td class="px-2 py-2">
-                        <input type="text" name="details[${index}][dept]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
-                    </td>
-                    <td class="px-2 py-2">
-                        <input type="text" name="details[${index}][proyek]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
-                    </td>
-                    <td class="px-2 py-2">
-                        <input type="text" name="details[${index}][sn]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs">
+                        <input type="text" name="details[${index}][no_sj]" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
                     </td>
                     <td class="px-2 py-2 text-center">
                         <button type="button" class="text-red-500 hover:text-red-700 btn-remove-item">

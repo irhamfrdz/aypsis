@@ -11,20 +11,104 @@ use Carbon\Carbon;
 
 class KwitansiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $namaKapal = $request->get('nama_kapal');
+        $noVoyage = $request->get('no_voyage');
+
+        // If no filters, redirect to select ship page
+        if (!$namaKapal || !$noVoyage) {
+            return redirect()->route('kwitansi.select-ship');
+        }
+
         $kwitansis = Kwitansi::orderBy('created_at', 'desc')->get();
-        return view('kwitansi.index', compact('kwitansis'));
+        
+        // Fetch manifests for the "Draft" tab
+        $manifestQuery = \App\Models\Manifest::query();
+
+        if ($namaKapal) {
+            $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+            $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+            $manifestQuery->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal]);
+        }
+
+        if ($noVoyage) {
+            $manifestQuery->where('no_voyage', trim($noVoyage));
+        }
+
+        $manifests = $manifestQuery->orderBy('created_at', 'desc')->get();
+
+        return view('kwitansi.index', compact('kwitansis', 'manifests', 'namaKapal', 'noVoyage'));
     }
 
-    public function create()
+    public function selectShip(Request $request)
+    {
+        // Get list of ships from manifests table
+        $shipsFromManifests = \App\Models\Manifest::whereNotNull('nama_kapal')
+            ->select('nama_kapal')
+            ->distinct()
+            ->pluck('nama_kapal');
+
+        // Get ships from naik_kapal table as well
+        $shipsFromNaikKapal = \App\Models\NaikKapal::whereNotNull('nama_kapal')
+            ->select('nama_kapal')
+            ->distinct()
+            ->pluck('nama_kapal');
+
+        // Merge and get unique ship names
+        $shipNames = $shipsFromManifests->merge($shipsFromNaikKapal)
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        // Convert to objects for view compatibility
+        $ships = $shipNames->map(function ($name) {
+            return (object)['nama_kapal' => $name];
+        });
+
+        return view('kwitansi.select-ship', compact('ships'));
+    }
+
+    public function getVoyagesByShip($namaKapal)
+    {
+        $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+        $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+
+        $voyagesFromManifests = \App\Models\Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            ->whereNotNull('no_voyage')
+            ->select('no_voyage')
+            ->distinct()
+            ->pluck('no_voyage');
+
+        $voyagesFromNaikKapal = \App\Models\NaikKapal::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            ->whereNotNull('no_voyage')
+            ->select('no_voyage')
+            ->distinct()
+            ->pluck('no_voyage');
+
+        $voyages = $voyagesFromManifests->merge($voyagesFromNaikKapal)
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        return response()->json(['voyages' => $voyages]);
+    }
+
+    public function create(Request $request)
     {
         // Auto-generate Kwt No
         $latestKwitansi = Kwitansi::orderBy('id', 'desc')->first();
         $nextId = $latestKwitansi ? $latestKwitansi->id + 1 : 1;
         $kwtNo = 'KWT-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
-        return view('kwitansi.create', compact('kwtNo'));
+        $manifest = null;
+        if ($request->has('manifest_id')) {
+            $manifest = \App\Models\Manifest::find($request->manifest_id);
+        }
+
+        return view('kwitansi.create', compact('kwtNo', 'manifest'));
     }
 
     public function store(Request $request)
@@ -74,9 +158,6 @@ class KwitansiController extends Controller
                         'amount' => str_replace(',', '', $detail['amount'] ?? 0),
                         'no_bl' => $detail['no_bl'] ?? null,
                         'no_sj' => $detail['no_sj'] ?? null,
-                        'dept' => $detail['dept'] ?? null,
-                        'proyek' => $detail['proyek'] ?? null,
-                        'sn' => $detail['sn'] ?? null,
                     ]);
                 }
             }
@@ -153,9 +234,6 @@ class KwitansiController extends Controller
                         'amount' => str_replace(',', '', $detail['amount'] ?? 0),
                         'no_bl' => $detail['no_bl'] ?? null,
                         'no_sj' => $detail['no_sj'] ?? null,
-                        'dept' => $detail['dept'] ?? null,
-                        'proyek' => $detail['proyek'] ?? null,
-                        'sn' => $detail['sn'] ?? null,
                     ]);
                 }
             }

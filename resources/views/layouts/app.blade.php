@@ -1599,7 +1599,7 @@
 
                 {{-- Kwitansi --}}
                 @if($user && $user->can('kwitansi-view'))
-                    <a href="{{ route('kwitansi.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('kwitansi.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('kwitansi.select-ship') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('kwitansi.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Kwitansi / Akuntansi</span>
                     </a>
                 @endif
