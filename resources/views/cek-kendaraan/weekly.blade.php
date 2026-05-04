@@ -27,13 +27,16 @@
                     <input type="date" name="week_start" value="{{ $weekStart->format('Y-m-d') }}" 
                         class="pl-4 pr-4 py-2.5 bg-transparent border-none focus:ring-0 transition-all text-sm font-bold text-gray-700 outline-none" 
                         onchange="this.form.submit()">
+                    @if(isset($cabang))
+                        <input type="hidden" name="cabang" value="{{ $cabang }}">
+                    @endif
                 </form>
-                <a href="{{ route('admin.cek-kendaraan.weekly', ['week_start' => $weekStart->copy()->addWeek()->format('Y-m-d')]) }}" 
+                <a href="{{ route('admin.cek-kendaraan.weekly', ['week_start' => $weekStart->copy()->addWeek()->format('Y-m-d'), 'cabang' => $cabang ?? null]) }}" 
                    class="p-2.5 hover:bg-gray-50 text-gray-600 border-l border-gray-100 transition-all">
                     <i class="fas fa-chevron-right"></i>
                 </a>
             </div>
-            <a href="{{ route('admin.cek-kendaraan.weekly.export', ['week_start' => $weekStart->format('Y-m-d')]) }}" class="px-4 py-2.5 bg-emerald-600 text-white rounded-2xl shadow-sm hover:bg-emerald-700 transition-all text-sm font-bold flex items-center gap-2">
+            <a href="{{ route('admin.cek-kendaraan.weekly.export', ['week_start' => $weekStart->format('Y-m-d'), 'cabang' => $cabang ?? null]) }}" class="px-4 py-2.5 bg-emerald-600 text-white rounded-2xl shadow-sm hover:bg-emerald-700 transition-all text-sm font-bold flex items-center gap-2">
                 <i class="fas fa-file-excel"></i>
                 <span>Export Excel</span>
             </a>
@@ -41,6 +44,22 @@
                 <i class="fas fa-sync-alt"></i>
             </button>
         </div>
+    </div>
+
+    {{-- Cabang Tabs --}}
+    <div class="mb-8 flex items-center p-1.5 bg-gray-100/50 w-fit rounded-2xl border border-gray-200/50">
+        <a href="{{ route('admin.cek-kendaraan.weekly', ['week_start' => $weekStart->format('Y-m-d')]) }}" 
+           class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ !$cabang ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+            Semua Cabang
+        </a>
+        <a href="{{ route('admin.cek-kendaraan.weekly', ['week_start' => $weekStart->format('Y-m-d'), 'cabang' => 'JAKARTA']) }}" 
+           class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $cabang === 'JAKARTA' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+            <i class="fas fa-city mr-2 {{ $cabang === 'JAKARTA' ? 'text-indigo-500' : 'text-gray-400' }}"></i> Jakarta
+        </a>
+        <a href="{{ route('admin.cek-kendaraan.weekly', ['week_start' => $weekStart->format('Y-m-d'), 'cabang' => 'BATAM']) }}" 
+           class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $cabang === 'BATAM' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+            <i class="fas fa-ship mr-2 {{ $cabang === 'BATAM' ? 'text-indigo-500' : 'text-gray-400' }}"></i> Batam
+        </a>
     </div>
 
     @php
@@ -183,7 +202,14 @@
                                         {{ substr($driver->nama_lengkap, 0, 1) }}
                                     </div>
                                     <div class="ml-4">
-                                        <p class="text-sm font-bold text-gray-800 leading-tight">{{ $driver->nama_lengkap }}</p>
+                                        <div class="flex items-center gap-2">
+                                            <p class="text-sm font-bold text-gray-800 leading-tight">{{ $driver->nama_lengkap }}</p>
+                                            @if($driver->cabang)
+                                                <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter {{ $driver->cabang === 'JAKARTA' ? 'bg-indigo-100 text-indigo-700' : ($driver->cabang === 'BATAM' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700') }}">
+                                                    {{ $driver->cabang }}
+                                                </span>
+                                            @endif
+                                        </div>
                                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">NIK: {{ $driver->nik ?? 'N/A' }}</p>
                                     </div>
                                 </div>
@@ -287,7 +313,14 @@
                                 {{ substr($driver->nama_lengkap, 0, 1) }}
                             </div>
                             <div class="ml-3">
-                                <h4 class="text-sm font-bold text-gray-800 leading-tight">{{ $driver->nama_lengkap }}</h4>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm font-bold text-gray-800 leading-tight">{{ $driver->nama_lengkap }}</h4>
+                                    @if($driver->cabang)
+                                        <span class="px-1 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter {{ $driver->cabang === 'JAKARTA' ? 'bg-indigo-100 text-indigo-700' : ($driver->cabang === 'BATAM' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700') }}">
+                                            {{ substr($driver->cabang, 0, 3) }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">NIK: {{ $driver->nik ?? 'N/A' }}</p>
                             </div>
                         </div>
