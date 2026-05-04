@@ -5885,6 +5885,17 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
              'destroy' => 'can:tanda-terima-batam-delete',
          ]);
 
+    // 📦 KWITANSI MODULE
+    Route::resource('kwitansi', App\Http\Controllers\KwitansiController::class)->middleware([
+        'index'   => 'can:kwitansi-view',
+        'create'  => 'can:kwitansi-create',
+        'store'   => 'can:kwitansi-create',
+        'show'    => 'can:kwitansi-view',
+        'edit'    => 'can:kwitansi-update',
+        'update'  => 'can:kwitansi-update',
+        'destroy' => 'can:kwitansi-delete',
+    ]);
+
 });
 
 // =====================================================================

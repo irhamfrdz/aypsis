@@ -3295,6 +3295,59 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Kwitansi --}}
+                            <tr class="module-row" data-module="kwitansi">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Kwitansi / Akuntansi</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan kwitansi dan akuntansi</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="kwitansi-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="kwitansi-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="kwitansi-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="kwitansi-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Kwitansi Sub-modules --}}
+                            <tr class="submodule-row" data-parent="kwitansi">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Daftar Kwitansi</span>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <input type="checkbox" name="permissions[kwitansi][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['kwitansi']['view']) && $userMatrixPermissions['kwitansi']['view']) checked @endif>
+                                </td>
+                                <td class="text-center">
+                                    <input type="checkbox" name="permissions[kwitansi][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['kwitansi']['create']) && $userMatrixPermissions['kwitansi']['create']) checked @endif>
+                                </td>
+                                <td class="text-center">
+                                    <input type="checkbox" name="permissions[kwitansi][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['kwitansi']['update']) && $userMatrixPermissions['kwitansi']['update']) checked @endif>
+                                </td>
+                                <td class="text-center">
+                                    <input type="checkbox" name="permissions[kwitansi][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['kwitansi']['delete']) && $userMatrixPermissions['kwitansi']['delete']) checked @endif>
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Approval System --}}
                             <tr class="module-row" data-module="approval">
                                 <td class="module-header">
@@ -4047,6 +4100,9 @@
 
                 // Initialize check all audit log permissions
                 initializeCheckAllAuditLog();
+
+                // Initialize check all kwitansi permissions
+                initializeCheckAllKwitansi();
             }
 
             function initializeKaryawanPermissions() {
@@ -4215,7 +4271,8 @@
                     updateMasterTarifHeaderCheckboxes,
                     updateAktivaHeaderCheckboxes,
                     updateAktivitasLainnyaHeaderCheckboxes,
-                    updateAuditLogHeaderCheckboxes
+                    updateAuditLogHeaderCheckboxes,
+                    updateKwitansiHeaderCheckboxes
                 ];
 
                 updateFunctions.forEach(fn => {
@@ -4744,6 +4801,56 @@
                     if (headerCheckbox && auditLogCheckboxes.length > 0) {
                         const allChecked = Array.from(auditLogCheckboxes).every(cb => cb.checked);
                         const someChecked = Array.from(auditLogCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function initializeCheckAllKwitansi() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.kwitansi-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in kwitansi sub-modules
+                        const kwitansiCheckboxes = document.querySelectorAll(`[data-parent="kwitansi"] input[name*="[${permission}]"]`);
+                        kwitansiCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Kwitansi telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Kwitansi telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="kwitansi"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateKwitansiHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateKwitansiHeaderCheckboxes();
+            }
+
+            function updateKwitansiHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.kwitansi-header-checkbox[data-permission="${permission}"]`);
+                    const kwitansiCheckboxes = document.querySelectorAll(`[data-parent="kwitansi"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && kwitansiCheckboxes.length > 0) {
+                        const allChecked = Array.from(kwitansiCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(kwitansiCheckboxes).some(cb => cb.checked);
 
                         headerCheckbox.checked = allChecked;
                         headerCheckbox.indeterminate = someChecked && !allChecked;

@@ -1597,6 +1597,13 @@
                     </a>
                 @endif
 
+                {{-- Kwitansi --}}
+                @if($user && $user->can('kwitansi-view'))
+                    <a href="{{ route('kwitansi.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('kwitansi.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Kwitansi / Akuntansi</span>
+                    </a>
+                @endif
+
                 {{-- Tagihan Supir Vendor --}}
                 @if($user && $user->can('tagihan-supir-vendor-view'))
                     <a href="{{ Route::has('tagihan-supir-vendor.index') ? route('tagihan-supir-vendor.index') : '#' }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('tagihan-supir-vendor.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
