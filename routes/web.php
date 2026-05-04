@@ -5868,7 +5868,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     // 🚚 TANDA TERIMA SURAT JALAN TARIK KOSONG BATAM
     Route::get('tanda-terima-surat-jalan-tarik-kosong-batam/print/{id}', [App\Http\Controllers\TandaTerimaSuratJalanTarikKosongBatamController::class, 'print'])->name('tanda-terima-surat-jalan-tarik-kosong-batam.print');
     Route::get('tanda-terima-surat-jalan-tarik-kosong-batam/get-surat-jalan-data', [App\Http\Controllers\TandaTerimaSuratJalanTarikKosongBatamController::class, 'getSuratJalanData'])->name('tanda-terima-surat-jalan-tarik-kosong-batam.get-surat-jalan-data');
-    Route::resource('tanda-terima-surat-jalan-tarik-kosong-batam', App\Http\Controllers\TandaTerimaSuratJalanTarikKosongBatamController::class);
+    Route::resource('tanda-terima-surat-jalan-tarik-kosong-batam', App\Http\Controllers\TandaTerimaSuratJalanTarikKosongBatamController::class)->parameters([
+        'tanda-terima-surat-jalan-tarik-kosong-batam' => 'tandaTerima'
+    ]);
 
     // 📦 TANDA TERIMA BATAM
     Route::get('tanda-terima-batam/select-surat-jalan', [App\Http\Controllers\TandaTerimaBatamController::class, 'selectSuratJalan'])
