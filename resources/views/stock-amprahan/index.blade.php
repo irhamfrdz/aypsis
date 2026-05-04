@@ -181,30 +181,21 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        <th class="px-2 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider w-8">
                             <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No. Bukti</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Toko</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Tanggal</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Type Amprahan</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Barang</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Type Barang</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Jumlah</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Harga</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Adjustment</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Harga Total</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Satuan</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Lokasi</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Status Pranota</th>
-                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th class="px-2 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider w-10">No</th>
+                        <th class="px-3 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">Info Bukti</th>
+                        <th class="px-3 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">Info Barang</th>
+                        <th class="px-3 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider">Qty</th>
+                        <th class="px-3 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider">Keuangan</th>
+                        <th class="px-3 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
                     @forelse($items as $item)
                     <tr class="hover:bg-gray-50 transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-2 py-3 whitespace-nowrap">
                             @php
                                 $refItems = [];
                                 $firstUsage = $item->usages->first();
@@ -231,107 +222,79 @@
                                 data-keterangan="{{ $item->keterangan ?? '-' }}"
                             >
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-2 py-3 whitespace-nowrap text-xs text-gray-500">
                             {{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ $item->nomor_bukti ?? '-' }}
+                        
+                        <!-- Info Bukti (No. Bukti, Tanggal, Toko, Lokasi) -->
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="text-xs font-bold text-gray-900">{{ $item->nomor_bukti ?? '-' }}</div>
+                            <div class="text-[10px] text-gray-500">{{ $item->tanggal_beli ? $item->tanggal_beli->format('d M Y') : ($item->created_at ? $item->created_at->format('d M Y') : '-') }}</div>
+                            <div class="text-[10px] text-blue-600 font-semibold mt-1">{{ $item->vendorAmprahan->nama_toko ?? '-' }}</div>
+                            <div class="text-[10px] text-gray-400 mt-0.5"><i class="fas fa-map-marker-alt mr-1"></i>{{ $item->lokasi ?? '-' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $item->vendorAmprahan->nama_toko ?? '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 text-center">
-                            {{ $item->tanggal_beli ? $item->tanggal_beli->format('Y-m-d') : ($item->created_at ? $item->created_at->format('Y-m-d') : '-') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
+
+                        <!-- Info Barang -->
+                        <td class="px-3 py-3">
+                            <div class="text-xs font-bold text-gray-900">{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}</div>
+                            <div class="text-[10px] text-gray-500">Master: {{ $item->masterNamaBarangAmprahan->nama_barang ?? '-' }}</div>
+                            <div class="text-[10px] text-gray-400 mb-1.5">ID: #{{ str_pad($item->id, 5, '0', STR_PAD_LEFT) }}</div>
                             @if($item->type_amprahan == 'Stock')
-                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-blue-100 text-blue-700 uppercase tracking-wider shadow-sm">Stock</span>
+                                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-blue-100 text-blue-700 uppercase tracking-wider">Stock</span>
                             @elseif($item->type_amprahan == 'Pemakaian')
-                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-700 uppercase tracking-wider shadow-sm">Pemakaian</span>
+                                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-100 text-emerald-700 uppercase tracking-wider">Pemakaian</span>
                             @elseif($item->type_amprahan == 'Perbaikan')
-                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-orange-100 text-orange-700 uppercase tracking-wider shadow-sm">Perbaikan</span>
+                                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-orange-100 text-orange-700 uppercase tracking-wider">Perbaikan</span>
                             @elseif($item->type_amprahan == 'Perlengkapan')
-                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-purple-100 text-purple-700 uppercase tracking-wider shadow-sm">Perlengkapan</span>
+                                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-purple-100 text-purple-700 uppercase tracking-wider">Perlengkapan</span>
                             @elseif($item->type_amprahan == 'Transportasi')
-                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-pink-100 text-pink-700 uppercase tracking-wider shadow-sm">Transportasi</span>
+                                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-pink-100 text-pink-700 uppercase tracking-wider">Transportasi</span>
                             @elseif($item->type_amprahan == 'Peralatan')
-                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-cyan-100 text-cyan-700 uppercase tracking-wider shadow-sm">Peralatan</span>
+                                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-cyan-100 text-cyan-700 uppercase tracking-wider">Peralatan</span>
                             @else
-                                <span class="px-2 py-1 text-[10px] font-bold rounded-md bg-gray-100 text-gray-700 uppercase tracking-wider">-</span>
+                                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-gray-100 text-gray-700 uppercase tracking-wider">-</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-semibold text-gray-900">{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}</div>
-                            <div class="text-xs text-gray-400">ID: #{{ str_pad($item->id, 5, '0', STR_PAD_LEFT) }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $item->masterNamaBarangAmprahan->nama_barang ?? '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold {{ $item->jumlah > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ number_format($item->jumlah, 0, ',', '.') }}
+
+                        <!-- Qty -->
+                        <td class="px-3 py-3 whitespace-nowrap text-center">
+                            <span class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold {{ $item->jumlah > 0 ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200' }}">
+                                {{ number_format($item->jumlah, 0, ',', '.') }} {{ $item->satuan ?? '-' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            Rp {{ number_format($item->harga_satuan ?? 0, 0, ',', '.') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right {{ ($item->adjustment ?? 0) < 0 ? 'text-red-500' : ($item->adjustment > 0 ? 'text-green-600' : 'text-gray-400') }}">
-                            {{ ($item->adjustment ?? 0) != 0 ? (($item->adjustment > 0 ? '+' : '') . number_format($item->adjustment, 0, ',', '.')) : '0' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
+
+                        <!-- Keuangan -->
+                        <td class="px-3 py-3 whitespace-nowrap text-right">
+                            <div class="text-[10px] text-gray-500">Harga: <span class="font-semibold text-gray-700">Rp {{ number_format($item->harga_satuan ?? 0, 0, ',', '.') }}</span></div>
+                            <div class="text-[10px] mt-0.5 {{ ($item->adjustment ?? 0) < 0 ? 'text-red-500' : ($item->adjustment > 0 ? 'text-green-600' : 'text-gray-400') }}">
+                                Adj: {{ ($item->adjustment ?? 0) != 0 ? (($item->adjustment > 0 ? '+' : '') . number_format($item->adjustment, 0, ',', '.')) : '0' }}
+                            </div>
                             @php
                                 $totalItems = ($item->jumlah ?? 0) + ($item->usages_sum_jumlah ?? 0);
                                 $totalHarga = (($item->harga_satuan ?? 0) * $totalItems) + ($item->adjustment ?? 0);
                             @endphp
-                            Rp {{ number_format($totalHarga, 0, ',', '.') }}
+                            <div class="text-[11px] font-bold text-indigo-700 mt-1.5 border-t border-gray-100 pt-1">
+                                Total: Rp {{ number_format($totalHarga, 0, ',', '.') }}
+                            </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $item->satuan ?? '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $item->lokasi ?? '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            @if($item->status_pranota == 'Sudah')
-                                <span class="px-2.5 py-1 text-[10px] font-black rounded-full bg-indigo-600 text-white uppercase tracking-tighter shadow-sm">Sudah Dibuat Pranota</span>
-                            @else
-                                <span class="px-2.5 py-1 text-[10px] font-black rounded-full bg-gray-100 text-gray-400 uppercase tracking-tighter shadow-sm border border-gray-200">Belum Dibuat Pranota</span>
-                            @endif
 
-                            @if(Auth::check() && (strtolower(Auth::user()->username ?? '') == 'kiky' || strtolower(Auth::user()->name ?? '') == 'kiky'))
-                                <form action="{{ route('stock-amprahan.toggle-pranota-status', $item->id) }}" method="POST" class="inline mt-1 block">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="text-[9px] text-gray-400 hover:text-indigo-600 transition-colors uppercase font-bold tracking-tight" onclick="return confirm('Apakah Anda yakin ingin mengubah status pranota barang ini?')">
-                                        (Ubah Status)
-                                    </button>
-                                </form>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex items-center justify-end space-x-2">
-                                <button type="button" onclick="openHistoryModal('{{ $item->id }}', '{{ str_replace("'", "\\'", $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-')) }}')" class="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors" title="Riwayat Pengambilan">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
+                        <!-- Aksi -->
+                        <td class="px-3 py-3 whitespace-nowrap text-right text-xs font-medium">
+                            <div class="flex items-center justify-end space-x-1">
+                                <button type="button" onclick="openHistoryModal('{{ $item->id }}', '{{ str_replace("'", "\\'", $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-')) }}')" class="p-1.5 text-yellow-600 hover:bg-yellow-50 rounded transition-colors" title="Riwayat Pengambilan">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 </button>
-                                <button type="button" onclick="openUsageModal('{{ $item->id }}', '{{ str_replace("'", "\\'", $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-')) }}', '{{ $item->jumlah }}', '{{ str_replace("'", "\\'", $item->satuan ?? '-') }}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Ambil Barang">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
-                                    </svg>
+                                <button type="button" onclick="openUsageModal('{{ $item->id }}', '{{ str_replace("'", "\\'", $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-')) }}', '{{ $item->jumlah }}', '{{ str_replace("'", "\\'", $item->satuan ?? '-') }}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Ambil Barang">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
                                 </button>
-                                <a href="{{ route('stock-amprahan.edit', $item->id) }}" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit Data">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                     </svg>
+                                <a href="{{ route('stock-amprahan.edit', $item->id) }}" class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Edit Data">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                  </a>
                                 <form action="{{ route('stock-amprahan.destroy', $item->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Data">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
+                                    <button type="submit" class="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors" title="Hapus Data">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
                             </div>
@@ -339,7 +302,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="11" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
