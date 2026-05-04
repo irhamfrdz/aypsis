@@ -1187,13 +1187,6 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                          'penerima' => $tandaTerimaTanpaSuratJalan->penerima,
                          'updated_at' => now()
                      ]);
-                     
-                     // Naik Kapal
-                     DB::table('naik_kapal')->whereIn('prospek_id', $prospekIds)->update([
-                         'pengirim' => $tandaTerimaTanpaSuratJalan->pengirim,
-                         'penerima' => $tandaTerimaTanpaSuratJalan->penerima,
-                         'updated_at' => now()
-                     ]);
                 }
             }
 
