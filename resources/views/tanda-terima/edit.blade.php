@@ -712,13 +712,20 @@
                                     </svg>
                                 </button>
                                 @endif
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                                         <input type="text" name="nama_barang[]"
                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 text-sm"
                                                placeholder="Nama barang"
                                                value="{{ old('nama_barang.' . $index, $item['nama_barang'] ?? '') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran</label>
+                                        <input type="text" name="ukuran[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 text-sm"
+                                               placeholder="Contoh: 40x40"
+                                               value="{{ old('ukuran.' . $index, $item['ukuran'] ?? '') }}">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah</label>
@@ -781,12 +788,18 @@
                         @else
                             {{-- Default empty row if no dimensi items exist --}}
                             <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                                         <input type="text" name="nama_barang[]"
                                                class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 text-sm"
                                                placeholder="Nama barang" value="{{ old('nama_barang.0') }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran</label>
+                                        <input type="text" name="ukuran[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 text-sm"
+                                               placeholder="Contoh: 40x40" value="{{ old('ukuran.0') }}">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah</label>
@@ -1135,10 +1148,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                             <input type="text" name="nama_barang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Nama barang">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran</label>
+                            <input type="text" name="ukuran[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 text-sm" placeholder="Contoh: 40x40">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah</label>

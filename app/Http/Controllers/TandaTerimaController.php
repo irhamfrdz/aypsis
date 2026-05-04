@@ -622,6 +622,7 @@ class TandaTerimaController extends Controller
                 $panjangArray = $request->panjang ?? [];
                 $lebarArray = $request->lebar ?? [];
                 $tinggiArray = $request->tinggi ?? [];
+                $ukuranArray = $request->ukuran ?? [];
                 $meterKubikArray = $request->meter_kubik ?? [];
                 $tonaseArray = $request->tonase ?? [];
                 
@@ -640,6 +641,7 @@ class TandaTerimaController extends Controller
                         'panjang' => isset($panjangArray[$index]) && $panjangArray[$index] !== '' ? round((float) $panjangArray[$index], 3) : null,
                         'lebar' => isset($lebarArray[$index]) && $lebarArray[$index] !== '' ? round((float) $lebarArray[$index], 3) : null,
                         'tinggi' => isset($tinggiArray[$index]) && $tinggiArray[$index] !== '' ? round((float) $tinggiArray[$index], 3) : null,
+                        'ukuran' => $ukuranArray[$index] ?? null,
                         'meter_kubik' => isset($meterKubikArray[$index]) && $meterKubikArray[$index] !== '' ? round((float) $meterKubikArray[$index], 3) : null,
                         'tonase' => isset($tonaseArray[$index]) && $tonaseArray[$index] !== '' ? round((float) $tonaseArray[$index], 3) : null,
                     ];
@@ -657,6 +659,7 @@ class TandaTerimaController extends Controller
                 $tandaTerima->panjang = $firstDimensi['panjang'];
                 $tandaTerima->lebar = $firstDimensi['lebar'];
                 $tandaTerima->tinggi = $firstDimensi['tinggi'];
+                $tandaTerima->ukuran = $firstDimensi['ukuran'];
                 $tandaTerima->meter_kubik = $firstDimensi['meter_kubik'];
                 $tandaTerima->tonase = $firstDimensi['tonase'];
             } else {
@@ -1170,6 +1173,7 @@ class TandaTerimaController extends Controller
                 $panjangArray = $request->panjang ?? [];
                 $lebarArray = $request->lebar ?? [];
                 $tinggiArray = $request->tinggi ?? [];
+                $ukuranArray = $request->ukuran ?? [];
                 $meterKubikArray = $request->meter_kubik ?? [];
                 $tonaseArray = $request->tonase ?? [];
                 
@@ -1188,6 +1192,7 @@ class TandaTerimaController extends Controller
                         'panjang' => isset($panjangArray[$index]) && $panjangArray[$index] !== '' ? round((float) $panjangArray[$index], 3) : null,
                         'lebar' => isset($lebarArray[$index]) && $lebarArray[$index] !== '' ? round((float) $lebarArray[$index], 3) : null,
                         'tinggi' => isset($tinggiArray[$index]) && $tinggiArray[$index] !== '' ? round((float) $tinggiArray[$index], 3) : null,
+                        'ukuran' => $ukuranArray[$index] ?? null,
                         'meter_kubik' => isset($meterKubikArray[$index]) && $meterKubikArray[$index] !== '' ? round((float) $meterKubikArray[$index], 3) : null,
                         'tonase' => isset($tonaseArray[$index]) && $tonaseArray[$index] !== '' ? round((float) $tonaseArray[$index], 3) : null,
                     ];
@@ -1209,6 +1214,7 @@ class TandaTerimaController extends Controller
                 'panjang' => is_array($request->panjang) ? null : ($request->panjang ? round((float) $request->panjang, 3) : null),
                 'lebar' => is_array($request->lebar) ? null : ($request->lebar ? round((float) $request->lebar, 3) : null),
                 'tinggi' => is_array($request->tinggi) ? null : ($request->tinggi ? round((float) $request->tinggi, 3) : null),
+                'ukuran' => is_array($request->ukuran) ? ($request->ukuran[0] ?? null) : $request->ukuran,
                 'meter_kubik' => is_array($request->meter_kubik) ? null : ($request->meter_kubik ? round((float) $request->meter_kubik, 3) : null),
                 'tonase' => is_array($request->tonase) ? null : ($request->tonase ? round((float) $request->tonase, 3) : null),
                 'tujuan_pengiriman' => $request->tujuan_pengiriman,

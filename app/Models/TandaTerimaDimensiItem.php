@@ -19,6 +19,7 @@ class TandaTerimaDimensiItem extends Model
         'panjang',
         'lebar',
         'tinggi',
+        'ukuran',
         'meter_kubik',
         'tonase',
         'item_order'

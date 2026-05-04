@@ -48,6 +48,7 @@ class TandaTerima extends Model
         'panjang',
         'lebar',
         'tinggi',
+        'ukuran',
         'meter_kubik',
         'tonase',
         'dimensi_details',

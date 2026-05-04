@@ -480,6 +480,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'lebar.*' => 'nullable|numeric|min:0',
             'tinggi' => 'nullable|array',
             'tinggi.*' => 'nullable|numeric|min:0',
+            'ukuran' => 'nullable|array',
+            'ukuran.*' => 'nullable|string|max:255',
             'meter_kubik' => 'nullable|array',
             'meter_kubik.*' => 'nullable|numeric|min:0',
             'tonase' => 'nullable|array',
@@ -540,6 +542,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 count($validated['panjang'] ?? []),
                 count($validated['lebar'] ?? []),
                 count($validated['tinggi'] ?? []),
+                count($validated['ukuran'] ?? []),
                 count($validated['meter_kubik'] ?? []),
                 count($validated['tonase'] ?? [])
             );
@@ -550,6 +553,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $panjangArray = [];
             $lebarArray = [];
             $tinggiArray = [];
+            $ukuranArray = [];
             $meterKubikArray = [];
             $tonaseArray = [];
             
@@ -560,6 +564,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $panjangArray[$idx] = isset($validated['panjang'][$idx]) && is_numeric($validated['panjang'][$idx]) ? (float)$validated['panjang'][$idx] : null;
                 $lebarArray[$idx] = isset($validated['lebar'][$idx]) && is_numeric($validated['lebar'][$idx]) ? (float)$validated['lebar'][$idx] : null;
                 $tinggiArray[$idx] = isset($validated['tinggi'][$idx]) && is_numeric($validated['tinggi'][$idx]) ? (float)$validated['tinggi'][$idx] : null;
+                $ukuranArray[$idx] = isset($validated['ukuran'][$idx]) ? trim((string)$validated['ukuran'][$idx]) : null;
                 $meterKubikArray[$idx] = isset($validated['meter_kubik'][$idx]) && is_numeric($validated['meter_kubik'][$idx]) ? (float)$validated['meter_kubik'][$idx] : null;
                 $tonaseArray[$idx] = isset($validated['tonase'][$idx]) && is_numeric($validated['tonase'][$idx]) ? (float)$validated['tonase'][$idx] : null;
             }
@@ -586,7 +591,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
             // Remove array fields from main validation data
             unset($validated['nama_barang'], $validated['jumlah'], $validated['satuan']);
-            unset($validated['panjang'], $validated['lebar'], $validated['tinggi']);
+            unset($validated['panjang'], $validated['lebar'], $validated['tinggi'], $validated['ukuran']);
             unset($validated['meter_kubik'], $validated['tonase']);
 
             // Set backward compatibility fields from first item or defaults
@@ -601,6 +606,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             }
             
             // Set total volume and weight from arrays
+            if (!empty($tinggiArray)) {
+                $validated['ukuran'] = $ukuranArray[0] ?? null;
+            }
             if (!empty($meterKubikArray)) {
                 $validated['meter_kubik'] = array_sum(array_filter($meterKubikArray, 'is_numeric'));
             }
@@ -636,11 +644,12 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $panjang = $panjangArray[$i] ?? null;
                 $lebar = $lebarArray[$i] ?? null;
                 $tinggi = $tinggiArray[$i] ?? null;
+                $ukuran = $ukuranArray[$i] ?? null;
                 $meterKubik = $meterKubikArray[$i] ?? null;
                 $tonase = $tonaseArray[$i] ?? null;
 
                 // Only create if at least one field has meaningful data (not all nulls)
-                if (!is_null($namaBarang) || !is_null($panjang) || !is_null($lebar) || !is_null($tinggi) || !is_null($meterKubik) || !is_null($tonase)) {
+                if (!is_null($namaBarang) || !is_null($panjang) || !is_null($lebar) || !is_null($tinggi) || !is_null($ukuran) || !is_null($meterKubik) || !is_null($tonase)) {
                     Log::info('Creating dimensi item', [
                         'index' => $i,
                         'namaBarang' => $namaBarang,
@@ -659,6 +668,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         'panjang' => $panjang,
                         'lebar' => $lebar,
                         'tinggi' => $tinggi,
+                        'ukuran' => $ukuran,
                         'meter_kubik' => $meterKubik,
                         'tonase' => $tonase,
                         'item_order' => $i
