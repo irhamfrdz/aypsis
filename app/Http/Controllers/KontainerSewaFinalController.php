@@ -101,17 +101,13 @@ class KontainerSewaFinalController extends Controller
                 'total' => (float)$i->grand_total,
                 'status' => $i->status
             ]),
-            'audits_map' => BtmSewaAudit::with(['transaction', 'pranota'])->whereNotNull('pranota_id')->get()->mapWithKeys(function($i) {
-                if ($i->transaction_key) {
-                    $idp = $i->transaction_key . '-' . $i->period_name;
-                } else {
-                    $x = $i->transaction ?: \App\Models\BtmSewaTransaction::where('unit_number', $i->unit_number)->orderBy('date_in', 'desc')->first();
-                    $idp = ($x ? ($x->unit_number . $this->toExcelSerial($x->date_in)) : $i->unit_number) . '-' . $i->period_name;
-                }
-                return [$idp => [
+            'audits_map' => BtmSewaAudit::with(['transaction', 'pranota'])->whereNotNull('pranota_id')->get()->map(function($i) {
+                return [
+                    'unit' => $i->unit_number,
+                    'period' => $i->period_name,
                     'nomor' => $i->pranota->nomor ?? '-',
                     'status' => $i->pranota->status ?? '-',
-                ]];
+                ];
             })->toArray(),
             'history' => BtmSewaPayment::with('pranotas.vendor')->latest()->get()->map(fn($i) => [
                 'id' => $i->id,

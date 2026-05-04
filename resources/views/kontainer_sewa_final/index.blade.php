@@ -324,7 +324,7 @@ function smartDate(v) {
     return `${d.toString().padStart(2,'0')}/${mNames[m-1]}/${y}`;
 }
 
-let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:{}, history:[] };
+let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[], history:[] };
 let pgU = 1, pgX = 1; const rPP = 15;
 let expAudit = null;
 let currentAuditTab = 'outstanding';
@@ -354,8 +354,7 @@ function genPeriode(x, idInduk) {
         const safeId = idp.replace(/[\/\s-]/g, '_');
         
         // Status checks
-        console.log('DEBUG idp:', idp, '| audits_map keys:', Object.keys(db.audits_map), '| match:', db.audits_map[idp]);
-        const pInfo = db.audits_map[idp];
+        const pInfo = db.audits_map.find(a => a.unit === x.no && a.period === masa_p);
         const inCart = db.cart.find(c => c.idp === idp);
         
         let stPranota = '-';
@@ -511,7 +510,7 @@ function fmtRibuan(n) { return Math.round(n).toLocaleString('id-ID'); }
 function inputRibuan(el) { let v = el.value.replace(/\D/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; }
 function cleanNum(s) { return parseInt(s.toString().replace(/[^0-9-]/g, '')) || 0; }
 function ensureDbFields() {
-    const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:{}, history:[] };
+    const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[], history:[] };
     if (!window.db || typeof window.db !== 'object') window.db = d;
     Object.keys(d).forEach(k => { if (db[k] === undefined || db[k] === null) db[k] = d[k]; });
 }
@@ -885,7 +884,7 @@ window.onload = () => {
         // Selalu sinkronkan data hasil audit & pranota dari server
         db.p = initial.p || [];
         db.cart = initial.cart || []; 
-        db.audits_map = initial.audits_map || {};
+        db.audits_map = initial.audits_map || [];
         db.history = initial.history || [];
 
         // Gunakan data server sebagai sumber utama (karena sudah auto-sync)
@@ -946,7 +945,7 @@ function getAllOutstandingPeriods(x, idInduk) {
         const nilaiAYPSIS = (diff >= 28) ? biayaSnapshot : Math.round((diff/30)*biayaSnapshot);
         const masa_p = `${fmtTglDB(sP)} - ${fmtTglDB(eP)}`;
         const idp = `${idInduk}-${masa_p}`;
-        const isAssigned = idp in db.audits_map;
+        const isAssigned = db.audits_map.some(a => a.unit === x.no && a.period === masa_p);
 
         if (!isAssigned && !db.cart.some(c => c.idp === idp)) {
             periods.push({
