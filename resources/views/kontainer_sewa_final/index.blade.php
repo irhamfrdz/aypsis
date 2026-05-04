@@ -324,7 +324,7 @@ function smartDate(v) {
     return `${d.toString().padStart(2,'0')}/${mNames[m-1]}/${y}`;
 }
 
-let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[], history:[] };
+let db = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:{}, history:[] };
 let pgU = 1, pgX = 1; const rPP = 15;
 let expAudit = null;
 let currentAuditTab = 'outstanding';
@@ -337,7 +337,7 @@ function genPeriode(x, idInduk) {
     const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z) : null;
     const biayaSnapshot = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0));
     
-    let h = `<table style="width:100%; background:white; border-radius: 8px; margin-top: 10px;"><thead><tr style="background:#f1f5f9"><th>Periode</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Alasan Selisih</th><th>Aksi</th></tr></thead>`;
+    let h = `<table style="width:100%; background:white; border-radius: 8px; margin-top: 10px;"><thead><tr style="background:#f1f5f9"><th>Periode</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Alasan Selisih</th><th>St. Pranota</th><th>St. Bayar</th><th>Aksi</th></tr></thead>`;
     let curr = new Date(dAmbil), p = 1;
     
     while (true) {
@@ -352,11 +352,36 @@ function genPeriode(x, idInduk) {
         const masa_p = `${fmtTglDB(sP)} - ${fmtTglDB(eP)}`;
         const idp = `${idInduk}-${masa_p}`;
         const safeId = idp.replace(/[\/\s-]/g, '_');
-        const isAssigned = db.audits_map.includes(idp);
+        
+        // Status checks
+        const pInfo = db.audits_map[idp];
+        const inCart = db.cart.find(c => c.idp === idp);
+        
+        let stPranota = '-';
+        let stBayar = '-';
+        let actionBtn = '';
 
-        if(!isAssigned && !db.cart.some(c => c.idp === idp)) {
-            h += `<tr><td>Bulan ke-${p}</td><td>${fmtTglLay(sP)} - ${fmtTglLay(eP)}</td><td>${fmtRibuan(nilaiAYPSIS)}</td><td><input type="text" id="v-${safeId}" value="${fmtRibuan(nilaiAYPSIS)}" oninput="inputRibuan(this);onInputBill('${idp}','${safeId}',${nilaiAYPSIS})" style="width:110px; padding: 4px 8px;"></td><td><div id="note-wrapper-${safeId}" style="display:none;"><input type="text" id="n-${safeId}" placeholder="Wajib diisi..." oninput="onInputBill('${idp}','${safeId}',${nilaiAYPSIS})" style="width:180px; font-size:11px; padding:6px 10px; border:1px solid #ddd; border-radius:6px; outline:none;"></div></td><td><button id="btn-${safeId}" class="btn btn-green" onclick="saveToCart('${idp}','${safeId}','${x.no}','${masa_p}',${nilaiAYPSIS})">+</button></td></tr>`;
+        if (pInfo) {
+            stPranota = `<span style="font-size:10px; font-weight:bold; color:var(--primary);">${pInfo.nomor}</span>`;
+            stBayar = `<span style="font-size:10px; font-weight:bold; color:${pInfo.status==='PAID'?'var(--success)':'var(--danger)'}">${pInfo.status}</span>`;
+            actionBtn = `<button class="btn" style="padding:4px 8px; background:#e2e8f0; color:#64748b; cursor:not-allowed;" disabled>LOCKED</button>`;
+        } else if (inCart) {
+            stPranota = `<span style="font-size:10px; font-weight:bold; color:var(--success);">KERANJANG</span>`;
+            actionBtn = `<button class="btn" style="padding:4px 8px; background:#e2e8f0; color:#64748b; cursor:not-allowed;" disabled>IN CART</button>`;
+        } else {
+            actionBtn = `<button id="btn-${safeId}" class="btn btn-green" onclick="saveToCart('${idp}','${safeId}','${x.no}','${masa_p}',${nilaiAYPSIS})">+</button>`;
         }
+
+        h += `<tr>
+            <td>Bulan ke-${p}</td>
+            <td>${fmtTglLay(sP)} - ${fmtTglLay(eP)}</td>
+            <td>${fmtRibuan(nilaiAYPSIS)}</td>
+            <td>${pInfo || inCart ? fmtRibuan(inCart ? inCart.vendorBill : nilaiAYPSIS) : `<input type="text" id="v-${safeId}" value="${fmtRibuan(nilaiAYPSIS)}" oninput="inputRibuan(this);onInputBill('${idp}','${safeId}',${nilaiAYPSIS})" style="width:110px; padding: 4px 8px;">`}</td>
+            <td>${pInfo || inCart ? (inCart ? (inCart.note || '-') : '-') : `<div id="note-wrapper-${safeId}" style="display:none;"><input type="text" id="n-${safeId}" placeholder="Wajib diisi..." oninput="onInputBill('${idp}','${safeId}',${nilaiAYPSIS})" style="width:180px; font-size:11px; padding:6px 10px; border:1px solid #ddd; border-radius:6px; outline:none;"></div>`}</td>
+            <td>${stPranota}</td>
+            <td>${stBayar}</td>
+            <td>${actionBtn}</td>
+        </tr>`;
         
         if (x.e && eP >= dAkhir) break; 
         curr.setMonth(curr.getMonth() + 1); p++;
@@ -485,9 +510,9 @@ function fmtRibuan(n) { return Math.round(n).toLocaleString('id-ID'); }
 function inputRibuan(el) { let v = el.value.replace(/\D/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; }
 function cleanNum(s) { return parseInt(s.toString().replace(/[^0-9-]/g, '')) || 0; }
 function ensureDbFields() {
-    const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[], history:[] };
+    const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:{}, history:[] };
     if (!window.db || typeof window.db !== 'object') window.db = d;
-    Object.keys(d).forEach(k => { if (!Array.isArray(db[k])) db[k] = d[k]; });
+    Object.keys(d).forEach(k => { if (db[k] === undefined || db[k] === null) db[k] = d[k]; });
 }
 
 // --- FUNGSI UPDATE & RENDER ---
@@ -534,25 +559,10 @@ function switchAuditTab(tab) {
     if(tab === 'bulk-lunas') renderBulkLunas();
 }
 
-function hasOutstandingPeriods(x, idInduk) {
+function hasPeriods(x, idInduk) {
     const dAmbil = parseD(x.s); 
     const dAkhir = x.e ? parseD(x.e) : new Date(); 
-    let curr = new Date(dAmbil), p = 1;
-    
-    while (true) {
-        let sP = new Date(curr);
-        let eP = new Date(curr.getFullYear(), curr.getMonth() + 1, curr.getDate() - 1);
-        if (sP > dAkhir) break; 
-        if (x.e && eP > dAkhir) eP = dAkhir;
-
-        const masa_p = `${fmtTglDB(sP)} - ${fmtTglDB(eP)}`;
-        const idp = `${idInduk}-${masa_p}`;
-        if(!db.audits_map.includes(idp) && !db.cart.some(c => c.idp === idp)) return true;
-        
-        if (x.e && eP >= dAkhir) break; 
-        curr.setMonth(curr.getMonth() + 1); p++;
-    }
-    return false;
+    return dAmbil <= dAkhir; 
 }
 
 function renderAudit() {
@@ -562,7 +572,7 @@ function renderAudit() {
     
     body.innerHTML = db.x.filter(x => {
         const idTrx = x.no + toExcelSerial(x.s);
-        return x.no.includes(s) && hasOutstandingPeriods(x, idTrx);
+        return x.no.includes(s) && hasPeriods(x, idTrx);
     }).map(x => {
         const idTrx = x.no + toExcelSerial(x.s);
         const isExp = expAudit === idTrx;
@@ -874,7 +884,7 @@ window.onload = () => {
         // Selalu sinkronkan data hasil audit & pranota dari server
         db.p = initial.p || [];
         db.cart = initial.cart || []; 
-        db.audits_map = initial.audits_map || [];
+        db.audits_map = initial.audits_map || {};
         db.history = initial.history || [];
 
         // Gunakan data server sebagai sumber utama (karena sudah auto-sync)
@@ -935,7 +945,7 @@ function getAllOutstandingPeriods(x, idInduk) {
         const nilaiAYPSIS = (diff >= 28) ? biayaSnapshot : Math.round((diff/30)*biayaSnapshot);
         const masa_p = `${fmtTglDB(sP)} - ${fmtTglDB(eP)}`;
         const idp = `${idInduk}-${masa_p}`;
-        const isAssigned = db.audits_map.includes(idp);
+        const isAssigned = idp in db.audits_map;
 
         if (!isAssigned && !db.cart.some(c => c.idp === idp)) {
             periods.push({
