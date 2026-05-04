@@ -14,35 +14,34 @@
             font-family: Arial, Helvetica, sans-serif;
             font-size: 14px; /* increased base font size */
         }
-        /* Grouped info containers to prevent overlapping */
-        .left-info {
+        /* Positioned pengirim data */
+        .pengirim {
             position: absolute;
-            top: 7.5cm;
+            top: 7.5cm; /* 1cm lower: 7.5cm */
+            left: 4.5cm;  /* 1cm more to the right: 4.5cm */
+            width: 12cm; /* reasonable width for address area */
+            white-space: pre-wrap; /* keep new lines */
+            line-height: 1.2;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        /* Positioned penerima data - below pengirim */
+        .penerima {
+            position: absolute;
+            top: 8.5cm; /* Reverted/Adjusted to be closer to pengirim as per visual */
             left: 4.5cm;
             width: 12cm;
-            display: flex;
-            flex-direction: column;
-            gap: 0.4cm; /* Fixed gap between blocks */
-        }
-        .left-info div {
             white-space: pre-wrap;
             line-height: 1.2;
             font-size: 14px;
             font-weight: bold;
         }
-        .right-info {
+        .penerima-cp {
             position: absolute;
-            top: 7.5cm;
-            left: 20.25cm;
-            display: flex;
-            flex-direction: column;
-            gap: 0.3cm;
-            text-align: left;
-        }
-        .right-info div {
-            white-space: nowrap;
-            font-weight: bold;
-            font-size: 12px;
+            top: 9.3cm; /* Raised from 9.8cm */
+            left: 4.5cm;
+            font-size: 14px; /* Same as consignee */
+            font-weight: bold; /* Same as consignee */
         }
         /* Positioned container number */
         .no-kontainer {
@@ -92,21 +91,52 @@
             font-size: 13px;
             font-weight: bold;
         }
+        /* Positioned nama kapal */
+        .nama-kapal {
+            position: absolute;
+            top: 7.5cm; /* aligned with pengirim: 7.5cm */
+            left: 20.25cm; /* 2cm more to the right: 20.25cm */
+            white-space: nowrap;
+            font-weight: bold;
+            font-size: 12px; /* smaller font */
+            text-align: left;
+        }
         /* Positioned nomor voyage (format: nomor_voyage/BULAN_ROMAWI/TAHUN) */
         .no-voyage {
             position: absolute;
-            top: 6.2cm;
-            left: 12.75cm;
+            top: 6.2cm; /* lowered by 0.2cm */
+            left: 12.75cm; /* 1.5cm more to the right: 12.75cm */
             white-space: nowrap;
             font-weight: bold;
             font-size: 14px;
             text-align: left;
         }
+        /* Positioned pelabuhan route (asal - tujuan) */
+        .pelabuhan-route {
+            position: absolute;
+            top: 8.5cm; /* moved up another 1cm */
+            left: 20.25cm; /* aligned with nama kapal */
+            max-width: 11.5cm;
+            white-space: nowrap;
+            font-size: 12px; /* smaller font */
+            font-weight: bold;
+            text-align: left;
+        }
+        /* Positioned tanggal below nama kapal */
+        .tanggal-ba {
+            position: absolute;
+            top: 8cm; /* moved up 1cm */
+            left: 20.25cm; /* aligned with nama kapal */
+            white-space: nowrap;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: left;
+        }
         /* Positioned name 'Alex' from bottom-right */
         .alex-name {
             position: absolute;
-            bottom: 2.75cm;
-            right: 3.5cm;
+            bottom: 2.75cm; /* 2.75cm from bottom */
+            right: 3.5cm; /* 3.5cm from right */
             font-weight: 600;
             font-size: 14px;
             white-space: nowrap;
@@ -119,22 +149,22 @@
     </style>
 </head>
 <body>
-    <div class="left-info">
-        {{-- Pengirim --}}
-        @if(isset($baData) && !empty($baData->pengirim))
-            <div>{!! nl2br(e($baData->pengirim)) !!}</div>
-        @endif
-
-        {{-- Penerima --}}
-        @if(isset($baData) && !empty($baData->penerima))
-            <div>{!! nl2br(e($baData->penerima)) !!}</div>
-        @endif
-
-        {{-- Contact Person --}}
-        @if(isset($baData) && !empty($baData->contact_person))
-            <div>CP: {{ e($baData->contact_person) }}</div>
-        @endif
-    </div>
+    {{-- Pengirim (ambil dari tabel bls via $baData->pengirim) --}}
+    @if(isset($baData) && !empty($baData->pengirim))
+        <div class="pengirim">{!! nl2br(e($baData->pengirim)) !!}</div>
+    @else
+        <div class="pengirim">&nbsp;</div>
+    @endif
+    {{-- Penerima (ambil dari tabel bls via $baData->penerima) --}}
+    @if(isset($baData) && !empty($baData->penerima))
+        <div class="penerima">{!! nl2br(e($baData->penerima)) !!}</div>
+    @else
+        <div class="penerima">&nbsp;</div>
+    @endif
+    {{-- Contact Person (separated div to not affect consignee position) --}}
+    @if(isset($baData) && !empty($baData->contact_person))
+        <div class="penerima-cp">CP: {{ e($baData->contact_person) }}</div>
+    @endif
     {{-- Nomor Kontainer (ambil dari tabel bls via $baData->no_kontainer) --}}
     @if(isset($baData) && !empty($baData->no_kontainer))
         <div class="no-kontainer">{{ e($baData->no_kontainer) }}</div>
@@ -192,54 +222,12 @@
     {{-- Second Unit Text (same logic as first) --}}
     <div class="unit-text-2">{{ e($unitText) }}</div>
     @endif
-    <div class="right-info">
-        {{-- Nama Kapal --}}
-        @if(isset($baData) && !empty($baData->nama_kapal))
-            <div>{{ e($baData->nama_kapal) }}</div>
-        @endif
-
-        {{-- Tanggal BA --}}
-        @php
-            $tanggalBa = '';
-            if (isset($baData->manifest) && !empty($baData->manifest->tanggal_berangkat)) {
-                try {
-                    $tanggalBa = \Carbon\Carbon::parse($baData->manifest->tanggal_berangkat)->format('d-M-Y');
-                } catch (\Exception $e) {}
-            }
-            if (empty($tanggalBa) && isset($baData->tanggal_ba)) {
-                try {
-                    $tanggalBa = \Carbon\Carbon::parse($baData->tanggal_ba)->format('d-M-Y');
-                } catch (\Exception $e) {}
-            }
-        @endphp
-        @if(!empty($tanggalBa))
-            <div>{{ e($tanggalBa) }}</div>
-        @endif
-
-        {{-- Pelabuhan Route --}}
-        @php
-            $mapPelabuhan = function ($value) {
-                $v = trim((string) ($value ?? ''));
-                if ($v === '') return '';
-                $clean = mb_strtolower(preg_replace('/[^a-z0-9 ]+/i', ' ', $v));
-                if (in_array($clean, ['sunda kelapa', 'sundakelapa', 'sunda_kelapa', 'sunda-kelapa'], true)) return 'Jakarta';
-                return $v;
-            };
-            $voyageCheck = strtolower($baData->no_voyage ?? '');
-            if (str_contains($voyageCheck, 'bj')) {
-                $pelabuhanText = 'Batam - Jakarta';
-            } elseif (str_contains($voyageCheck, 'pj')) {
-                $pelabuhanText = 'Pinang - Jakarta';
-            } else {
-                $asal = $mapPelabuhan($baData->pelabuhan_asal ?? '');
-                $tujuan = $mapPelabuhan($baData->pelabuhan_tujuan ?? '');
-                $pelabuhanText = ($asal !== '' || $tujuan !== '') ? trim(($asal ?? '') . ' - ' . ($tujuan ?? '')) : '';
-            }
-        @endphp
-        @if(!empty($pelabuhanText)) 
-            <div>{{ e($pelabuhanText) }}</div>
-        @endif
-    </div>
+    {{-- Nama Kapal (ambil dari tabel bls via $baData->nama_kapal) --}}
+    @if(isset($baData) && !empty($baData->nama_kapal))
+        <div class="nama-kapal">{{ e($baData->nama_kapal) }}</div>
+    @else
+        <div class="nama-kapal">&nbsp;</div>
+    @endif
     {{-- Nomor Voyage (format: nomor_voyage/BULAN_ROMAWI/TAHUN) --}}
     @php
         $voyageNumber = $baData->no_voyage ?? '';
@@ -265,6 +253,66 @@
         <div class="no-voyage">{{ e($voyageFormatted) }}</div>
     @else
         <div class="no-voyage">&nbsp;</div>
+    @endif
+    {{-- Pelabuhan Asal - Pelabuhan Tujuan (ambil dari tabel bls via $baData->pelabuhan_asal dan $baData->pelabuhan_tujuan) --}}
+    @php
+        // Helper to map 'sunda kelapa' (any case/format) to 'Jakarta'
+        $mapPelabuhan = function ($value) {
+            $v = trim((string) ($value ?? ''));
+            if ($v === '') return '';
+            $clean = mb_strtolower(preg_replace('/[^a-z0-9 ]+/i', ' ', $v));
+            $clean = preg_replace('/\s+/', ' ', $clean);
+            if (in_array($clean, ['sunda kelapa', 'sundakelapa', 'sunda_kelapa', 'sunda-kelapa'], true)) {
+                return 'Jakarta';
+            }
+            return $v;
+        };
+
+        // Check if voyage contains 'bj' (case-insensitive) -> Batam - Jakarta
+        $voyageCheck = strtolower($baData->no_voyage ?? '');
+        if (str_contains($voyageCheck, 'bj')) {
+            $pelabuhanText = 'Batam - Jakarta';
+        } elseif (str_contains($voyageCheck, 'pj')) {
+            $pelabuhanText = 'Pinang - Jakarta';
+        } else {
+            $asal = $mapPelabuhan($baData->pelabuhan_asal ?? '');
+            $tujuan = $mapPelabuhan($baData->pelabuhan_tujuan ?? '');
+            $pelabuhanText = '';
+            if ($asal !== '' || $tujuan !== '') {
+                $pelabuhanText = trim(($asal ?? '') . ' - ' . ($tujuan ?? ''));
+            }
+        }
+    @endphp
+    @if(!empty($pelabuhanText)) 
+        <div class="pelabuhan-route">{{ e($pelabuhanText) }}</div>
+    @else
+        <div class="pelabuhan-route">&nbsp;</div>
+    @endif
+    {{-- Tanggal BA (format: d-M-Y) --}}
+    @php
+        $tanggalBa = '';
+        // Prioritas: Ambil dari manifest tanggal_berangkat
+        if (isset($baData->manifest) && !empty($baData->manifest->tanggal_berangkat)) {
+            try {
+                $tanggalBa = \Carbon\Carbon::parse($baData->manifest->tanggal_berangkat)->format('d-M-Y');
+            } catch (\Exception $e) {
+                // If parse fails, stay empty to try fallback
+            }
+        }
+        
+        // Fallback: Ambil dari tanggal_ba jika manifest date kosong
+        if (empty($tanggalBa) && isset($baData->tanggal_ba)) {
+            try {
+                $tanggalBa = \Carbon\Carbon::parse($baData->tanggal_ba)->format('d-M-Y');
+            } catch (\Exception $e) {
+                $tanggalBa = '';
+            }
+        }
+    @endphp
+    @if(!empty($tanggalBa))
+        <div class="tanggal-ba">{{ e($tanggalBa) }}</div>
+    @else
+        <div class="tanggal-ba">&nbsp;</div>
     @endif
     {{-- Nama Alex (static) --}}
     <div class="alex-name">Alex</div>

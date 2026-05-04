@@ -28,7 +28,7 @@
         /* Positioned penerima data - below pengirim */
         .penerima {
             position: absolute;
-            top: 8.5cm; /* Reverted/Adjusted to be closer to pengirim as per visual */
+            top: 9.0cm; /* Increased from 8.5cm to avoid overlap with long pengirim address */
             left: 4.5cm;
             width: 12cm;
             white-space: pre-wrap;
@@ -38,7 +38,7 @@
         }
         .penerima-cp {
             position: absolute;
-            top: 9.3cm; /* Raised from 9.8cm */
+            top: 10.3cm; /* Adjusted from 9.3cm to match new penerima position */
             left: 4.5cm;
             font-size: 14px; /* Same as consignee */
             font-weight: bold; /* Same as consignee */
@@ -56,7 +56,7 @@
         .unit-text {
             position: absolute;
             top: 11.5cm; /* aligned with nama barang */
-            left: 5cm; /* 5cm from left */
+            left: 6.5cm; /* Moved from 5cm to 6.5cm to avoid overlap with container number */
             white-space: nowrap;
             font-size: 14px;
             font-weight: bold;
@@ -65,7 +65,7 @@
         .unit-text-2 {
             position: absolute;
             top: 20cm; /* lowered by 5cm */
-            left: 5cm; /* aligned with first unit text */
+            left: 6.5cm; /* aligned with first unit text */
             white-space: nowrap;
             font-size: 14px;
             font-weight: bold;
@@ -86,7 +86,7 @@
         .kontainer-info {
             position: absolute;
             top: 11.5cm; /* aligned with no-kontainer */
-            left: 9cm; /* aligned with nama barang */
+            left: 11.0cm; /* Moved from 9cm to 11cm to avoid overlap with unit text */
             white-space: nowrap;
             font-size: 13px;
             font-weight: bold;
@@ -114,7 +114,7 @@
         /* Positioned pelabuhan route (asal - tujuan) */
         .pelabuhan-route {
             position: absolute;
-            top: 8.5cm; /* moved up another 1cm */
+            top: 8.9cm; /* Increased from 8.5cm to avoid overlap with tanggal-ba */
             left: 20.25cm; /* aligned with nama kapal */
             max-width: 11.5cm;
             white-space: nowrap;
@@ -125,7 +125,7 @@
         /* Positioned tanggal below nama kapal */
         .tanggal-ba {
             position: absolute;
-            top: 8cm; /* moved up 1cm */
+            top: 8.2cm; /* Increased from 8cm to give more space for nama-kapal */
             left: 20.25cm; /* aligned with nama kapal */
             white-space: nowrap;
             font-size: 12px;
