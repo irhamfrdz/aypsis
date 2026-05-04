@@ -1196,8 +1196,6 @@
             clearAllDemurrageSections();
             if (freightWrapper) freightWrapper.classList.add('hidden');
             clearAllFreightSections();
-            if (meratusWrapper) meratusWrapper.classList.add('hidden');
-            clearAllMeratusSections();
         }
         // Show TEMAS fields if "Tagihan Temas" is selected
         else if (selectedText.toLowerCase().includes('temas')) {
