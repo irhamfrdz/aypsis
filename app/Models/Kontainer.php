@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\BtmSewaUnit;
+use App\Models\BtmSewaVendor;
+use App\Models\BtmSewaType;
+use App\Models\BtmSewaSize;
 
 
 use App\Traits\Auditable;
@@ -62,6 +66,33 @@ class Kontainer extends Model
 
         static::updating(function ($kontainer) {
             self::validateNomorSeriUniqueness($kontainer);
+        });
+
+        static::saved(function ($kontainer) {
+            if (!empty($kontainer->nomor_seri_gabungan)) {
+                $vendorName = strtoupper($kontainer->vendor ?? 'ZONA');
+                $typeName = strtoupper($kontainer->tipe_kontainer ?? 'DRY');
+                $sizeName = strtoupper($kontainer->ukuran ?? '20');
+
+                $vendor = BtmSewaVendor::firstOrCreate(['name' => $vendorName]);
+                $type = BtmSewaType::firstOrCreate(['name' => $typeName]);
+                $size = BtmSewaSize::firstOrCreate(['name' => $sizeName]);
+
+                BtmSewaUnit::updateOrCreate(
+                    ['unit_number' => $kontainer->nomor_seri_gabungan],
+                    [
+                        'vendor_id' => $vendor->id,
+                        'type_id' => $type->id,
+                        'size_id' => $size->id,
+                    ]
+                );
+            }
+        });
+
+        static::deleted(function ($kontainer) {
+            if (!empty($kontainer->nomor_seri_gabungan)) {
+                BtmSewaUnit::where('unit_number', $kontainer->nomor_seri_gabungan)->delete();
+            }
         });
     }
 

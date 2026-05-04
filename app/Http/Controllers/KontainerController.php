@@ -181,17 +181,7 @@ class KontainerController extends Controller
 
         // Set status default jika tidak ada
         if (!$request->filled('status')) {
-            $data['status'] = 'Tersedia'; // Default active status string (was 'active' before, but enum seems 'Tersedia', 'Tidak Tersedia' etc based on form)
-            // Wait, previous code used 'active'. Let's match view: 'Tersedia', 'Tidak Tersedia'.
-            // Controller validation says: 'in:Tersedia,Disewa'.
-            // But previous code set 'active' or 'inactive'. This might be inconsistent with 'Tersedia'.
-            // View options: 'Tersedia', 'Tidak Tersedia'.
-            // Database likely has string column.
-            // Let's settle on 'Tersedia' as default Active, compatible with view. 
-            // However, the check above uses 'active'. 
-            // The previous code validation had 'status' => 'nullable|string|in:Tersedia,Disewa'.
-            // But line 163 set $data['status'] = 'active'.
-            // This suggests mixed usage. Let's stick to 'Tersedia' which matches the FORM validation.
+            $data['status'] = 'Tersedia'; // Default active status string
         }
 
         Kontainer::create($data);
@@ -308,8 +298,6 @@ class KontainerController extends Controller
 
     /**
      * Import data tanggal sewa dan status kontainer dari CSV
-     * Format CSV: nomor_kontainer;tanggal_mulai_sewa;tanggal_selesai_sewa;status
-     * Hanya update data yang sudah ada, tidak create kontainer baru
      */
     public function importTanggalSewa(Request $request)
     {
@@ -408,7 +396,7 @@ class KontainerController extends Controller
                 // Parse status (kolom 4)
                 if (isset($data[3]) && !empty(trim($data[3]))) {
                     $status = trim($data[3]);
-                    // Accept both "Tersedia"/"Tidak Tersedia" format
+                    // Accept both \"Tersedia\"/\"Tidak Tersedia\" format
                     if (in_array($status, ['Tersedia', 'Tidak Tersedia'])) {
                         $updateData['status'] = $status;
                     } else {
@@ -466,7 +454,7 @@ class KontainerController extends Controller
         
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Content-Disposition' => \"attachment; filename=\\\"{$filename}\\\"\",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0',
