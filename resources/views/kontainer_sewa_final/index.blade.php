@@ -483,7 +483,7 @@ function renderCart() {
     let tBill = 0;
     body.innerHTML = db.cart.map((c, i) => {
         tBill += c.vendorBill;
-        return `<tr><td>${i+1}</td><td>${c.unit}</td><td>${c.masa}</td><td>${fmtRibuan(c.aypsis)}</td><td>${fmtRibuan(c.vendorBill)}</td><td>${fmtRibuan(c.vendorBill - c.aypsis)}</td><td>${c.note||'-'}</td><td><button class="btn btn-red" style="padding: 4px 8px;" onclick="hapusFromCart(${i})">Hapus</button></td></tr>`;
+        return `<tr><td>${i+1}</td><td>${c.unit}</td><td>${fmtMasaLay(c.masa)}</td><td>${fmtRibuan(c.aypsis)}</td><td>${fmtRibuan(c.vendorBill)}</td><td>${fmtRibuan(c.vendorBill - c.aypsis)}</td><td>${c.note||'-'}</td><td><button class="btn btn-red" style="padding: 4px 8px;" onclick="hapusFromCart(${i})">Hapus</button></td></tr>`;
     }).join('');
 
     const dpp = tBill;
@@ -505,6 +505,11 @@ function fmtTglLay(d) {
 }
 function fmtTglDB(d) {
     return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+}
+function fmtMasaLay(m) {
+    if(!m || !m.includes(' - ')) return m;
+    const [s, e] = m.split(' - ');
+    return `${fmtTglLay(parseD(s))} - ${fmtTglLay(parseD(e))}`;
 }
 function fmtRibuan(n) { return Math.round(n).toLocaleString('id-ID'); }
 function inputRibuan(el) { let v = el.value.replace(/\D/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; }
@@ -955,6 +960,7 @@ function getAllOutstandingPeriods(x, idInduk) {
                 ambil: x.s,
                 kembali: x.e || '-',
                 masa: masa_p,
+                masa_lay: `${fmtTglLay(sP)} - ${fmtTglLay(eP)}`,
                 biaya: nilaiAYPSIS,
                 checked: false
             });
@@ -1009,9 +1015,9 @@ function renderBulkLunas() {
             <td style="text-align:center;"><input type="checkbox" ${p.checked ? 'checked' : ''} onchange="toggleBulkItem(${i}, this.checked)"></td>
             <td><b>${p.unit}</b></td>
             <td>${p.vendor}</td>
-            <td>${p.ambil}</td>
-            <td>${p.kembali}</td>
-            <td>${p.masa}</td>
+            <td>${fmtTglLay(parseD(p.ambil))}</td>
+            <td>${p.kembali !== '-' ? fmtTglLay(parseD(p.kembali)) : '-'}</td>
+            <td>${p.masa_lay}</td>
             <td style="text-align:right;">${fmtRibuan(p.biaya)}</td>
         </tr>
     `).join('');
