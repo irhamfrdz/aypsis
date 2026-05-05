@@ -95,27 +95,27 @@
                         7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
                     ];
                     $prospek = $manifest->prospek;
-                    $suratJalan = $prospek->suratJalan ?? null;
-                    $tandaTerima = $prospek->tandaTerima ?? null;
+                    $suratJalan = $prospek?->suratJalan ?? null;
+                    $tandaTerima = $prospek?->tandaTerima ?? null;
                     
-                    $size = $manifest->size_kontainer ?: ($tandaTerima->size ?? ($suratJalan->size ?? ($prospek->ukuran ?? '-')));
-                    $namaBarang = $manifest->nama_barang ?: ($prospek->barang ?? ($tandaTerima->jenis_barang ?? ($suratJalan->jenis_barang ?? '-')));
-                    $namaKapal = $manifest->nama_kapal ?: ($prospek->nama_kapal ?? ($tandaTerima->estimasi_nama_kapal ?? '-'));
-                    $noVoyage = $manifest->no_voyage ?: ($prospek->no_voyage ?? '-');
+                    $size = $manifest->size_kontainer ?: ($tandaTerima?->size ?? ($suratJalan?->size ?? ($prospek?->ukuran ?? '-')));
+                    $namaBarang = $manifest->nama_barang ?: ($prospek?->barang ?? ($tandaTerima?->jenis_barang ?? ($suratJalan?->jenis_barang ?? '-')));
+                    $namaKapal = $manifest->nama_kapal ?: ($prospek?->nama_kapal ?? ($tandaTerima?->estimasi_nama_kapal ?? '-'));
+                    $noVoyage = $manifest->no_voyage ?: ($prospek?->no_voyage ?? '-');
                     
                     $tglBerangkatIndo = $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('j') . ' ' . $months[$manifest->tanggal_berangkat->format('n')] . ' ' . $manifest->tanggal_berangkat->format('Y') : ($prospek && $prospek->tanggal_muat ? $prospek->tanggal_muat->format('j') . ' ' . $months[$prospek->tanggal_muat->format('n')] . ' ' . $prospek->tanggal_muat->format('Y') : '-');
                     
-                    $noSj = $manifest->nomor_manifest ?: ($prospek->no_surat_jalan ?? ($suratJalan->no_surat_jalan ?? ($tandaTerima->no_surat_jalan ?? '-')));
-                    $tujuanAmbil = $suratJalan->tujuan_pengambilan ?: '-';
-                    $pelabuhanTujuan = $manifest->pelabuhan_tujuan ?: ($suratJalan && $suratJalan->tujuanPengirimanRelation ? $suratJalan->tujuanPengirimanRelation->ke : ($suratJalan->tujuan_pengiriman ?? ($prospek->tujuan_pengiriman ?? ($tandaTerima->tujuan_pengiriman ?? '-'))));
-                    $term = $manifest->term ?: ($suratJalan && $suratJalan->termRelation ? $suratJalan->termRelation->nama_status : ($suratJalan->term ?: ($tandaTerima->term ?: ($prospek->term ?? '-'))));
+                    $noSj = $manifest->nomor_manifest ?: ($prospek?->no_surat_jalan ?? ($suratJalan?->no_surat_jalan ?? ($tandaTerima?->no_surat_jalan ?? '-')));
+                    $tujuanAmbil = $suratJalan?->tujuan_pengambilan ?? '-';
+                    $pelabuhanTujuan = $manifest->pelabuhan_tujuan ?: ($suratJalan?->tujuanPengirimanRelation ? $suratJalan->tujuanPengirimanRelation->ke : ($suratJalan?->tujuan_pengiriman ?? ($prospek?->tujuan_pengiriman ?? ($tandaTerima?->tujuan_pengiriman ?? '-'))));
+                    $term = $manifest->term ?: ($suratJalan?->termRelation ? $suratJalan->termRelation->nama_status : ($suratJalan?->term ?: ($tandaTerima?->term ?: ($prospek?->term ?? '-'))));
                     
-                    $nomorKontainer = $manifest->nomor_kontainer ?: ($prospek->nomor_kontainer ?? ($tandaTerima->no_kontainer ?? ($suratJalan->no_kontainer ?? '-')));
+                    $nomorKontainer = $manifest->nomor_kontainer ?: ($prospek?->nomor_kontainer ?? ($tandaTerima?->no_kontainer ?? ($suratJalan?->no_kontainer ?? '-')));
                     
-                    $tglSj = ($tandaTerima && $tandaTerima->tanggal_surat_jalan) ? $tandaTerima->tanggal_surat_jalan : (($suratJalan && $suratJalan->tanggal_surat_jalan) ? $suratJalan->tanggal_surat_jalan : null);
+                    $tglSj = ($tandaTerima?->tanggal_surat_jalan) ? $tandaTerima->tanggal_surat_jalan : (($suratJalan?->tanggal_surat_jalan) ? $suratJalan->tanggal_surat_jalan : null);
                     $tglSjIndo = $tglSj ? $tglSj->format('d/m/Y') : '-';
                     
-                    $noPlat = $tandaTerima->no_plat ?? ($suratJalan->no_plat ?? '-');
+                    $noPlat = $tandaTerima?->no_plat ?? ($suratJalan?->no_plat ?? '-');
                     
                     $isNotCargo = strtoupper($manifest->tipe_kontainer ?? '') !== 'CARGO';
                     if (!$isNotCargo && $prospek) {
