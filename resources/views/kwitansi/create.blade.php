@@ -24,7 +24,7 @@
 
         {{-- Header Section --}}
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-6">
                 <!-- Kolom 1 -->
                 <div class="space-y-4">
                     <div>
@@ -40,7 +40,9 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kirim Ke</label>
-                        <textarea name="kirim_ke" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">{{ $manifest ? $manifest->alamat_penerima : '' }}</textarea>
+                        <textarea name="kirim_ke" rows="4" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">@if($manifest){{ $manifest->penerima }}
+{{ $manifest->alamat_pengiriman }}
+{{ $manifest->contact_person }}@endif</textarea>
                     </div>
                 </div>
 
@@ -48,7 +50,7 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kwt No.</label>
-                        <input type="text" name="kwt_no" value="{{ $kwtNo }}" readonly class="w-full bg-gray-100 rounded-md border-gray-300 shadow-sm text-sm cursor-not-allowed">
+                        <input type="text" name="kwt_no" value="{{ $kwtNo }}" readonly class="w-full bg-gray-100 border-gray-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10 cursor-not-allowed">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tgl. Inv.</label>
@@ -72,7 +74,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Syarat Pembayaran</label>
-                        <input type="text" name="syarat_pembayaran" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
+                        <input type="text" name="syarat_pembayaran" value="COD" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
