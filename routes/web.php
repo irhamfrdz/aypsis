@@ -596,7 +596,15 @@ Route::middleware([
         ]);
 
         // Buruh management routes
-        Route::resource('buruh', BuruhController::class);
+        Route::resource('buruh', BuruhController::class)->middleware([
+            'index' => 'can:master-buruh-view',
+            'show' => 'can:master-buruh-view',
+            'create' => 'can:master-buruh-create',
+            'store' => 'can:master-buruh-create',
+            'edit' => 'can:master-buruh-update',
+            'update' => 'can:master-buruh-update',
+            'destroy' => 'can:master-buruh-delete',
+        ]);
 
         // Master kegiatan routes (with master prefix) - granular permissions
         Route::get('kegiatan', [MasterKegiatanController::class, 'index'])

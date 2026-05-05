@@ -682,9 +682,11 @@
                                     </a>
                                 @endif
 
+                                @can('master-buruh-view')
                                 <a href="{{ route('master.buruh.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.buruh.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 font-bold text-indigo-600' }}">
                                     <span class="text-xs font-bold text-indigo-600 italic">Data Buruh</span>
                                 </a>
+                                @endcan
 
 
                             </div>
