@@ -92,6 +92,7 @@ use App\Http\Controllers\SertifikatKapalController;
 use App\Http\Controllers\MasterPricelistFreightController;
 use App\Http\Controllers\BtmKontainerSewaController;
 use App\Http\Controllers\ProspekBatamController;
+use App\Http\Controllers\BuruhController;
 
 
 /*
@@ -593,6 +594,9 @@ Route::middleware([
             'index' => 'can:master-tujuan-view',
             'show' => 'can:master-tujuan-view'
         ]);
+
+        // Buruh management routes
+        Route::resource('buruh', BuruhController::class);
 
         // Master kegiatan routes (with master prefix) - granular permissions
         Route::get('kegiatan', [MasterKegiatanController::class, 'index'])
