@@ -4,8 +4,8 @@
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
             <input type="hidden" id="edx-idx">
             <input type="text" id="edx-no" list="list-u" placeholder="No Unit...">
-            <input type="text" id="edx-s" placeholder="Ambil (dd/mm/yyyy)">
-            <input type="text" id="edx-e" placeholder="Kembali (dd/mm/yyyy)">
+            <input type="date" id="edx-s">
+            <input type="date" id="edx-e">
             <select id="edx-st-t">
                 <option value="B">Bulanan (B)</option>
                 <option value="H">Harian (H)</option>
@@ -19,8 +19,8 @@
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
             <input type="text" id="tx-no" list="list-u" placeholder="No Unit...">
             <datalist id="list-u"></datalist>
-            <input type="text" id="tx-s" placeholder="Ambil (dd/mm/yyyy)">
-            <input type="text" id="tx-e" placeholder="Kembali (dd/mm/yyyy)">
+            <input type="date" id="tx-s">
+            <input type="date" id="tx-e">
             <select id="tx-st-t">
                 <option value="B">Bulanan (B)</option>
                 <option value="H">Harian (H)</option>

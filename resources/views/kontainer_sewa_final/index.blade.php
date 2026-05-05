@@ -297,6 +297,24 @@
 </div>
 
 <script>
+// Helper for Date Input Conversion
+function toYmd(d) {
+    if(!d) return "";
+    if(d.includes('-')) return d; // already YMD
+    if(!d.includes('/')) return d;
+    const p = d.split('/');
+    if(p.length < 3) return d;
+    return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+}
+function fromYmd(d) {
+    if(!d) return "";
+    if(d.includes('/')) return d; // already DMY
+    if(!d.includes('-')) return d;
+    const p = d.split('-');
+    if(p.length < 3) return d;
+    return `${p[2].padStart(2,'0')}/${p[1].padStart(2,'0')}/${p[0]}`;
+}
+
 // Helper Smart Date Formatter
 const mNames = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 function smartDate(v) {
@@ -732,8 +750,8 @@ function edR(i) { const b = prompt("Bln:", db.r[i].rb), h = prompt("Hr:", db.r[i
 function bukaEditUnit(i) { document.getElementById('entry-unit-zone').style.display='none'; document.getElementById('edit-unit-zone').style.display='block'; document.getElementById('edu-idx').value=i; document.getElementById('edu-no').value=db.u[i].no; document.getElementById('edu-v').value=db.u[i].v; document.getElementById('edu-t').value=db.u[i].t; document.getElementById('edu-z').value=db.u[i].z; window.scrollTo(0,0); }
 function simpanEditUnit() { const i = document.getElementById('edu-idx').value; db.u[i].no = document.getElementById('edu-no').value.toUpperCase(); db.u[i].v = document.getElementById('edu-v').value; db.u[i].t = document.getElementById('edu-t').value; db.u[i].z = document.getElementById('edu-z').value; batalEditUnit(); updateDB(); }
 function batalEditUnit() { document.getElementById('entry-unit-zone').style.display='block'; document.getElementById('edit-unit-zone').style.display='none'; }
-function bukaEditTrx(i) { document.getElementById('entry-trx-zone').style.display='none'; document.getElementById('edit-trx-zone').style.display='block'; document.getElementById('edx-idx').value=i; document.getElementById('edx-no').value=db.x[i].no; document.getElementById('edx-s').value=db.x[i].s; document.getElementById('edx-e').value=db.x[i].e; document.getElementById('edx-st-t').value=db.x[i].stT; window.scrollTo(0,0); }
-function simpanEditTrx() { const i = document.getElementById('edx-idx').value; db.x[i].no = document.getElementById('edx-no').value; db.x[i].s = document.getElementById('edx-s').value; db.x[i].e = document.getElementById('edx-e').value; db.x[i].stT = document.getElementById('edx-st-t').value; batalEditTrx(); updateDB(); }
+function bukaEditTrx(i) { document.getElementById('entry-trx-zone').style.display='none'; document.getElementById('edit-trx-zone').style.display='block'; document.getElementById('edx-idx').value=i; document.getElementById('edx-no').value=db.x[i].no; document.getElementById('edx-s').value=toYmd(db.x[i].s); document.getElementById('edx-e').value=toYmd(db.x[i].e); document.getElementById('edx-st-t').value=db.x[i].stT; window.scrollTo(0,0); }
+function simpanEditTrx() { const i = document.getElementById('edx-idx').value; db.x[i].no = document.getElementById('edx-no').value; db.x[i].s = fromYmd(document.getElementById('edx-s').value); db.x[i].e = fromYmd(document.getElementById('edx-e').value); db.x[i].stT = document.getElementById('edx-st-t').value; batalEditTrx(); updateDB(); }
 function batalEditTrx() { document.getElementById('entry-trx-zone').style.display='block'; document.getElementById('edit-trx-zone').style.display='none'; }
 function showTab(e, id) { 
     localStorage.setItem('LAST_ACTIVE_TAB', id);
@@ -750,7 +768,7 @@ function showTab(e, id) {
 function addM(k, id) { const v = document.getElementById(id).value.toUpperCase(); if(v) { db[k].push({val:v, act:true}); document.getElementById(id).value=''; updateDB(); } }
 function addR() { db.r.push({ v:document.getElementById('rt-v').value, t:document.getElementById('rt-t').value, z:document.getElementById('rt-z').value, rb:parseInt(document.getElementById('rt-bln').value)||0, rh:parseInt(document.getElementById('rt-hr').value)||0, act:true }); updateDB(); }
 function tambahUnitManual() { const no = document.getElementById('mu-no').value.toUpperCase(); if(no) { db.u.push({ no, v:document.getElementById('mu-v').value, t:document.getElementById('mu-t').value, z:document.getElementById('mu-z').value, act:true }); document.getElementById('mu-no').value=''; updateDB(); } }
-function tambahTrx() { const no = document.getElementById('tx-no').value.toUpperCase(); const u = db.u.find(unit => unit.no === no && unit.act !== false); if(u && document.getElementById('tx-s').value) { db.x.push({ no:u.no, s:document.getElementById('tx-s').value, e:document.getElementById('tx-e').value, stT:document.getElementById('tx-st-t').value }); updateDB(); document.getElementById('tx-no').value=''; document.getElementById('tx-s').value=''; document.getElementById('tx-e').value=''; } else { alert("Unit Off/Data Kurang!"); } }
+function tambahTrx() { const no = document.getElementById('tx-no').value.toUpperCase(); const u = db.u.find(unit => unit.no === no && unit.act !== false); if(u && document.getElementById('tx-s').value) { db.x.push({ no:u.no, s:fromYmd(document.getElementById('tx-s').value), e:fromYmd(document.getElementById('tx-e').value), stT:document.getElementById('tx-st-t').value }); updateDB(); document.getElementById('tx-no').value=''; document.getElementById('tx-s').value=''; document.getElementById('tx-e').value=''; } else { alert("Unit Off/Data Kurang!"); } }
 function renderPg(id, tot, pgVar, func) { const pgs = Math.ceil(tot/rPP); let h = `<button class="pg-btn" onclick="window['${pgVar}']=Math.max(1,window['${pgVar}']-1);${func}()">Prev</button>`; for(let i=1; i<=pgs; i++) { if(i===1||i===pgs||(i>=window[pgVar]-2 && i<=window[pgVar]+2)) h+=`<button class="pg-btn ${i===window[pgVar]?'active':''}" onclick="window['${pgVar}']=${i};${func}()">${i}</button>`; } const el = document.getElementById(id); if(el) el.innerHTML = h + `<button class="pg-btn" onclick="window['${pgVar}']=Math.min(${pgs},window['${pgVar}']+1);${func}()">Next</button>`; }
 function delU(i) { if(confirm("Set Off?")) { db.u[i].act = false; updateDB(); } }
 function delM(k, i) { if(confirm("Set Off?")) { if(typeof db[k][i] === 'object') db[k][i].act = false; else db[k][i] = {val:db[k][i], act:false}; updateDB(); } }
