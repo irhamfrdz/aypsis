@@ -89,22 +89,40 @@
 
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                <textarea name="keterangan" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">@if($manifest)@php
+                <textarea name="keterangan" rows="3" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">@if($manifest)@php
                     $months = [
                         1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
                         7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
                     ];
-                    $tglIndo = date('j') . ' ' . $months[date('n')] . ' ' . date('Y');
-                    $isNotCargo = strtoupper($manifest->tipe_kontainer ?? '') !== 'CARGO';
-                    if (!$isNotCargo && $manifest->prospek) {
-                        $isNotCargo = strtoupper($manifest->prospek->tipe ?? '') !== 'CARGO';
-                    }
+                    $prospek = $manifest->prospek;
+                    $suratJalan = $prospek->suratJalan ?? null;
+                    $tandaTerima = $prospek->tandaTerima ?? null;
                     
-                    $tglBerangkatIndo = $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('j') . ' ' . $months[$manifest->tanggal_berangkat->format('n')] . ' ' . $manifest->tanggal_berangkat->format('Y') : '-';
-                    $tglSjIndo = $manifest->prospek && $manifest->prospek->tandaTerima && $manifest->prospek->tandaTerima->tanggal_surat_jalan ? $manifest->prospek->tandaTerima->tanggal_surat_jalan->format('d/m/Y') : '-';
-                    $noPlat = $manifest->prospek && $manifest->prospek->tandaTerima ? $manifest->prospek->tandaTerima->no_plat : '-';
-                    $tujuanAmbil = $manifest->prospek && $manifest->prospek->suratJalan ? $manifest->prospek->suratJalan->tujuan_pengambilan : '-';
-                @endphp@if($isNotCargo){{ "Jasa Pelayaran 1 UNIT CONT " . ($manifest->size_kontainer ?? '') . " isi " . ($manifest->nama_barang ?? '') . ", per " . ($manifest->nama_kapal ?? '') . ", " . ($manifest->no_voyage ?? '') . ", " . $tglBerangkatIndo . ", " . ($manifest->nomor_manifest ?? '') . ", Jakarta(" . $tujuanAmbil . ") - " . ($manifest->pelabuhan_tujuan ?? '') . ", " . ($manifest->term ?? '') . ", " . ($manifest->nomor_kontainer ?? '') . ", " . ($manifest->nomor_manifest ?? '') . ", " . $tglSjIndo . ", " . $noPlat }}@else{{ "Jasa Pelayaran " . ($manifest->kuantitas ?? 0) . " " . ($manifest->satuan ?? '') . " Cont " . ($manifest->size_kontainer ?? '') . " isi " . ($manifest->nama_barang ?? '') . ", per " . ($manifest->nama_kapal ?? '') . ", " . ($manifest->no_voyage ?? '') . ", " . $tglIndo }}@endif @endif</textarea>
+                    $size = $manifest->size_kontainer ?: ($tandaTerima->size ?? ($suratJalan->size ?? ($prospek->ukuran ?? '-')));
+                    $namaBarang = $manifest->nama_barang ?: ($prospek->barang ?? ($tandaTerima->jenis_barang ?? ($suratJalan->jenis_barang ?? '-')));
+                    $namaKapal = $manifest->nama_kapal ?: ($prospek->nama_kapal ?? ($tandaTerima->estimasi_nama_kapal ?? '-'));
+                    $noVoyage = $manifest->no_voyage ?: ($prospek->no_voyage ?? '-');
+                    
+                    $tglBerangkatIndo = $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('j') . ' ' . $months[$manifest->tanggal_berangkat->format('n')] . ' ' . $manifest->tanggal_berangkat->format('Y') : ($prospek && $prospek->tanggal_muat ? $prospek->tanggal_muat->format('j') . ' ' . $months[$prospek->tanggal_muat->format('n')] . ' ' . $prospek->tanggal_muat->format('Y') : '-');
+                    
+                    $noSj = $manifest->nomor_manifest ?: ($prospek->no_surat_jalan ?? ($suratJalan->no_surat_jalan ?? ($tandaTerima->no_surat_jalan ?? '-')));
+                    $tujuanAmbil = $suratJalan->tujuan_pengambilan ?: '-';
+                    $pelabuhanTujuan = $manifest->pelabuhan_tujuan ?: ($suratJalan && $suratJalan->tujuanPengirimanRelation ? $suratJalan->tujuanPengirimanRelation->ke : ($suratJalan->tujuan_pengiriman ?? ($prospek->tujuan_pengiriman ?? ($tandaTerima->tujuan_pengiriman ?? '-'))));
+                    $term = $manifest->term ?: ($suratJalan && $suratJalan->termRelation ? $suratJalan->termRelation->nama_status : ($suratJalan->term ?: ($tandaTerima->term ?: ($prospek->term ?? '-'))));
+                    
+                    $nomorKontainer = $manifest->nomor_kontainer ?: ($prospek->nomor_kontainer ?? ($tandaTerima->no_kontainer ?? ($suratJalan->no_kontainer ?? '-')));
+                    
+                    $tglSj = ($tandaTerima && $tandaTerima->tanggal_surat_jalan) ? $tandaTerima->tanggal_surat_jalan : (($suratJalan && $suratJalan->tanggal_surat_jalan) ? $suratJalan->tanggal_surat_jalan : null);
+                    $tglSjIndo = $tglSj ? $tglSj->format('d/m/Y') : '-';
+                    
+                    $noPlat = $tandaTerima->no_plat ?? ($suratJalan->no_plat ?? '-');
+                    
+                    $isNotCargo = strtoupper($manifest->tipe_kontainer ?? '') !== 'CARGO';
+                    if (!$isNotCargo && $prospek) {
+                        $isNotCargo = strtoupper($prospek->tipe ?? '') !== 'CARGO';
+                    }
+                    $tglIndo = date('j') . ' ' . $months[date('n')] . ' ' . date('Y');
+                @endphp@if($isNotCargo){{ "Jasa Pelayaran 1 UNIT CONT " . $size . " isi " . $namaBarang . ", per " . $namaKapal . ", " . $noVoyage . ", " . $tglBerangkatIndo . ", " . $noSj . ", Jakarta(" . $tujuanAmbil . ") - " . $pelabuhanTujuan . ", " . $term . ", " . $nomorKontainer . ", " . $noSj . ", " . $tglSjIndo . ", " . $noPlat }}@else{{ "Jasa Pelayaran " . ($manifest->kuantitas ?? 0) . " " . ($manifest->satuan ?? '') . " Cont " . $size . " isi " . $namaBarang . ", per " . $namaKapal . ", " . $noVoyage . ", " . $tglBerangkatIndo }}@endif @endif</textarea>
             </div>
         </div>
 
