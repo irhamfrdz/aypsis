@@ -295,6 +295,17 @@
                                     @php
                                         $firstPivot = $container['items']->first();
                                         $hasSealed = $firstPivot && $firstPivot->nomor_seal;
+                                        $sealedBatch = null;
+                                        $sealedPivot = null;
+                                        if (!$hasSealed) {
+                                            foreach($groupedByContainer as $k => $c) {
+                                                if ($c['nomor_kontainer'] === $container['nomor_kontainer'] && $c['items']->first() && $c['items']->first()->nomor_seal) {
+                                                    $sealedBatch = $c;
+                                                    $sealedPivot = $c['items']->first();
+                                                    break;
+                                                }
+                                            }
+                                        }
                                     @endphp
                                     @if($hasSealed)
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -370,6 +381,45 @@
                                                 </svg>
                                                 Seal
                                             </button>
+                                            
+                                            @php
+                                                $sealedBatches = collect();
+                                                foreach($groupedByContainer as $k => $c) {
+                                                    if ($c['nomor_kontainer'] === $container['nomor_kontainer'] && $c['items']->first() && $c['items']->first()->nomor_seal) {
+                                                        $sealedBatches->push($c);
+                                                    }
+                                                }
+                                            @endphp
+
+                                            @if($sealedBatches->count() > 0)
+                                            <form action="{{ route('tanda-terima-lcl.merge-batch') }}" method="POST" class="inline-flex items-center gap-1 m-0 p-0" onsubmit="return confirm('Apakah Anda yakin ingin menggabungkan LCL ini ke batch seal terpilih? Data akan disatukan dengan prospek yang sudah ada.');">
+                                                @csrf
+                                                <input type="hidden" name="nomor_kontainer" value="{{ $container['nomor_kontainer'] }}">
+                                                
+                                                <select name="target_seal" class="text-xs border-gray-300 rounded-md py-1.5 pl-2 pr-6 focus:ring-violet-500 focus:border-violet-500 shadow-sm" style="min-width: 120px;" required>
+                                                    @foreach($sealedBatches as $sb)
+                                                        @php
+                                                            $sealNum = $sb['items']->first()->nomor_seal;
+                                                            $sealDate = $sb['items']->first()->tanggal_seal ? \Carbon\Carbon::parse($sb['items']->first()->tanggal_seal)->format('d/m/Y') : '-';
+                                                        @endphp
+                                                        <option value="{{ $sealNum }}" {{ $loop->last ? 'selected' : '' }}>
+                                                            {{ $sealNum }} ({{ $sealDate }})
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+
+                                                <button type="submit" 
+                                                        style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #8b5cf6; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
+                                                        onmouseover="this.style.backgroundColor='#7c3aed'" 
+                                                        onmouseout="this.style.backgroundColor='#8b5cf6'"
+                                                        class="inline-flex items-center px-3 py-1.5 bg-violet-500 text-white rounded-md hover:bg-violet-600 text-xs font-medium transition" title="Gabung ke Batch">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                                    </svg>
+                                                    Gabung
+                                                </button>
+                                            </form>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>

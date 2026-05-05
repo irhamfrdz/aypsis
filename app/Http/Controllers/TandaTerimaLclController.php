@@ -1857,6 +1857,143 @@ class TandaTerimaLclController extends Controller
                            ->with('error', 'Gagal melepas seal kontainer: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Merge unsealed LCL batch into a sealed batch of the same container
+     */
+    public function mergeBatch(Request $request)
+    {
+        try {
+            $request->validate([
+                'nomor_kontainer' => 'required|string|max:255',
+                'target_seal' => 'required|string|max:255',
+            ], [
+                'nomor_kontainer.required' => 'Nomor kontainer wajib diisi',
+                'target_seal.required' => 'Target nomor seal wajib diisi',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                           ->with('error', 'Validasi gagal: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())));
+        }
+
+        DB::beginTransaction();
+        try {
+            // 1. Get the target sealed batch info
+            $sealedBatch = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->where('nomor_seal', $request->target_seal)
+                ->first();
+
+            if (!$sealedBatch) {
+                DB::rollBack();
+                return redirect()->back()
+                    ->with('error', "Batch seal dengan nomor {$request->target_seal} tidak ditemukan untuk kontainer {$request->nomor_kontainer}.");
+            }
+
+            // 2. Get all unsealed records for this container
+            $unsealedRecords = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->whereNull('nomor_seal')
+                ->with(['tandaTerima.items'])
+                ->get();
+
+            if ($unsealedRecords->isEmpty()) {
+                DB::rollBack();
+                return redirect()->back()
+                    ->with('error', "Tidak ada LCL yang Belum Seal untuk digabungkan pada kontainer {$request->nomor_kontainer}.");
+            }
+
+            // 3. Update all unsealed pivot records to use the target seal
+            TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->whereNull('nomor_seal')
+                ->update([
+                    'nomor_seal' => $sealedBatch->nomor_seal,
+                    'tanggal_seal' => $sealedBatch->tanggal_seal,
+                    'updated_at' => now(),
+                ]);
+
+            // 4. Update the Prospek record
+            $prospek = Prospek::where('nomor_kontainer', $request->nomor_kontainer)
+                ->where('no_seal', $sealedBatch->nomor_seal)
+                ->latest()
+                ->first();
+
+            if ($prospek) {
+                $allBarang = collect(explode(', ', $prospek->barang ?? ''))->filter();
+                $allPengirim = collect(explode(', ', $prospek->pt_pengirim ?? ''))->filter();
+                $allPenerima = collect(explode(', ', $prospek->tujuan_pengiriman ?? ''))->filter();
+
+                foreach ($unsealedRecords as $record) {
+                    if ($record->tandaTerima) {
+                        $barangNames = $record->tandaTerima->items->pluck('nama_barang');
+                        $allBarang = $allBarang->merge($barangNames);
+
+                        if ($record->tandaTerima->nama_pengirim) {
+                            $allPengirim->push($record->tandaTerima->nama_pengirim);
+                        }
+                        if ($record->tandaTerima->nama_penerima) {
+                            $allPenerima->push($record->tandaTerima->nama_penerima);
+                        }
+                    }
+                }
+
+                $existingSuratJalan = collect(explode(', ', $prospek->no_surat_jalan ?? ''))->filter();
+                $newSuratJalan = $unsealedRecords->pluck('tandaTerima.nomor_tanda_terima')->filter();
+                $mergedSuratJalan = $existingSuratJalan->merge($newSuratJalan)->unique()->implode(', ');
+
+                $prospek->update([
+                    'barang' => $allBarang->unique()->implode(', '),
+                    'pt_pengirim' => $allPengirim->unique()->implode(', '),
+                    'tujuan_pengiriman' => $allPenerima->unique()->implode(', '),
+                    'no_surat_jalan' => $mergedSuratJalan,
+                    'updated_by' => Auth::id(),
+                    'updated_at' => now()
+                ]);
+
+                // Sync to related documents
+                $syncData = [];
+                $syncData['pengirim'] = $prospek->pt_pengirim;
+                $syncData['penerima'] = $prospek->tujuan_pengiriman;
+                
+                // For BLs and Manifests, they use 'nama_barang'
+                $syncDataWithBarang = $syncData;
+                $syncDataWithBarang['nama_barang'] = $prospek->barang;
+
+                if (\Illuminate\Support\Facades\Schema::hasTable('naik_kapal')) {
+                    \DB::table('naik_kapal')->where('prospek_id', $prospek->id)->update($syncData);
+                }
+                
+                if (\Illuminate\Support\Facades\Schema::hasTable('manifests')) {
+                    \DB::table('manifests')->where('prospek_id', $prospek->id)->update($syncDataWithBarang);
+                }
+                
+                if (\Illuminate\Support\Facades\Schema::hasTable('bls')) {
+                    \DB::table('bls')->where('prospek_id', $prospek->id)->update($syncDataWithBarang);
+                }
+            }
+
+            \Log::info('LCL Batch merged to sealed batch', [
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'target_seal' => $sealedBatch->nomor_seal,
+                'merged_count' => $unsealedRecords->count(),
+                'user_id' => Auth::id()
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('tanda-terima-lcl.stuffing')
+                ->with('success', "✓ Berhasil menggabungkan {$unsealedRecords->count()} LCL ke dalam batch seal {$sealedBatch->nomor_seal}.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error merging batch: ' . $e->getMessage(), [
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'target_seal' => $request->target_seal,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Gagal menggabungkan batch: ' . $e->getMessage());
+        }
+    }
     
     /**
      * Get barang data from selected containers for split modal

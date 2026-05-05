@@ -3633,6 +3633,10 @@ Route::middleware(['auth'])->group(function () {
          ->name('tanda-terima-lcl.unseal')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
 
+    Route::post('tanda-terima-lcl/merge-batch', [\App\Http\Controllers\TandaTerimaLclController::class, 'mergeBatch'])
+         ->name('tanda-terima-lcl.merge-batch')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
     Route::post('tanda-terima-lcl/assign-container', [\App\Http\Controllers\TandaTerimaLclController::class, 'assignContainer'])
          ->name('tanda-terima-tanpa-surat-jalan.assign-container')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
