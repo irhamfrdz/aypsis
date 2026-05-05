@@ -100,7 +100,8 @@ class ManifestController extends Controller
 
         // Filter by tipe kontainer
         if ($request->filled('tipe_kontainer')) {
-            $query->where('tipe_kontainer', $request->tipe_kontainer);
+            $tipe = $request->tipe_kontainer;
+            $query->whereRaw("UPPER(tipe_kontainer) = ?", [strtoupper($tipe)]);
         }
 
         // Filter by size kontainer
@@ -153,7 +154,8 @@ class ManifestController extends Controller
 
         // Filter by tipe kontainer
         if ($request->filled('tipe_kontainer')) {
-            $query->where('tipe_kontainer', $request->tipe_kontainer);
+            $tipe = $request->tipe_kontainer;
+            $query->whereRaw("UPPER(tipe_kontainer) = ?", [strtoupper($tipe)]);
         }
 
         // Filter by size kontainer

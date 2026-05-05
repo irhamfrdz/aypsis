@@ -147,6 +147,9 @@
                         <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
                         <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                             <option value="">Semua Tipe</option>
+                            <option value="FCL" {{ strtoupper(request('tipe_kontainer')) == 'FCL' ? 'selected' : '' }}>FCL</option>
+                            <option value="LCL" {{ strtoupper(request('tipe_kontainer')) == 'LCL' ? 'selected' : '' }}>LCL</option>
+                            <option value="Cargo" {{ strtoupper(request('tipe_kontainer')) == 'Cargo' ? 'selected' : '' }}>Cargo</option>
                             <option value="Dry Container" {{ request('tipe_kontainer') == 'Dry Container' ? 'selected' : '' }}>Dry Container</option>
                             <option value="High Cube" {{ request('tipe_kontainer') == 'High Cube' ? 'selected' : '' }}>High Cube</option>
                             <option value="Reefer" {{ request('tipe_kontainer') == 'Reefer' ? 'selected' : '' }}>Reefer</option>
