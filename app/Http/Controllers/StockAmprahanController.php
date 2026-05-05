@@ -127,7 +127,7 @@ class StockAmprahanController extends Controller
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
-            'vendor_amprahan_id' => 'nullable|exists:vendor_amprahans,id',
+            'vendor_amprahan_id' => 'required|exists:vendor_amprahans,id',
             
             // Langsung Pakai Fields
             'is_langsung_pakai' => 'nullable',
@@ -244,7 +244,7 @@ class StockAmprahanController extends Controller
             'satuan' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
-            'vendor_amprahan_id' => 'nullable|exists:vendor_amprahans,id',
+            'vendor_amprahan_id' => 'required|exists:vendor_amprahans,id',
             'is_langsung_pakai' => 'nullable',
             'penerima_id' => 'nullable|required_if:is_langsung_pakai,1|exists:karyawans,id',
             'kendaraan_id' => 'nullable|exists:mobils,id',

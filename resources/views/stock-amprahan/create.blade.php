@@ -113,7 +113,7 @@
                         <div class="group">
                             <div class="flex items-center justify-between mb-2">
                                 <label for="vendor_amprahan_id" class="text-sm font-bold text-gray-700 group-focus-within:text-indigo-600 transition-colors">
-                                    <i class="fas fa-store mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Nama Toko
+                                    <i class="fas fa-store mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Nama Toko <span class="text-red-500">*</span>
                                 </label>
                                 <a href="{{ route('master.vendor-amprahan.create') }}" id="add_vendor_link"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
@@ -123,10 +123,9 @@
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container-vendor">
-                                    <input type="text" id="search_vendor" placeholder="Pilih atau cari toko..." autocomplete="off"
+                                    <input type="text" id="search_vendor" placeholder="Pilih atau cari toko..." autocomplete="off" required
                                            class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
-                                    <select name="vendor_amprahan_id" id="vendor_amprahan_id" 
-                                            class="hidden w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
+                                    <select name="vendor_amprahan_id" id="vendor_amprahan_id" required                                            class="hidden w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
                                         <option value="">Pilih Toko</option>
                                         @foreach($vendorAmprahans as $vendor)
                                             <option value="{{ $vendor->id }}" {{ old('vendor_amprahan_id') == $vendor->id ? 'selected' : '' }}>

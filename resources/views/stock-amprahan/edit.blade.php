@@ -117,7 +117,7 @@
                         {{-- Nama Toko --}}
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <label for="vendor_amprahan_id" class="text-sm font-semibold text-gray-700">Nama Toko</label>
+                                <label for="vendor_amprahan_id" class="text-sm font-semibold text-gray-700">Nama Toko <span class="text-red-500">*</span></label>
                                 <a href="{{ route('master.vendor-amprahan.create') }}" id="add_vendor_link"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
@@ -126,10 +126,9 @@
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container-vendor">
-                                    <input type="text" id="search_vendor" placeholder="Pilih atau cari toko..." autocomplete="off"
+                                    <input type="text" id="search_vendor" placeholder="Pilih atau cari toko..." autocomplete="off" required
                                            class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
-                                    <select name="vendor_amprahan_id" id="vendor_amprahan_id" 
-                                            class="hidden w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
+                                    <select name="vendor_amprahan_id" id="vendor_amprahan_id" required                                            class="hidden w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
                                         <option value="">Pilih Toko</option>
                                         @foreach($vendorAmprahans as $vendor)
                                             <option value="{{ $vendor->id }}" {{ old('vendor_amprahan_id', $item->vendor_amprahan_id) == $vendor->id ? 'selected' : '' }}>
