@@ -32,22 +32,13 @@
                         @error('nama') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Telepon -->
-                        <div>
-                            <label for="telepon" class="block text-sm font-semibold text-gray-700 mb-1">Nomor Telepon/WA</label>
-                            <input type="text" name="telepon" id="telepon" value="{{ old('telepon') }}"
-                                   class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
-                                   placeholder="0812xxxxxx">
-                        </div>
-
-                        <!-- Jabatan -->
-                        <div>
-                            <label for="jabatan" class="block text-sm font-semibold text-gray-700 mb-1">Jabatan/Keahlian</label>
-                            <input type="text" name="jabatan" id="jabatan" value="{{ old('jabatan') }}"
-                                   class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
-                                   placeholder="Contoh: Tukang Angkut">
-                        </div>
+                    <!-- NIK -->
+                    <div>
+                        <label for="nik" class="block text-sm font-semibold text-gray-700 mb-1">Nomor Induk Karyawan (NIK)</label>
+                        <input type="text" name="nik" id="nik" value="{{ old('nik') }}"
+                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200 @error('nik') border-red-500 @enderror"
+                               placeholder="Contoh: 3275xxxxxxxxxxxx">
+                        @error('nik') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <!-- Alamat -->

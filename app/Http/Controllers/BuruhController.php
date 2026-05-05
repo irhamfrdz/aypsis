@@ -19,8 +19,7 @@ class BuruhController extends Controller
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama', 'LIKE', "%{$search}%")
-                  ->orWhere('telepon', 'LIKE', "%{$search}%")
-                  ->orWhere('jabatan', 'LIKE', "%{$search}%");
+                  ->orWhere('nik', 'LIKE', "%{$search}%");
             });
         }
         
@@ -37,9 +36,8 @@ class BuruhController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'telepon' => 'nullable|string|max:20',
+            'nik' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
-            'jabatan' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,non-aktif',
         ]);
 
@@ -61,9 +59,8 @@ class BuruhController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'telepon' => 'nullable|string|max:20',
+            'nik' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
-            'jabatan' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,non-aktif',
         ]);
 

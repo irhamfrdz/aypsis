@@ -8,9 +8,8 @@ class Buruh extends Model
 {
     protected $fillable = [
         'nama',
-        'telepon',
+        'nik',
         'alamat',
-        'jabatan',
         'status'
     ];
 }

@@ -34,9 +34,6 @@
                     <div class="ml-6">
                         <h2 class="text-3xl font-bold">{{ $buruh->nama }}</h2>
                         <div class="flex items-center mt-2 space-x-4">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 border border-white/30">
-                                {{ $buruh->jabatan ?? 'Umum' }}
-                            </span>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $buruh->status == 'aktif' ? 'bg-green-400/20 text-green-100 border border-green-400/30' : 'bg-red-400/20 text-red-100 border border-red-400/30' }}">
                                 {{ ucfirst($buruh->status) }}
                             </span>
@@ -49,15 +46,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Contact Info -->
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Informasi Kontak</h3>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Informasi Pribadi</h3>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Telepon</label>
+                                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">NIK (Nomor Induk Karyawan)</label>
                                 <div class="mt-1 flex items-center text-gray-900 font-medium">
                                     <svg class="h-5 w-5 text-indigo-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                     </svg>
-                                    {{ $buruh->telepon ?? 'Tidak ada data' }}
+                                    {{ $buruh->nik ?? 'Tidak ada data' }}
                                 </div>
                             </div>
                             <div>
