@@ -246,10 +246,10 @@
                             </label>
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
-                                <input type="text" id="harga_total" readonly class="block w-full pl-12 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 cursor-not-allowed shadow-sm font-semibold" value="0">
+                                <input type="text" id="harga_total" class="block w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 shadow-sm font-semibold" value="0">
                             </div>
                             <p id="harga_total_info" class="mt-1 text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>Otomatis dihitung dari (Harga Satuan × Jumlah) + Adjustment
+                                <i class="fas fa-info-circle mr-1"></i>Input Harga Satuan & Jumlah untuk hitung Total, ATAU input Harga Total untuk hitung Harga Satuan
                             </p>
                         </div>
 
@@ -780,47 +780,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to calculate and update total price
     function updateHargaTotal(isManualTotal = false) {
-        const hargaSatuan = parseFloat(document.getElementById('harga_satuan').value) || 0;
+        const hargaSatuanInput = document.getElementById('harga_satuan');
         const jumlahInput = document.getElementById('jumlah');
         const hargaTotalInput = document.getElementById('harga_total');
-        const searchTypeBarang = document.getElementById('search_type_barang');
-        const adjustment = parseFloat(document.getElementById('adjustment').value) || 0;
+        const adjustmentInput = document.getElementById('adjustment');
+        
+        const adjustment = parseFloat(adjustmentInput.value) || 0;
+        const jumlah = parseFloat(jumlahInput.value) || 0;
 
-        const isBbm = searchTypeBarang.value.toUpperCase().includes('BBM') || 
-                      searchTypeBarang.value.toUpperCase().includes('SOLAR') || 
-                      searchTypeBarang.value.toUpperCase().includes('DEX') ||
-                      searchTypeBarang.value.toUpperCase().includes('BENSIN');
-
-        if (isManualTotal && isBbm && hargaSatuan > 0) {
-            // Calculate Jumlah from Harga Total
+        if (isManualTotal && jumlah > 0) {
+            // User inputs total, calculate satuan
             const rawTotal = parseFloat(hargaTotalInput.value.replace(/\./g, '').replace(',', '.')) || 0;
-            
-            // We want (Harga Satuan * Jumlah) + Adjustment = RawTotal
-            // 1. Calculate the raw quantity
-            const rawJumlah = rawTotal / hargaSatuan;
-            
-            // 2. Round the quantity to 2 decimals (as stored in DB)
-            const roundedJumlah = Math.round(rawJumlah * 100) / 100;
-            jumlahInput.value = roundedJumlah.toFixed(2);
-            
-            // 3. Calculate the leftover adjustment needed to match the exact RawTotal
-            const leftoverAdjustment = Math.round(rawTotal - (hargaSatuan * roundedJumlah));
-            adjustmentInput.value = leftoverAdjustment;
+            const calculatedSatuan = (rawTotal - adjustment) / jumlah;
+            hargaSatuanInput.value = Math.round(calculatedSatuan);
         } else if (!isManualTotal) {
-            // Standard one-way calculation: Satuan * Jumlah + Adjustment
-            const jumlah = parseFloat(jumlahInput.value) || 0;
-            // Round the total price to nearest whole number (IDR style)
+            // Standard: calculate total from satuan
+            const hargaSatuan = parseFloat(hargaSatuanInput.value) || 0;
             const hargaTotal = Math.round((hargaSatuan * jumlah) + adjustment);
             
-            // Format number with thousand separators, no decimal places
-            const formattedTotal = hargaTotal.toLocaleString('id-ID', {
+            hargaTotalInput.value = hargaTotal.toLocaleString('id-ID', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
             });
-            
-            if (hargaTotalInput) {
-                hargaTotalInput.value = formattedTotal;
-            }
         }
     }
 
@@ -832,54 +813,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectTypeBarang = document.getElementById('master_nama_barang_amprahan_id');
     const searchTypeBarang = document.getElementById('search_type_barang');
     
-    // Enable/Disable editable Harga Total based on Type Barang
-    function toggleHargaTotalEditable() {
-        const isBbm = searchTypeBarang.value.toUpperCase().includes('BBM') || 
-                      searchTypeBarang.value.toUpperCase().includes('SOLAR') || 
-                      searchTypeBarang.value.toUpperCase().includes('DEX') ||
-                      searchTypeBarang.value.toUpperCase().includes('BENSIN');
-        const infoText = document.getElementById('harga_total_info');
-        
-        if (isBbm) {
-            hargaTotalInput.readOnly = false;
-            hargaTotalInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
-            hargaTotalInput.classList.add('bg-white');
-            hargaTotalInput.placeholder = "Input Total";
-            if (infoText) infoText.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Untuk BBM: Input Harga Total akan otomatis menghitung Jumlah';
-        } else {
-            hargaTotalInput.readOnly = true;
-            hargaTotalInput.classList.add('bg-gray-100', 'cursor-not-allowed');
-            hargaTotalInput.classList.remove('bg-white');
-            hargaTotalInput.placeholder = "";
-            if (infoText) infoText.innerHTML = '<i class="fas fa-info-circle mr-1"></i>Otomatis dihitung dari (Harga Satuan × Jumlah) + Adjustment';
-        }
-    }
+
 
     if (hargaSatuanInput && jumlahInput && adjustmentInput && hargaTotalInput) {
         hargaSatuanInput.addEventListener('input', () => updateHargaTotal(false));
         jumlahInput.addEventListener('input', () => updateHargaTotal(false));
         adjustmentInput.addEventListener('input', () => updateHargaTotal(false));
         
-        // Manual input for Harga Total (only for BBM)
         hargaTotalInput.addEventListener('input', () => updateHargaTotal(true));
         
-        // When focused, show raw number if it's BBM
         hargaTotalInput.addEventListener('focus', function() {
-            if (!this.readOnly) {
-                this.value = this.value.replace(/\./g, '');
-            }
+            this.value = this.value.replace(/\./g, '');
         });
         
-        // When blurred, re-format
         hargaTotalInput.addEventListener('blur', function() {
             updateHargaTotal(false);
         });
 
-        // Toggle editable on type change
-        selectTypeBarang.addEventListener('change', toggleHargaTotalEditable);
-        
         // Initial setup
-        toggleHargaTotalEditable();
         updateHargaTotal();
     }
 

@@ -225,9 +225,9 @@
                             <label for="harga_total" class="block text-sm font-semibold text-gray-700 mb-1">Harga Total</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">Rp</span>
-                                <input type="text" id="harga_total" readonly class="w-full pl-10 rounded-lg bg-gray-100 border-gray-300 text-gray-700 cursor-not-allowed font-semibold" value="0">
+                                <input type="text" id="harga_total" class="w-full pl-10 rounded-lg bg-white border-gray-300 text-gray-700 font-semibold" value="0">
                             </div>
-                            <p class="mt-1 text-[10px] text-gray-500 italic">Otomatis dihitung dari (Harga Satuan × Jumlah) + Adjustment</p>
+                            <p class="mt-1 text-[10px] text-gray-500 italic">Input Harga Satuan & Jumlah untuk hitung Total, ATAU input Harga Total untuk hitung Harga Satuan</p>
                         </div>
 
                         {{-- Lokasi --}}
@@ -814,19 +814,51 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to update total price
-    function updateHargaTotal() {
-        const harga = parseFloat(document.getElementById('harga_satuan').value) || 0;
-        const jumlah = parseFloat(document.getElementById('jumlah').value) || 0;
-        const adjustment = parseFloat(document.getElementById('adjustment').value) || 0;
-        const total = (harga * jumlah) + adjustment;
+    function updateHargaTotal(isManualTotal = false) {
+        const hargaSatuanInput = document.getElementById('harga_satuan');
+        const jumlahInput = document.getElementById('jumlah');
+        const hargaTotalInput = document.getElementById('harga_total');
+        const adjustmentInput = document.getElementById('adjustment');
         
-        document.getElementById('harga_total').value = total.toLocaleString('id-ID');
+        const adjustment = parseFloat(adjustmentInput.value) || 0;
+        const jumlah = parseFloat(jumlahInput.value) || 0;
+
+        if (isManualTotal && jumlah > 0) {
+            // User inputs total, calculate satuan
+            const rawTotal = parseFloat(hargaTotalInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const calculatedSatuan = (rawTotal - adjustment) / jumlah;
+            hargaSatuanInput.value = Math.round(calculatedSatuan);
+        } else if (!isManualTotal) {
+            // Standard: calculate total from satuan
+            const hargaSatuan = parseFloat(hargaSatuanInput.value) || 0;
+            const hargaTotal = Math.round((hargaSatuan * jumlah) + adjustment);
+            
+            hargaTotalInput.value = hargaTotal.toLocaleString('id-ID', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+        }
     }
 
     // Attach listeners for total price calculation
-    if (document.getElementById('harga_satuan')) document.getElementById('harga_satuan').addEventListener('input', updateHargaTotal);
-    if (document.getElementById('jumlah')) document.getElementById('jumlah').addEventListener('input', updateHargaTotal);
-    if (document.getElementById('adjustment')) document.getElementById('adjustment').addEventListener('input', updateHargaTotal);
+    const hargaSatuanInput = document.getElementById('harga_satuan');
+    const jumlahInput = document.getElementById('jumlah');
+    const adjustmentInput = document.getElementById('adjustment');
+    const hargaTotalInput = document.getElementById('harga_total');
+
+    if (hargaSatuanInput) hargaSatuanInput.addEventListener('input', () => updateHargaTotal(false));
+    if (jumlahInput) jumlahInput.addEventListener('input', () => updateHargaTotal(false));
+    if (adjustmentInput) adjustmentInput.addEventListener('input', () => updateHargaTotal(false));
+    
+    if (hargaTotalInput) {
+        hargaTotalInput.addEventListener('input', () => updateHargaTotal(true));
+        hargaTotalInput.addEventListener('focus', function() {
+            this.value = this.value.replace(/\./g, '');
+        });
+        hargaTotalInput.addEventListener('blur', function() {
+            updateHargaTotal(false);
+        });
+    }
     
     // Initial calculation
     updateHargaTotal();
