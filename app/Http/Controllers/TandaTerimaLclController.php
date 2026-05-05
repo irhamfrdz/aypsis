@@ -1949,24 +1949,32 @@ class TandaTerimaLclController extends Controller
                 ]);
 
                 // Sync to related documents
-                $syncData = [];
-                $syncData['pengirim'] = $prospek->pt_pengirim;
-                $syncData['penerima'] = $prospek->tujuan_pengiriman;
-                
-                // For BLs and Manifests, they use 'nama_barang'
-                $syncDataWithBarang = $syncData;
-                $syncDataWithBarang['nama_barang'] = $prospek->barang;
+                $syncDataNaikKapal = [];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'pengirim')) $syncDataNaikKapal['pengirim'] = \Illuminate\Support\Str::limit($prospek->pt_pengirim, 255, '');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'penerima')) $syncDataNaikKapal['penerima'] = \Illuminate\Support\Str::limit($prospek->tujuan_pengiriman, 255, '');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'nama_barang')) $syncDataNaikKapal['nama_barang'] = \Illuminate\Support\Str::limit($prospek->barang, 255, '');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'jenis_barang')) $syncDataNaikKapal['jenis_barang'] = \Illuminate\Support\Str::limit($prospek->barang, 255, '');
 
-                if (\Illuminate\Support\Facades\Schema::hasTable('naik_kapal')) {
-                    \DB::table('naik_kapal')->where('prospek_id', $prospek->id)->update($syncData);
+                if (!empty($syncDataNaikKapal) && \Illuminate\Support\Facades\Schema::hasTable('naik_kapal')) {
+                    \DB::table('naik_kapal')->where('prospek_id', $prospek->id)->update($syncDataNaikKapal);
                 }
                 
-                if (\Illuminate\Support\Facades\Schema::hasTable('manifests')) {
-                    \DB::table('manifests')->where('prospek_id', $prospek->id)->update($syncDataWithBarang);
+                $syncDataManifest = [];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'pengirim')) $syncDataManifest['pengirim'] = \Illuminate\Support\Str::limit($prospek->pt_pengirim, 255, '');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'penerima')) $syncDataManifest['penerima'] = \Illuminate\Support\Str::limit($prospek->tujuan_pengiriman, 255, '');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'nama_barang')) $syncDataManifest['nama_barang'] = $prospek->barang; // manifests.nama_barang is TEXT
+
+                if (!empty($syncDataManifest) && \Illuminate\Support\Facades\Schema::hasTable('manifests')) {
+                    \DB::table('manifests')->where('prospek_id', $prospek->id)->update($syncDataManifest);
                 }
                 
-                if (\Illuminate\Support\Facades\Schema::hasTable('bls')) {
-                    \DB::table('bls')->where('prospek_id', $prospek->id)->update($syncDataWithBarang);
+                $syncDataBl = [];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'pengirim')) $syncDataBl['pengirim'] = \Illuminate\Support\Str::limit($prospek->pt_pengirim, 255, '');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'penerima')) $syncDataBl['penerima'] = \Illuminate\Support\Str::limit($prospek->tujuan_pengiriman, 255, '');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'nama_barang')) $syncDataBl['nama_barang'] = $prospek->barang; // bls.nama_barang is TEXT
+
+                if (!empty($syncDataBl) && \Illuminate\Support\Facades\Schema::hasTable('bls')) {
+                    \DB::table('bls')->where('prospek_id', $prospek->id)->update($syncDataBl);
                 }
             }
 
