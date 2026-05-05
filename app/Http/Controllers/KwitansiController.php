@@ -15,6 +15,7 @@ class KwitansiController extends Controller
     {
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
+        $search = $request->get('search');
 
         // If no filters, redirect to select ship page
         if (!$namaKapal || !$noVoyage) {
@@ -36,9 +37,17 @@ class KwitansiController extends Controller
             $manifestQuery->where('no_voyage', trim($noVoyage));
         }
 
+        if ($search) {
+            $manifestQuery->where(function($q) use ($search) {
+                $q->where('nomor_kontainer', 'like', "%{$search}%")
+                  ->orWhere('nomor_bl', 'like', "%{$search}%")
+                  ->orWhere('nomor_manifest', 'like', "%{$search}%");
+            });
+        }
+
         $manifests = $manifestQuery->orderBy('created_at', 'desc')->get();
 
-        return view('kwitansi.index', compact('kwitansis', 'manifests', 'namaKapal', 'noVoyage'));
+        return view('kwitansi.index', compact('kwitansis', 'manifests', 'namaKapal', 'noVoyage', 'search'));
     }
 
     public function selectShip(Request $request)

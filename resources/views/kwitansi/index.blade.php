@@ -23,19 +23,23 @@
         </div>
     @endif
 
+    @php
+        $activeTab = ($namaKapal && $noVoyage) || $search ? 'manifest' : 'kwitansi';
+    @endphp
+
     <!-- Tabs Container -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="flex border-b border-gray-100 bg-gray-50/50">
-            <button onclick="switchTab('kwitansi')" id="tab-kwitansi" class="px-6 py-4 text-sm font-medium border-b-2 transition-all duration-200 focus:outline-none border-blue-600 text-blue-600 bg-white">
+            <button onclick="switchTab('kwitansi')" id="tab-kwitansi" class="px-6 py-4 text-sm font-medium border-b-2 transition-all duration-200 focus:outline-none {{ $activeTab == 'kwitansi' ? 'border-blue-600 text-blue-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
                 <i class="fas fa-file-invoice-dollar mr-2"></i> Daftar Kwitansi
             </button>
-            <button onclick="switchTab('manifest')" id="tab-manifest" class="px-6 py-4 text-sm font-medium border-b-2 transition-all duration-200 focus:outline-none border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100">
+            <button onclick="switchTab('manifest')" id="tab-manifest" class="px-6 py-4 text-sm font-medium border-b-2 transition-all duration-200 focus:outline-none {{ $activeTab == 'manifest' ? 'border-blue-600 text-blue-600 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100' }}">
                 <i class="fas fa-ship mr-2"></i> Siap Ditagih (Manifest)
             </button>
         </div>
 
         <!-- Tab: Daftar Kwitansi -->
-        <div id="content-kwitansi" class="tab-content">
+        <div id="content-kwitansi" class="tab-content {{ $activeTab == 'kwitansi' ? '' : 'hidden' }}">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -98,28 +102,47 @@
         </div>
 
         <!-- Tab: Siap Ditagih (Manifest) -->
-        <div id="content-manifest" class="tab-content hidden">
-            <div class="p-4 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
-                <div>
+        <div id="content-manifest" class="tab-content {{ $activeTab == 'manifest' ? '' : 'hidden' }}">
+            <div class="p-4 bg-blue-50 border-b border-blue-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex-1">
                     <p class="text-sm text-blue-700">
                         <i class="fas fa-info-circle mr-1"></i> Data di bawah ini adalah Manifest yang siap untuk dibuatkan Kwitansi.
                     </p>
                     @if($namaKapal && $noVoyage)
-                        <div class="mt-2 flex items-center gap-2">
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
                             <span class="px-2 py-1 bg-indigo-600 text-white text-xs rounded-full font-bold">
                                 <i class="fas fa-ship mr-1"></i> {{ $namaKapal }}
                             </span>
                             <span class="px-2 py-1 bg-indigo-600 text-white text-xs rounded-full font-bold">
                                 <i class="fas fa-route mr-1"></i> {{ $noVoyage }}
                             </span>
-                            <a href="{{ route('kwitansi.index') }}#manifest" class="text-xs text-red-600 hover:underline font-bold ml-2">
+                            @if($search)
+                                <span class="px-2 py-1 bg-amber-500 text-white text-xs rounded-full font-bold">
+                                    <i class="fas fa-search mr-1"></i> "{{ $search }}"
+                                </span>
+                            @endif
+                            <a href="{{ route('kwitansi.index', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" class="text-xs text-red-600 hover:underline font-bold ml-2">
                                 <i class="fas fa-times-circle"></i> Hapus Filter
                             </a>
                         </div>
                     @endif
                 </div>
-                <div>
-                    <a href="{{ route('kwitansi.select-ship') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm flex items-center text-xs font-bold">
+                
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                    {{-- Form Pencarian --}}
+                    <form action="{{ route('kwitansi.index') }}" method="GET" class="relative w-full sm:w-64">
+                        <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
+                        <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+                        <input type="text" name="search" value="{{ $search }}" 
+                            placeholder="Cari Kontainer / BL..." 
+                            class="w-full pl-9 pr-4 py-2 bg-white border border-blue-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        >
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </form>
+
+                    <a href="{{ route('kwitansi.select-ship') }}" class="whitespace-nowrap px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm flex items-center text-xs font-bold w-full sm:w-auto justify-center">
                         <i class="fas fa-filter mr-2"></i> Pilih Kapal & Voyage
                     </a>
                 </div>
