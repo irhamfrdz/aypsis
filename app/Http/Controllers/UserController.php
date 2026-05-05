@@ -720,7 +720,8 @@ class UserController extends Controller
                 'tagihan-perbaikan-kontainer' => 'tagihan-perbaikan-kontainer',
                 'vendor-kontainer-sewa' => 'vendor-kontainer-sewa',
                 'kontainer-sewa-final' => 'kontainer-sewa-final',
-                'kwitansi' => 'kwitansi'
+                'kwitansi' => 'kwitansi',
+                'master-buruh' => 'master-buruh'
             ];
 
 
@@ -3855,6 +3856,26 @@ class UserController extends Controller
                             'create' => 'kontainer-sewa-final-create',
                             'update' => 'kontainer-sewa-final-update',
                             'delete' => 'kontainer-sewa-final-delete'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for master-buruh module
+                    if ($module === 'master-buruh') {
+                        $directActionMap = [
+                            'view' => 'master-buruh-view',
+                            'create' => 'master-buruh-create',
+                            'update' => 'master-buruh-update',
+                            'delete' => 'master-buruh-delete'
                         ];
 
                         if (isset($directActionMap[$action])) {
