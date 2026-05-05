@@ -1597,13 +1597,6 @@
                     </a>
                 @endif
 
-                {{-- Kwitansi --}}
-                @if($user && $user->can('kwitansi-view'))
-                    <a href="{{ route('kwitansi.select-ship') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('kwitansi.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Kwitansi / Akuntansi</span>
-                    </a>
-                @endif
-
                 {{-- Tagihan Supir Vendor --}}
                 @if($user && $user->can('tagihan-supir-vendor-view'))
                     <a href="{{ Route::has('tagihan-supir-vendor.index') ? route('tagihan-supir-vendor.index') : '#' }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('tagihan-supir-vendor.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
@@ -2129,6 +2122,27 @@
         </div>
         @endif 
     </div>
+</div>
+@endif
+
+{{-- Kwitansi / Akuntansi Standalone Menu --}}
+@if($user && $user->can('kwitansi-view'))
+<div class="mt-4 mb-4">
+    <a href="{{ route('kwitansi.select-ship') }}" target="_blank" class="w-full flex items-center py-2 px-5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ Request::routeIs('kwitansi.*') ? 'bg-indigo-50 text-indigo-700 font-medium' : '' }}">
+        <div class="flex items-center">
+            <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ Request::routeIs('kwitansi.*') ? 'bg-indigo-100' : '' }}">
+                <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ Request::routeIs('kwitansi.*') ? 'text-indigo-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <span class="text-xs font-medium truncate w-full">Kwitansi / Akuntansi</span>
+        </div>
+        <span class="ml-auto">
+            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+        </span>
+    </a>
 </div>
 @endif
 
