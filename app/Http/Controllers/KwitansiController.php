@@ -145,6 +145,8 @@ class KwitansiController extends Controller
                 'discount_nominal' => $request->discount_nominal ?? 0,
                 'biaya_kirim' => $request->biaya_kirim ?? 0,
                 'total_invoice' => $request->total_invoice ?? 0,
+                'kena_pajak' => $request->has('kena_pajak'),
+                'termasuk_pajak' => $request->has('termasuk_pajak'),
             ]);
 
             if ($request->has('details') && is_array($request->details)) {
@@ -217,6 +219,8 @@ class KwitansiController extends Controller
                 'discount_nominal' => $request->discount_nominal ?? 0,
                 'biaya_kirim' => $request->biaya_kirim ?? 0,
                 'total_invoice' => $request->total_invoice ?? 0,
+                'kena_pajak' => $request->has('kena_pajak'),
+                'termasuk_pajak' => $request->has('termasuk_pajak'),
             ]);
 
             // Delete old details

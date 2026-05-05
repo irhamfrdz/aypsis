@@ -213,6 +213,17 @@
                         <label class="text-sm font-medium text-gray-700 w-1/3">Biaya Kirim</label>
                         <input type="text" name="biaya_kirim" id="biaya_kirim" value="{{ number_format($kwitansi->biaya_kirim, 0, '.', '') }}" class="w-2/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10 text-right number-format">
                     </div>
+
+                    <div class="flex items-center gap-6 py-2">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="kena_pajak" id="kena_pajak" {{ $kwitansi->kena_pajak ? 'checked' : '' }} class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <label for="kena_pajak" class="ml-2 text-sm font-medium text-gray-700">Kena Pajak (PPN)</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" name="termasuk_pajak" id="termasuk_pajak" {{ $kwitansi->termasuk_pajak ? 'checked' : '' }} class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <label for="termasuk_pajak" class="ml-2 text-sm font-medium text-gray-700">Termasuk Pajak</label>
+                        </div>
+                    </div>
                     
                     <div class="flex items-center justify-between pt-3 border-t border-gray-200">
                         <label class="text-base font-bold text-gray-900 w-1/3">Total Invoice</label>

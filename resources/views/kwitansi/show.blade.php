@@ -126,6 +126,18 @@
                     <span class="text-gray-600">Biaya Kirim</span>
                     <span class="font-medium">Rp {{ number_format($kwitansi->biaya_kirim, 0, ',', '.') }}</span>
                 </div>
+                <div class="flex justify-start gap-4 py-1">
+                    @if($kwitansi->kena_pajak)
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i> Kena Pajak (PPN)
+                        </span>
+                    @endif
+                    @if($kwitansi->termasuk_pajak)
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <i class="fas fa-info-circle mr-1"></i> Termasuk Pajak
+                        </span>
+                    @endif
+                </div>
                 <div class="flex justify-between pt-2">
                     <span class="font-bold text-lg text-gray-800">Total Invoice</span>
                     <span class="font-bold text-xl text-indigo-700">Rp {{ number_format($kwitansi->total_invoice, 0, ',', '.') }}</span>

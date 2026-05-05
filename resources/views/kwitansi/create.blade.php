@@ -87,7 +87,14 @@
 
             <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                <textarea name="keterangan" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10"></textarea>
+                @php
+                    $months = [
+                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                        7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                    ];
+                    $tglIndo = date('j') . ' ' . $months[date('n')] . ' ' . date('Y');
+                @endphp
+                <textarea name="keterangan" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">@if($manifest){{ "Jasa Pelayaran " . ($manifest->kuantitas ?? 0) . " " . ($manifest->satuan ?? '') . " Cont " . ($manifest->size_kontainer ?? '') . " isi " . ($manifest->nama_barang ?? '') . ", per " . ($manifest->nama_kapal ?? '') . ", " . ($manifest->no_voyage ?? '') . ", " . $tglIndo }}@endif</textarea>
             </div>
         </div>
 
@@ -177,6 +184,17 @@
                     <div class="flex items-center justify-between">
                         <label class="text-sm font-medium text-gray-700 w-1/3">Biaya Kirim</label>
                         <input type="text" name="biaya_kirim" id="biaya_kirim" value="0" class="w-2/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10 text-right number-format">
+                    </div>
+
+                    <div class="flex items-center gap-6 py-2">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="kena_pajak" id="kena_pajak" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <label for="kena_pajak" class="ml-2 text-sm font-medium text-gray-700">Kena Pajak (PPN)</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" name="termasuk_pajak" id="termasuk_pajak" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <label for="termasuk_pajak" class="ml-2 text-sm font-medium text-gray-700">Termasuk Pajak</label>
+                        </div>
                     </div>
                     
                     <div class="flex items-center justify-between pt-3 border-t border-gray-200">
