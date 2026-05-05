@@ -747,6 +747,22 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
+                            {{-- Data Buruh --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-indigo-600 font-bold">Data Buruh</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-buruh][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-buruh']['view']) && $userMatrixPermissions['master-buruh']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-buruh][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-buruh']['create']) && $userMatrixPermissions['master-buruh']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-buruh][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-buruh']['update']) && $userMatrixPermissions['master-buruh']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-buruh][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-buruh']['delete']) && $userMatrixPermissions['master-buruh']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
 
                             {{-- Persetujuan Edit Karyawan --}}
                             <tr class="submodule-row" data-parent="master">
