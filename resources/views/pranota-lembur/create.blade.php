@@ -115,10 +115,10 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3">
-                                    <input type="number" name="items[{{ $index }}][biaya_lembur]" value="0" min="0" step="1000" class="biaya-lembur w-32 px-2 py-1 text-sm border border-gray-300 rounded-md" {{ !$sj->lembur ? 'readonly' : '' }}>
+                                    <input type="number" name="items[{{ $index }}][biaya_lembur]" value="{{ $sj->lembur ? 50000 : 0 }}" min="0" step="1000" class="biaya-lembur w-32 px-2 py-1 text-sm border border-gray-300 rounded-md" {{ !$sj->lembur ? 'readonly' : '' }}>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <input type="number" name="items[{{ $index }}][biaya_nginap]" value="0" min="0" step="1000" class="biaya-nginap w-32 px-2 py-1 text-sm border border-gray-300 rounded-md" {{ !$sj->nginap ? 'readonly' : '' }}>
+                                    <input type="number" name="items[{{ $index }}][biaya_nginap]" value="{{ $sj->nginap ? 50000 : 0 }}" min="0" step="1000" class="biaya-nginap w-32 px-2 py-1 text-sm border border-gray-300 rounded-md" {{ !$sj->nginap ? 'readonly' : '' }}>
                                 </td>
                                 <td class="px-4 py-3 text-sm font-semibold total-per-row">Rp 0</td>
                                 
