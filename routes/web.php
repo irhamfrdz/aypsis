@@ -95,6 +95,8 @@ use App\Http\Controllers\BtmKontainerSewaController;
 use App\Http\Controllers\ProspekBatamController;
 use App\Http\Controllers\BuruhController;
 use App\Http\Controllers\MasterItemKwitansiController;
+use App\Http\Controllers\BiayaBensinController;
+
 
 
 /*
@@ -1799,6 +1801,17 @@ Route::middleware([
     Route::get('biaya-kapal/{biayaKapal}/print-air', [\App\Http\Controllers\BiayaKapalController::class, 'printAir'])
          ->name('biaya-kapal.print-air')
          ->middleware('can:biaya-kapal-view');
+
+    // ⛽ Biaya Bensin Routes
+    Route::resource('biaya-bensin', BiayaBensinController::class)->middleware([
+        'index' => 'can:biaya-bensin-view',
+        'show' => 'can:biaya-bensin-view',
+        'create' => 'can:biaya-bensin-create',
+        'store' => 'can:biaya-bensin-create',
+        'edit' => 'can:biaya-bensin-update',
+        'update' => 'can:biaya-bensin-update',
+        'destroy' => 'can:biaya-bensin-delete',
+    ]);
     Route::get('biaya-kapal/{biayaKapal}/print-tkbm', [\App\Http\Controllers\BiayaKapalController::class, 'printTkbm'])
          ->name('biaya-kapal.print-tkbm')
          ->middleware('can:biaya-kapal-view');
