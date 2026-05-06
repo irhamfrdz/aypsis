@@ -512,18 +512,30 @@
         
         // 3. Distribusikan sectionTotal ke buruh (Lainnya rata, 1 buruh dapat sisa lebih besar)
         let baseNominal = Math.floor((sectionTotal / selected.length) / 1000) * 1000;
-        let totalBase = baseNominal * selected.length;
-        let diff = sectionTotal - totalBase; 
         
-        // Pilih 1 buruh secara acak untuk mendapatkan seluruh sisa (diff)
+        // Joki: Ada kemungkinan 50% untuk sengaja mengurangi baseNominal agar sisa (diff) terkumpul di 1 buruh
+        // Ini memastikan ada variasi "1 buruh lebih besar" meskipun angkanya bisa dibagi rata sempurna
+        if (Math.random() < 0.5 && baseNominal > 10000) {
+            const reduction = 1000; 
+            const testLucky = sectionTotal - ((baseNominal - reduction) * (selected.length - 1));
+            if (testLucky <= 440000) {
+                baseNominal -= reduction;
+            }
+        }
+
+        let luckyNominal = sectionTotal - (baseNominal * (selected.length - 1));
+        
+        // Penyesuaian agar tidak melebihi cap 440rb
+        while (luckyNominal > 440000 && baseNominal < 440000) {
+            baseNominal += 1000;
+            luckyNominal = sectionTotal - (baseNominal * (selected.length - 1));
+        }
+
+        // Pilih 1 buruh secara acak untuk menjadi si "Lucky"
         const luckyIndex = Math.floor(Math.random() * selected.length);
 
         selected.forEach((buruh, index) => {
-            let nominal = baseNominal;
-            if (index === luckyIndex) {
-                nominal += diff;
-            }
-            
+            let nominal = (index === luckyIndex) ? luckyNominal : baseNominal;
             addBuruhToSectionWithData(sectionIndex, buruh.id, nominal);
         });
     };
