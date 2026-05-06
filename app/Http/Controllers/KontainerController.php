@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kontainer;
+use App\Models\BtmSewaTransaction;
 use Illuminate\Http\Request;
 
 class KontainerController extends Controller
@@ -157,6 +158,20 @@ class KontainerController extends Controller
 
             $existingContainer->update($data);
 
+            // SYNC WITH SEWA FINAL (TRANSAKSI)
+            if ($request->filled('tanggal_mulai_sewa')) {
+                BtmSewaTransaction::updateOrCreate(
+                    [
+                        'unit_number' => $nomor_seri_gabungan,
+                        'date_in' => $request->tanggal_mulai_sewa,
+                    ],
+                    [
+                        'date_out' => $request->tanggal_selesai_sewa ?: null,
+                        'billing_mode' => $request->input('billing_mode', 'B'),
+                    ]
+                );
+            }
+
             return redirect()->route('master.kontainer.index')
                              ->with('success', 'Kontainer dengan nomor ' . $nomor_seri_gabungan . ' sudah ada. Data berhasil diperbarui!');
         }
@@ -185,6 +200,20 @@ class KontainerController extends Controller
         }
 
         Kontainer::create($data);
+
+        // SYNC WITH SEWA FINAL (TRANSAKSI)
+        if ($request->filled('tanggal_mulai_sewa')) {
+            BtmSewaTransaction::updateOrCreate(
+                [
+                    'unit_number' => $nomor_seri_gabungan,
+                    'date_in' => $request->tanggal_mulai_sewa,
+                ],
+                [
+                    'date_out' => $request->tanggal_selesai_sewa ?: null,
+                    'billing_mode' => $request->input('billing_mode', 'B'),
+                ]
+            );
+        }
 
         return redirect()->route('master.kontainer.index')
                          ->with('success', 'Kontainer berhasil ditambahkan!');
@@ -277,6 +306,20 @@ class KontainerController extends Controller
         $data = $request->all();
 
         $kontainer->update($data);
+
+        // SYNC WITH SEWA FINAL (TRANSAKSI)
+        if ($request->filled('tanggal_mulai_sewa')) {
+            BtmSewaTransaction::updateOrCreate(
+                [
+                    'unit_number' => $request->nomor_seri_gabungan,
+                    'date_in' => $request->tanggal_mulai_sewa,
+                ],
+                [
+                    'date_out' => $request->tanggal_selesai_sewa ?: null,
+                    'billing_mode' => $request->input('billing_mode', 'B'),
+                ]
+            );
+        }
 
         return redirect()->route('master.kontainer.index')
                          ->with('success', 'Kontainer berhasil diperbarui!');

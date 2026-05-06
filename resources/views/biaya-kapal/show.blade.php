@@ -228,6 +228,122 @@
             @endif
         </div>
     </div>
+    
+    @if($biayaKapal->barangDetails->count() > 0 || $biayaKapal->tenagaKerjaDetails->count() > 0)
+    <div class="mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Buruh & Tenaga Kerja</h3>
+        <div class="space-y-6">
+            @php
+                $allCombinations = $biayaKapal->barangDetails->map(function($i) { return $i->kapal . '|' . $i->voyage; })
+                    ->merge($biayaKapal->tenagaKerjaDetails->map(function($i) { return $i->kapal . '|' . $i->voyage; }))
+                    ->unique();
+            @endphp
+            @foreach($allCombinations as $key)
+                @php
+                    $parts = explode('|', $key);
+                    $kapal = $parts[0];
+                    $voyage = $parts[1];
+                    $barangItems = $biayaKapal->barangDetails->where('kapal', $kapal)->where('voyage', $voyage);
+                    $tenagaKerjaItems = $biayaKapal->tenagaKerjaDetails->where('kapal', $kapal)->where('voyage', $voyage);
+                    $firstBarang = $barangItems->first();
+                @endphp
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Kapal</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $kapal }}</p>
+                        </div>
+                        <div>
+                            <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Voyage</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $voyage }}</p>
+                        </div>
+                    </div>
+
+                    @if($barangItems->whereNotNull('pricelist_buruh_id')->count() > 0)
+                    <div class="mt-4">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Rincian Barang</span>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama Barang</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Tarif</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($barangItems->whereNotNull('pricelist_buruh_id') as $item)
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $item->pricelistBuruh->barang ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ number_format($item->jumlah, 2, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->tarif, 0, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($tenagaKerjaItems->count() > 0)
+                    <div class="mt-4">
+                        <span class="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2 block font-bold">Tenaga Kerja / Buruh</span>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
+                                <thead class="bg-emerald-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-emerald-700 uppercase">Nama Buruh</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-emerald-700 uppercase">NIK</th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-emerald-700 uppercase">Nominal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($tenagaKerjaItems as $tk)
+                                        <tr>
+                                            <td class="px-4 py-2 text-sm text-gray-900 font-medium">{{ $tk->buruh->nama ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-500">{{ $tk->buruh->nik ?? '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900 text-right font-semibold">Rp {{ number_format($tk->nominal, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-emerald-50 font-bold">
+                                    <tr>
+                                        <td colspan="2" class="px-4 py-2 text-sm text-right text-emerald-800 uppercase">Total Tenaga Kerja</td>
+                                        <td class="px-4 py-2 text-sm text-right text-emerald-900">Rp {{ number_format($tenagaKerjaItems->sum('nominal'), 0, ',', '.') }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($firstBarang && ($firstBarang->adjustment != 0))
+                    <div class="mt-4 flex justify-between items-center p-3 bg-white border border-blue-200 rounded-lg">
+                        <div>
+                            <span class="text-xs font-semibold text-gray-500 uppercase block">Adjustment</span>
+                            <p class="text-sm italic text-gray-600">{{ $firstBarang->notes_adjustment ?: 'Tidak ada catatan' }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold @if($firstBarang->adjustment > 0) text-green-600 @else text-red-600 @endif">
+                                {{ $firstBarang->adjustment > 0 ? '+' : '' }} Rp {{ number_format($firstBarang->adjustment, 0, ',', '.') }}
+                            </p>
+                        </div>
+                    </div>
+                    @endif
+                    
+                    <div class="mt-4 flex justify-end">
+                        <div class="bg-blue-600 px-4 py-2 rounded-lg shadow-md text-right">
+                            <span class="text-xs font-semibold text-blue-100 uppercase">Total Nominal Kapal</span>
+                            <p class="text-xl font-black text-white">Rp {{ number_format($barangItems->sum('subtotal') + ($firstBarang->adjustment ?? 0) + $tenagaKerjaItems->sum('nominal'), 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
     @if($biayaKapal->tkbmDetails->count() > 0)
     <div class="mt-8">

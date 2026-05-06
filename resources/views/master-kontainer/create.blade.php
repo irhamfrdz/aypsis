@@ -131,6 +131,16 @@
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
+                <div>
+                    <label for="billing_mode" class="block text-sm font-medium text-gray-700">Billing Mode (Sewa Final)</label>
+                    <select name="billing_mode" id="billing_mode" class="{{ $inputClasses }}">
+                        <option value="B" {{ old('billing_mode') == 'B' ? 'selected' : '' }}>Bulanan (B)</option>
+                        <option value="H" {{ old('billing_mode') == 'H' ? 'selected' : '' }}>Harian (H)</option>
+                    </select>
+                    @error('billing_mode')
+                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
                 <div class="md:col-span-2">
                     <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan</label>
                     <textarea name="keterangan" id="keterangan" rows="3" class="{{ $inputClasses }}">{{ old('keterangan') }}</textarea>

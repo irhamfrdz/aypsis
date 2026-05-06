@@ -212,6 +212,9 @@ class BiayaKapalController extends Controller
         // Get pricelist temas
         $pricelistTemas = \App\Models\PricelistTemas::where('status', 'Aktif')->orderBy('jenis_biaya')->get();
 
+        // Get all active buruh workers
+        $allBuruhs = \App\Models\Buruh::where('status', 'aktif')->orderBy('nama')->get();
+
         return view('biaya-kapal.create', compact(
             'kapals', 
             'klasifikasiBiayas', 
@@ -233,7 +236,8 @@ class BiayaKapalController extends Controller
             'dokumenPerijinans',
             'pricelistPerijinans',
             'pricelistMeratus',
-            'pricelistTemas'
+            'pricelistTemas',
+            'allBuruhs'
         ));
     }
 
@@ -266,6 +270,13 @@ class BiayaKapalController extends Controller
                         if (isset($barang['jumlah'])) $barang['jumlah'] = str_replace(',', '.', str_replace('.', '', $barang['jumlah']));
                     }
                     unset($barang); // CRITICAL: Unset reference to prevent variable reference bug
+                }
+
+                if (isset($section['tenaga_kerja']) && is_array($section['tenaga_kerja'])) {
+                    foreach ($section['tenaga_kerja'] as &$tk) {
+                        if (isset($tk['nominal'])) $tk['nominal'] = str_replace(',', '.', str_replace('.', '', $tk['nominal']));
+                    }
+                    unset($tk);
                 }
             }
             unset($section); // CRITICAL: Unset reference to prevent variable reference bug
@@ -523,6 +534,9 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
             'kapal_sections.*.adjustment' => 'nullable|numeric',
             'kapal_sections.*.notes_adjustment' => 'nullable|string',
+            'kapal_sections.*.tenaga_kerja' => 'nullable|array',
+            'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'required|exists:buruhs,id',
+            'kapal_sections.*.tenaga_kerja.*.nominal' => 'required|numeric|min:0',
             // Biaya Air sections structure
             'air' => 'nullable|array',
             'air.*.kapal' => 'nullable|string|max:255',
@@ -1465,6 +1479,22 @@ class BiayaKapalController extends Controller
                                              " | Sisa: Rp " . number_format($sectionSisa, 0, ',', '.');
                         }
                     }
+
+                    // SAVE TENAGA KERJA / BURUH workers
+                    if (isset($section['tenaga_kerja']) && is_array($section['tenaga_kerja'])) {
+                        foreach ($section['tenaga_kerja'] as $tk) {
+                            if (!empty($tk['buruh_id']) && !empty($tk['nominal'])) {
+                                \App\Models\BiayaKapalTenagaKerja::create([
+                                    'biaya_kapal_id' => $biayaKapal->id,
+                                    'buruh_id' => $tk['buruh_id'],
+                                    'nominal' => $tk['nominal'],
+                                    'kapal' => $kapalName,
+                                    'voyage' => $voyageName,
+                                ]);
+                                $sectionHasData = true;
+                            }
+                        }
+                    }
                     
                     // IMPORTANT: If section has kapal/voyage but no valid barang data saved,
                     // create a placeholder record so the kapal appears in print
@@ -2013,7 +2043,8 @@ class BiayaKapalController extends Controller
             'freightDetails',
             'perijinanDetails',
             'meratusDetails',
-            'demurrageDetails'
+            'demurrageDetails',
+            'tenagaKerjaDetails.buruh'
         ]);
 
         // Resolve container details for trucking if needed
@@ -2567,6 +2598,9 @@ class BiayaKapalController extends Controller
         // Get pricelist meratus
         $pricelistMeratus = \App\Models\PricelistMeratus::where('status', 'Aktif')->orderBy('jenis_biaya')->get();
 
+        // Get all active buruh workers
+        $allBuruhs = \App\Models\Buruh::where('status', 'aktif')->orderBy('nama')->get();
+
         return view('biaya-kapal.edit', compact(
             'biayaKapal', 
             'kapals', 
@@ -2588,7 +2622,8 @@ class BiayaKapalController extends Controller
             'pricelistFreightVendors',
             'dokumenPerijinans',
             'pricelistPerijinans',
-            'pricelistMeratus'
+            'pricelistMeratus',
+            'allBuruhs'
         ));
     }
 
@@ -2623,6 +2658,14 @@ class BiayaKapalController extends Controller
                 if (isset($section['dp'])) $section['dp'] = str_replace(',', '.', str_replace('.', '', $section['dp']));
                 if (isset($section['sisa_pembayaran'])) $section['sisa_pembayaran'] = str_replace(',', '.', str_replace('.', '', $section['sisa_pembayaran']));
                 if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
+
+                // Tenaga Kerja Cleaning
+                if (isset($section['tenaga_kerja']) && is_array($section['tenaga_kerja'])) {
+                    foreach ($section['tenaga_kerja'] as &$tk) {
+                        if (isset($tk['nominal'])) $tk['nominal'] = str_replace(',', '.', str_replace('.', '', $tk['nominal']));
+                    }
+                    unset($tk);
+                }
             }
             unset($section);
         }
@@ -2783,6 +2826,9 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
             'kapal_sections.*.adjustment' => 'nullable|numeric',
             'kapal_sections.*.notes_adjustment' => 'nullable|string',
+            'kapal_sections.*.tenaga_kerja' => 'nullable|array',
+            'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'required|exists:buruhs,id',
+            'kapal_sections.*.tenaga_kerja.*.nominal' => 'required|numeric|min:0',
             
             // Air sections validation
             'air' => 'nullable|array',
@@ -3726,6 +3772,7 @@ class BiayaKapalController extends Controller
             // BURUH UPDATE
             if ($request->has('kapal_sections')) {
                 BiayaKapalBarang::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                \App\Models\BiayaKapalTenagaKerja::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 if (!empty($request->kapal_sections)) {
                     foreach ($request->kapal_sections as $sectionIndex => $section) {
                         $kapalName = $section['kapal'] ?? null;
@@ -3768,6 +3815,22 @@ class BiayaKapalController extends Controller
                             }
                         }
                         
+                        // UPDATE TENAGA KERJA / BURUH workers
+                        if (isset($section['tenaga_kerja']) && is_array($section['tenaga_kerja'])) {
+                            foreach ($section['tenaga_kerja'] as $tk) {
+                                if (!empty($tk['buruh_id']) && !empty($tk['nominal'])) {
+                                    \App\Models\BiayaKapalTenagaKerja::create([
+                                        'biaya_kapal_id' => $biayaKapal->id,
+                                        'buruh_id' => $tk['buruh_id'],
+                                        'nominal' => $tk['nominal'],
+                                        'kapal' => $kapalName,
+                                        'voyage' => $voyageName,
+                                    ]);
+                                    $sectionHasData = true;
+                                }
+                            }
+                        }
+
                         if (!$sectionHasData && !empty($kapalName) && !empty($voyageName)) {
                             BiayaKapalBarang::create([
                                 'biaya_kapal_id' => $biayaKapal->id,

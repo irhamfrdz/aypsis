@@ -1,3 +1,4 @@
+    const allBuruhsData = @json($allBuruhs ?? []);
     
     // Function to clear BL selections
     function clearBlSelections() {
@@ -89,11 +90,19 @@
                 </div>
             </div>
             
-            <div class="mb-3">
+            <div class="mb-4">
                 <label class="block text-xs font-medium text-gray-700 mb-2">Detail Barang</label>
                 <div class="barang-container-section" data-section="${sectionIndex}"></div>
                 <button type="button" onclick="addBarangToSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg transition">
                     <i class="fas fa-plus mr-1"></i> Tambah Barang
+                </button>
+            </div>
+            
+            <div class="mb-3 p-3 bg-gray-100 border border-gray-200 rounded-lg">
+                <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">Tenaga Kerja / Buruh</label>
+                <div class="buruh-container-section" data-section="${sectionIndex}"></div>
+                <button type="button" onclick="addBuruhToSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-lg transition">
+                    <i class="fas fa-user-plus mr-1"></i> Tambah Buruh
                 </button>
             </div>
 
@@ -426,6 +435,107 @@
         });
     };
     
+    window.addBuruhToSection = function(sectionIndex) {
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.buruh-container-section');
+        const buruhIndex = container.children.length;
+        
+        let buruhOptions = '<option value="">Pilih Nama Buruh</option>';
+        allBuruhsData.forEach(buruh => {
+            buruhOptions += `<option value="${buruh.id}">${buruh.nama} ${buruh.nik ? '('+buruh.nik+')' : ''}</option>`;
+        });
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-2 mb-2';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <select name="kapal_sections[${sectionIndex}][tenaga_kerja][${buruhIndex}][buruh_id]" class="buruh-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-emerald-500" required>
+                    ${buruhOptions}
+                </select>
+            </div>
+            <div class="w-32">
+                <input type="text" name="kapal_sections[${sectionIndex}][tenaga_kerja][${buruhIndex}][nominal]" class="buruh-nominal-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-emerald-500" placeholder="Rp 0" required>
+            </div>
+            <button type="button" onclick="removeBuruhFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                <i class="fas fa-trash text-xs"></i>
+            </button>
+        `;
+        
+        container.appendChild(inputGroup);
+        
+        // Add currency formatting to nominal input
+        const nominalInput = inputGroup.querySelector('.buruh-nominal-item');
+        nominalInput.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '');
+            if (val !== '') {
+                this.value = parseInt(val).toLocaleString('id-ID');
+            }
+        });
+    };
+
+    window.addBuruhToSectionWithValue = function(sectionIndex, buruhId, nominal) {
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.buruh-container-section');
+        const buruhIndex = container.children.length;
+        
+        let buruhOptions = '<option value="">Pilih Nama Buruh</option>';
+        allBuruhsData.forEach(buruh => {
+            const selected = buruh.id == buruhId ? 'selected' : '';
+            buruhOptions += `<option value="${buruh.id}" ${selected}>${buruh.nama} ${buruh.nik ? '('+buruh.nik+')' : ''}</option>`;
+        });
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-2 mb-2';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <select name="kapal_sections[${sectionIndex}][tenaga_kerja][${buruhIndex}][buruh_id]" class="buruh-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-emerald-500" required>
+                    ${buruhOptions}
+                </select>
+            </div>
+            <div class="w-32">
+                <input type="text" name="kapal_sections[${sectionIndex}][tenaga_kerja][${buruhIndex}][nominal]" value="${Math.round(nominal).toLocaleString('id-ID')}" class="buruh-nominal-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-emerald-500" placeholder="Rp 0" required>
+            </div>
+            <button type="button" onclick="removeBuruhFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                <i class="fas fa-trash text-xs"></i>
+            </button>
+        `;
+        
+        container.appendChild(inputGroup);
+        
+        // Add currency formatting to nominal input
+        const nominalInput = inputGroup.querySelector('.buruh-nominal-item');
+        nominalInput.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '');
+            if (val !== '') {
+                this.value = parseInt(val).toLocaleString('id-ID');
+            }
+        });
+    };
+    
+    window.removeBuruhFromSection = function(button) {
+        const container = button.closest('.buruh-container-section');
+        button.closest('.flex').remove();
+        reindexBuruhInputs(container);
+    };
+    
+    function reindexBuruhInputs(container) {
+        const section = container.closest('.kapal-section');
+        const sectionIndex = section.getAttribute('data-section-index');
+        const inputGroups = container.querySelectorAll('.flex');
+        
+        inputGroups.forEach((group, newIndex) => {
+            const buruhSelect = group.querySelector('.buruh-select-item');
+            if (buruhSelect) {
+                buruhSelect.name = `kapal_sections[${sectionIndex}][tenaga_kerja][${newIndex}][buruh_id]`;
+            }
+            
+            const nominalInput = group.querySelector('.buruh-nominal-item');
+            if (nominalInput) {
+                nominalInput.name = `kapal_sections[${sectionIndex}][tenaga_kerja][${newIndex}][nominal]`;
+            }
+        });
+    }
+
     window.removeBarangFromSection = function(button) {
         const container = button.closest('.barang-container-section');
         if (container.children.length > 1) {

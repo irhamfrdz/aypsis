@@ -8,23 +8,32 @@
         $editTemasSections = [];
 
         // Group Buruh
-        if($biayaKapal->barangDetails->count() > 0) {
-            $grouped = $biayaKapal->barangDetails->groupBy(function($item) {
-                return $item->kapal . '|||' . $item->voyage;
-            });
-             foreach($grouped as $key => $items) {
-                  $parts = explode('|||', $key);
-                  if(count($parts) == 2) {
-                      $firstItem = $items->first();
-                      $editKapalSections[] = [
-                          'kapal' => $parts[0],
-                          'voyage' => $parts[1],
-                          'adjustment' => $firstItem->adjustment ?? 0,
-                          'notes_adjustment' => $firstItem->notes_adjustment ?? '',
-                          'barang' => $items->map(function($i){ return ['barang_id' => $i->barang_id, 'jumlah' => $i->jumlah]; })
-                      ];
-                  }
-             }
+        if($biayaKapal->barangDetails->count() > 0 || $biayaKapal->tenagaKerjaDetails->count() > 0) {
+            $allCombinations = $biayaKapal->barangDetails->map(function($i) { return $i->kapal . '|||' . $i->voyage; })
+                ->merge($biayaKapal->tenagaKerjaDetails->map(function($i) { return $i->kapal . '|||' . $i->voyage; }))
+                ->unique();
+
+            foreach($allCombinations as $key) {
+                $parts = explode('|||', $key);
+                if(count($parts) == 2) {
+                    $kapal = $parts[0];
+                    $voyage = $parts[1];
+                    
+                    $barangItems = $biayaKapal->barangDetails->where('kapal', $kapal)->where('voyage', $voyage);
+                    $tenagaKerjaItems = $biayaKapal->tenagaKerjaDetails->where('kapal', $kapal)->where('voyage', $voyage);
+                    
+                    $firstItem = $barangItems->first() ?? $tenagaKerjaItems->first();
+                    
+                    $editKapalSections[] = [
+                        'kapal' => $kapal,
+                        'voyage' => $voyage,
+                        'adjustment' => $barangItems->first()->adjustment ?? 0,
+                        'notes_adjustment' => $barangItems->first()->notes_adjustment ?? '',
+                        'barang' => $barangItems->whereNotNull('pricelist_buruh_id')->map(function($i){ return ['barang_id' => $i->pricelist_buruh_id, 'jumlah' => $i->jumlah]; })->values(),
+                        'tenaga_kerja' => $tenagaKerjaItems->map(function($i){ return ['buruh_id' => $i->buruh_id, 'nominal' => $i->nominal]; })->values()
+                    ];
+                }
+            }
         }
 
         // Map Air
@@ -335,6 +344,12 @@
                         myData.barang.forEach(b => {
                             addBarangToSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
                         });
+
+                        if (myData.tenaga_kerja && myData.tenaga_kerja.length > 0) {
+                            myData.tenaga_kerja.forEach(tk => {
+                                addBuruhToSectionWithValue(sectionIndex, tk.buruh_id, tk.nominal);
+                            });
+                        }
                         
                         // Set adjustment values
                         const adjInput = section.querySelector('.adjustment-input');

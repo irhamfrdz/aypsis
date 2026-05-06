@@ -273,4 +273,9 @@ class BiayaKapal extends Model
     {
         return $this->hasMany(BiayaKapalDemurrage::class, 'biaya_kapal_id');
     }
+
+    public function tenagaKerjaDetails()
+    {
+        return $this->hasMany(BiayaKapalTenagaKerja::class, 'biaya_kapal_id');
+    }
 }
