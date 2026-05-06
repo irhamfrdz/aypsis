@@ -93,6 +93,7 @@ use App\Http\Controllers\MasterPricelistFreightController;
 use App\Http\Controllers\BtmKontainerSewaController;
 use App\Http\Controllers\ProspekBatamController;
 use App\Http\Controllers\BuruhController;
+use App\Http\Controllers\MasterItemKwitansiController;
 
 
 /*
@@ -617,6 +618,8 @@ Route::middleware([
             'update' => 'can:master-buruh-update',
             'destroy' => 'can:master-buruh-delete',
         ]);
+
+        Route::resource('item-kwitansi', MasterItemKwitansiController::class);
 
         // Master kegiatan routes (with master prefix) - granular permissions
         Route::get('kegiatan', [MasterKegiatanController::class, 'index'])
