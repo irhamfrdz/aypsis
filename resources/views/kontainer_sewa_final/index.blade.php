@@ -275,8 +275,9 @@
         <button class="nav-btn" onclick="showTab(event, 'tab-trx')"><span>4.</span> Transaksi IN (OUT)</button>
         <button class="nav-btn active" onclick="showTab(event, 'tab-rekon')"><span>5.</span> Rekon & Audit</button>
         <button class="nav-btn" onclick="showTab(event, 'tab-pranota')"><span>6.</span> Daftar Pranota</button>
-        <button class="nav-btn" onclick="showTab(event, 'tab-pembayaran')"><span>7.</span> Pembayaran Pranota</button>
-        <button class="nav-btn" onclick="showTab(event, 'tab-history')"><span>8.</span> Riwayat Pembayaran</button>
+        <button class="nav-btn" onclick="showTab(event, 'tab-pembayaran')"><span>7.</span> Permohonan Transfer</button>
+        <button class="nav-btn" onclick="showTab(event, 'tab-pay-transfer')"><span>8.</span> Pembayaran Permohonan</button>
+        <button class="nav-btn" onclick="showTab(event, 'tab-history')"><span>9.</span> Riwayat Pembayaran</button>
     </nav>
     
     <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #64748b; text-align: center;">
@@ -293,6 +294,7 @@
     @include('kontainer_sewa_final.components._rekon')
     @include('kontainer_sewa_final.components._pranota')
     @include('kontainer_sewa_final.components._pembayaran')
+    @include('kontainer_sewa_final.components._pay_transfer')
     @include('kontainer_sewa_final.components._history')
 </div>
 
@@ -533,7 +535,7 @@ function fmtRibuan(n) { return Math.round(n).toLocaleString('id-ID'); }
 function inputRibuan(el) { let v = el.value.replace(/\D/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; }
 function cleanNum(s) { return parseInt(s.toString().replace(/[^0-9-]/g, '')) || 0; }
 function ensureDbFields() {
-    const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[], history:[] };
+    const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[], history:[], pending_payments:[] };
     if (!window.db || typeof window.db !== 'object') window.db = d;
     Object.keys(d).forEach(k => { if (db[k] === undefined || db[k] === null) db[k] = d[k]; });
 }
@@ -560,7 +562,7 @@ function updateDB() {
     ensureDbFields();
     localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
     autoSync();
-    renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP(); renderPayPranota(); renderHistory();
+    renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP(); renderPayPranota(); renderPayTransfer(); renderHistory();
     const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value="${x.val||x}">${x.val||x}</option>`).join('');
     ['v','t','z'].forEach(k => { 
         if(document.getElementById('rt-'+k)) document.getElementById('rt-'+k).innerHTML = ops(k); 
@@ -763,7 +765,7 @@ function showTab(e, id) {
             b.classList.add('active');
         }
     });
-    if(id==='tab-rekon'||id==='tab-pranota'||id==='tab-pembayaran'||id==='tab-history') updateDB(); 
+    if(id==='tab-rekon'||id==='tab-pranota'||id==='tab-pembayaran'||id==='tab-pay-transfer'||id==='tab-history') updateDB(); 
 }
 function addM(k, id) { const v = document.getElementById(id).value.toUpperCase(); if(v) { db[k].push({val:v, act:true}); document.getElementById(id).value=''; updateDB(); } }
 function addR() { db.r.push({ v:document.getElementById('rt-v').value, t:document.getElementById('rt-t').value, z:document.getElementById('rt-z').value, rb:parseInt(document.getElementById('rt-bln').value)||0, rh:parseInt(document.getElementById('rt-hr').value)||0, act:true }); updateDB(); }
@@ -909,6 +911,7 @@ window.onload = () => {
         db.cart = initial.cart || []; 
         db.audits_map = initial.audits_map || [];
         db.history = initial.history || [];
+        db.pending_payments = initial.pending_payments || [];
 
         // Gunakan data server sebagai sumber utama (karena sudah auto-sync)
         if (initial.v && initial.v.length > 0) db.v = initial.v;
@@ -924,7 +927,7 @@ window.onload = () => {
     // Render tanpa auto-sync saat load (data sudah dari server)
     ensureDbFields();
     localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
-    renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP();
+    updateDB();
     const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value="${x.val||x}">${x.val||x}</option>`).join('');
     ['v','t','z'].forEach(k => { 
         if(document.getElementById('rt-'+k)) document.getElementById('rt-'+k).innerHTML = ops(k); 

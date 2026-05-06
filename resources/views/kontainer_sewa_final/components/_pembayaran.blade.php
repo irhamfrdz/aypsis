@@ -1,7 +1,7 @@
 <div id="tab-pembayaran" style="display:none">
     <div class="card">
         <div style="display:flex; justify-content:between; align-items:center; margin-bottom:20px;">
-            <h4 style="margin:0;">7. Pembayaran Pranota</h4>
+            <h4 style="margin:0;">7. Buat Permohonan Transfer</h4>
             <div style="display:flex; gap:10px; margin-left:auto;">
                 <input type="text" id="src-pay-pranota" placeholder="Cari Pranota..." oninput="renderPayPranota()" style="width:250px;">
             </div>
@@ -27,7 +27,7 @@
 
     <div id="payment-form-zone" style="display:none;">
         <div class="card" style="border-top: 4px solid var(--primary);">
-            <h4>Detail Pembayaran</h4>
+            <h4>Detail Permohonan Transfer</h4>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                 <div>
                     <div style="margin-bottom:15px;">
@@ -38,7 +38,7 @@
                         </div>
                     </div>
                     <div style="margin-bottom:15px;">
-                        <label style="display:block; margin-bottom:5px; font-weight:600;">Tanggal Pembayaran</label>
+                        <label style="display:block; margin-bottom:5px; font-weight:600;">Tanggal Permohonan</label>
                         <input type="date" id="pay-tanggal" value="{{ date('Y-m-d') }}" style="width:100%;">
                     </div>
                     <div style="margin-bottom:15px;">
@@ -89,7 +89,7 @@
             </div>
             <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
                 <button class="btn btn-red" onclick="resetPayForm()">Batal</button>
-                <button class="btn btn-green" style="padding: 10px 30px;" onclick="submitFinalPayment()">SIMPAN PEMBAYARAN</button>
+                <button class="btn btn-green" style="padding: 10px 30px;" onclick="submitFinalPayment()">SIMPAN PERMOHONAN</button>
             </div>
         </div>
     </div>
@@ -189,12 +189,13 @@ function submitFinalPayment() {
         total_penyesuaian: cleanNum(document.getElementById('pay-adj').value),
         grand_total: cleanNum(document.getElementById('sum-grand').innerText),
         alasan_penyesuaian: document.getElementById('pay-adj-note').value,
-        keterangan: document.getElementById('pay-ket').value
+        keterangan: document.getElementById('pay-ket').value,
+        status: 'PENDING'
     };
 
     if(!data.bank) return alert('Pilih Bank / Kas terlebih dahulu!');
     if(data.total_penyesuaian !== 0 && !data.alasan_penyesuaian) return alert('Alasan penyesuaian wajib diisi!');
-    if(!confirm('Konfirmasi simpan pembayaran senilai Rp ' + fmtRibuan(data.grand_total) + '?')) return;
+    if(!confirm('Konfirmasi simpan permohonan transfer senilai Rp ' + fmtRibuan(data.grand_total) + '?')) return;
 
     fetch('{{ route('kontainer-sewa-final.submit-payment') }}', {
         method: 'POST',

@@ -5,17 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class BtmSewaPayment extends Model
+class BtmSewaPermohonanTransfer extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'btm_sewa_payments';
+    protected $table = 'btm_sewa_permohonan_transfers';
 
     protected $fillable = [
-        'btm_sewa_permohonan_transfer_id',
-        'nomor_pembayaran',
-        'nomor_accurate',
-        'tanggal_pembayaran',
+        'nomor',
+        'tanggal',
+        'vendor_name',
         'bank',
         'jenis_transaksi',
         'total_pembayaran',
@@ -28,20 +27,20 @@ class BtmSewaPayment extends Model
         'updated_by',
     ];
 
-    public function permohonanTransfer()
-    {
-        return $this->belongsTo(BtmSewaPermohonanTransfer::class, 'btm_sewa_permohonan_transfer_id');
-    }
-
     public function details()
     {
-        return $this->hasMany(BtmSewaPaymentDetail::class, 'btm_sewa_payment_id');
+        return $this->hasMany(BtmSewaPermohonanTransferDetail::class, 'permohonan_id');
     }
 
     public function pranotas()
     {
-        return $this->belongsToMany(BtmSewaPranota::class, 'btm_sewa_payment_details', 'btm_sewa_payment_id', 'btm_sewa_pranota_id')
+        return $this->belongsToMany(BtmSewaPranota::class, 'btm_sewa_permohonan_transfer_details', 'permohonan_id', 'btm_sewa_pranota_id')
                     ->withPivot('subtotal');
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(BtmSewaPayment::class, 'btm_sewa_permohonan_transfer_id');
     }
 
     public function creator()

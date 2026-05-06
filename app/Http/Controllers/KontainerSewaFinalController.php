@@ -13,6 +13,8 @@ use App\Models\BtmSewaAudit;
 use App\Models\BtmSewaPranota;
 use App\Models\BtmSewaPayment;
 use App\Models\BtmSewaPaymentDetail;
+use App\Models\BtmSewaPermohonanTransfer;
+use App\Models\BtmSewaPermohonanTransferDetail;
 use App\Models\Coa;
 use App\Models\NomorTerakhir;
 use App\Services\CoaTransactionService;
@@ -109,7 +111,7 @@ class KontainerSewaFinalController extends Controller
                     'status' => $i->pranota->status ?? '-',
                 ];
             })->toArray(),
-            'history' => BtmSewaPayment::with('pranotas.vendor')->latest()->get()->map(fn($i) => [
+            'history' => BtmSewaPayment::where('status', 'PAID')->with('pranotas.vendor')->latest()->get()->map(fn($i) => [
                 'id' => $i->id,
                 'no' => $i->nomor_pembayaran,
                 'tgl' => $i->tanggal_pembayaran,
@@ -121,7 +123,19 @@ class KontainerSewaFinalController extends Controller
                     'vendor' => $p->vendor->name ?? '',
                     'total' => (float)$p->grand_total
                 ])
-            ])
+            ]),
+            'pending_payments' => BtmSewaPermohonanTransfer::where('status', 'PENDING')
+                ->latest()
+                ->get()
+                ->map(fn($i) => [
+                    'id' => $i->id,
+                    'no' => $i->nomor,
+                    'vendor' => $i->vendor_name,
+                    'tgl' => $i->tanggal,
+                    'bank' => $i->bank,
+                    'total' => (float)$i->grand_total,
+                    'status' => $i->status,
+                ])
         ];
 
         // Seed from JSON if DB is empty (initial setup)
@@ -513,10 +527,9 @@ class KontainerSewaFinalController extends Controller
     {
         $request->validate([
             'pranota_ids' => 'required|array|min:1',
-            'nomor_pembayaran' => 'required',
+            'nomor_pembayaran' => 'required|unique:btm_sewa_permohonan_transfers,nomor',
             'tanggal_pembayaran' => 'required|date',
             'bank' => 'required',
-            'jenis_transaksi' => 'required|in:Debit,Kredit',
             'total_pembayaran' => 'required|numeric',
             'grand_total' => 'required|numeric',
         ]);
@@ -526,55 +539,40 @@ class KontainerSewaFinalController extends Controller
             $modulSis = NomorTerakhir::where('modul', 'SIS')->first();
             $modulSis->increment('nomor_terakhir');
 
-            $payment = BtmSewaPayment::create([
-                'nomor_pembayaran' => $request->nomor_pembayaran,
-                'nomor_accurate' => $request->nomor_accurate,
-                'tanggal_pembayaran' => $request->tanggal_pembayaran,
+            $firstPranota = BtmSewaPranota::find($request->pranota_ids[0]);
+            $vendorName = $firstPranota ? $firstPranota->vendor_name : 'Unknown';
+
+            $permohonan = BtmSewaPermohonanTransfer::create([
+                'nomor' => $request->nomor_pembayaran,
+                'tanggal' => $request->tanggal_pembayaran,
+                'vendor_name' => $vendorName,
                 'bank' => $request->bank,
-                'jenis_transaksi' => $request->jenis_transaksi,
+                'jenis_transaksi' => $request->jenis_transaksi ?? 'Kredit',
                 'total_pembayaran' => $request->total_pembayaran,
                 'total_penyesuaian' => $request->total_penyesuaian ?? 0,
                 'grand_total' => $request->grand_total,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
-                'status' => 'PAID',
+                'status' => 'PENDING',
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ]);
 
             foreach ($request->pranota_ids as $id) {
                 $pranota = BtmSewaPranota::findOrFail($id);
-                BtmSewaPaymentDetail::create([
-                    'btm_sewa_payment_id' => $payment->id,
+                BtmSewaPermohonanTransferDetail::create([
+                    'permohonan_id' => $permohonan->id,
                     'btm_sewa_pranota_id' => $pranota->id,
                     'subtotal' => $pranota->grand_total
                 ]);
-                $pranota->update(['status' => 'PAID']);
-            }
-
-            // Journal Entry
-            $desc = "Pembayaran Sewa Kontainer - " . $request->nomor_pembayaran;
-            $total = $request->grand_total;
-            if ($request->jenis_transaksi == 'Debit') {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $request->bank, 'jumlah' => $total],
-                    ['nama_akun' => 'Biaya Sewa Kontainer', 'jumlah' => $total],
-                    $request->tanggal_pembayaran, $request->nomor_pembayaran, 'Pembayaran Sewa Kontainer', $desc
-                );
-            } else {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Sewa Kontainer', 'jumlah' => $total],
-                    ['nama_akun' => $request->bank, 'jumlah' => $total],
-                    $request->tanggal_pembayaran, $request->nomor_pembayaran, 'Pembayaran Sewa Kontainer', $desc
-                );
             }
 
             DB::commit();
-            return response()->json(['success' => true, 'message' => 'Pembayaran berhasil disimpan']);
+            return response()->json(['success' => true, 'message' => 'Permohonan Transfer berhasil disimpan']);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Gagal simpan pembayaran: ' . $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Gagal simpan permohonan: ' . $e->getMessage()]);
         }
     }
 
@@ -582,5 +580,76 @@ class KontainerSewaFinalController extends Controller
     {
         $payment = BtmSewaPayment::with('details.pranota.vendor', 'details.pranota.audits')->findOrFail($id);
         return view('kontainer_sewa_final.print_payment', compact('payment'));
+    }
+
+    public function payTransfer(Request $request, $id)
+    {
+        $permohonan = BtmSewaPermohonanTransfer::with('pranotas')->findOrFail($id);
+        
+        if ($permohonan->status === 'PAID') {
+            return response()->json(['success' => false, 'message' => 'Permohonan ini sudah dibayar']);
+        }
+
+        DB::beginTransaction();
+        try {
+            // 1. Update status Permohonan
+            $permohonan->update([
+                'status' => 'PAID',
+                'updated_by' => Auth::id()
+            ]);
+
+            // 2. Buat Record Pembayaran Real (Audit Trail)
+            $payment = BtmSewaPayment::create([
+                'btm_sewa_permohonan_transfer_id' => $permohonan->id,
+                'nomor_pembayaran' => $permohonan->nomor,
+                'nomor_accurate' => $request->nomor_accurate ?? $permohonan->nomor,
+                'tanggal_pembayaran' => date('Y-m-d'),
+                'bank' => $permohonan->bank,
+                'jenis_transaksi' => $permohonan->jenis_transaksi,
+                'total_pembayaran' => $permohonan->total_pembayaran,
+                'total_penyesuaian' => $permohonan->total_penyesuaian,
+                'grand_total' => $permohonan->grand_total,
+                'alasan_penyesuaian' => $permohonan->alasan_penyesuaian,
+                'keterangan' => $permohonan->keterangan,
+                'status' => 'PAID',
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+            ]);
+
+            // 3. Link ke Detail Pranota & Update Status Pranota
+            foreach ($permohonan->pranotas as $pranota) {
+                BtmSewaPaymentDetail::create([
+                    'btm_sewa_payment_id' => $payment->id,
+                    'btm_sewa_pranota_id' => $pranota->id,
+                    'subtotal' => $pranota->pivot->subtotal
+                ]);
+                
+                $pranota->update(['status' => 'PAID']);
+            }
+
+            // 4. Jurnal Akuntansi (Double Entry)
+            $desc = "Pembayaran Sewa Kontainer - " . $permohonan->nomor;
+            $total = $permohonan->grand_total;
+            if ($permohonan->jenis_transaksi == 'Debit') {
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => $permohonan->bank, 'jumlah' => $total],
+                    ['nama_akun' => 'Biaya Sewa Kontainer', 'jumlah' => $total],
+                    date('Y-m-d'), $permohonan->nomor, 'Pembayaran Sewa Kontainer', $desc
+                );
+            } else {
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => 'Biaya Sewa Kontainer', 'jumlah' => $total],
+                    ['nama_akun' => $permohonan->bank, 'jumlah' => $total],
+                    date('Y-m-d'), $permohonan->nomor, 'Pembayaran Sewa Kontainer', $desc
+                );
+            }
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 }
