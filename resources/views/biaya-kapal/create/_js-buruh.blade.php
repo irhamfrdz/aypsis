@@ -493,33 +493,21 @@
         const shuffled = [...allBuruhsData].sort(() => 0.5 - Math.random());
         const selected = shuffled.slice(0, Math.min(count, shuffled.length));
         
-        // 3. Distribusikan sectionTotal ke buruh yang terpilih
-        let weights = selected.map(() => Math.random() + 0.5); // Bobot acak antara 0.5 - 1.5
-        let totalWeight = weights.reduce((a, b) => a + b, 0);
-        
-        let distributedTotal = 0;
-        selected.forEach((buruh, index) => {
-            let nominal;
-            if (index === selected.length - 1) {
-                // Buruh terakhir mendapatkan sisa agar totalnya pas (pasti bulat 1000 karena sectionTotal & distributedTotal bulat 1000)
-                nominal = sectionTotal - distributedTotal;
-            } else {
-                // Gunakan Math.floor untuk distribusi agar tidak melebihi total, lalu bulatkan ke 1000
-                let rawNominal = (weights[index] / totalWeight) * sectionTotal;
-                nominal = Math.floor(rawNominal / 1000) * 1000;
-                
-                // Jika hasil 0 (karena total kecil), beri minimal 1000 jika memungkinkan
-                if (nominal === 0 && sectionTotal - distributedTotal >= 1000) {
-                    nominal = 1000;
-                }
+        // 3. Distribusikan sectionTotal ke buruh yang terpilih secara merata (Equal Distribution)
+        let average = sectionTotal / selected.length;
+        let baseNominal = Math.round(average / 1000) * 1000;
+        let totalBase = baseNominal * selected.length;
+        let diff = sectionTotal - totalBase; 
+        let countToAdjust = Math.abs(diff / 1000);
+        let adjustment = diff > 0 ? 1000 : -1000;
 
-                // Safety check agar tidak melebihi sisa
-                if (distributedTotal + nominal >= sectionTotal) {
-                    nominal = 0;
-                }
+        selected.forEach((buruh, index) => {
+            let nominal = baseNominal;
+            // Bagikan sisa (plus atau minus) ke beberapa orang pertama
+            if (index < countToAdjust) {
+                nominal += adjustment;
             }
             
-            distributedTotal += nominal;
             addBuruhToSectionWithData(sectionIndex, buruh.id, nominal);
         });
     };
