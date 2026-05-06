@@ -1000,6 +1000,15 @@
         </div>
         @endif
 
+        {{-- Report Biaya Buruh --}}
+        @if($user && $user->can('master-buruh-view'))
+        <div class="mx-2 mb-3">
+            <a href="{{ route('master.reports.buruh.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.reports.buruh.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-bold text-purple-600 italic">Report Biaya Buruh</span>
+            </a>
+        </div>
+        @endif
+
         {{-- Bayar Biaya Kapal --}}
         @if($user && $user->can('pembayaran-biaya-kapal-view'))
         <div class="mx-2 mb-3">

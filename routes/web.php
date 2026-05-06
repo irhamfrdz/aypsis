@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PelamarKaryawanController;
 
 
+use App\Http\Controllers\ReportBuruhController;
 use App\Http\Controllers\KontainerController;
 use App\Http\Controllers\KontainerImportController;
 use App\Http\Controllers\DivisiController;
@@ -635,6 +636,11 @@ Route::middleware([
             'update' => 'can:master-item-kwitansi-update',
             'destroy' => 'can:master-item-kwitansi-delete',
         ]);
+
+        // Report Biaya Buruh
+        Route::get('reports/buruh', [ReportBuruhController::class, 'index'])
+             ->name('reports.buruh.index')
+             ->middleware('can:master-buruh-view');
 
         // Master kegiatan routes (with master prefix) - granular permissions
         Route::get('kegiatan', [MasterKegiatanController::class, 'index'])
