@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('nomor')->unique();
             $table->date('tanggal');
-            $table->string('vendor_name'); // String for flexibility if vendor master is loose
-            $table->string('bank');
+            $table->string('vendor_name'); 
+            $table->string('bank')->nullable();
             $table->string('jenis_transaksi')->default('Kredit');
             $table->decimal('total_pembayaran', 15, 2);
             $table->decimal('total_penyesuaian', 15, 2)->default(0);

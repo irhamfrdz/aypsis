@@ -185,6 +185,7 @@ Route::middleware([
           Route::post('/kontainer-sewa-final/submit-payment', [App\Http\Controllers\KontainerSewaFinalController::class, 'submitPayment'])->name('kontainer-sewa-final.submit-payment');
           Route::post('/kontainer-sewa-final/pay-transfer/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'payTransfer'])->name('kontainer-sewa-final.pay-transfer');
           Route::get('/kontainer-sewa-final/print-payment/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPayment'])->name('kontainer-sewa-final.print-payment');
+          Route::get('/kontainer-sewa-final/print-permohonan/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPermohonan'])->name('kontainer-sewa-final.print-permohonan');
           
           Route::get('daftar-tagihan-kontainer-sewa-2/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getPricelistForDpp'])->name('daftar-tagihan-kontainer-sewa-2.get_pricelist');
           Route::get('daftar-tagihan-kontainer-sewa-2/create-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'createGroup'])->name('daftar-tagihan-kontainer-sewa-2.create-group');

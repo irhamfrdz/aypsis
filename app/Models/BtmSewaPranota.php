@@ -31,4 +31,9 @@ class BtmSewaPranota extends Model
     {
         return $this->hasMany(BtmSewaAudit::class, 'pranota_id');
     }
+
+    public function permohonanTransferDetails()
+    {
+        return $this->hasMany(BtmSewaPermohonanTransferDetail::class, 'btm_sewa_pranota_id');
+    }
 }

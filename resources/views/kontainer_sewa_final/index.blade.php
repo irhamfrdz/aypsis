@@ -277,7 +277,8 @@
         <button class="nav-btn" onclick="showTab(event, 'tab-pranota')"><span>6.</span> Daftar Pranota</button>
         <button class="nav-btn" onclick="showTab(event, 'tab-pembayaran')"><span>7.</span> Permohonan Transfer</button>
         <button class="nav-btn" onclick="showTab(event, 'tab-pay-transfer')"><span>8.</span> Pembayaran Permohonan</button>
-        <button class="nav-btn" onclick="showTab(event, 'tab-history')"><span>9.</span> Riwayat Pembayaran</button>
+        <button class="nav-btn" onclick="showTab(event, 'tab-all-permohonan')"><span>9.</span> Daftar Permohonan</button>
+        <button class="nav-btn" onclick="showTab(event, 'tab-history')"><span>10.</span> Riwayat Lunas</button>
     </nav>
     
     <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.75rem; color: #64748b; text-align: center;">
@@ -295,6 +296,7 @@
     @include('kontainer_sewa_final.components._pranota')
     @include('kontainer_sewa_final.components._pembayaran')
     @include('kontainer_sewa_final.components._pay_transfer')
+    @include('kontainer_sewa_final.components._all_permohonan')
     @include('kontainer_sewa_final.components._history')
 </div>
 
@@ -535,7 +537,7 @@ function fmtRibuan(n) { return Math.round(n).toLocaleString('id-ID'); }
 function inputRibuan(el) { let v = el.value.replace(/\D/g, ''); el.value = v ? parseInt(v).toLocaleString('id-ID') : ''; }
 function cleanNum(s) { return parseInt(s.toString().replace(/[^0-9-]/g, '')) || 0; }
 function ensureDbFields() {
-    const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[], history:[], pending_payments:[] };
+    const d = { v:[], t:[], z:[], u:[], r:[], x:[], cart:[], p:[], audits_map:[], history:[], pending_payments:[], all_permohonans:[], unavailable_pranota_ids:[] };
     if (!window.db || typeof window.db !== 'object') window.db = d;
     Object.keys(d).forEach(k => { if (db[k] === undefined || db[k] === null) db[k] = d[k]; });
 }
@@ -562,7 +564,7 @@ function updateDB() {
     ensureDbFields();
     localStorage.setItem('AYPSIS_2026_DB', JSON.stringify(db));
     autoSync();
-    renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP(); renderPayPranota(); renderPayTransfer(); renderHistory();
+    renderVTZ(); renderRT(); renderU(); renderX(); renderAudit(); renderCart(); renderP(); renderPayPranota(); renderPayTransfer(); renderAllPermohonan(); renderHistory();
     const ops = (k) => db[k].filter(x => x.act !== false).map(x => `<option value="${x.val||x}">${x.val||x}</option>`).join('');
     ['v','t','z'].forEach(k => { 
         if(document.getElementById('rt-'+k)) document.getElementById('rt-'+k).innerHTML = ops(k); 
@@ -912,6 +914,8 @@ window.onload = () => {
         db.audits_map = initial.audits_map || [];
         db.history = initial.history || [];
         db.pending_payments = initial.pending_payments || [];
+        db.all_permohonans = initial.all_permohonans || [];
+        db.unavailable_pranota_ids = initial.unavailable_pranota_ids || [];
 
         // Gunakan data server sebagai sumber utama (karena sudah auto-sync)
         if (initial.v && initial.v.length > 0) db.v = initial.v;

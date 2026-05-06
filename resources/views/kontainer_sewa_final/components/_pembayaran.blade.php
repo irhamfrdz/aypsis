@@ -31,7 +31,7 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                 <div>
                     <div style="margin-bottom:15px;">
-                        <label style="display:block; margin-bottom:5px; font-weight:600;">Nomor Pembayaran</label>
+                        <label style="display:block; margin-bottom:5px; font-weight:600;">Nomor Permohonan</label>
                         <div style="display:flex; gap:5px;">
                             <input type="text" id="pay-nomor" readonly style="flex:1; background:#f1f5f9;">
                             <button class="btn btn-blue" onclick="getNewPayNomor()">🔄</button>
@@ -41,28 +41,8 @@
                         <label style="display:block; margin-bottom:5px; font-weight:600;">Tanggal Permohonan</label>
                         <input type="date" id="pay-tanggal" value="{{ date('Y-m-d') }}" style="width:100%;">
                     </div>
-                    <div style="margin-bottom:15px;">
-                        <label style="display:block; margin-bottom:5px; font-weight:600;">Bank / Kas</label>
-                        <select id="pay-bank" style="width:100%;">
-                            <option value="">-- Pilih Bank --</option>
-                            @foreach($akunCoa as $coa)
-                                <option value="{{ $coa->nama_akun }}">{{ $coa->nama_akun }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div style="margin-bottom:15px;">
-                        <label style="display:block; margin-bottom:5px; font-weight:600;">Jenis Transaksi</label>
-                        <select id="pay-jenis" style="width:100%;">
-                            <option value="Kredit" selected>Kredit (Uang Keluar)</option>
-                            <option value="Debit">Debit (Uang Masuk / Pembatalan)</option>
-                        </select>
-                    </div>
                 </div>
                 <div>
-                    <div style="margin-bottom:15px;">
-                        <label style="display:block; margin-bottom:5px; font-weight:600;">Nomor Accurate</label>
-                        <input type="text" id="pay-accurate" placeholder="Contoh: JM.2024.001" style="width:100%;">
-                    </div>
                     <div style="margin-bottom:15px;">
                         <label style="display:block; margin-bottom:5px; font-weight:600;">Keterangan</label>
                         <textarea id="pay-ket" rows="3" style="width:100%; resize:none;"></textarea>
@@ -103,8 +83,12 @@ function renderPayPranota() {
     const body = document.getElementById('body-pay-pranota');
     if(!body) return;
 
-    // Filter pranota yang statusnya PENDING (belum bayar)
-    const pendingP = db.p.filter(x => x.status === 'PENDING' && x.nomor.includes(s));
+    // Filter pranota yang statusnya belum PAID dan belum ada di permohonan pending lain
+    const pendingP = db.p.filter(x => 
+        x.status !== 'PAID' && 
+        !db.unavailable_pranota_ids.includes(x.id) &&
+        x.nomor.toUpperCase().includes(s)
+    );
     
     body.innerHTML = pendingP.map(x => `
         <tr style="${selectedPranotaIds.includes(x.id) ? 'background:#eff6ff' : ''}">
@@ -173,7 +157,6 @@ function resetPayForm() {
     document.getElementById('pay-adj').value = '0';
     document.getElementById('pay-adj-note').value = '';
     document.getElementById('pay-ket').value = '';
-    document.getElementById('pay-accurate').value = '';
     renderPayPranota();
 }
 
@@ -181,10 +164,7 @@ function submitFinalPayment() {
     const data = {
         pranota_ids: selectedPranotaIds,
         nomor_pembayaran: document.getElementById('pay-nomor').value,
-        nomor_accurate: document.getElementById('pay-accurate').value,
         tanggal_pembayaran: document.getElementById('pay-tanggal').value,
-        bank: document.getElementById('pay-bank').value,
-        jenis_transaksi: document.getElementById('pay-jenis').value,
         total_pembayaran: selectedPranotaIds.reduce((acc, id) => acc + (db.p.find(p => p.id === id)?.total || 0), 0),
         total_penyesuaian: cleanNum(document.getElementById('pay-adj').value),
         grand_total: cleanNum(document.getElementById('sum-grand').innerText),
@@ -193,7 +173,6 @@ function submitFinalPayment() {
         status: 'PENDING'
     };
 
-    if(!data.bank) return alert('Pilih Bank / Kas terlebih dahulu!');
     if(data.total_penyesuaian !== 0 && !data.alasan_penyesuaian) return alert('Alasan penyesuaian wajib diisi!');
     if(!confirm('Konfirmasi simpan permohonan transfer senilai Rp ' + fmtRibuan(data.grand_total) + '?')) return;
 
