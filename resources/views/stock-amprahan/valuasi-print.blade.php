@@ -155,7 +155,7 @@
                     <td>{{ $trx->tipe }}</td>
                     <td>{{ $trx->nama_barang }}</td>
                     <td>{{ $trx->no_faktur }}</td>
-                    <td>{{ $trx->referensi }}</td>
+                    <td>{{ $trx->kts_masuk > 0 ? '' : $trx->referensi }}</td>
                     <td class="right">{{ $trx->kts_masuk > 0 ? number_format($trx->kts_masuk, 0, ',', '.') : '0' }}</td>
                     <td class="right">{{ $trx->nilai_masuk > 0 ? number_format($trx->nilai_masuk, 0, ',', '.') : '0' }}</td>
                     <td class="right">{{ $trx->kts_keluar > 0 ? number_format($trx->kts_keluar, 0, ',', '.') : '0' }}</td>

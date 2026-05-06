@@ -1296,7 +1296,18 @@ class StockAmprahanController extends Controller
             ];
         });
 
-        $transaksi = $additions->concat($usages)->sortBy('tanggal_raw')->values();
+        $transaksi = $additions->concat($usages)->sort(function($a, $b) {
+            $timeA = \Carbon\Carbon::parse($a->tanggal_raw)->timestamp;
+            $timeB = \Carbon\Carbon::parse($b->tanggal_raw)->timestamp;
+            
+            if ($timeA == $timeB) {
+                // Jika waktu sama, dahulukan barang masuk
+                $aIsMasuk = $a->kts_masuk > 0 ? 1 : 0;
+                $bIsMasuk = $b->kts_masuk > 0 ? 1 : 0;
+                return $bIsMasuk <=> $aIsMasuk;
+            }
+            return $timeA <=> $timeB;
+        })->values();
 
         // Calculate running balance
         $runningQty = $saldoAwalQty;
