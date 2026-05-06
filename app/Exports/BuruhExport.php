@@ -44,7 +44,6 @@ class BuruhExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             'No',
             'Nama',
             'NIK',
-            'Alamat',
             'Status',
         ];
     }
@@ -61,7 +60,6 @@ class BuruhExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $no,
             $item->nama,
             $item->nik ?? '-',
-            $item->alamat ?? '-',
             ucfirst($item->status),
         ];
     }

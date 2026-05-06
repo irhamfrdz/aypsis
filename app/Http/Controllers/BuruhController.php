@@ -65,7 +65,6 @@ class BuruhController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'nik' => 'nullable|string|max:50',
-            'alamat' => 'nullable|string',
             'status' => 'required|in:aktif,non-aktif',
         ]);
 
@@ -88,7 +87,6 @@ class BuruhController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'nik' => 'nullable|string|max:50',
-            'alamat' => 'nullable|string',
             'status' => 'required|in:aktif,non-aktif',
         ]);
 

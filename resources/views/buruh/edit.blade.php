@@ -42,13 +42,6 @@
                         @error('nik') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
-                    <!-- Alamat -->
-                    <div>
-                        <label for="alamat" class="block text-sm font-semibold text-gray-700 mb-1">Alamat Lengkap</label>
-                        <textarea name="alamat" id="alamat" rows="3"
-                                  class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all duration-200"
-                                  placeholder="Masukkan alamat domisili...">{{ old('alamat', $buruh->alamat) }}</textarea>
-                    </div>
 
                     <!-- Status -->
                     <div>

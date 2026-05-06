@@ -15,7 +15,6 @@ class BuruhTemplateExport implements FromArray, WithHeadings, ShouldAutoSize, Wi
         return [
             'nama',
             'nik',
-            'alamat',
             'status',
         ];
     }
@@ -26,13 +25,11 @@ class BuruhTemplateExport implements FromArray, WithHeadings, ShouldAutoSize, Wi
             [
                 'Budi Santoso',
                 '1234567890',
-                'Jl. Contoh No. 123',
                 'aktif',
             ],
             [
                 'Siti Aminah',
                 '0987654321',
-                'Jl. Sampel No. 456',
                 'non-aktif',
             ]
         ];

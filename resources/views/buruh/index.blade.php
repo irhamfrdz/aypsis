@@ -88,7 +88,6 @@
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-semibold text-gray-900">{{ $buruh->nama }}</div>
-                                        <div class="text-xs text-gray-500 line-clamp-1" title="{{ $buruh->alamat }}">{{ $buruh->alamat ?? 'Alamat belum diisi' }}</div>
                                     </div>
                                 </div>
                             </td>

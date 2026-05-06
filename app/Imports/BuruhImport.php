@@ -19,7 +19,6 @@ class BuruhImport implements ToModel, WithHeadingRow, WithValidation
         return new Buruh([
             'nama'   => $row['nama'],
             'nik'    => $row['nik'] ?? null,
-            'alamat' => $row['alamat'] ?? null,
             'status' => isset($row['status']) && strtolower($row['status']) === 'aktif' ? 'aktif' : 'non-aktif',
         ]);
     }
@@ -32,7 +31,6 @@ class BuruhImport implements ToModel, WithHeadingRow, WithValidation
         return [
             'nama' => 'required|string|max:255',
             'nik' => 'nullable|string|max:50',
-            'alamat' => 'nullable|string',
             'status' => 'nullable|string',
         ];
     }
