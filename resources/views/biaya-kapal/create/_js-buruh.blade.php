@@ -481,31 +481,47 @@
         // Clear existing buruh in this section for a clean random set
         container.innerHTML = '';
         
-        // 2. Tentukan jumlah buruh acak (misal 3 - 12 orang)
-        // Jika total kecil, kurangi jumlah buruh maksimal
-        let maxBuruh = 12;
-        if (sectionTotal < 500000) maxBuruh = 4;
-        else if (sectionTotal < 1000000) maxBuruh = 7;
+        // 2. Tentukan jumlah buruh acak (Prioritas > 20 orang)
+        // OPTIMASI: Cari jumlah buruh yang bisa membagi rata total nominal tanpa sisa (Perfectly Even)
+        const minBuruhForCap = Math.ceil(sectionTotal / 440000);
+        const searchMin = Math.max(21, minBuruhForCap);
+        const searchMax = Math.max(searchMin + 14, 35);
         
-        const count = Math.floor(Math.random() * (maxBuruh - 3 + 1)) + 3; 
+        let perfectCounts = [];
+        const limitSearch = Math.min(searchMax, allBuruhsData.length);
+        const startSearch = Math.min(searchMin, allBuruhsData.length);
+        
+        for (let c = startSearch; c <= limitSearch; c++) {
+            if (sectionTotal % (c * 1000) === 0) {
+                perfectCounts.push(c);
+            }
+        }
+        
+        let count;
+        if (perfectCounts.length > 0) {
+            // Gunakan salah satu jumlah buruh yang menghasilkan angka bulat sempurna
+            count = perfectCounts[Math.floor(Math.random() * perfectCounts.length)];
+        } else {
+            // Fallback: Gunakan random seperti biasa jika tidak ada pembagi sempurna
+            count = Math.floor(Math.random() * (limitSearch - startSearch + 1)) + startSearch;
+        }
         
         // Pick random unique buruhs
         const shuffled = [...allBuruhsData].sort(() => 0.5 - Math.random());
         const selected = shuffled.slice(0, Math.min(count, shuffled.length));
         
-        // 3. Distribusikan sectionTotal ke buruh yang terpilih secara merata (Equal Distribution)
-        let average = sectionTotal / selected.length;
-        let baseNominal = Math.round(average / 1000) * 1000;
+        // 3. Distribusikan sectionTotal ke buruh (Lainnya rata, 1 buruh dapat sisa lebih besar)
+        let baseNominal = Math.floor((sectionTotal / selected.length) / 1000) * 1000;
         let totalBase = baseNominal * selected.length;
         let diff = sectionTotal - totalBase; 
-        let countToAdjust = Math.abs(diff / 1000);
-        let adjustment = diff > 0 ? 1000 : -1000;
+        
+        // Pilih 1 buruh secara acak untuk mendapatkan seluruh sisa (diff)
+        const luckyIndex = Math.floor(Math.random() * selected.length);
 
         selected.forEach((buruh, index) => {
             let nominal = baseNominal;
-            // Bagikan sisa (plus atau minus) ke beberapa orang pertama
-            if (index < countToAdjust) {
-                nominal += adjustment;
+            if (index === luckyIndex) {
+                nominal += diff;
             }
             
             addBuruhToSectionWithData(sectionIndex, buruh.id, nominal);
