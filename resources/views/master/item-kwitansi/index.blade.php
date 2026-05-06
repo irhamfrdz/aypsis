@@ -110,8 +110,7 @@
                         <tr class="bg-gray-50/50">
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">No</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Nama Item</th>
-                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Satuan</th>
-                            <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-widest">Harga Satuan</th>
+
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Keterangan</th>
                             <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Aksi</th>
                         </tr>
@@ -125,14 +124,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">{{ $item->nama_item }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700 transition-all duration-200">
-                                        {{ $item->satuan ?? '-' }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-sm font-extrabold text-gray-900">Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</div>
-                                </td>
+
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-500 max-w-xs truncate font-medium italic" title="{{ $item->keterangan }}">
                                         {{ $item->keterangan ?? '-' }}
@@ -176,7 +168,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-20 text-center">
+                                <td colspan="4" class="px-6 py-20 text-center">
                                     <div class="flex flex-col items-center">
                                         <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                                             <i class="fas fa-box-open text-gray-300 text-4xl"></i>
@@ -231,25 +223,7 @@
                                    placeholder="Contoh: Biaya Handling Kontainer">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="satuan" class="block text-sm font-bold text-gray-700 mb-1">Satuan</label>
-                                <input type="text" name="satuan" id="satuan"
-                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-medium"
-                                       placeholder="Box, Unit, Ltr, dll">
-                            </div>
-                            <div>
-                                <label for="harga_satuan" class="block text-sm font-bold text-gray-700 mb-1">Harga Satuan <span class="text-rose-500">*</span></label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <span class="text-gray-400 font-bold text-sm">Rp</span>
-                                    </div>
-                                    <input type="number" name="harga_satuan" id="harga_satuan" required min="0"
-                                           class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-bold"
-                                           placeholder="0">
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div>
                             <label for="keterangan" class="block text-sm font-bold text-gray-700 mb-1">Keterangan</label>
@@ -302,23 +276,7 @@
                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-amber-100 focus:border-amber-500 transition-all duration-200 font-medium">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="edit_satuan" class="block text-sm font-bold text-gray-700 mb-1">Satuan</label>
-                                <input type="text" name="satuan" id="edit_satuan"
-                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-amber-100 focus:border-amber-500 transition-all duration-200 font-medium">
-                            </div>
-                            <div>
-                                <label for="edit_harga_satuan" class="block text-sm font-bold text-gray-700 mb-1">Harga Satuan <span class="text-rose-500">*</span></label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <span class="text-gray-400 font-bold text-sm">Rp</span>
-                                    </div>
-                                    <input type="number" name="harga_satuan" id="edit_harga_satuan" required min="0"
-                                           class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-amber-100 focus:border-amber-500 transition-all duration-200 font-bold">
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div>
                             <label for="edit_keterangan" class="block text-sm font-bold text-gray-700 mb-1">Keterangan</label>
@@ -385,8 +343,7 @@
         form.action = `{{ url('master/item-kwitansi') }}/${item.id}`;
         
         document.getElementById('edit_nama_item').value = item.nama_item;
-        document.getElementById('edit_satuan').value = item.satuan || '';
-        document.getElementById('edit_harga_satuan').value = item.harga_satuan;
+
         document.getElementById('edit_keterangan').value = item.keterangan || '';
         
         document.getElementById('editModal').classList.remove('hidden');

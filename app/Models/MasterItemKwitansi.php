@@ -12,8 +12,6 @@ class MasterItemKwitansi extends Model
 
     protected $fillable = [
         'nama_item',
-        'satuan',
-        'harga_satuan',
         'keterangan',
         'created_by',
         'updated_by',

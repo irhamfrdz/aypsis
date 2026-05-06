@@ -19,8 +19,6 @@ class MasterItemKwitansiController extends Controller
     {
         $request->validate([
             'nama_item' => 'required|string|max:255',
-            'satuan' => 'nullable|string|max:50',
-            'harga_satuan' => 'required|numeric|min:0',
         ]);
 
         MasterItemKwitansi::create($request->all());
@@ -32,8 +30,6 @@ class MasterItemKwitansiController extends Controller
     {
         $request->validate([
             'nama_item' => 'required|string|max:255',
-            'satuan' => 'nullable|string|max:50',
-            'harga_satuan' => 'required|numeric|min:0',
         ]);
 
         $item = MasterItemKwitansi::findOrFail($id);
