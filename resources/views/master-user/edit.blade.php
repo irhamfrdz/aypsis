@@ -764,6 +764,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Item Barang Kwitansi --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-blue-600 font-bold">Item Barang Kwitansi</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-item-kwitansi][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-item-kwitansi']['view']) && $userMatrixPermissions['master-item-kwitansi']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-item-kwitansi][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-item-kwitansi']['create']) && $userMatrixPermissions['master-item-kwitansi']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-item-kwitansi][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-item-kwitansi']['update']) && $userMatrixPermissions['master-item-kwitansi']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-item-kwitansi][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-item-kwitansi']['delete']) && $userMatrixPermissions['master-item-kwitansi']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Persetujuan Edit Karyawan --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
