@@ -62,6 +62,28 @@
                             </label>
                         </div>
                     </div>
+
+                    <!-- Status BPJS -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">Status BPJS</label>
+                        <div class="flex gap-4">
+                            <label class="relative flex items-center p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors w-1/2">
+                                <input type="radio" name="status_bpjs" value="aktif" {{ old('status_bpjs') == 'aktif' ? 'checked' : '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                <span class="ml-3 flex flex-col">
+                                    <span class="block text-sm font-medium text-gray-900">Aktif</span>
+                                    <span class="block text-xs text-gray-500">Terdaftar & Iuran lancar</span>
+                                </span>
+                            </label>
+                            <label class="relative flex items-center p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors w-1/2">
+                                <input type="radio" name="status_bpjs" value="tidak aktif" {{ old('status_bpjs', 'tidak aktif') == 'tidak aktif' ? 'checked' : '' }} class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                <span class="ml-3 flex flex-col">
+                                    <span class="block text-sm font-medium text-gray-900">Tidak Aktif</span>
+                                    <span class="block text-xs text-gray-500">Belum terdaftar / Non-aktif</span>
+                                </span>
+                            </label>
+                        </div>
+                        @error('status_bpjs') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                    </div>
                 </div>
 
                 <div class="mt-10 pt-6 border-t border-gray-100 flex items-center justify-end gap-3">

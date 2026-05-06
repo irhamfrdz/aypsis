@@ -37,6 +37,9 @@
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $buruh->status == 'aktif' ? 'bg-green-400/20 text-green-100 border border-green-400/30' : 'bg-red-400/20 text-red-100 border border-red-400/30' }}">
                                 {{ ucfirst($buruh->status) }}
                             </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $buruh->status_bpjs == 'aktif' ? 'bg-blue-400/20 text-blue-100 border border-blue-400/30' : 'bg-gray-400/20 text-gray-100 border border-gray-400/30' }}">
+                                BPJS: {{ ucfirst($buruh->status_bpjs ?? 'tidak aktif') }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -55,6 +58,15 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                                     </svg>
                                     {{ $buruh->nik ?? 'Tidak ada data' }}
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider">Status BPJS</label>
+                                <div class="mt-1 flex items-center text-gray-900 font-medium">
+                                    <svg class="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                    </svg>
+                                    {{ ucfirst($buruh->status_bpjs ?? 'tidak aktif') }}
                                 </div>
                             </div>
                         </div>

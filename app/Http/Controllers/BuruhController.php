@@ -66,6 +66,7 @@ class BuruhController extends Controller
             'nama' => 'required|string|max:255',
             'nik' => 'nullable|string|max:50',
             'status' => 'required|in:aktif,non-aktif',
+            'status_bpjs' => 'required|in:aktif,tidak aktif',
         ]);
 
         Buruh::create($validated);
@@ -88,6 +89,7 @@ class BuruhController extends Controller
             'nama' => 'required|string|max:255',
             'nik' => 'nullable|string|max:50',
             'status' => 'required|in:aktif,non-aktif',
+            'status_bpjs' => 'required|in:aktif,tidak aktif',
         ]);
 
         $buruh->update($validated);

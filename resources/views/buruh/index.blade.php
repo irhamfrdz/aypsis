@@ -75,6 +75,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BPJS</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
@@ -97,6 +98,11 @@
                             <td class="px-6 py-4">
                                 <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $buruh->status == 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                     {{ ucfirst($buruh->status) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $buruh->status_bpjs == 'aktif' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
+                                    {{ ucfirst($buruh->status_bpjs ?? 'tidak aktif') }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-center">

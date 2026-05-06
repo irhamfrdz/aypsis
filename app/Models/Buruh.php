@@ -9,6 +9,7 @@ class Buruh extends Model
     protected $fillable = [
         'nama',
         'nik',
-        'status'
+        'status',
+        'status_bpjs'
     ];
 }

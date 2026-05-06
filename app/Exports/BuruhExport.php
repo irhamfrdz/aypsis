@@ -45,6 +45,7 @@ class BuruhExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             'Nama',
             'NIK',
             'Status',
+            'Status BPJS',
         ];
     }
 
@@ -61,6 +62,7 @@ class BuruhExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $item->nama,
             $item->nik ?? '-',
             ucfirst($item->status),
+            ucfirst($item->status_bpjs ?? 'tidak aktif'),
         ];
     }
 

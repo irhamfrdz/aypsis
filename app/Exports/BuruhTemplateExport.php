@@ -16,6 +16,7 @@ class BuruhTemplateExport implements FromArray, WithHeadings, ShouldAutoSize, Wi
             'nama',
             'nik',
             'status',
+            'status_bpjs',
         ];
     }
 
@@ -26,11 +27,13 @@ class BuruhTemplateExport implements FromArray, WithHeadings, ShouldAutoSize, Wi
                 'Budi Santoso',
                 '1234567890',
                 'aktif',
+                'aktif',
             ],
             [
                 'Siti Aminah',
                 '0987654321',
                 'non-aktif',
+                'tidak aktif',
             ]
         ];
     }
