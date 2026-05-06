@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\MasterItemKwitansi;
-use Illuminate\Http\Request;
 
 class MasterItemKwitansiController extends Controller
 {
