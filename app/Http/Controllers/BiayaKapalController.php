@@ -2111,7 +2111,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh']);
         
         // Check if it's Biaya Meratus
         if ($biayaKapal->klasifikasiBiaya && 

@@ -586,6 +586,58 @@
         </div>
     </div>
 
+    @if($biayaKapal->jenis_biaya === 'KB024' && $biayaKapal->tenagaKerjaDetails->count() > 0)
+        @php
+            $tenagaKerjaGroups = $biayaKapal->tenagaKerjaDetails->groupBy(function($item) {
+                return ($item->kapal ?? '-') . ' - ' . ($item->voyage ?? '-');
+            });
+        @endphp
+
+        @foreach($tenagaKerjaGroups as $groupName => $details)
+            <div style="page-break-before: always;" class="container">
+                <div class="header" style="border-bottom: none; margin-bottom: 20px; text-align: center;">
+                    <h1 style="text-decoration: underline; font-size: 16px; text-transform: uppercase;">BONGKAR/MUAT {{ $groupName }}</h1>
+                </div>
+
+                <table class="table" style="width: 100%; border: 1.5px solid #000; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="width: 6%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">NO.</th>
+                            <th style="width: 44%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">NAMA</th>
+                            <th style="width: 25%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">JUMLAH</th>
+                            <th style="width: 25%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">PARAF</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($details as $index => $tk)
+                        <tr>
+                            <td class="text-center" style="border: 1.5px solid #000; padding: 4px; font-size: 11px;">{{ $index + 1 }}</td>
+                            <td style="border: 1.5px solid #000; padding: 4px 8px; font-size: 11px; text-transform: uppercase;">{{ $tk->buruh->nama ?? '-' }}</td>
+                            <td class="text-right" style="border: 1.5px solid #000; padding: 4px 8px; font-size: 11px;">{{ number_format($tk->nominal, 0, ',', '.') }}</td>
+                            <td style="border: 1.5px solid #000; padding: 0; position: relative; height: 28px;">
+                                <span style="font-size: 8px; position: absolute; top: 1px; {{ ($index + 1) % 2 == 0 ? 'right: 4px;' : 'left: 4px;' }}">{{ $index + 1 }}</span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" style="border: none; padding: 8px;"></td>
+                            <td class="text-right" style="border-bottom: 3px double #000; padding: 6px 8px; font-weight: bold; font-size: 12px;">
+                                {{ number_format($details->sum('nominal'), 0, ',', '.') }}
+                            </td>
+                            <td style="border: none;"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div style="margin-top: 40px; text-align: left; font-size: 12px; font-weight: bold;">
+                    Jakarta, {{ \Carbon\Carbon::parse($biayaKapal->tanggal)->translatedFormat('d F Y') }}
+                </div>
+            </div>
+        @endforeach
+    @endif
+
     <script>
         document.getElementById('startPrint')?.addEventListener('click', function() {
             window.print();
