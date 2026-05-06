@@ -36,7 +36,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Terima Dari</label>
-                        <textarea name="terima_dari" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">{{ $manifest ? $manifest->penerima : '' }}</textarea>
+                        <textarea name="terima_dari" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">{{ $manifest ? $manifest->pengirim : '' }}</textarea>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kirim Ke</label>
@@ -78,7 +78,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                        <input type="text" name="pengirim" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
+                        <input type="text" name="pengirim" value="{{ $manifest ? $manifest->pengirim : '' }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Penjual</label>
@@ -375,6 +375,16 @@
         
         // Initial setup
         initNumberInputs();
+
+        // Sync Pengirim to Terima Dari
+        const pengirimInput = document.querySelector('input[name="pengirim"]');
+        const terimaDariInput = document.querySelector('textarea[name="terima_dari"]');
+        
+        if (pengirimInput && terimaDariInput) {
+            pengirimInput.addEventListener('input', function() {
+                terimaDariInput.value = this.value;
+            });
+        }
         
         // Remove formatting before form submit
         document.getElementById('kwitansi-form').addEventListener('submit', function() {
