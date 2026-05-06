@@ -17,6 +17,13 @@
                 <div class="flex flex-col sm:flex-row gap-3">
                     @can('master-item-kwitansi-create')
                     <button type="button" 
+                            onclick="openImportModal()"
+                            class="inline-flex items-center justify-center px-5 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all duration-200 shadow-lg shadow-emerald-200 group">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Import Excel
+                    </button>
+
+                    <button type="button" 
                             onclick="openCreateModal()"
                             class="inline-flex items-center justify-center px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all duration-200 shadow-lg shadow-blue-200 group">
                         <svg class="w-5 h-5 mr-2 transform group-hover:rotate-90 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -340,6 +347,78 @@
     </div>
 </div>
 
+<!-- Import Modal -->
+<div id="importModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeImportModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full animate-modal-up">
+            <form action="{{ route('master.item-kwitansi.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="bg-white px-8 pt-8 pb-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-file-excel text-emerald-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-extrabold text-gray-900" id="modal-title">Import dari Excel</h3>
+                        </div>
+                        <button type="button" onclick="closeImportModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-blue-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-xs text-blue-700 font-medium leading-relaxed">
+                                        Silakan unduh template Excel terlebih dahulu untuk memastikan format data sudah sesuai dengan sistem.
+                                    </p>
+                                    <a href="{{ route('master.item-kwitansi.template') }}" class="mt-2 inline-flex items-center text-xs font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                                        <i class="fas fa-download mr-1"></i> Unduh Template Excel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Pilih File Excel (.xlsx, .xls)</label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-2xl hover:border-emerald-400 hover:bg-emerald-50 transition-all duration-200 group">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400 group-hover:text-emerald-500 transition-colors duration-200" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-bold text-emerald-600 hover:text-emerald-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-emerald-500">
+                                            <span>Unggah file</span>
+                                            <input id="file-upload" name="file" type="file" class="sr-only" accept=".xlsx, .xls" required onchange="updateFileName(this)">
+                                        </label>
+                                        <p class="pl-1">atau seret dan lepas</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500 font-medium" id="fileName">Excel 97-2003 atau 2007+</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-8 py-6 flex flex-row-reverse gap-3">
+                    <button type="submit" class="inline-flex justify-center px-6 py-3 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-100 transition-all duration-200 shadow-lg shadow-emerald-100">
+                        Mulai Import
+                    </button>
+                    <button type="button" onclick="closeImportModal()" class="inline-flex justify-center px-6 py-3 bg-white text-gray-700 text-sm font-bold rounded-xl border border-gray-200 hover:bg-gray-50 transition-all duration-200">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Audit Log Modal Component -->
 @include('components.audit-log-modal')
 
@@ -402,11 +481,28 @@
         document.body.style.overflow = 'auto';
     }
 
+    function openImportModal() {
+        document.getElementById('importModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImportModal() {
+        document.getElementById('importModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    function updateFileName(input) {
+        const fileName = input.files[0] ? input.files[0].name : 'Excel 97-2003 atau 2007+';
+        document.getElementById('fileName').textContent = fileName;
+        document.getElementById('fileName').classList.add('text-emerald-600', 'font-bold');
+    }
+
     // Close modals on Escape key
     window.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeCreateModal();
             closeEditModal();
+            closeImportModal();
         }
     });
 </script>

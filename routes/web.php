@@ -619,6 +619,13 @@ Route::middleware([
             'destroy' => 'can:master-buruh-delete',
         ]);
 
+        Route::get('item-kwitansi/template', [MasterItemKwitansiController::class, 'downloadTemplate'])
+             ->name('item-kwitansi.template')
+             ->middleware('can:master-item-kwitansi-view');
+        Route::post('item-kwitansi/import', [MasterItemKwitansiController::class, 'import'])
+             ->name('item-kwitansi.import')
+             ->middleware('can:master-item-kwitansi-create');
+
         Route::resource('item-kwitansi', MasterItemKwitansiController::class)->middleware([
             'index' => 'can:master-item-kwitansi-view',
             'show' => 'can:master-item-kwitansi-view',

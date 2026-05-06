@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\MasterItemKwitansi;
+use App\Imports\MasterItemKwitansiImport;
+use App\Exports\MasterItemKwitansiTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MasterItemKwitansiController extends Controller
 {
@@ -13,6 +16,32 @@ class MasterItemKwitansiController extends Controller
     {
         $items = MasterItemKwitansi::latest()->get();
         return view('master.item-kwitansi.index', compact('items'));
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+        ]);
+
+        try {
+            Excel::import(new MasterItemKwitansiImport, $request->file('file'));
+            return redirect()->back()->with('success', 'Data Item Kwitansi berhasil diimport.');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $error_messages = [];
+            foreach ($failures as $failure) {
+                $error_messages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+            return redirect()->back()->withErrors($error_messages);
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['Terjadi kesalahan saat mengimport data: ' . $e->getMessage()]);
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new MasterItemKwitansiTemplateExport, 'template_item_kwitansi.xlsx');
     }
 
     public function store(Request $request)
