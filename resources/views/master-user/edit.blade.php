@@ -2734,6 +2734,24 @@
                                 <td><input type="checkbox" name="permissions[pranota-supir][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['export']) && $userMatrixPermissions['pranota-supir']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Biaya Bensin --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Biaya Bensin</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[biaya-bensin][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-bensin']['view']) && $userMatrixPermissions['biaya-bensin']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[biaya-bensin][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-bensin']['create']) && $userMatrixPermissions['biaya-bensin']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[biaya-bensin][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-bensin']['update']) && $userMatrixPermissions['biaya-bensin']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[biaya-bensin][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-bensin']['delete']) && $userMatrixPermissions['biaya-bensin']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+
                             {{-- Prospek --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">

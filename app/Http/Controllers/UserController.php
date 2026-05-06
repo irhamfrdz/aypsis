@@ -721,8 +721,10 @@ class UserController extends Controller
                 'vendor-kontainer-sewa' => 'vendor-kontainer-sewa',
                 'kontainer-sewa-final' => 'kontainer-sewa-final',
                 'kwitansi' => 'kwitansi',
-                'master-buruh' => 'master-buruh'
+                'master-buruh' => 'master-buruh',
+                'biaya-bensin' => 'biaya-bensin'
             ];
+
 
 
 
@@ -3400,6 +3402,28 @@ class UserController extends Controller
                             }
                         }
                     }
+
+                    // Special handling for biaya-bensin module
+                    if ($module === 'biaya-bensin') {
+                        // For biaya-bensin, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'biaya-bensin-view',
+                            'create' => 'biaya-bensin-create',
+                            'update' => 'biaya-bensin-update',
+                            'delete' => 'biaya-bensin-delete'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
 
                     // Special handling for pembayaran-biaya-kapal module
                     if ($module === 'pembayaran-biaya-kapal') {

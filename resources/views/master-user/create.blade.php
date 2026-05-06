@@ -741,6 +741,22 @@
                                 <td>-</td>
                             </tr>
 
+                            <tr class="submodule-row" data-parent="aktivitas-supir">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Biaya Bensin</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[biaya-bensin][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[biaya-bensin][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[biaya-bensin][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[biaya-bensin][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+
                             {{-- Uang Jalan Supir --}}
                             <tr class="module-row" data-module="uang-jalan-supir">
                                 <td class="module-header">

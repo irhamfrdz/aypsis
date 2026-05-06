@@ -15,6 +15,7 @@ return [
             // Master data
             'master-user', 'master-karyawan', 'master-kontainer', 'master-tujuan',
             'master-kegiatan', 'master-permission', 'master-mobil', 'master-pricelist-sewa-kontainer',
+            'biaya-bensin-view', 'biaya-bensin-create', 'biaya-bensin-update', 'biaya-bensin-delete',
 
             // Pranota
             'pranota-supir.index', 'pranota-supir.create', 'pranota-supir.show', 'pranota-supir.edit',
@@ -58,6 +59,7 @@ return [
 
             // Permohonan
             'permohonan.index', 'permohonan.create',
+            'biaya-bensin-view', 'biaya-bensin-create',
         ],
     ],
 
@@ -81,6 +83,7 @@ return [
 
             // Full permohonan access
             'permohonan.index', 'permohonan.create', 'permohonan.edit', 'permohonan.show',
+            'biaya-bensin-view', 'biaya-bensin-create', 'biaya-bensin-update', 'biaya-bensin-delete',
 
             // Approval access
             'approval.dashboard', 'approval.create', 'approval.store',
@@ -100,6 +103,7 @@ return [
             'pembayaran-pranota-supir.index', 'pembayaran-pranota-kontainer.index',
             'tagihan-kontainer-sewa.index',
             'permohonan.index',
+            'biaya-bensin-view',
             'laporan.index',
         ],
     ],

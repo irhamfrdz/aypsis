@@ -44,4 +44,10 @@ return [
         'label' => 'Permohonan',
         'prefixes' => ['permohonan-'],
     ],
+
+    'biaya' => [
+        'label' => 'Biaya',
+        'prefixes' => ['biaya-'],
+    ],
 ];
+
