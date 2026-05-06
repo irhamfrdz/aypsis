@@ -373,9 +373,17 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label for="pengirim" class="block text-xs font-medium text-gray-500 mb-2">
-                                Pengirim <span class="text-red-500">*</span>
-                            </label>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="pengirim" class="block text-xs font-medium text-gray-500">
+                                    Pengirim <span class="text-red-500">*</span>
+                                </label>
+                                <button type="button"
+                                        onclick="openPengirimPopup()"
+                                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Tambah Pengirim Baru
+                                </button>
+                            </div>
                             <select name="pengirim" id="pengirim" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm select2-pengirim @error('pengirim') border-red-500 @enderror">
                                 <option value="">-- Pilih Pengirim --</option>
                                 @foreach($pengirims as $p)
@@ -1057,6 +1065,26 @@
         }
     }
 
+    // Function to open pengirim popup window
+    function openPengirimPopup() {
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("order.pengirim.create", ["popup" => "true"], false) }}',
+            'TambahPengirim',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
+    }
+
     // Function to open penerima popup window
     function openPenerimaPopup() {
         const width = 600;
@@ -1077,7 +1105,7 @@
         }
     }
 
-    // Listen for message from popup when new penerima is added
+    // Listen for message from popup when new penerima or pengirim is added
     window.addEventListener('message', function(event) {
         // Verify origin for security
         if (event.origin !== window.location.origin) return;
@@ -1096,6 +1124,18 @@
             $('#alamat_penerima').val(newPenerima.alamat || '');
             
             console.log('✓ New penerima added:', newPenerima.nama);
+        } else if (event.data.type === 'pengirim-added') {
+            const newPengirim = event.data.data;
+            
+            // Add new option to select
+            const select = $('#pengirim');
+            const newOption = new Option(newPengirim.nama_pengirim, newPengirim.nama_pengirim, true, true);
+            select.append(newOption);
+            
+            // Trigger select2 change
+            select.trigger('change');
+            
+            console.log('✓ New pengirim added:', newPengirim.nama_pengirim);
         }
     });
 
