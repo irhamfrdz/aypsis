@@ -78,9 +78,14 @@
             <div class="mb-3 p-3 bg-gray-100 border border-gray-200 rounded-lg">
                 <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">Tenaga Kerja / Buruh</label>
                 <div class="buruh-container-section" data-section="${sectionIndex}"></div>
-                <button type="button" onclick="addBuruhToSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-lg transition">
-                    <i class="fas fa-user-plus mr-1"></i> Tambah Buruh
-                </button>
+                <div class="flex gap-2 mt-2">
+                    <button type="button" onclick="addBuruhToSection(${sectionIndex})" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-lg transition shadow-sm">
+                        <i class="fas fa-user-plus mr-1"></i> Tambah Buruh
+                    </button>
+                    <button type="button" onclick="randomizeBuruhForSection(${sectionIndex})" class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-lg transition shadow-sm" title="Pilih buruh & nominal secara acak">
+                        <i class="fas fa-dice mr-1"></i> Randomize Buruh
+                    </button>
+                </div>
             </div>
             
             <!-- Nominal Per Kapal Display -->
@@ -427,6 +432,127 @@
         container.appendChild(inputGroup);
         
         // Add currency formatting to nominal input
+        const nominalInput = inputGroup.querySelector('.buruh-nominal-item');
+        nominalInput.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '');
+            if (val !== '') {
+                this.value = parseInt(val).toLocaleString('id-ID');
+            }
+        });
+    };
+
+    window.randomizeBuruhForSection = function(sectionIndex) {
+        if (!allBuruhsData || allBuruhsData.length === 0) {
+            alert('Data buruh tidak tersedia.');
+            return;
+        }
+
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        
+        // 1. Hitung total biaya kapal pada section ini (Barang + Adjustment)
+        let sectionTotal = 0;
+        const barangSelects = section.querySelectorAll('.barang-select-item');
+        const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
+        const adjustmentInput = section.querySelector('.adjustment-input');
+        
+        barangSelects.forEach((select, index) => {
+            const selectedOption = select.options[select.selectedIndex];
+            const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
+            const jumlahRaw = (jumlahInputs[index].value || '0').replace(',', '.');
+            const jumlah = parseFloat(jumlahRaw) || 0;
+            sectionTotal += tarif * jumlah;
+        });
+
+        if (adjustmentInput) {
+            const adjustmentRaw = (adjustmentInput.value || '0').replace(/\./g, '').replace(',', '.');
+            const adjustment = parseFloat(adjustmentRaw) || 0;
+            sectionTotal += adjustment;
+        }
+
+        sectionTotal = Math.round(sectionTotal / 1000) * 1000;
+
+        if (sectionTotal <= 0) {
+            alert('Nominal biaya kapal masih 0 atau negatif. Harap isi data barang terlebih dahulu.');
+            return;
+        }
+
+        const container = section.querySelector('.buruh-container-section');
+        
+        // Clear existing buruh in this section for a clean random set
+        container.innerHTML = '';
+        
+        // 2. Tentukan jumlah buruh acak (misal 3 - 12 orang)
+        // Jika total kecil, kurangi jumlah buruh maksimal
+        let maxBuruh = 12;
+        if (sectionTotal < 500000) maxBuruh = 4;
+        else if (sectionTotal < 1000000) maxBuruh = 7;
+        
+        const count = Math.floor(Math.random() * (maxBuruh - 3 + 1)) + 3; 
+        
+        // Pick random unique buruhs
+        const shuffled = [...allBuruhsData].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+        
+        // 3. Distribusikan sectionTotal ke buruh yang terpilih
+        let weights = selected.map(() => Math.random() + 0.5); // Bobot acak antara 0.5 - 1.5
+        let totalWeight = weights.reduce((a, b) => a + b, 0);
+        
+        let distributedTotal = 0;
+        selected.forEach((buruh, index) => {
+            let nominal;
+            if (index === selected.length - 1) {
+                // Buruh terakhir mendapatkan sisa agar totalnya pas (pasti bulat 1000 karena sectionTotal & distributedTotal bulat 1000)
+                nominal = sectionTotal - distributedTotal;
+            } else {
+                // Gunakan Math.floor untuk distribusi agar tidak melebihi total, lalu bulatkan ke 1000
+                let rawNominal = (weights[index] / totalWeight) * sectionTotal;
+                nominal = Math.floor(rawNominal / 1000) * 1000;
+                
+                // Jika hasil 0 (karena total kecil), beri minimal 1000 jika memungkinkan
+                if (nominal === 0 && sectionTotal - distributedTotal >= 1000) {
+                    nominal = 1000;
+                }
+
+                // Safety check agar tidak melebihi sisa
+                if (distributedTotal + nominal >= sectionTotal) {
+                    nominal = 0;
+                }
+            }
+            
+            distributedTotal += nominal;
+            addBuruhToSectionWithData(sectionIndex, buruh.id, nominal);
+        });
+    };
+
+    window.addBuruhToSectionWithData = function(sectionIndex, buruhId, nominal) {
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.buruh-container-section');
+        const buruhIndex = container.children.length;
+        
+        let buruhOptions = '<option value="">Pilih Nama Buruh</option>';
+        allBuruhsData.forEach(buruh => {
+            const selected = buruh.id == buruhId ? 'selected' : '';
+            buruhOptions += `<option value="${buruh.id}" ${selected}>${buruh.nama} ${buruh.nik ? '('+buruh.nik+')' : ''}</option>`;
+        });
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'flex items-end gap-2 mb-2 animate-fade-in';
+        inputGroup.innerHTML = `
+            <div class="flex-1">
+                <select name="kapal_sections[${sectionIndex}][tenaga_kerja][${buruhIndex}][buruh_id]" class="buruh-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-emerald-500" required>
+                    ${buruhOptions}
+                </select>
+            </div>
+            <div class="w-32">
+                <input type="text" name="kapal_sections[${sectionIndex}][tenaga_kerja][${buruhIndex}][nominal]" value="${nominal.toLocaleString('id-ID')}" class="buruh-nominal-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-emerald-500" placeholder="Rp 0" required>
+            </div>
+            <button type="button" onclick="removeBuruhFromSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+                <i class="fas fa-trash text-xs"></i>
+            </button>
+        `;
+        
+        container.appendChild(inputGroup);
+        
         const nominalInput = inputGroup.querySelector('.buruh-nominal-item');
         nominalInput.addEventListener('input', function() {
             let val = this.value.replace(/\D/g, '');
