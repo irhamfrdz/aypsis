@@ -619,7 +619,15 @@ Route::middleware([
             'destroy' => 'can:master-buruh-delete',
         ]);
 
-        Route::resource('item-kwitansi', MasterItemKwitansiController::class);
+        Route::resource('item-kwitansi', MasterItemKwitansiController::class)->middleware([
+            'index' => 'can:master-item-kwitansi-view',
+            'show' => 'can:master-item-kwitansi-view',
+            'create' => 'can:master-item-kwitansi-create',
+            'store' => 'can:master-item-kwitansi-create',
+            'edit' => 'can:master-item-kwitansi-update',
+            'update' => 'can:master-item-kwitansi-update',
+            'destroy' => 'can:master-item-kwitansi-delete',
+        ]);
 
         // Master kegiatan routes (with master prefix) - granular permissions
         Route::get('kegiatan', [MasterKegiatanController::class, 'index'])
