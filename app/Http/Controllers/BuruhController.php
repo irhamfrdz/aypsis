@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Buruh;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Exports\BuruhExport;
+use App\Exports\BuruhTemplateExport;
+use App\Imports\BuruhImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BuruhController extends Controller
 {
@@ -27,6 +31,30 @@ class BuruhController extends Controller
         return view('buruh.index', compact('buruhs'));
     }
 
+    public function export(Request $request)
+    {
+        return Excel::download(new BuruhExport($request->search), 'data_buruh_' . date('YmdHis') . '.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        try {
+            Excel::import(new BuruhImport, $request->file('file'));
+            return redirect()->route('master.buruh.index')->with('success', 'Data buruh berhasil diimport');
+        } catch (\Exception $e) {
+            return redirect()->route('master.buruh.index')->with('error', 'Terjadi kesalahan saat mengimport data: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new BuruhTemplateExport, 'template_import_buruh.xlsx');
+    }
+
     public function create()
     {
         return view('buruh.create');
@@ -42,7 +70,7 @@ class BuruhController extends Controller
         ]);
 
         Buruh::create($validated);
-        return redirect()->route('buruh.index')->with('success', 'Buruh berhasil ditambahkan');
+        return redirect()->route('master.buruh.index')->with('success', 'Buruh berhasil ditambahkan');
     }
 
     public function show(Buruh $buruh)
@@ -65,12 +93,12 @@ class BuruhController extends Controller
         ]);
 
         $buruh->update($validated);
-        return redirect()->route('buruh.index')->with('success', 'Buruh berhasil diperbarui');
+        return redirect()->route('master.buruh.index')->with('success', 'Buruh berhasil diperbarui');
     }
 
     public function destroy(Buruh $buruh)
     {
         $buruh->delete();
-        return redirect()->route('buruh.index')->with('success', 'Buruh berhasil dihapus');
+        return redirect()->route('master.buruh.index')->with('success', 'Buruh berhasil dihapus');
     }
 }

@@ -596,6 +596,16 @@ Route::middleware([
         ]);
 
         // Buruh management routes
+        Route::get('buruh/export', [BuruhController::class, 'export'])
+             ->name('buruh.export')
+             ->middleware('can:master-buruh-view');
+        Route::get('buruh/template', [BuruhController::class, 'downloadTemplate'])
+             ->name('buruh.template')
+             ->middleware('can:master-buruh-view');
+        Route::post('buruh/import', [BuruhController::class, 'import'])
+             ->name('buruh.import')
+             ->middleware('can:master-buruh-create');
+
         Route::resource('buruh', BuruhController::class)->middleware([
             'index' => 'can:master-buruh-view',
             'show' => 'can:master-buruh-view',
