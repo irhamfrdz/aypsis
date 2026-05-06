@@ -12,7 +12,7 @@
             <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:y-0">
                 <div>
                     <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Master Item Kwitansi</h1>
-                    <p class="mt-2 text-sm text-gray-500 font-medium">Kelola daftar item barang dan harga satuan untuk kwitansi</p>
+                    <p class="mt-2 text-sm text-gray-500 font-medium">Kelola daftar kode item, nama barang, dan pengelompokan untuk kwitansi</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
                     @can('master-item-kwitansi-create')
@@ -109,20 +109,34 @@
                     <thead>
                         <tr class="bg-gray-50/50">
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">No</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Kode</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Nama Item</th>
-
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Group</th>
                             <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest">Keterangan</th>
                             <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-widest">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-50">
                         @forelse ($items as $index => $item)
-                            <tr class="item-row hover:bg-blue-50/30 transition-colors duration-150 group" data-name="{{ strtolower($item->nama_item) }}">
+                            <tr class="item-row hover:bg-blue-50/30 transition-colors duration-150 group" 
+                                data-name="{{ strtolower($item->nama_item) }}"
+                                data-kode="{{ strtolower($item->kode) }}"
+                                data-group="{{ strtolower($item->group) }}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-400 group-hover:text-blue-500 transition-colors duration-200">
                                     {{ $index + 1 }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-xs font-extrabold px-2 py-1 bg-gray-100 text-gray-600 rounded-lg group-hover:bg-blue-100 group-hover:text-blue-700 transition-all duration-200 uppercase tracking-tighter">
+                                        {{ $item->kode }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">{{ $item->nama_item }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-xs font-bold text-gray-500 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md border border-emerald-100 inline-block">
+                                        <i class="fas fa-layer-group mr-1 opacity-50"></i>{{ $item->group }}
+                                    </div>
                                 </td>
 
                                 <td class="px-6 py-4">
@@ -168,7 +182,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-20 text-center">
+                                <td colspan="6" class="px-6 py-20 text-center">
                                     <div class="flex flex-col items-center">
                                         <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                                             <i class="fas fa-box-open text-gray-300 text-4xl"></i>
@@ -216,11 +230,26 @@
                     </div>
 
                     <div class="space-y-5">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-1">
+                                <label for="kode" class="block text-sm font-bold text-gray-700 mb-1">Kode <span class="text-rose-500">*</span></label>
+                                <input type="text" name="kode" id="kode" required
+                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-bold uppercase"
+                                       placeholder="KODE01">
+                            </div>
+                            <div class="col-span-2">
+                                <label for="nama_item" class="block text-sm font-bold text-gray-700 mb-1">Nama Item <span class="text-rose-500">*</span></label>
+                                <input type="text" name="nama_item" id="nama_item" required
+                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-medium"
+                                       placeholder="Contoh: Biaya Handling Kontainer">
+                            </div>
+                        </div>
+
                         <div>
-                            <label for="nama_item" class="block text-sm font-bold text-gray-700 mb-1">Nama Item <span class="text-rose-500">*</span></label>
-                            <input type="text" name="nama_item" id="nama_item" required
+                            <label for="group" class="block text-sm font-bold text-gray-700 mb-1">Group <span class="text-rose-500">*</span></label>
+                            <input type="text" name="group" id="group" required
                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-medium"
-                                   placeholder="Contoh: Biaya Handling Kontainer">
+                                   placeholder="Contoh: HANDLING">
                         </div>
 
 
@@ -270,9 +299,22 @@
                     </div>
 
                     <div class="space-y-5">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-1">
+                                <label for="edit_kode" class="block text-sm font-bold text-gray-700 mb-1">Kode <span class="text-rose-500">*</span></label>
+                                <input type="text" name="kode" id="edit_kode" required
+                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-amber-100 focus:border-amber-500 transition-all duration-200 font-bold uppercase">
+                            </div>
+                            <div class="col-span-2">
+                                <label for="edit_nama_item" class="block text-sm font-bold text-gray-700 mb-1">Nama Item <span class="text-rose-500">*</span></label>
+                                <input type="text" name="nama_item" id="edit_nama_item" required
+                                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-amber-100 focus:border-amber-500 transition-all duration-200 font-medium">
+                            </div>
+                        </div>
+
                         <div>
-                            <label for="edit_nama_item" class="block text-sm font-bold text-gray-700 mb-1">Nama Item <span class="text-rose-500">*</span></label>
-                            <input type="text" name="nama_item" id="edit_nama_item" required
+                            <label for="edit_group" class="block text-sm font-bold text-gray-700 mb-1">Group <span class="text-rose-500">*</span></label>
+                            <input type="text" name="group" id="edit_group" required
                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-amber-100 focus:border-amber-500 transition-all duration-200 font-medium">
                         </div>
 
@@ -316,7 +358,10 @@
 
         tableRows.forEach(row => {
             const name = row.getAttribute('data-name');
-            if (name.includes(searchTerm)) {
+            const kode = row.getAttribute('data-kode');
+            const group = row.getAttribute('data-group');
+            
+            if (name.includes(searchTerm) || kode.includes(searchTerm) || group.includes(searchTerm)) {
                 row.classList.remove('hidden');
                 visibleCount++;
             } else {
@@ -342,7 +387,9 @@
         const form = document.getElementById('editForm');
         form.action = `{{ url('master/item-kwitansi') }}/${item.id}`;
         
+        document.getElementById('edit_kode').value = item.kode;
         document.getElementById('edit_nama_item').value = item.nama_item;
+        document.getElementById('edit_group').value = item.group;
 
         document.getElementById('edit_keterangan').value = item.keterangan || '';
         

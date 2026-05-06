@@ -11,7 +11,9 @@ class MasterItemKwitansi extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'kode',
         'nama_item',
+        'group',
         'keterangan',
         'created_by',
         'updated_by',

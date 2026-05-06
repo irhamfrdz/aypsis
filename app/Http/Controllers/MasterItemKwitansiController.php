@@ -18,7 +18,9 @@ class MasterItemKwitansiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'kode' => 'required|string|max:50|unique:master_item_kwitansis,kode',
             'nama_item' => 'required|string|max:255',
+            'group' => 'required|string|max:100',
         ]);
 
         MasterItemKwitansi::create($request->all());
@@ -29,7 +31,9 @@ class MasterItemKwitansiController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'kode' => 'required|string|max:50|unique:master_item_kwitansis,kode,' . $id,
             'nama_item' => 'required|string|max:255',
+            'group' => 'required|string|max:100',
         ]);
 
         $item = MasterItemKwitansi::findOrFail($id);
