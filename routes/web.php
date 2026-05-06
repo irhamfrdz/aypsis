@@ -5956,6 +5956,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
 
     // 📦 KWITANSI MODULE
     Route::get('kwitansi/select-ship', [App\Http\Controllers\KwitansiController::class, 'selectShip'])->name('kwitansi.select-ship');
+    Route::get('kwitansi/{kwitansi}/print', [App\Http\Controllers\KwitansiController::class, 'print'])->name('kwitansi.print');
     Route::resource('kwitansi', App\Http\Controllers\KwitansiController::class)->middleware([
         'index'   => 'can:kwitansi-view',
         'create'  => 'can:kwitansi-create',

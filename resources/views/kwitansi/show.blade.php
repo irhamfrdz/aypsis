@@ -5,6 +5,9 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Detail Kwitansi: {{ $kwitansi->kwt_no }}</h2>
         <div class="flex gap-2">
+            <a href="{{ route('kwitansi.print', $kwitansi->id) }}" target="_blank" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+                <i class="fas fa-print mr-2"></i> Cetak Kwitansi
+            </a>
             <a href="{{ route('kwitansi.edit', $kwitansi->id) }}" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors">
                 <i class="fas fa-edit mr-2"></i> Edit
             </a>

@@ -73,6 +73,9 @@
                                         <a href="{{ route('kwitansi.show', $kwitansi->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all" title="Detail">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        <a href="{{ route('kwitansi.print', $kwitansi->id) }}" target="_blank" class="p-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all" title="Cetak Kwitansi">
+                                            <i class="fas fa-print"></i>
+                                        </a>
                                         <a href="{{ route('kwitansi.edit', $kwitansi->id) }}" class="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-600 hover:text-white transition-all" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>

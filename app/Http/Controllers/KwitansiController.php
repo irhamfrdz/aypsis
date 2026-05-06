@@ -269,4 +269,42 @@ class KwitansiController extends Controller
             return back()->with('error', 'Gagal menghapus Kwitansi: ' . $e->getMessage());
         }
     }
+
+    public function print($id)
+    {
+        $kwitansi = Kwitansi::with('details')->findOrFail($id);
+        $terbilang = $this->terbilang($kwitansi->total_invoice);
+        return view('kwitansi.print', compact('kwitansi', 'terbilang'));
+    }
+
+    private function terbilang($number)
+    {
+        $number = abs($number);
+        $words = array("", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas");
+        $temp = "";
+
+        if ($number < 12) {
+            $temp = " " . $words[$number];
+        } else if ($number < 20) {
+            $temp = $this->terbilang($number - 10) . " belas";
+        } else if ($number < 100) {
+            $temp = $this->terbilang($number / 10) . " puluh" . $this->terbilang($number % 10);
+        } else if ($number < 200) {
+            $temp = " seratus" . $this->terbilang($number - 100);
+        } else if ($number < 1000) {
+            $temp = $this->terbilang($number / 100) . " ratus" . $this->terbilang($number % 100);
+        } else if ($number < 2000) {
+            $temp = " seribu" . $this->terbilang($number - 1000);
+        } else if ($number < 1000000) {
+            $temp = $this->terbilang($number / 1000) . " ribu" . $this->terbilang($number % 1000);
+        } else if ($number < 1000000000) {
+            $temp = $this->terbilang($number / 1000000) . " juta" . $this->terbilang($number % 1000000);
+        } else if ($number < 1000000000000) {
+            $temp = $this->terbilang($number / 1000000000) . " milyar" . $this->terbilang(fmod($number, 1000000000));
+        } else if ($number < 1000000000000000) {
+            $temp = $this->terbilang($number / 1000000000000) . " trilyun" . $this->terbilang(fmod($number, 1000000000000));
+        }
+
+        return trim($temp);
+    }
 }
