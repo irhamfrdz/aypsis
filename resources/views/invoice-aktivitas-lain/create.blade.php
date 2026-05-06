@@ -3793,7 +3793,7 @@ console.log('Akun COAs data:', akunCoasData);
             function addPBMLine(data = {}) {
                 const defaultPenerima = "SDR MUHAMMAD SUHARMIN";
                 const defaultNomorBank = "1232290277";
-                const defaultNamaBank = "MANDIRI";
+                const defaultNamaBank = "BNI";
                 
                 const initialPenerima = data.penerima !== undefined ? data.penerima : defaultPenerima;
                 const initialNomorBank = data.nomor_bank !== undefined ? data.nomor_bank : defaultNomorBank;
