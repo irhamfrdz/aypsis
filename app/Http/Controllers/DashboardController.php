@@ -96,10 +96,11 @@ class DashboardController extends Controller
 
         // Rekap jumlah surat jalan per supir yang belum ada tanda terima
         $rekapSupirBelumTandaTerima = \App\Models\SuratJalan::doesntHave('tandaTerima')
-            ->whereNotIn('status', ['cancelled', 'draft'])
-            ->where('status_pembayaran_uang_jalan', 'dibayar')
-            ->select('supir', DB::raw('count(*) as total'))
-            ->groupBy('supir')
+            ->leftJoin('uang_jalans', 'surat_jalans.id', '=', 'uang_jalans.surat_jalan_id')
+            ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
+            ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
+            ->select('surat_jalans.supir', DB::raw('count(*) as total'), DB::raw('MIN(uang_jalans.tanggal_uang_jalan) as oldest_uang_jalan'))
+            ->groupBy('surat_jalans.supir')
             ->orderBy('total', 'desc')
             ->get();
 

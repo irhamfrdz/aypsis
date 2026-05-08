@@ -278,19 +278,37 @@
                 @foreach($rekapSupirBelumTandaTerima as $data)
                 @php
                     $isActive = request('supir') == $data->supir;
-                    $cardClass = $isActive 
-                        ? 'bg-indigo-100 border-indigo-500 ring-1 ring-indigo-500' 
-                        : 'bg-gray-50 border-gray-200 hover:border-indigo-300 hover:shadow-sm';
+                    $hasOverdue = false;
+                    if ($data->oldest_uang_jalan) {
+                        $tanggalUj = \Carbon\Carbon::parse($data->oldest_uang_jalan)->startOfDay();
+                        $hariIni = now()->startOfDay();
+                        $hasOverdue = $tanggalUj->diffInDays($hariIni) > 3 && $tanggalUj->isBefore($hariIni);
+                    }
+                    
+                    if ($isActive) {
+                        $cardClass = $hasOverdue ? 'bg-red-100 border-red-500 ring-1 ring-red-500' : 'bg-indigo-100 border-indigo-500 ring-1 ring-indigo-500';
+                    } else {
+                        $cardClass = $hasOverdue ? 'bg-red-50 border-red-200 hover:border-red-400 hover:shadow-sm' : 'bg-gray-50 border-gray-200 hover:border-indigo-300 hover:shadow-sm';
+                    }
+                    
+                    $supirClass = $isActive ? ($hasOverdue ? 'text-red-700' : 'text-indigo-700') : ($hasOverdue ? 'text-red-600 group-hover:text-red-700' : 'text-gray-500 group-hover:text-indigo-600');
+                    $totalClass = $isActive ? ($hasOverdue ? 'text-red-900' : 'text-indigo-900') : ($hasOverdue ? 'text-red-800 group-hover:text-red-900' : 'text-gray-800 group-hover:text-indigo-800');
+                    $labelClass = $isActive ? ($hasOverdue ? 'text-red-600' : 'text-indigo-600') : ($hasOverdue ? 'text-red-500 group-hover:text-red-600' : 'text-gray-400 group-hover:text-indigo-500');
                 @endphp
                 <a href="{{ route('dashboard', array_merge(request()->except('page'), ['supir' => $isActive ? null : $data->supir])) }}" 
-                   class="{{ $cardClass }} rounded-lg p-3 border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group">
-                    <span class="text-xs {{ $isActive ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-600' }} font-medium uppercase tracking-wider mb-1">
+                   class="{{ $cardClass }} rounded-lg p-3 border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group relative">
+                    @if($hasOverdue)
+                        <div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm z-10" title="Ada yang lebih dari 3 hari">
+                            <i class="fas fa-exclamation text-[10px]"></i>
+                        </div>
+                    @endif
+                    <span class="text-xs {{ $supirClass }} font-medium uppercase tracking-wider mb-1">
                         {{ $data->supir ?: 'Tanpa Nama' }}
                     </span>
-                    <span class="text-2xl font-bold {{ $isActive ? 'text-indigo-900' : 'text-gray-800 group-hover:text-indigo-800' }}">
+                    <span class="text-2xl font-bold {{ $totalClass }}">
                         {{ $data->total }}
                     </span>
-                    <span class="text-[10px] {{ $isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-500' }}">Surat Jalan</span>
+                    <span class="text-[10px] {{ $labelClass }}">Surat Jalan</span>
                 </a>
                 @endforeach
             </div>
