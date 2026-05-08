@@ -47,21 +47,6 @@
         border-color: #14b8a6;
         outline: none;
     }
-
-    /* Selected Row Styling */
-    .selected-row {
-        background-color: #f0fdfa !important; /* teal-50 */
-        transition: all 0.2s ease;
-    }
-    
-    .selected-row td {
-        border-top: 1px solid #99f6e4 !important;
-        border-bottom: 1px solid #99f6e4 !important;
-    }
-
-    .selected-row td:first-child {
-        border-left: 4px solid #0d9488 !important;
-    }
 </style>
 
 <div class="container mx-auto px-4 py-4">
@@ -70,13 +55,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 border-b border-gray-200">
             <div>
                 <h1 class="text-xl font-semibold text-gray-900">Tanda Terima Tanpa Surat Jalan</h1>
-                <div class="flex items-center gap-2 mt-1">
-                    <p class="text-xs text-gray-600">Kelola tanda terima yang tidak memerlukan surat jalan</p>
-                    <div id="headerSelectionInfo" class="hidden items-center ml-2">
-                        <span class="text-blue-600 font-bold text-xs">(<span id="headerSelectedCount">0</span> terpilih)</span>
-                        <button type="button" onclick="clearSelection()" class="text-red-500 hover:text-red-700 ml-2 text-[10px] font-medium uppercase tracking-wider hover:underline">Hapus Pilihan</button>
-                    </div>
-                </div>
+                <p class="text-xs text-gray-600 mt-1">Kelola tanda terima yang tidak memerlukan surat jalan</p>
             </div>
             <div class="flex gap-4 text-sm">
                 <div class="text-center">
@@ -979,15 +958,6 @@
             console.log('Select all clicked:', this.checked);
             rowCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
-                // Add/remove selected class to row
-                const row = checkbox.closest('tr');
-                if (row) {
-                    if (this.checked) {
-                        row.classList.add('selected-row');
-                    } else {
-                        row.classList.remove('selected-row');
-                    }
-                }
             });
             updateSelectedActions();
         });
@@ -996,31 +966,10 @@
         rowCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 console.log('Checkbox changed:', this.value, this.checked);
-                
-                // Add/remove selected class to row
-                const row = this.closest('tr');
-                if (row) {
-                    if (this.checked) {
-                        row.classList.add('selected-row');
-                    } else {
-                        row.classList.remove('selected-row');
-                    }
-                }
-
                 updateSelectAllState();
                 updateSelectedActions();
             });
         });
-
-        // Initial highlight and state update
-        rowCheckboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                const row = checkbox.closest('tr');
-                if (row) row.classList.add('selected-row');
-            }
-        });
-        updateSelectAllState();
-        updateSelectedActions();
 
         function updateSelectAllState() {
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
@@ -1044,65 +993,15 @@
             
             console.log('Updating selected actions. Count:', count);
             
-            // Update counts in both places
-            if (selectedCount) selectedCount.textContent = count;
-            
-            const headerSelectionInfo = document.getElementById('headerSelectionInfo');
-            const headerSelectedCount = document.getElementById('headerSelectedCount');
-            
-            if (headerSelectedCount) headerSelectedCount.textContent = count;
+            selectedCount.textContent = count;
             
             if (count > 0) {
-                console.log('Showing selected actions and header info');
-                if (selectedActions) selectedActions.style.display = 'block';
-                if (headerSelectionInfo) {
-                    headerSelectionInfo.classList.remove('hidden');
-                    headerSelectionInfo.classList.add('flex');
-                }
+                console.log('Showing selectedActions');
+                selectedActions.style.display = 'block';
             } else {
-                console.log('Hiding selected actions and header info');
-                if (selectedActions) selectedActions.style.display = 'none';
-                if (headerSelectionInfo) {
-                    headerSelectionInfo.classList.add('hidden');
-                    headerSelectionInfo.classList.remove('flex');
-                }
+                console.log('Hiding selectedActions');
+                selectedActions.style.display = 'none';
             }
-        }
-    }
-
-    function clearSelection() {
-        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-        const selectAllCheckbox = document.getElementById('selectAll');
-        
-        rowCheckboxes.forEach(checkbox => {
-            checkbox.checked = false;
-            const row = checkbox.closest('tr');
-            if (row) {
-                row.classList.remove('selected-row');
-            }
-        });
-        
-        if (selectAllCheckbox) {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = false;
-        }
-        
-        // Manual trigger to update UI
-        const headerSelectionInfo = document.getElementById('headerSelectionInfo');
-        const selectedActions = document.getElementById('selectedActions');
-        const headerSelectedCount = document.getElementById('headerSelectedCount');
-        const selectedCount = document.getElementById('selectedCount');
-        
-        if (headerSelectedCount) headerSelectedCount.textContent = '0';
-        if (selectedCount) selectedCount.textContent = '0';
-        
-        if (headerSelectionInfo) {
-            headerSelectionInfo.classList.add('hidden');
-            headerSelectionInfo.classList.remove('flex');
-        }
-        
-        if (selectedActions) {
-            selectedActions.style.display = 'none';
         }
     }
 

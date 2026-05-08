@@ -12,6 +12,9 @@
                 <p class="text-gray-600 mt-1">
                     Kelola data asuransi untuk tanda terima 
                     <span id="selectedCount" class="text-blue-600 font-bold ml-1"></span>
+                    <button type="button" onclick="toggleSelectedList()" id="viewSelectedBtn" class="text-xs text-blue-500 hover:text-blue-700 underline ml-2 hidden">
+                        Lihat Detail
+                    </button>
                     <button type="button" onclick="clearAllSelections()" id="clearSelectionBtn" class="text-xs text-red-500 hover:text-red-700 underline ml-2 hidden">
                         Hapus Pilihan
                     </button>
@@ -95,7 +98,7 @@
                         Cari
                     </button>
                     <a href="{{ route('asuransi-tanda-terima.index') }}" 
-                       onclick="sessionStorage.removeItem('selected_asuransi_receipt_ids')"
+                       onclick="sessionStorage.removeItem(STORAGE_KEY); sessionStorage.removeItem(STORAGE_KEY + '_data')"
                        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition duration-200 text-sm">
                         Reset
                     </a>
@@ -126,7 +129,10 @@
                     @forelse ($receipts as $item)
                         <tr class="hover:bg-gray-50 transition duration-150">
                             <td class="px-3 py-4">
-                                <input type="checkbox" name="receipt_ids[]" value="{{ $item->type }}_{{ $item->id }}" class="receipt-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <input type="checkbox" name="receipt_ids[]" value="{{ $item->type }}_{{ $item->id }}" 
+                                       data-number="{{ $item->number }}"
+                                       data-type-label="{{ $item->type == 'tt' ? 'Tanda Terima' : ($item->type == 'tttsj' ? 'TT Tanpa SJ' : 'Tanda Terima LCL') }}"
+                                       class="receipt-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->type == 'tt')
@@ -250,6 +256,35 @@
         </div>
     </div>
 </div>
+
+<!-- Selected Items List Modal -->
+<div id="selectedListModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="toggleSelectedList()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Daftar Pilihan</h3>
+                    <button type="button" onclick="toggleSelectedList()" class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="selectedItemsContainer" class="max-h-96 overflow-y-auto">
+                    <!-- Items will be populated here -->
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="toggleSelectedList()" 
+                        class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm transition duration-200">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Export Configuration Modal -->
 <div id="exportModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -301,10 +336,13 @@
         let allChecked = checkboxes.length > 0;
 
         checkboxes.forEach(cb => {
+            const row = cb.closest('tr');
             if (selectedIds.includes(cb.value)) {
                 cb.checked = true;
+                if (row) row.classList.add('bg-blue-50');
             } else {
                 cb.checked = false;
+                if (row) row.classList.remove('bg-blue-50');
                 allChecked = false;
             }
         });
@@ -315,6 +353,7 @@
         }
 
         updateIndicator();
+        updateSelectedListUI();
     }
 
     function updateIndicator() {
@@ -326,18 +365,80 @@
             indicator.textContent = count > 0 ? `(${count} terpilih)` : '';
         }
         
-        if (clearBtn) {
-            if (count > 0) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
+        if (count > 0) {
+            if (clearBtn) clearBtn.classList.remove('hidden');
+            if (document.getElementById('viewSelectedBtn')) document.getElementById('viewSelectedBtn').classList.remove('hidden');
+        } else {
+            if (clearBtn) clearBtn.classList.add('hidden');
+            if (document.getElementById('viewSelectedBtn')) document.getElementById('viewSelectedBtn').classList.add('hidden');
         }
+    }
+
+    function toggleSelectedList() {
+        const modal = document.getElementById('selectedListModal');
+        modal.classList.toggle('hidden');
+        if (!modal.classList.contains('hidden')) {
+            updateSelectedListUI();
+        }
+    }
+
+    function updateSelectedListUI() {
+        const container = document.getElementById('selectedItemsContainer');
+        if (!container) return;
+
+        const selectedIds = getSelectedIds();
+        if (selectedIds.length === 0) {
+            container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Belum ada data terpilih</p>';
+            return;
+        }
+
+        // Try to get info from current page checkboxes
+        const pageData = {};
+        document.querySelectorAll('.receipt-checkbox').forEach(cb => {
+            pageData[cb.value] = {
+                number: cb.dataset.number,
+                type: cb.dataset.typeLabel
+            };
+        });
+
+        // Store persistent data in sessionStorage for cross-page info
+        let persistentData = JSON.parse(sessionStorage.getItem(STORAGE_KEY + '_data') || '{}');
+        Object.assign(persistentData, pageData);
+        sessionStorage.setItem(STORAGE_KEY + '_data', JSON.stringify(persistentData));
+
+        let html = '<ul class="divide-y divide-gray-200">';
+        selectedIds.forEach(id => {
+            const data = persistentData[id] || { number: id, type: 'Data' };
+            html += `
+                <li class="py-3 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${data.type === 'Tanda Terima' ? 'bg-blue-100 text-blue-800' : (data.type === 'TT Tanpa SJ' ? 'bg-purple-100 text-purple-800' : 'bg-teal-100 text-teal-800')}">${data.type}</span>
+                        <span class="ml-2 text-sm font-medium text-gray-900">${data.number}</span>
+                    </div>
+                    <button type="button" onclick="removeFromSelection('${id}')" class="text-red-500 hover:text-red-700">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </li>
+            `;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    function removeFromSelection(id) {
+        let selectedIds = getSelectedIds();
+        selectedIds = selectedIds.filter(item => item !== id);
+        setSelectedIds(selectedIds);
+        updateCheckboxStates();
+        updateSelectedListUI();
     }
 
     function clearAllSelections() {
         if (confirm('Hapus semua pilihan?')) {
             setSelectedIds([]);
+            sessionStorage.removeItem(STORAGE_KEY + '_data');
             updateCheckboxStates();
         }
     }
@@ -349,15 +450,20 @@
     document.addEventListener('change', function(e) {
         if (e.target.classList.contains('receipt-checkbox')) {
             let selectedIds = getSelectedIds();
+            const row = e.target.closest('tr');
+            
             if (e.target.checked) {
                 if (!selectedIds.includes(e.target.value)) {
                     selectedIds.push(e.target.value);
                 }
+                if (row) row.classList.add('bg-blue-50');
             } else {
                 selectedIds = selectedIds.filter(id => id !== e.target.value);
+                if (row) row.classList.remove('bg-blue-50');
             }
             setSelectedIds(selectedIds);
             updateIndicator();
+            updateSelectedListUI();
             
             // Update select all state
             const checkboxes = document.querySelectorAll('.receipt-checkbox');
@@ -375,18 +481,22 @@
         let selectedIds = getSelectedIds();
         
         checkboxes.forEach(cb => {
+            const row = cb.closest('tr');
             cb.checked = this.checked;
             if (this.checked) {
                 if (!selectedIds.includes(cb.value)) {
                     selectedIds.push(cb.value);
                 }
+                if (row) row.classList.add('bg-blue-50');
             } else {
                 selectedIds = selectedIds.filter(id => id !== cb.value);
+                if (row) row.classList.remove('bg-blue-50');
             }
         });
         
         setSelectedIds(selectedIds);
         updateIndicator();
+        updateSelectedListUI();
     });
 
     function showExportModal() {
