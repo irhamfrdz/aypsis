@@ -92,6 +92,7 @@
                     <tr class="bg-gray-50/80 border-b border-gray-100">
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sumber</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Identitas</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Penerima / Pengirim</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Dokumen</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
@@ -114,6 +115,11 @@
                                     <i class="far fa-calendar-alt mr-1"></i>
                                     {{ $item['date'] ? \Carbon\Carbon::parse($item['date'])->format('d M Y') : '-' }}
                                 </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-sm font-mono font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                                    {{ $item['no_kontainer'] ?: '-' }}
+                                </span>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-col gap-1">
