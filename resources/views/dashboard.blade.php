@@ -297,14 +297,14 @@
                 @endphp
                 <a href="{{ route('dashboard', array_merge(request()->except('page'), ['supir' => $isActive ? null : $data->supir])) }}" 
                    class="{{ $cardClass }} rounded-lg p-3 border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group relative">
-                    @if($hasOverdue)
-                        <div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm z-10" title="Ada yang lebih dari 3 hari">
-                            <i class="fas fa-exclamation text-[10px]"></i>
-                        </div>
-                    @endif
-                    <span class="text-xs {{ $supirClass }} font-medium uppercase tracking-wider mb-1">
-                        {{ $data->supir ?: 'Tanpa Nama' }}
-                    </span>
+                    <div class="flex items-center justify-center gap-1 mb-1">
+                        <span class="text-xs {{ $supirClass }} font-medium uppercase tracking-wider">
+                            {{ $data->supir ?: 'Tanpa Nama' }}
+                        </span>
+                        @if($hasOverdue)
+                            <i class="fas fa-exclamation-triangle text-red-500 text-[10px]" title="Ada yang lebih dari 3 hari"></i>
+                        @endif
+                    </div>
                     <span class="text-2xl font-bold {{ $totalClass }}">
                         {{ $data->total }}
                     </span>
