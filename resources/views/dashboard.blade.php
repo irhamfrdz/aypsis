@@ -339,20 +339,34 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($suratJalanBelumTandaTerima as $sj)
-                        <tr class="hover:bg-red-50 transition-colors duration-150">
-                            <td class="px-3 py-2 whitespace-nowrap font-medium text-gray-900">
+                        @php
+                            $isLebihDari3Hari = false;
+                            if (optional($sj->uangJalan)->tanggal_uang_jalan) {
+                                $tanggalUj = $sj->uangJalan->tanggal_uang_jalan->copy()->startOfDay();
+                                $hariIni = now()->startOfDay();
+                                $isLebihDari3Hari = $tanggalUj->diffInDays($hariIni) > 3 && $tanggalUj->isBefore($hariIni);
+                            }
+                            $rowClass = $isLebihDari3Hari ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-red-50';
+                            $textClassPrimary = $isLebihDari3Hari ? 'text-red-700 font-bold' : 'text-gray-900 font-medium';
+                            $textClassSecondary = $isLebihDari3Hari ? 'text-red-600 font-medium' : 'text-gray-500';
+                        @endphp
+                        <tr class="{{ $rowClass }} transition-colors duration-150">
+                            <td class="px-3 py-2 whitespace-nowrap {{ $textClassPrimary }}">
                                 {{ $sj->no_surat_jalan }}
+                                @if($isLebihDari3Hari)
+                                    <i class="fas fa-exclamation-triangle ml-1 text-red-500" title="Lebih dari 3 hari"></i>
+                                @endif
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-gray-500">
+                            <td class="px-3 py-2 whitespace-nowrap {{ $textClassSecondary }}">
                                 {{ optional($sj->uangJalan)->tanggal_uang_jalan ? $sj->uangJalan->tanggal_uang_jalan->format('d/m/Y') : '-' }}
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-gray-500">
+                            <td class="px-3 py-2 whitespace-nowrap {{ $textClassSecondary }}">
                                 {{ $sj->pengirimRelation->nama ?? $sj->pengirim }}
                             </td>
-                             <td class="px-3 py-2 whitespace-nowrap text-gray-500">
+                             <td class="px-3 py-2 whitespace-nowrap {{ $textClassSecondary }}">
                                 {{ $sj->tujuanPengirimanRelation->nama ?? $sj->order->tujuan_kirim ?? $sj->tujuan_pengiriman }}
                             </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-gray-500">
+                            <td class="px-3 py-2 whitespace-nowrap {{ $textClassPrimary }}">
                                 {{ $sj->supir }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-center">
