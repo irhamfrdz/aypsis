@@ -138,7 +138,8 @@
                 <th width="8%">No. Plat</th>
                 <th width="15%">Pengirim</th>
                 <th width="15%">Penerima</th>
-                <th width="15%">Jenis Barang</th>
+                <th width="12%">Jenis Barang</th>
+                <th width="8%">Cek Kendaraan</th>
             </tr>
         </thead>
         <tbody>
@@ -166,10 +167,30 @@
                 <td>{{ is_array($sj) ? ($sj['pengirim'] ?: '-') : ($sj->pengirim ?: '-') }}</td>
                 <td>{{ is_array($sj) ? ($sj['penerima'] ?: '-') : ($sj->penerima ?: '-') }}</td>
                 <td>{{ is_array($sj) ? ($sj['jenis_barang'] ?: '-') : ($sj->jenis_barang ?: '-') }}</td>
+                <td style="text-align: center;">
+                    @php
+                        $supirNik = is_array($sj) ? ($sj['nik_supir'] ?? null) : ($sj->nik_supir ?? null);
+                        $tanggalSj = is_array($sj) ? ($sj['tanggal_surat_jalan'] ?? null) : ($sj->tanggal_surat_jalan ?? null);
+                        $hasCek = false;
+                        if ($supirNik && $tanggalSj) {
+                            $karyawanId = \App\Models\Karyawan::where('nik', $supirNik)->value('id');
+                            if ($karyawanId) {
+                                $hasCek = \App\Models\CekKendaraan::where('karyawan_id', $karyawanId)
+                                    ->whereDate('tanggal', \Carbon\Carbon::parse($tanggalSj)->format('Y-m-d'))
+                                    ->exists();
+                            }
+                        }
+                    @endphp
+                    @if($hasCek)
+                        <span style="color: green; font-weight: bold;">✔ Sudah</span>
+                    @else
+                        <span style="color: red; font-weight: bold;">✖ Belum</span>
+                    @endif
+                </td>
             </tr>
             @empty
             <tr>
-                <td colspan="11" style="text-align: center; padding: 20px;">Tidak ada data</td>
+                <td colspan="12" style="text-align: center; padding: 20px;">Tidak ada data</td>
             </tr>
             @endforelse
         </tbody>
