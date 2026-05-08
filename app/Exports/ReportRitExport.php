@@ -83,11 +83,26 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             $rawSupirNik = $get('nik_supir');
             $rawTanggalSj = $get('tanggal_surat_jalan');
             
-            if ($rawSupirNik && $rawTanggalSj) {
+            $tanggalDisplay = ($tanggal != '-') ? Carbon::createFromFormat('d/m/Y', $tanggal)->format('Y-m-d') : null;
+            $tanggalSjFormat = $rawTanggalSj ? (is_string($rawTanggalSj) ? Carbon::parse($rawTanggalSj)->format('Y-m-d') : $rawTanggalSj->format('Y-m-d')) : null;
+
+            $karyawanId = null;
+            if ($rawSupirNik) {
                 $karyawanId = \App\Models\Karyawan::where('nik', $rawSupirNik)->value('id');
-                if ($karyawanId) {
+            }
+            
+            $supirName = $get('supir');
+            if (!$karyawanId && $supirName && $supirName != '-') {
+                $karyawanId = \App\Models\Karyawan::where('nama_panggilan', $supirName)
+                    ->orWhere('nama_lengkap', $supirName)
+                    ->value('id');
+            }
+
+            if ($karyawanId) {
+                $queryDates = array_filter(array_unique([$tanggalDisplay, $tanggalSjFormat]));
+                if (!empty($queryDates)) {
                     $hasCek = \App\Models\CekKendaraan::where('karyawan_id', $karyawanId)
-                        ->whereDate('tanggal', Carbon::parse($rawTanggalSj)->format('Y-m-d'))
+                        ->whereIn('tanggal', $queryDates)
                         ->exists();
                 }
             }

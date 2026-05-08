@@ -171,12 +171,29 @@
                     @php
                         $supirNik = is_array($sj) ? ($sj['nik_supir'] ?? null) : ($sj->nik_supir ?? null);
                         $tanggalSj = is_array($sj) ? ($sj['tanggal_surat_jalan'] ?? null) : ($sj->tanggal_surat_jalan ?? null);
+                        
+                        $tanggalDisplay = ($tanggal != '-') ? (is_string($tanggal) ? \Carbon\Carbon::parse($tanggal)->format('Y-m-d') : $tanggal->format('Y-m-d')) : null;
+                        $tanggalSjFormat = $tanggalSj ? (is_string($tanggalSj) ? \Carbon\Carbon::parse($tanggalSj)->format('Y-m-d') : $tanggalSj->format('Y-m-d')) : null;
+
                         $hasCek = false;
-                        if ($supirNik && $tanggalSj) {
+                        $karyawanId = null;
+                        
+                        if ($supirNik) {
                             $karyawanId = \App\Models\Karyawan::where('nik', $supirNik)->value('id');
-                            if ($karyawanId) {
+                        }
+                        
+                        $supirName = is_array($sj) ? ($sj['supir'] ?? null) : ($sj->supir ?? null);
+                        if (!$karyawanId && $supirName && $supirName != '-') {
+                            $karyawanId = \App\Models\Karyawan::where('nama_panggilan', $supirName)
+                                ->orWhere('nama_lengkap', $supirName)
+                                ->value('id');
+                        }
+
+                        if ($karyawanId) {
+                            $queryDates = array_filter(array_unique([$tanggalDisplay, $tanggalSjFormat]));
+                            if (!empty($queryDates)) {
                                 $hasCek = \App\Models\CekKendaraan::where('karyawan_id', $karyawanId)
-                                    ->whereDate('tanggal', \Carbon\Carbon::parse($tanggalSj)->format('Y-m-d'))
+                                    ->whereIn('tanggal', $queryDates)
                                     ->exists();
                             }
                         }
