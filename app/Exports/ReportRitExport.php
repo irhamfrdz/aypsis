@@ -78,6 +78,21 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             // Rit
             $rit = $get('rit') ? $get('rit') : '-';
 
+            // Cek Kendaraan
+            $hasCek = false;
+            $rawSupirNik = $get('nik_supir');
+            $rawTanggalSj = $get('tanggal_surat_jalan');
+            
+            if ($rawSupirNik && $rawTanggalSj) {
+                $karyawanId = \App\Models\Karyawan::where('nik', $rawSupirNik)->value('id');
+                if ($karyawanId) {
+                    $hasCek = \App\Models\CekKendaraan::where('karyawan_id', $karyawanId)
+                        ->whereDate('tanggal', Carbon::parse($rawTanggalSj)->format('Y-m-d'))
+                        ->exists();
+                }
+            }
+            $statusCek = $hasCek ? 'Sudah' : 'Belum';
+
             return [
                 $index + 1,
                 $tanggal,
@@ -93,6 +108,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $jenisBarang,
                 $tipe,
                 $rit,
+                $statusCek,
             ];
         });
     }
@@ -114,6 +130,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             'Jenis Barang',
             'Tipe',
             'Rit',
+            'Cek Kendaraan',
         ];
     }
 
@@ -122,7 +139,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Style header
-                $event->sheet->getStyle('A1:N1')->applyFromArray([
+                $event->sheet->getStyle('A1:O1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -145,7 +162,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
 
                 // Add borders to all cells with data
                 $lastRow = $event->sheet->getHighestRow();
-                $event->sheet->getStyle('A1:N' . $lastRow)->applyFromArray([
+                $event->sheet->getStyle('A1:O' . $lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
@@ -162,10 +179,10 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 $event->sheet->setCellValue('A1', 'REPORT RIT');
                 $event->sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
                 
-                $event->sheet->mergeCells('A1:N1');
-                $event->sheet->mergeCells('A2:N2');
+                $event->sheet->mergeCells('A1:O1');
+                $event->sheet->mergeCells('A2:O2');
                 
-                $event->sheet->getStyle('A1:N1')->applyFromArray([
+                $event->sheet->getStyle('A1:O1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'size' => 14,
@@ -176,7 +193,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                     ],
                 ]);
 
-                $event->sheet->getStyle('A2:N2')->applyFromArray([
+                $event->sheet->getStyle('A2:O2')->applyFromArray([
                     'font' => [
                         'bold' => true,
                     ],
