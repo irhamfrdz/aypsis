@@ -512,7 +512,7 @@ class ReportRitController extends Controller
         
         $suratJalans = $allSuratJalans->sortByDesc(function($item) {
             return $item['tanggal_surat_jalan'] . ' ' . $item['created_at'];
-        });
+        })->values();
 
         return view('report-rit.print', compact('suratJalans', 'startDate', 'endDate'));
     }
