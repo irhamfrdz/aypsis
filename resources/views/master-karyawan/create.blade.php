@@ -413,8 +413,28 @@
                     </div>
 
                     <div>
+                        <label for="status_jkn" class="{{ $labelClasses }}">Status JKN</label>
+                        <select name="status_jkn" id="status_jkn" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Status JKN --</option>
+                            <option value="PPU (Penerima Upah (Karyawan))" {{ old('status_jkn') == 'PPU (Penerima Upah (Karyawan))' ? 'selected' : '' }}>PPU (Penerima Upah (Karyawan))</option>
+                            <option value="BPU (Bukan Penerima Upah (Mandiri))" {{ old('status_jkn') == 'BPU (Bukan Penerima Upah (Mandiri))' ? 'selected' : '' }}>BPU (Bukan Penerima Upah (Mandiri))</option>
+                            <option value="PBI (Penerima Bantuan Iuran)" {{ old('status_jkn') == 'PBI (Penerima Bantuan Iuran)' ? 'selected' : '' }}>PBI (Penerima Bantuan Iuran)</option>
+                        </select>
+                    </div>
+
+                    <div>
                         <label for="no_ketenagakerjaan" class="{{ $labelClasses }}">BP Jamsostek</label>
                         <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek" value="{{ old('no_ketenagakerjaan', $pelamar?->no_ketenagakerjaan) }}">
+                    </div>
+
+                    <div>
+                        <label for="status_bp_jamsostek" class="{{ $labelClasses }}">Status BP Jamsostek</label>
+                        <select name="status_bp_jamsostek" id="status_bp_jamsostek" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Status BP Jamsostek --</option>
+                            <option value="PPU (Penerima Upah (Karyawan))" {{ old('status_bp_jamsostek') == 'PPU (Penerima Upah (Karyawan))' ? 'selected' : '' }}>PPU (Penerima Upah (Karyawan))</option>
+                            <option value="BPU (Bukan Penerima Upah (Mandiri))" {{ old('status_bp_jamsostek') == 'BPU (Bukan Penerima Upah (Mandiri))' ? 'selected' : '' }}>BPU (Bukan Penerima Upah (Mandiri))</option>
+                            <option value="PBI (Penerima Bantuan Iuran)" {{ old('status_bp_jamsostek') == 'PBI (Penerima Bantuan Iuran)' ? 'selected' : '' }}>PBI (Penerima Bantuan Iuran)</option>
+                        </select>
                     </div>
                 </div>
             </div>

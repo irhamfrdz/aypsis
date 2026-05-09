@@ -435,8 +435,17 @@
             </div>
 
             <div>
+                <p class="font-semibold text-gray-600">Status JKN</p>
+                <p class="text-gray-800">{{ $karyawan->status_jkn ?? '-' }}</p>
+            </div>
+            <div>
                 <p class="font-semibold text-gray-600">BP Jamsostek</p>
                 <p class="text-gray-800">{{ $karyawan->no_ketenagakerjaan ?? '-' }}</p>
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Status BP Jamsostek</p>
+                <p class="text-gray-800">{{ $karyawan->status_bp_jamsostek ?? '-' }}</p>
             </div>
         </div>
     </details>
