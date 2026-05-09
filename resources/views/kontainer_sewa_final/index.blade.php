@@ -352,11 +352,20 @@ let expAudit = null;
 let currentAuditTab = 'outstanding';
 
 // --- LOGIKA UTAMA AUDIT (MENU 5) ---
+function isTypeMatch(t1, t2) {
+    if(!t1 || !t2) return false;
+    if(t1 === t2) return true;
+    const s1 = t1.toUpperCase();
+    const s2 = t2.toUpperCase();
+    if(s1.includes('DRY') && s2.includes('DRY')) return true;
+    return false;
+}
+
 function genPeriode(x, idInduk) {
     const dAmbil = parseD(x.s); 
     const dAkhir = x.e ? parseD(x.e) : new Date(); 
     const mu = db.u.find(unit => unit.no === x.no);
-    const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z) : null;
+    const r = mu ? db.r.find(rt => rt.v === mu.v && isTypeMatch(rt.t, mu.t) && rt.z === mu.z) : null;
     const biayaSnapshot = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0));
     
     let h = `<table style="width:100%; background:white; border-radius: 8px; margin-top: 10px;"><thead><tr style="background:#f1f5f9"><th>Periode</th><th>Masa Sewa</th><th>AYPSIS</th><th>Vendor Bill</th><th>Alasan Selisih</th><th>St. Pranota</th><th>St. Bayar</th><th>Aksi</th></tr></thead>`;
@@ -616,7 +625,7 @@ function toExcelSerial(d) { if(!d||!d.includes('/')) return "0"; const [dd,mm,yy
 function renderVTZ() { ['v','t','z'].forEach(k => { const body = document.querySelector(`#tbl-${k} tbody`); if(body) body.innerHTML = db[k].map((x,i) => `<tr class="${x.act===false?'non-aktif':''}"><td>${i+1}</td><td>${x.val||x}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="edM('${k}',${i})">Edit</button> ${x.act!==false?`<button class="btn btn-red" style="padding: 4px 10px;" onclick="delM('${k}',${i})">Off</button>`:''}</td></tr>`).join(''); }); }
 function renderRT() { const body = document.getElementById('body-rt'); if(body) body.innerHTML = db.r.map((x,i) => `<tr class="${x.act===false?'non-aktif':''}"><td>${i+1}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td>${fmtRibuan(x.rb)}</td><td>${fmtRibuan(x.rh)}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="edR(${i})">Edit</button> ${x.act!==false?`<button class="btn btn-red" style="padding: 4px 10px;" onclick="delR(${i})">Off</button>`:''}</td></tr>`).join(''); }
 function renderU() { const s = document.getElementById('src-u').value.toUpperCase(); const fil = db.u.filter(x => x.no.includes(s)); document.getElementById('body-u').innerHTML = fil.slice((pgU-1)*rPP, pgU*rPP).map((x,i) => { const idx = db.u.indexOf(x); return `<tr class="${x.act===false?'non-aktif':''}"><td>${((pgU-1)*rPP)+i+1}</td><td>${x.no}</td><td>${x.v}</td><td>${x.t}/${x.z}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="bukaEditUnit(${idx})">Edit</button> ${x.act!==false?`<button class="btn btn-red" style="padding: 4px 10px;" onclick="delU(${idx})">Off</button>`:''}</td></tr>`; }).join(''); renderPg('pg-u', fil.length, 'pgU', 'renderU'); }
-function renderX() { const s = document.getElementById('src-x').value.toUpperCase(); const fil = db.x.filter(x => x.no.includes(s)); document.getElementById('body-x').innerHTML = fil.slice((pgX-1)*rPP, pgX*rPP).map((x,i) => { const idx = db.x.indexOf(x); const mu = db.u.find(unit => unit.no === x.no); const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z && rt.act !== false) : null; const biaya = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0)); return `<tr><td>${((pgX-1)*rPP)+i+1}</td><td><b>${x.no + toExcelSerial(x.s)}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td>${x.stT||'B'}</td><td class="${x.e?'st-selesai':'st-sewa'}">${x.e?'SELESAI':'SEWA'}</td><td align="right">${fmtRibuan(biaya)}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="bukaEditTrx(${idx})">Edit</button> <button class="btn btn-red" style="padding: 4px 10px;" onclick="delX(${idx})">Hapus</button></td></tr>`; }).join(''); renderPg('pg-x', fil.length, 'pgX', 'renderX'); }
+function renderX() { const s = document.getElementById('src-x').value.toUpperCase(); const fil = db.x.filter(x => x.no.includes(s)); document.getElementById('body-x').innerHTML = fil.slice((pgX-1)*rPP, pgX*rPP).map((x,i) => { const idx = db.x.indexOf(x); const mu = db.u.find(unit => unit.no === x.no); const r = mu ? db.r.find(rt => rt.v === mu.v && isTypeMatch(rt.t, mu.t) && rt.z === mu.z && rt.act !== false) : null; const biaya = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0)); return `<tr><td>${((pgX-1)*rPP)+i+1}</td><td><b>${x.no + toExcelSerial(x.s)}</b></td><td>${x.no}</td><td>${x.s}</td><td>${x.e||'-'}</td><td>${x.stT||'B'}</td><td class="${x.e?'st-selesai':'st-sewa'}">${x.e?'SELESAI':'SEWA'}</td><td align="right">${fmtRibuan(biaya)}</td><td><button class="btn btn-orange" style="padding: 4px 10px;" onclick="bukaEditTrx(${idx})">Edit</button> <button class="btn btn-red" style="padding: 4px 10px;" onclick="delX(${idx})">Hapus</button></td></tr>`; }).join(''); renderPg('pg-x', fil.length, 'pgX', 'renderX'); }
 
 function renderP() {
     const body = document.getElementById('body-p');
@@ -958,7 +967,7 @@ function getAllOutstandingPeriods(x, idInduk) {
     const dAmbil = parseD(x.s);
     const dAkhir = x.e ? parseD(x.e) : new Date();
     const mu = db.u.find(unit => unit.no === x.no);
-    const r = mu ? db.r.find(rt => rt.v === mu.v && rt.t === mu.t && rt.z === mu.z) : null;
+    const r = mu ? db.r.find(rt => rt.v === mu.v && isTypeMatch(rt.t, mu.t) && rt.z === mu.z) : null;
     const biayaSnapshot = !r ? 0 : (x.stT === 'H' ? (r.rh || 0) : (r.rb || 0));
     const vendorName = mu ? mu.v : '-';
     
