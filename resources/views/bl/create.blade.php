@@ -3,6 +3,45 @@
 @section('title', 'Tambah Bill of Lading')
 
 @section('content')
+<style>
+    .premium-input {
+        background-color: #ffffff !important;
+        border: 2px solid #e5e7eb !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    }
+    .premium-input:focus {
+        border-color: #4f46e5 !important;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
+        background-color: #ffffff !important;
+        transform: translateY(-1px);
+    }
+    .input-icon {
+        color: #6366f1 !important;
+        font-size: 1.1rem !important;
+    }
+    .section-card {
+        background: #ffffff;
+        border-radius: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .form-label {
+        color: #374151 !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.01em !important;
+        margin-bottom: 0.5rem !important;
+        display: block;
+    }
+    .step-number {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .header-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+</style>
+
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -31,7 +70,7 @@
 
         <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             <!-- Header Section -->
-            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-10 text-white">
+            <div class="header-gradient px-8 py-10 text-white">
                 <div class="flex items-center justify-between">
                     <div>
                         <h1 class="text-3xl font-extrabold tracking-tight">Buat BL Baru</h1>
@@ -70,47 +109,47 @@
                     
                     <!-- Section 1: Main Info -->
                     <div class="space-y-6">
-                        <h3 class="text-lg font-bold text-gray-800 flex items-center">
-                            <span class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                            <span class="w-10 h-10 step-number rounded-full flex items-center justify-center mr-3 text-sm">1</span>
                             Informasi Utama
                         </h3>
                         
                         <div class="space-y-4">
                             <div>
-                                <label for="nomor_kontainer" class="block text-sm font-semibold text-gray-700 mb-1">Nomor Kontainer <span class="text-red-500">*</span></label>
+                                <label for="nomor_kontainer" class="form-label">Nomor Kontainer <span class="text-red-500">*</span></label>
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none input-icon">
                                         <i class="fas fa-box"></i>
                                     </div>
                                     <input type="text" name="nomor_kontainer" id="nomor_kontainer" required value="{{ old('nomor_kontainer') }}"
-                                        class="block w-full pl-10 pr-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150"
+                                        class="block w-full pl-10 pr-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150"
                                         placeholder="Contoh: CONT1234567">
                                 </div>
                                 @error('nomor_kontainer') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             </div>
 
                             <div>
-                                <label for="nomor_bl" class="block text-sm font-semibold text-gray-700 mb-1">Nomor BL</label>
+                                <label for="nomor_bl" class="form-label">Nomor BL</label>
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none input-icon">
                                         <i class="fas fa-hashtag"></i>
                                     </div>
                                     <input type="text" name="nomor_bl" id="nomor_bl" value="{{ old('nomor_bl') }}"
-                                        class="block w-full pl-10 pr-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150"
+                                        class="block w-full pl-10 pr-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150"
                                         placeholder="Masukkan nomor BL">
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label for="no_seal" class="block text-sm font-semibold text-gray-700 mb-1">No. Seal</label>
+                                    <label for="no_seal" class="form-label">No. Seal</label>
                                     <input type="text" name="no_seal" id="no_seal" value="{{ old('no_seal') }}"
-                                        class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150">
+                                        class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150">
                                 </div>
                                 <div>
-                                    <label for="tipe_kontainer" class="block text-sm font-semibold text-gray-700 mb-1">Tipe</label>
+                                    <label for="tipe_kontainer" class="form-label">Tipe</label>
                                     <select name="tipe_kontainer" id="tipe_kontainer"
-                                        class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150">
+                                        class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150">
                                         <option value="">-- Pilih Tipe --</option>
                                         <option value="Dry">Dry</option>
                                         <option value="Reefer">Reefer</option>
@@ -122,9 +161,9 @@
                             </div>
 
                             <div>
-                                <label for="size_kontainer" class="block text-sm font-semibold text-gray-700 mb-1">Ukuran Kontainer</label>
+                                <label for="size_kontainer" class="form-label">Ukuran Kontainer</label>
                                 <select name="size_kontainer" id="size_kontainer"
-                                    class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150">
+                                    class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150">
                                     <option value="">-- Pilih Ukuran --</option>
                                     <option value="20ft">20 Feet</option>
                                     <option value="40ft">40 Feet</option>
@@ -137,61 +176,61 @@
 
                     <!-- Section 2: Logistics & Details -->
                     <div class="space-y-6">
-                        <h3 class="text-lg font-bold text-gray-800 flex items-center">
-                            <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                        <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                            <span class="w-10 h-10 step-number rounded-full flex items-center justify-center mr-3 text-sm">2</span>
                             Detail Logistik
                         </h3>
 
                         <div class="space-y-4">
                             <div>
-                                <label for="nama_barang" class="block text-sm font-semibold text-gray-700 mb-1">Nama Barang</label>
+                                <label for="nama_barang" class="form-label">Nama Barang</label>
                                 <input type="text" name="nama_barang" id="nama_barang" value="{{ old('nama_barang') }}"
-                                    class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150"
+                                    class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150"
                                     placeholder="Jenis barang yang dikirim">
                             </div>
 
                             <div>
-                                <label for="pengirim" class="block text-sm font-semibold text-gray-700 mb-1">Pengirim</label>
+                                <label for="pengirim" class="form-label">Pengirim</label>
                                 <input type="text" name="pengirim" id="pengirim" value="{{ old('pengirim') }}"
-                                    class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150"
+                                    class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150"
                                     placeholder="Nama perusahaan/individu pengirim">
                             </div>
 
                             <div>
-                                <label for="penerima" class="block text-sm font-semibold text-gray-700 mb-1">Penerima</label>
+                                <label for="penerima" class="form-label">Penerima</label>
                                 <input type="text" name="penerima" id="penerima" value="{{ old('penerima') }}"
-                                    class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150"
+                                    class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150"
                                     placeholder="Nama perusahaan/individu penerima">
                             </div>
 
                             <div class="grid grid-cols-3 gap-3">
                                 <div class="col-span-1">
-                                    <label for="tonnage" class="block text-sm font-semibold text-gray-700 mb-1">Tonnage</label>
+                                    <label for="tonnage" class="form-label">Tonnage</label>
                                     <input type="number" step="0.001" name="tonnage" id="tonnage" value="{{ old('tonnage') }}"
-                                        class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150">
+                                        class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150">
                                 </div>
                                 <div class="col-span-1">
-                                    <label for="volume" class="block text-sm font-semibold text-gray-700 mb-1">Volume</label>
+                                    <label for="volume" class="form-label">Volume</label>
                                     <input type="number" step="0.001" name="volume" id="volume" value="{{ old('volume') }}"
-                                        class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150">
+                                        class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150">
                                 </div>
                                 <div class="col-span-1">
-                                    <label for="satuan" class="block text-sm font-semibold text-gray-700 mb-1">Satuan</label>
+                                    <label for="satuan" class="form-label">Satuan</label>
                                     <input type="text" name="satuan" id="satuan" value="{{ old('satuan', 'M3/TON') }}"
-                                        class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150">
+                                        class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150">
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label for="kuantitas" class="block text-sm font-semibold text-gray-700 mb-1">Kuantitas</label>
+                                    <label for="kuantitas" class="form-label">Kuantitas</label>
                                     <input type="number" name="kuantitas" id="kuantitas" value="{{ old('kuantitas') }}"
-                                        class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150">
+                                        class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150">
                                 </div>
                                 <div>
-                                    <label for="term" class="block text-sm font-semibold text-gray-700 mb-1">Term</label>
+                                    <label for="term" class="form-label">Term</label>
                                     <input type="text" name="term" id="term" value="{{ old('term') }}"
-                                        class="block w-full px-3 py-3 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 font-medium transition duration-150"
+                                        class="block w-full px-3 py-3 premium-input rounded-xl focus:ring-0 text-gray-900 font-medium transition duration-150"
                                         placeholder="Contoh: Prepaid">
                                 </div>
                             </div>
