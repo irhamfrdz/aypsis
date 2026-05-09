@@ -27,18 +27,23 @@ class TandaTerimaApprovalController extends Controller
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('penerima', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
                   ->orWhere('no_kontainer', 'like', "%{$search}%");
             });
             $ttsjQuery->where(function($q) use ($search) {
                 $q->where('no_tanda_terima', 'like', "%{$search}%")
                   ->orWhere('penerima', 'like', "%{$search}%")
                   ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
                   ->orWhere('no_kontainer', 'like', "%{$search}%");
             });
             $lclQuery->where(function($q) use ($search) {
                 $q->where('nomor_tanda_terima', 'like', "%{$search}%")
                   ->orWhere('nama_penerima', 'like', "%{$search}%")
                   ->orWhere('nama_pengirim', 'like', "%{$search}%")
+                  ->orWhereHas('tujuanPengiriman', function($q) use ($search) {
+                      $q->where('nama_tujuan', 'like', "%{$search}%");
+                  })
                   ->orWhereHas('kontainerPivot', function($q) use ($search) {
                       $q->where('nomor_kontainer', 'like', "%{$search}%");
                   });
@@ -64,6 +69,7 @@ class TandaTerimaApprovalController extends Controller
                     'date' => $item->tanggal ?: $item->tanggal_surat_jalan,
                     'penerima' => $item->penerima,
                     'pengirim' => $item->pengirim,
+                    'tujuan' => $item->tujuan_pengiriman,
                     'no_kontainer' => $item->no_kontainer,
                     'asuransi_paths' => $this->getDocumentsArray($item),
                     'is_approved' => $item->is_asuransi_approved,
@@ -83,6 +89,7 @@ class TandaTerimaApprovalController extends Controller
                     'date' => $item->tanggal_tanda_terima,
                     'penerima' => $item->penerima,
                     'pengirim' => $item->pengirim,
+                    'tujuan' => $item->tujuan_pengiriman,
                     'no_kontainer' => $item->no_kontainer,
                     'asuransi_paths' => $this->getDocumentsArray($item),
                     'is_approved' => $item->is_asuransi_approved,
@@ -102,6 +109,7 @@ class TandaTerimaApprovalController extends Controller
                     'date' => $item->tanggal_tanda_terima,
                     'penerima' => $item->nama_penerima,
                     'pengirim' => $item->nama_pengirim,
+                    'tujuan' => $item->tujuanKirim->nama_tujuan ?? '-',
                     'no_kontainer' => $item->nomor_kontainer,
                     'asuransi_paths' => $this->getDocumentsArray($item),
                     'is_approved' => $item->is_asuransi_approved,

@@ -61,7 +61,7 @@
                     <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Pencarian</label>
                     <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" name="search" value="{{ $search }}" placeholder="No. SJ / TT, Penerima..." 
+                        <input type="text" name="search" value="{{ $search }}" placeholder="No. SJ, Penerima, Tujuan..." 
                                class="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
                     </div>
                 </div>
@@ -93,6 +93,7 @@
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sumber</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Identitas</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tujuan</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Penerima / Pengirim</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Dokumen</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
@@ -120,6 +121,11 @@
                                 <span class="text-sm font-mono font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded">
                                     {{ $item['no_kontainer'] ?: '-' }}
                                 </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900 font-medium">
+                                    {{ $item['tujuan'] ?: '-' }}
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-col gap-1">
@@ -190,7 +196,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-20 text-center">
+                            <td colspan="7" class="px-6 py-20 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                                         <i class="fas fa-folder-open text-gray-300 text-3xl"></i>
