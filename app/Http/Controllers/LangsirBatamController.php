@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LangsirBatam;
+use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -53,7 +54,12 @@ class LangsirBatamController extends Controller
     public function create()
     {
         $no_transaksi = LangsirBatam::generateNoTransaksi();
-        return view('langsir-batam.create', compact('no_transaksi'));
+        $supirs = Karyawan::where('pekerjaan', 'LIKE', '%supir%')
+            ->orWhere('divisi', 'LIKE', '%supir%')
+            ->orderBy('nama_panggilan', 'asc')
+            ->get();
+            
+        return view('langsir-batam.create', compact('no_transaksi', 'supirs'));
     }
 
     /**
@@ -98,7 +104,12 @@ class LangsirBatamController extends Controller
     public function edit($id)
     {
         $langsir = LangsirBatam::findOrFail($id);
-        return view('langsir-batam.edit', compact('langsir'));
+        $supirs = Karyawan::where('pekerjaan', 'LIKE', '%supir%')
+            ->orWhere('divisi', 'LIKE', '%supir%')
+            ->orderBy('nama_panggilan', 'asc')
+            ->get();
+
+        return view('langsir-batam.edit', compact('langsir', 'supirs'));
     }
 
     /**
