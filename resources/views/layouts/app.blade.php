@@ -2015,6 +2015,14 @@
                     </a>
                 @endif
 
+                {{-- Langsir Batam --}}
+                @can('langsir-batam-view')
+                    <a href="{{ route('langsir-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('langsir-batam.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Langsir Kontainer Batam</span>
+                    </a>
+                @endcan
+
+
                 {{-- Prospek Batam --}}
                 @if($user && ($user->can('prospek-batam-view') || $user->can('prospek-batam-edit') || $isAdmin))
                     <a href="{{ route('prospek-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('prospek-batam.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">

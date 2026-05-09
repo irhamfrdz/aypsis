@@ -96,6 +96,7 @@ use App\Http\Controllers\ProspekBatamController;
 use App\Http\Controllers\BuruhController;
 use App\Http\Controllers\MasterItemKwitansiController;
 use App\Http\Controllers\BiayaBensinController;
+use App\Http\Controllers\LangsirBatamController;
 
 
 
@@ -2595,6 +2596,30 @@ Route::middleware(['auth'])->group(function () {
     Route::get('surat-jalan-tarik-kosong-batam/{id}/print', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'print'])
          ->name('surat-jalan-tarik-kosong-batam.print')
          ->middleware('can:surat-jalan-tarik-kosong-batam-print');
+
+    // 🚚 LANGSIR BATAM
+    Route::get('langsir-batam', [\App\Http\Controllers\LangsirBatamController::class, 'index'])
+         ->name('langsir-batam.index')
+         ->middleware('can:langsir-batam-view');
+    Route::get('langsir-batam/create', [\App\Http\Controllers\LangsirBatamController::class, 'create'])
+         ->name('langsir-batam.create')
+         ->middleware('can:langsir-batam-create');
+    Route::post('langsir-batam', [\App\Http\Controllers\LangsirBatamController::class, 'store'])
+         ->name('langsir-batam.store')
+         ->middleware('can:langsir-batam-create');
+    Route::get('langsir-batam/{id}', [\App\Http\Controllers\LangsirBatamController::class, 'show'])
+         ->name('langsir-batam.show')
+         ->middleware('can:langsir-batam-view');
+    Route::get('langsir-batam/{id}/edit', [\App\Http\Controllers\LangsirBatamController::class, 'edit'])
+         ->name('langsir-batam.edit')
+         ->middleware('can:langsir-batam-update');
+    Route::put('langsir-batam/{id}', [\App\Http\Controllers\LangsirBatamController::class, 'update'])
+         ->name('langsir-batam.update')
+         ->middleware('can:langsir-batam-update');
+    Route::delete('langsir-batam/{id}', [\App\Http\Controllers\LangsirBatamController::class, 'destroy'])
+         ->name('langsir-batam.destroy')
+         ->middleware('can:langsir-batam-delete');
+
 
     Route::post('/orders-batam/generate-number', [\App\Http\Controllers\OrderBatamController::class, 'generateOrderBatamNumber'])
          ->name('orders-batam.generate-number')

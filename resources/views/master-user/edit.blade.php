@@ -1454,6 +1454,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Langsir Kontainer Batam --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-purple-600 font-bold">Langsir Kontainer Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[langsir-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['langsir-batam']['view']) && $userMatrixPermissions['langsir-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[langsir-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['langsir-batam']['create']) && $userMatrixPermissions['langsir-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[langsir-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['langsir-batam']['update']) && $userMatrixPermissions['langsir-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[langsir-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['langsir-batam']['delete']) && $userMatrixPermissions['langsir-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Tanda Terima Tanpa Surat Jalan --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

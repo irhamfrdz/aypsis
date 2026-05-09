@@ -680,6 +680,7 @@ class UserController extends Controller
                 'ob' => 'ob',
                 'ongkos-truck' => 'ongkos-truck',
                 'order-batam' => 'order-batam',
+                'langsir-batam' => 'langsir-batam',
                 'order-management' => 'order', // Map order-management to order for permission names
                 'pembayaran-aktivitas-lain' => 'pembayaran-aktivitas-lain',
                 'pembayaran-ob' => 'pembayaran-ob',
@@ -4222,6 +4223,25 @@ class UserController extends Controller
                             'create' => 'order-batam-create',
                             'update' => 'order-batam-update',
                             'delete' => 'order-batam-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle langsir-batam permissions explicitly
+                    if ($module === 'langsir-batam' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'langsir-batam-view',
+                            'create' => 'langsir-batam-create',
+                            'update' => 'langsir-batam-update',
+                            'delete' => 'langsir-batam-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
