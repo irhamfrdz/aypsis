@@ -436,6 +436,11 @@
                             <option value="PBI (Penerima Bantuan Iuran)" {{ old('status_bp_jamsostek') == 'PBI (Penerima Bantuan Iuran)' ? 'selected' : '' }}>PBI (Penerima Bantuan Iuran)</option>
                         </select>
                     </div>
+
+                    <div>
+                        <label for="cabang_bpjs" class="{{ $labelClasses }}">Cabang BPJS</label>
+                        <input type="text" name="cabang_bpjs" id="cabang_bpjs" class="{{ $inputClasses }}" placeholder="Contoh: Cabang Batam" value="{{ old('cabang_bpjs', $pelamar?->cabang_bpjs) }}">
+                    </div>
                 </div>
             </div>
         </fieldset>

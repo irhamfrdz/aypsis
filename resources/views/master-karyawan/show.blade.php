@@ -447,6 +447,11 @@
                 <p class="font-semibold text-gray-600">Status BP Jamsostek</p>
                 <p class="text-gray-800">{{ $karyawan->status_bp_jamsostek ?? '-' }}</p>
             </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Cabang BPJS</p>
+                <p class="text-gray-800">{{ $karyawan->cabang_bpjs ?? '-' }}</p>
+            </div>
         </div>
     </details>
 

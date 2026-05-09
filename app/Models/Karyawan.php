@@ -18,7 +18,7 @@ class Karyawan extends Model
         'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin',
         'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti',
         'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak',
-        'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'status_jkn', 'no_ketenagakerjaan', 'status_bp_jamsostek', 'no_sim',
+        'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'status_jkn', 'no_ketenagakerjaan', 'status_bp_jamsostek', 'cabang_bpjs', 'no_sim',
         'sim_berlaku_mulai', 'sim_berlaku_sampai',
         'cabang', 'nik_supervisor', 'supervisor', 'verification_status', 'verified_by', 'verified_at'
     ];
