@@ -171,26 +171,9 @@ class BlController extends Controller
             }
         }
 
-        // Get distinct kapal names from bls table with normalization
-        $masterKapals = Bl::select('nama_kapal')
-            ->whereNotNull('nama_kapal')
-            ->where('nama_kapal', '!=', '')
-            ->get()
-            ->map(function($item) {
-                // Normalize: remove dots after KM/KMP, trim spaces, uppercase
-                $normalized = trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
-                
-                // Remove trailing numbers (often voyage numbers included in ship name error)
-                // e.g., "KM SUMBER ABADI 178" -> "KM SUMBER ABADI"
-                $normalized = preg_replace('/\s+\d+$/', '', $normalized);
-                
-                // Return object with nama_kapal property for compatibility with blade
-                return (object)['nama_kapal' => $normalized];
-            })
-            ->unique('nama_kapal')
-            ->sortBy('nama_kapal')
-            ->values();
-            
+        // Get ships from master data
+        $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
+        
         return view('bl.select', compact('masterKapals'));
     }
 
@@ -227,6 +210,36 @@ class BlController extends Controller
     }
 
     /**
+     * Show the form for creating a new BL.
+     */
+    public function create(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-create")
+                ->exists();
+            
+            if (!$hasPermission) {
+                abort(403, "Tidak memiliki akses untuk membuat BL");
+            }
+        }
+
+        $namaKapal = $request->get('nama_kapal');
+        $noVoyage = $request->get('no_voyage');
+
+        if (!$namaKapal || !$noVoyage) {
+            return redirect()->route('bl.select')->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu');
+        }
+
+        return view('bl.create', compact('namaKapal', 'noVoyage'));
+    }
+
+    /**
      * Store a newly created BL.
      */
     public function store(Request $request)
@@ -248,16 +261,39 @@ class BlController extends Controller
 
         // Validate input
         $request->validate([
-            'kapal_id' => 'required|exists:master_kapals,id',
+            'nama_kapal' => 'required|string|max:255',
             'no_voyage' => 'required|string|max:50',
+            'nomor_kontainer' => 'required|string|max:50',
+            'nomor_bl' => 'nullable|string|max:100',
+            'no_seal' => 'nullable|string|max:50',
+            'tipe_kontainer' => 'nullable|string|max:50',
+            'size_kontainer' => 'nullable|string|max:20',
+            'nama_barang' => 'nullable|string|max:255',
+            'pengirim' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
+            'tonnage' => 'nullable|numeric',
+            'volume' => 'nullable|numeric',
+            'kuantitas' => 'nullable|integer',
+            'satuan' => 'nullable|string|max:50',
+            'term' => 'nullable|string|max:50',
         ]);
 
-        // For now just return confirmation
-        // Later this can be extended to show a form for creating BL details
-        $masterKapal = MasterKapal::find($request->kapal_id);
-        
-        return redirect()->route('bl.index')
-            ->with('success', "BL request received for kapal {$masterKapal->nama_kapal} voyage {$request->no_voyage}");
+        try {
+            $data = $request->all();
+            $data['created_by'] = Auth::id();
+            $data['updated_by'] = Auth::id();
+            $data['status_bongkar'] = 'Belum Bongkar';
+            
+            $bl = Bl::create($data);
+
+            return redirect()->route('bl.index', [
+                'nama_kapal' => $bl->nama_kapal,
+                'no_voyage' => $bl->no_voyage
+            ])->with('success', "BL dengan nomor kontainer {$bl->nomor_kontainer} berhasil dibuat.");
+            
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', 'Gagal menyimpan BL: ' . $e->getMessage());
+        }
     }
 
     /**

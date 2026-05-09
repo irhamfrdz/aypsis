@@ -83,6 +83,12 @@
     <div class="mb-6">
         <form method="GET" action="{{ route('stock-amprahan.index') }}" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari berdasarkan nama barang atau no. bukti..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            <select name="mobil_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white">
+                <option value="">Semua Plat</option>
+                @foreach($kendaraans as $m)
+                    <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }}</option>
+                @endforeach
+            </select>
             <div class="flex space-x-2">
                 <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +96,7 @@
                     </svg>
                     Cari
                 </button>
-                @if((isset($search) && $search) || request('lokasi'))
+                @if((isset($search) && $search) || request('lokasi') || request('mobil_id'))
                 <a href="{{ route('stock-amprahan.index') }}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                     Reset
                 </a>

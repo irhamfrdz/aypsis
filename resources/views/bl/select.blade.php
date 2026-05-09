@@ -32,17 +32,26 @@
                     </select>
                 </div>
 
-                <div>
+                <div id="voyageContainer">
                     <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-2">No Voyage <span class="text-red-500">*</span></label>
-                    <select id="no_voyage" name="no_voyage" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
-                        <option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>
-                    </select>
+                    <div class="flex gap-2">
+                        <select id="no_voyage" name="no_voyage" class="flex-1 px-3 py-2 border border-gray-300 rounded-md" required>
+                            <option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>
+                        </select>
+                        <button type="button" id="toggleManualVoyage" class="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 text-sm">
+                            <i class="fas fa-edit"></i> Baru
+                        </button>
+                    </div>
+                    <input type="text" id="manual_voyage" class="hidden mt-2 w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Input nomor voyage baru...">
                 </div>
             </div>
 
-            <div class="mt-6 flex gap-2">
+            <div class="mt-6 flex flex-wrap gap-2">
                 <button type="button" id="goToIndexFiltered" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-200">
                     <i class="fas fa-list mr-2"></i>Ke Halaman Index BL
+                </button>
+                <button type="button" id="goToCreateBl" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>Buat BL Manual
                 </button>
                 <button type="button" id="exportExcelBtn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md transition duration-200">
                     <i class="fas fa-file-excel mr-2"></i>Export Excel
@@ -56,7 +65,26 @@
 document.addEventListener('DOMContentLoaded', function() {
     const kapalSelect = document.getElementById('kapal_id');
     const voyageSelect = document.getElementById('no_voyage');
+    const manualVoyageInput = document.getElementById('manual_voyage');
+    const toggleManualVoyageBtn = document.getElementById('toggleManualVoyage');
     const goToIndexFilteredBtn = document.getElementById('goToIndexFiltered');
+
+    // Toggle manual voyage input
+    toggleManualVoyageBtn.addEventListener('click', function() {
+        if (manualVoyageInput.classList.contains('hidden')) {
+            manualVoyageInput.classList.remove('hidden');
+            voyageSelect.classList.add('hidden');
+            voyageSelect.removeAttribute('required');
+            manualVoyageInput.setAttribute('required', 'required');
+            this.innerHTML = '<i class="fas fa-list"></i> List';
+        } else {
+            manualVoyageInput.classList.add('hidden');
+            voyageSelect.classList.remove('hidden');
+            manualVoyageInput.removeAttribute('required');
+            voyageSelect.setAttribute('required', 'required');
+            this.innerHTML = '<i class="fas fa-edit"></i> Baru';
+        }
+    });
 
     kapalSelect.addEventListener('change', function() {
         const namaKapal = this.value;
@@ -108,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Go to index with filter
     goToIndexFilteredBtn.addEventListener('click', function() {
         const namaKapal = kapalSelect.value;
-        const voyage = voyageSelect.value;
+        const voyage = manualVoyageInput.classList.contains('hidden') ? voyageSelect.value : manualVoyageInput.value;
 
         if (!namaKapal || !voyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
@@ -123,11 +151,30 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = url.toString();
     });
 
+    // Go to create BL manual
+    const goToCreateBlBtn = document.getElementById('goToCreateBl');
+    goToCreateBlBtn.addEventListener('click', function() {
+        const namaKapal = kapalSelect.value;
+        const voyage = manualVoyageInput.classList.contains('hidden') ? voyageSelect.value : manualVoyageInput.value;
+
+        if (!namaKapal || !voyage) {
+            alert('Silakan pilih kapal dan voyage terlebih dahulu');
+            return;
+        }
+        
+        // Redirect to BL create page with parameters
+        const url = new URL('{{ route("bl.create", [], false) }}', window.location.origin);
+        url.searchParams.set('nama_kapal', namaKapal);
+        url.searchParams.set('no_voyage', voyage);
+        
+        window.location.href = url.toString();
+    });
+
     // Export Excel with filter
     const exportExcelBtn = document.getElementById('exportExcelBtn');
     exportExcelBtn.addEventListener('click', function() {
         const namaKapal = kapalSelect.value;
-        const voyage = voyageSelect.value;
+        const voyage = manualVoyageInput.classList.contains('hidden') ? voyageSelect.value : manualVoyageInput.value;
 
         if (!namaKapal || !voyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');

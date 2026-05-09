@@ -67,6 +67,15 @@ class StockAmprahanController extends Controller
             }
         }
         
+        if ($request->filled('mobil_id')) {
+            $mobilId = $request->mobil_id;
+            $query->whereHas('usages', function($q) use ($mobilId) {
+                $q->where('kendaraan_id', $mobilId)
+                  ->orWhere('truck_id', $mobilId)
+                  ->orWhere('buntut_id', $mobilId);
+            });
+        }
+        
         $items = $query->paginate(20)->withQueryString();
             
         $karyawans = Karyawan::orderBy('nama_lengkap')->get();
@@ -459,6 +468,16 @@ class StockAmprahanController extends Controller
             $usagesQuery->whereDate('tanggal_pengambilan', '<=', $request->to_date);
         }
 
+        // Filter by Plat Mobil
+        if ($request->filled('mobil_id')) {
+            $mobilId = $request->mobil_id;
+            $usagesQuery->where(function($q) use ($mobilId) {
+                $q->where('kendaraan_id', $mobilId)
+                  ->orWhere('truck_id', $mobilId)
+                  ->orWhere('buntut_id', $mobilId);
+            });
+        }
+
         $usages = $usagesQuery->get()->map(function($usage) {
             $usage->type = 'Keluar';
             $usage->is_addition = false;
@@ -514,10 +533,13 @@ class StockAmprahanController extends Controller
             return response()->json($formatted);
         }
 
+        $kendaraans = Mobil::orderBy('nomor_polisi')->get();
+
         return view('stock-amprahan.history', [
             'item' => $item,
             'history' => $combined,
-            'usages' => $combined // Still pass as 'usages' for minimal view changes if needed, but renamed to 'history' is better
+            'usages' => $combined,
+            'kendaraans' => $kendaraans
         ]);
     }
 
@@ -612,6 +634,16 @@ class StockAmprahanController extends Controller
             });
         }
 
+        // Filter by Plat Mobil
+        if ($request->filled('mobil_id')) {
+            $mobilId = $request->mobil_id;
+            $usagesQuery->where(function($q) use ($mobilId) {
+                $q->where('kendaraan_id', $mobilId)
+                  ->orWhere('truck_id', $mobilId)
+                  ->orWhere('buntut_id', $mobilId);
+            });
+        }
+
         $usages = $usagesQuery->get()->map(function($usage) {
             $usage->type = 'Keluar';
             $usage->is_addition = false;
@@ -635,9 +667,12 @@ class StockAmprahanController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
+        $kendaraans = Mobil::orderBy('nomor_polisi')->get();
+
         return view('stock-amprahan.history', [
             'history' => $paginated,
-            'usages' => $paginated
+            'usages' => $paginated,
+            'kendaraans' => $kendaraans
         ]);
     }
 
@@ -751,6 +786,16 @@ class StockAmprahanController extends Controller
         if ($request->filled('lokasi')) {
             $usagesQuery->whereHas('stockAmprahan', function($q) use ($request) {
                 $q->where('lokasi', $request->lokasi);
+            });
+        }
+
+        // Filter by Plat Mobil
+        if ($request->filled('mobil_id')) {
+            $mobilId = $request->mobil_id;
+            $usagesQuery->where(function($q) use ($mobilId) {
+                $q->where('kendaraan_id', $mobilId)
+                  ->orWhere('truck_id', $mobilId)
+                  ->orWhere('buntut_id', $mobilId);
             });
         }
         

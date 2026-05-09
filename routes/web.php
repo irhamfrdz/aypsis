@@ -5649,6 +5649,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::get('bl/index', [\App\Http\Controllers\BlController::class, 'index'])->name('bl.index')
                ->middleware('can:bl-view');
 
+          Route::get('bl/create', [\App\Http\Controllers\BlController::class, 'create'])->name('bl.create')
+               ->middleware('can:bl-create');
+
           Route::post('bl', [\App\Http\Controllers\BlController::class, 'store'])->name('bl.store')
                ->middleware('can:bl-create');
                
