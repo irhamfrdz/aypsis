@@ -46,13 +46,14 @@ class PranotaOngkosTrukController extends Controller
             $supir = null;
             $vendor = null;
 
+            $tujuan = '-';
             if ($type === 'SuratJalan') {
                 $sj = SuratJalan::find($id);
                 if ($sj) {
                     $nominal = $this->calculateOngkosTruk($sj);
                     $tanggal = $sj->tanggal_surat_jalan;
                     $supir = $sj->supir;
-                    // Add more data if needed
+                    $tujuan = $sj->tujuanPengambilanRelation->ke ?? $sj->tujuan_pengambilan ?? '-';
                 }
             } elseif ($type === 'SuratJalanBongkaran') {
                 $sjb = SuratJalanBongkaran::find($id);
@@ -60,6 +61,7 @@ class PranotaOngkosTrukController extends Controller
                     $nominal = $this->calculateOngkosTruk($sjb);
                     $tanggal = $sjb->tanggal_surat_jalan;
                     $supir = $sjb->supir;
+                    $tujuan = $sjb->tujuanPengambilanRelation->ke ?? $sjb->tujuan_pengambilan ?? '-';
                 }
             }
 
@@ -71,6 +73,7 @@ class PranotaOngkosTrukController extends Controller
                     'nominal' => $nominal,
                     'type' => $type,
                     'supir' => $supir,
+                    'tujuan' => $tujuan,
                 ]);
             }
         }
@@ -254,7 +257,8 @@ class PranotaOngkosTrukController extends Controller
                             'nominal' => $nominalBersih,
                             'type' => $type,
                             'supir' => $sj->supirKaryawan ? ($sj->supirKaryawan->nama_panggilan ?? $sj->supirKaryawan->nama_lengkap) : ($sj->supir ?: '-'),
-                            'no_plat' => $sj->no_plat ?: '-'
+                            'no_plat' => $sj->no_plat ?: '-',
+                            'tujuan' => $sj->tujuanPengambilanRelation->ke ?? $sj->tujuan_pengambilan ?? '-'
                         ]);
                     }
                 } elseif ($type === 'SuratJalanBongkaran') {
@@ -271,10 +275,10 @@ class PranotaOngkosTrukController extends Controller
                             'nominal' => $nominalBersih,
                             'type' => $type,
                             'supir' => $sjb->supirKaryawan ? ($sjb->supirKaryawan->nama_panggilan ?? $sjb->supirKaryawan->nama_lengkap) : ($sjb->supir ?: '-'),
-                            'no_plat' => $sjb->no_plat ?: '-'
+                            'no_plat' => $sjb->no_plat ?: '-',
+                            'tujuan' => $sjb->tujuanPengambilanRelation->ke ?? $sjb->tujuan_pengambilan ?? '-'
                         ]);
                     }
-                }
             }
 
             return response()->json([

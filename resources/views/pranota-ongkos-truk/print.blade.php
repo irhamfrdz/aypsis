@@ -219,9 +219,9 @@
                                 @php
                                     $tujuan = '-';
                                     if($item->type === 'SuratJalan' && $item->suratJalan) {
-                                        $tujuan = $item->suratJalan->tujuanPengambilanRelation->nama_tujuan ?? '-';
+                                        $tujuan = $item->suratJalan->tujuanPengambilanRelation->ke ?? $item->suratJalan->tujuan_pengambilan ?? '-';
                                     } elseif($item->type === 'SuratJalanBongkaran' && $item->suratJalanBongkaran) {
-                                        $tujuan = $item->suratJalanBongkaran->tujuanPengambilanRelation->nama_tujuan ?? '-';
+                                        $tujuan = $item->suratJalanBongkaran->tujuanPengambilanRelation->ke ?? $item->suratJalanBongkaran->tujuan_pengambilan ?? '-';
                                     }
                                 @endphp
                                 {{ $tujuan }}

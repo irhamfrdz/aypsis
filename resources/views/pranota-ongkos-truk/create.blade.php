@@ -38,6 +38,7 @@
                                     <tr>
                                         <th class="px-6 py-3 font-medium">No. Surat Jalan</th>
                                         <th class="px-6 py-3 font-medium">Tanggal</th>
+                                        <th class="px-6 py-3 font-medium">Tujuan</th>
                                         <th class="px-6 py-3 font-medium">Supir (Laporan)</th>
                                         <th class="px-6 py-3 font-medium text-right">Nominal</th>
                                     </tr>
@@ -54,6 +55,9 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {{ $item['tanggal'] ? \Carbon\Carbon::parse($item['tanggal'])->format('d/m/Y') : '-' }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $item['tujuan'] ?? '-' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {{ $item['supir'] ?: '-' }}

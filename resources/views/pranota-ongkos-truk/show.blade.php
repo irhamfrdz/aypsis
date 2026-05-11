@@ -100,6 +100,7 @@
                                     <th class="px-6 py-4 text-left">No. Surat Jalan</th>
                                     <th class="px-6 py-4 text-left">Tanggal SJ</th>
                                     <th class="px-6 py-4 text-left">Tipe</th>
+                                    <th class="px-6 py-4 text-left">Tujuan</th>
                                     <th class="px-6 py-4 text-right">Nominal (Net)</th>
                                 </tr>
                             </thead>
@@ -116,6 +117,17 @@
                                             <span class="px-2 py-0.5 {{ $item->type == 'SuratJalan' ? 'bg-blue-50 text-blue-600' : 'bg-teal-50 text-teal-600' }} rounded text-[9px] font-black uppercase">
                                                 {{ $item->type == 'SuratJalan' ? 'Reguler' : 'Bongkaran' }}
                                             </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-600">
+                                            @php
+                                                $tujuanSj = '-';
+                                                if($item->type === 'SuratJalan' && $item->suratJalan) {
+                                                    $tujuanSj = $item->suratJalan->tujuanPengambilanRelation->ke ?? $item->suratJalan->tujuan_pengambilan ?? '-';
+                                                } elseif($item->type === 'SuratJalanBongkaran' && $item->suratJalanBongkaran) {
+                                                    $tujuanSj = $item->suratJalanBongkaran->tujuanPengambilanRelation->ke ?? $item->suratJalanBongkaran->tujuan_pengambilan ?? '-';
+                                                }
+                                            @endphp
+                                            {{ $tujuanSj }}
                                         </td>
                                         <td class="px-6 py-4 text-right font-black text-gray-900 text-sm">
                                             Rp {{ number_format($item->nominal, 0, ',', '.') }}
