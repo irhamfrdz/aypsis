@@ -486,15 +486,18 @@
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Choices JS initialization
+        // Choices JS initialization - check if already initialized
         const kapalEl = document.getElementById('kapal_id');
         if (kapalEl && typeof Choices !== 'undefined') {
-            const choices = new Choices(kapalEl, {
-                searchEnabled: true,
-                shouldSort: false,
-                searchPlaceholderValue: 'Cari nama kapal...'
-            });
-            kapalEl.choicesInstance = choices;
+            // Check if already a Choices element by checking for specific class or existing instance
+            if (!kapalEl.classList.contains('choices__input') && !kapalEl.choicesInstance) {
+                const choices = new Choices(kapalEl, {
+                    searchEnabled: true,
+                    shouldSort: false,
+                    searchPlaceholderValue: 'Cari nama kapal...'
+                });
+                kapalEl.choicesInstance = choices;
+            }
         }
 
         // Element references

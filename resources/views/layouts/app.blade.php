@@ -2358,9 +2358,8 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-    {{-- Stack ini akan merender semua skrip yang di-push dari halaman lain (seperti create.blade.php) --}}
-    {{-- DAN skrip yang di-push dari layout ini sendiri. --}}
-    @stack('scripts')
+    {{-- Stack skrip akan dirender di akhir file (line 2758) untuk memastikan DOM sudah siap --}}
+
 
     {{-- Skrip khusus untuk layout ini, seperti dropdown menu --}}
     <script>
