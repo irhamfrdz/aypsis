@@ -5457,6 +5457,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           ]);
 
     // 📦 Stock Amprahan
+    Route::get('stock-amprahan/export-excel', [\App\Http\Controllers\StockAmprahanController::class, 'exportExcel'])->name('stock-amprahan.export-excel')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/history/all', [\App\Http\Controllers\StockAmprahanController::class, 'allHistory'])
         ->name('stock-amprahan.all-history')
         ->middleware('can:stock-amprahan-view');

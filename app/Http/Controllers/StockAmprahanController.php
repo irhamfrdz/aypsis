@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StockAmprahanExport;
 
 class StockAmprahanController extends Controller
 {
@@ -129,6 +131,26 @@ class StockAmprahanController extends Controller
         $masterItems = \App\Models\MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
 
         return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'selectedMobil'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $filters = [
+            'search' => $request->get('search'),
+            'lokasi' => $request->get('lokasi'),
+            'type_amprahan' => $request->get('type_amprahan'),
+            'mobil_id' => $request->get('mobil_id'),
+        ];
+
+        $fileName = 'Stock_Amprahan_' . date('Ymd_His') . '.xlsx';
+        if ($request->filled('mobil_id')) {
+            $mobil = Mobil::find($request->mobil_id);
+            if ($mobil) {
+                $fileName = 'Stock_Amprahan_' . str_replace(' ', '_', $mobil->nomor_polisi) . '_' . date('Ymd_His') . '.xlsx';
+            }
+        }
+
+        return Excel::download(new StockAmprahanExport($filters), $fileName);
     }
 
     public function create()
