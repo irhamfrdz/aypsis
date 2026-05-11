@@ -74,6 +74,7 @@ class StockAmprahanHistoryExport implements FromCollection, WithHeadings, Should
                     'kantor' => '-',
                     'kilometer' => '-',
                     'keterangan' => 'Stock Masuk: ' . ($item->nomor_bukti ? 'Bukti #' . $item->nomor_bukti : 'Awal'),
+                    'harga_satuan' => $item->harga_satuan ?? 0,
                     'oleh' => $item->createdBy->name ?? '-'
                 ];
             });
@@ -123,6 +124,7 @@ class StockAmprahanHistoryExport implements FromCollection, WithHeadings, Should
                 'kantor' => $usage->kantor ?? '-',
                 'kilometer' => $usage->kilometer ?? '-',
                 'keterangan' => $usage->keterangan,
+                'harga_satuan' => $usage->stockAmprahan->harga_satuan ?? 0,
                 'oleh' => $usage->createdBy->name ?? '-'
             ];
         });
@@ -146,6 +148,8 @@ class StockAmprahanHistoryExport implements FromCollection, WithHeadings, Should
                 $entry->kantor,
                 $entry->kilometer,
                 $entry->keterangan,
+                $entry->harga_satuan,
+                ($entry->jumlah) * ($entry->harga_satuan),
                 $entry->oleh
             ];
         });
@@ -169,6 +173,8 @@ class StockAmprahanHistoryExport implements FromCollection, WithHeadings, Should
             'Kantor',
             'KM',
             'Keterangan',
+            'Harga Satuan',
+            'Total',
             'Oleh'
         ];
     }
@@ -177,7 +183,7 @@ class StockAmprahanHistoryExport implements FromCollection, WithHeadings, Should
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
-                $lastCol = 'P';
+                $lastCol = 'R';
                 $lastRow = $event->sheet->getHighestRow();
 
                 // Style the header row

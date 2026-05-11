@@ -139,6 +139,8 @@
                         <th class="px-6 py-4 text-left font-bold text-gray-700">Lokasi</th>
                         @endif
                         <th class="px-6 py-4 text-center">Jumlah</th>
+                        <th class="px-6 py-4 text-right">Harga Satuan</th>
+                        <th class="px-6 py-4 text-right">Total</th>
                         <th class="px-6 py-4 text-left">Penerima</th>
                         <th class="px-6 py-4 text-left">Kendaraan</th>
                         <th class="px-6 py-4 text-left">Truck</th>
@@ -190,6 +192,12 @@
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-bold {{ $usage->type == 'Masuk' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700' }}">
                                 {{ $usage->type == 'Masuk' ? '+' : '-' }}{{ number_format($usage->jumlah, 0, ',', '.') }} {{ $item->satuan ?? ($usage->stockAmprahan->satuan ?? '') }}
                             </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-600 font-mono">
+                            Rp {{ number_format($usage->stockAmprahan->harga_satuan ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900 font-mono">
+                            Rp {{ number_format(($usage->jumlah ?? 0) * ($usage->stockAmprahan->harga_satuan ?? 0), 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($usage->penerima->nama_lengkap != '-')
