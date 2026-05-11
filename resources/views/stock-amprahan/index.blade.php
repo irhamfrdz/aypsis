@@ -2069,38 +2069,64 @@
             const container = select.parentElement;
             container.classList.add('relative');
             
+            // Strictly hide original select
+            select.style.position = 'absolute';
+            select.style.opacity = '0';
+            select.style.pointerEvents = 'none';
+            select.style.width = '0';
+            select.style.height = '0';
+            
+            // Create wrapper for the custom input
+            const wrapper = document.createElement('div');
+            wrapper.className = 'relative cursor-pointer';
+            
             // Create search input
             const searchInput = document.createElement('input');
             searchInput.type = 'text';
             searchInput.placeholder = select.options[0].text || 'Cari...';
-            searchInput.className = select.className + ' pr-10';
-            searchInput.value = select.options[select.selectedIndex].text !== 'Semua Plat' && select.options[select.selectedIndex].text !== '-- Pilih Master Barang --' ? select.options[select.selectedIndex].text : '';
+            searchInput.className = select.className + ' pr-10 cursor-pointer focus:cursor-text';
+            searchInput.readOnly = true; // Start as readonly until clicked
             
-            // Hide original select but keep it for form submission
-            select.style.display = 'none';
+            const updateInputValue = () => {
+                const currentText = select.options[select.selectedIndex]?.text;
+                if (currentText && !currentText.includes('Semua') && !currentText.includes('-- Pilih')) {
+                    searchInput.value = currentText;
+                } else {
+                    searchInput.value = '';
+                }
+            };
+            updateInputValue();
+            
+            // Create Chevron Arrow
+            const arrow = document.createElement('div');
+            arrow.className = 'absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400';
+            arrow.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>`;
             
             // Create options list
             const optionsList = document.createElement('div');
-            optionsList.className = 'absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden';
+            optionsList.className = 'absolute z-[9999] w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-72 overflow-y-auto hidden py-1';
             
             // Toggle dropdown
-            searchInput.addEventListener('focus', () => {
+            const openDropdown = () => {
+                searchInput.readOnly = false;
                 renderOptions('');
                 optionsList.classList.remove('hidden');
+                searchInput.focus();
+                searchInput.select();
+            };
+
+            searchInput.addEventListener('mousedown', (e) => {
+                if (optionsList.classList.contains('hidden')) {
+                    e.preventDefault();
+                    openDropdown();
+                }
             });
-            
+
             document.addEventListener('click', (e) => {
                 if (!container.contains(e.target)) {
                     optionsList.classList.add('hidden');
-                    // Reset input to current selection if nothing was picked
-                    if (select.selectedIndex >= 0) {
-                        const currentText = select.options[select.selectedIndex].text;
-                        if (currentText !== 'Semua Plat' && currentText !== '-- Pilih Master Barang --') {
-                            searchInput.value = currentText;
-                        } else {
-                            searchInput.value = '';
-                        }
-                    }
+                    searchInput.readOnly = true;
+                    updateInputValue();
                 }
             });
 
@@ -2112,20 +2138,19 @@
                 Array.from(select.options).forEach((option, index) => {
                     if (option.text.toLowerCase().includes(searchTerm)) {
                         const item = document.createElement('div');
-                        item.className = 'px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm ' + (select.selectedIndex === index ? 'bg-blue-100 font-semibold' : '');
+                        const isSelected = select.selectedIndex === index;
+                        item.className = `px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+                            isSelected 
+                            ? 'bg-blue-600 text-white font-semibold' 
+                            : 'text-gray-700 hover:bg-blue-50'
+                        }`;
                         item.textContent = option.text;
                         item.addEventListener('click', () => {
                             select.selectedIndex = index;
-                            searchInput.value = option.text !== 'Semua Plat' && option.text !== '-- Pilih Master Barang --' ? option.text : '';
+                            updateInputValue();
                             optionsList.classList.add('hidden');
-                            
-                            // Trigger change event for form submission if needed
+                            searchInput.readOnly = true;
                             select.dispatchEvent(new Event('change'));
-                            
-                            // If it's a filter form, maybe submit?
-                            if (select.closest('form') && select.name === 'mobil_id') {
-                                // select.closest('form').submit(); // Uncomment if auto-submit is desired
-                            }
                         });
                         optionsList.appendChild(item);
                         hasMatch = true;
@@ -2134,7 +2159,7 @@
 
                 if (!hasMatch) {
                     const noResult = document.createElement('div');
-                    noResult.className = 'px-4 py-2 text-gray-400 text-sm italic';
+                    noResult.className = 'px-4 py-3 text-gray-400 text-sm italic text-center';
                     noResult.textContent = 'Tidak ada hasil';
                     optionsList.appendChild(noResult);
                 }
@@ -2144,7 +2169,9 @@
                 renderOptions(e.target.value);
             });
 
-            container.appendChild(searchInput);
+            wrapper.appendChild(searchInput);
+            wrapper.appendChild(arrow);
+            container.appendChild(wrapper);
             container.appendChild(optionsList);
         });
     });
