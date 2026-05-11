@@ -408,9 +408,8 @@
                         <p class="text-xs text-amber-600 mt-1">Laku</p>
                     </div>
 
-                    <!-- Rusak Belum Terjual -->
                     @php
-                        $rusakStok = $stockBans->whereIn('kondisi', ['afkir', 'rusak'])->where('status', 'Stok')->count();
+                        $rusakStok = $stockBans->whereIn('kondisi', ['afkir', 'rusak'])->whereIn('status', ['Stok', 'Rusak'])->count();
                     @endphp
                     <div id="card-rusak-stok" onclick="setCardFilter('rusak-stok', false)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -2945,7 +2944,7 @@
                     else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
                     else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
-                    else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'stok';
+                    else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'rusak-terjual') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'dijual';
                 }
 
@@ -2996,7 +2995,7 @@
                     else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
                     else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
-                    else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'stok';
+                    else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'rusak-terjual') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'dijual';
                 }
 
