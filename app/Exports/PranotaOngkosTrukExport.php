@@ -25,10 +25,13 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
     {
         return $this->pranota->items->map(function($item, $index) {
             $tujuan = '-';
+            $size = '-';
             if ($item->type === 'SuratJalan' && $item->suratJalan) {
                 $tujuan = $item->suratJalan->tujuanPengambilanRelation->ke ?? $item->suratJalan->tujuan_pengambilan ?? '-';
+                $size = $item->suratJalan->size ?? '-';
             } elseif ($item->type === 'SuratJalanBongkaran' && $item->suratJalanBongkaran) {
                 $tujuan = $item->suratJalanBongkaran->tujuanPengambilanRelation->ke ?? $item->suratJalanBongkaran->tujuan_pengambilan ?? '-';
+                $size = $item->suratJalanBongkaran->size ?? '-';
             }
 
             return [
@@ -36,6 +39,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $item->no_surat_jalan,
                 $item->tanggal ? $item->tanggal->format('d/m/Y') : '-',
                 $tujuan,
+                $size,
                 (float)$item->nominal,
             ];
         });
@@ -48,6 +52,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
             'No Surat Jalan',
             'Tanggal',
             'Tujuan',
+            'Size',
             'Nominal',
         ];
     }
@@ -55,7 +60,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
     public function columnFormats(): array
     {
         return [
-            'E' => '#,##0',
+            'F' => '#,##0',
         ];
     }
 
@@ -71,7 +76,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $sheet->setCellValue('A2', 'Nomor: ' . $this->pranota->no_pranota);
                 $sheet->setCellValue('A3', 'Tanggal: ' . $this->pranota->tanggal_pranota->format('d/m/Y'));
                 
-                $lastCol = 'E';
+                $lastCol = 'F';
                 $headerRow = 5;
                 $dataStartRow = 6;
                 
@@ -103,23 +108,23 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $currentRow = $lastDataRow + 1;
 
                 // Subtotal
-                $sheet->setCellValue("D{$currentRow}", 'Subtotal');
-                $sheet->setCellValue("E{$currentRow}", "=SUM(E{$dataStartRow}:E{$lastDataRow})");
-                $sheet->getStyle("D{$currentRow}:E{$currentRow}")->getFont()->setBold(true);
+                $sheet->setCellValue("E{$currentRow}", 'Subtotal');
+                $sheet->setCellValue("F{$currentRow}", "=SUM(F{$dataStartRow}:F{$lastDataRow})");
+                $sheet->getStyle("E{$currentRow}:F{$currentRow}")->getFont()->setBold(true);
                 $currentRow++;
 
                 // Adjustment
                 if ($this->pranota->adjustment != 0) {
-                    $sheet->setCellValue("D{$currentRow}", 'Adjustment');
-                    $sheet->setCellValue("E{$currentRow}", (float)$this->pranota->adjustment);
-                    $sheet->getStyle("D{$currentRow}:E{$currentRow}")->getFont()->setBold(true);
+                    $sheet->setCellValue("E{$currentRow}", 'Adjustment');
+                    $sheet->setCellValue("F{$currentRow}", (float)$this->pranota->adjustment);
+                    $sheet->getStyle("E{$currentRow}:F{$currentRow}")->getFont()->setBold(true);
                     $currentRow++;
                 }
 
                 // Total
-                $sheet->setCellValue("D{$currentRow}", 'TOTAL');
-                $sheet->setCellValue("E{$currentRow}", (float)$this->pranota->total_nominal);
-                $sheet->getStyle("D{$currentRow}:E{$currentRow}")->applyFromArray([
+                $sheet->setCellValue("E{$currentRow}", 'TOTAL');
+                $sheet->setCellValue("F{$currentRow}", (float)$this->pranota->total_nominal);
+                $sheet->getStyle("E{$currentRow}:F{$currentRow}")->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
@@ -134,7 +139,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                     ],
                 ]);
 
-                $sheet->getStyle("E{$dataStartRow}:E{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->getStyle("F{$dataStartRow}:F{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             },
         ];
     }
