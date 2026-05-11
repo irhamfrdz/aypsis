@@ -2001,7 +2001,7 @@
             <form action="{{ route('stock-amprahan.valuasi-print') }}" method="GET" target="_blank" class="mt-4">
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Barang <span class="text-red-500">*</span></label>
-                    <select name="master_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700">
+                    <select name="master_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700 select2-basic">
                         <option value="">-- Pilih Master Barang --</option>
                         @foreach($masterItems as $item)
                             <option value="{{ $item->id }}">{{ $item->nama_barang }}</option>
@@ -2077,10 +2077,19 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('.select2-basic').select2({
+        // Regular filter
+        $('select[name="mobil_id"].select2-basic').select2({
             placeholder: 'Semua Plat',
             allowClear: true,
             width: '100%'
+        });
+
+        // Modal version
+        $('select[name="master_id"].select2-basic').select2({
+            placeholder: '-- Pilih Master Barang --',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#valuasiModal')
         });
     });
 </script>

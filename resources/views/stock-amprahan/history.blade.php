@@ -4,6 +4,20 @@
 @section('page_title', 'Riwayat Stock')
 
 @section('content')
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        border-color: #d1d5db;
+        height: 38px;
+        padding: 4px 0;
+        border-radius: 0.5rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        top: 6px;
+    }
+</style>
+@endpush
 <div class="container mx-auto px-4 py-8">
     {{-- Header Section --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
@@ -253,6 +267,8 @@
 @endsection
 
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
         $('.select2-filter').select2({
