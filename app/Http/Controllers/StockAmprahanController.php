@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\StockAmprahanExport;
+use App\Exports\StockAmprahanHistoryExport;
 
 class StockAmprahanController extends Controller
 {
@@ -905,6 +906,21 @@ class StockAmprahanController extends Controller
             'item' => $item,
             'history' => $history
         ]);
+    }
+
+    public function exportHistoryExcel(Request $request)
+    {
+        $filters = [
+            'id' => $request->id,
+            'from_date' => $request->from_date,
+            'to_date' => $request->to_date,
+            'lokasi' => $request->lokasi,
+            'mobil_id' => $request->mobil_id,
+        ];
+
+        $fileName = 'Riwayat_Stock_Amprahan_' . date('Ymd_His') . '.xlsx';
+        
+        return Excel::download(new StockAmprahanHistoryExport($filters), $fileName);
     }
 
     public function generateNomorPranota()
