@@ -71,14 +71,18 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $sheet = $event->sheet->getDelegate();
                 
                 // Insert title rows
-                $sheet->insertNewRowBefore(1, 4);
+                $sheet->insertNewRowBefore(1, 5);
                 $sheet->setCellValue('A1', 'PRANOTA ONGKOS TRUK');
                 $sheet->setCellValue('A2', 'Nomor: ' . $this->pranota->no_pranota);
                 $sheet->setCellValue('A3', 'Tanggal: ' . $this->pranota->tanggal_pranota->format('d/m/Y'));
+                if ($this->pranota->keterangan) {
+                    $sheet->setCellValue('A4', 'Keterangan: ' . $this->pranota->keterangan);
+                    $sheet->getStyle("A4")->getFont()->setBold(true);
+                }
                 
                 $lastCol = 'F';
-                $headerRow = 5;
-                $dataStartRow = 6;
+                $headerRow = 6;
+                $dataStartRow = 7;
                 
                 // Merge and style titles
                 $sheet->mergeCells("A1:{$lastCol}1");
@@ -117,6 +121,9 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 if ($this->pranota->adjustment != 0) {
                     $sheet->setCellValue("E{$currentRow}", 'Adjustment');
                     $sheet->setCellValue("F{$currentRow}", (float)$this->pranota->adjustment);
+                    if ($this->pranota->keterangan) {
+                        $sheet->setCellValue("G{$currentRow}", "(" . $this->pranota->keterangan . ")");
+                    }
                     $sheet->getStyle("E{$currentRow}:F{$currentRow}")->getFont()->setBold(true);
                     $currentRow++;
                 }
