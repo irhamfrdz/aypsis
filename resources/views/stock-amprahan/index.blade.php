@@ -98,7 +98,7 @@
                 <option value="Peralatan" {{ request('type_amprahan') == 'Peralatan' ? 'selected' : '' }}>Peralatan</option>
                 <option value="Transportasi" {{ request('type_amprahan') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
             </select>
-            <select name="mobil_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white select2-basic">
+            <select name="mobil_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white searchable-select">
                 <option value="">Semua Plat</option>
                 @foreach($kendaraans as $m)
                     <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
@@ -2001,7 +2001,7 @@
             <form action="{{ route('stock-amprahan.valuasi-print') }}" method="GET" target="_blank" class="mt-4">
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Barang <span class="text-red-500">*</span></label>
-                    <select name="master_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700 select2-basic">
+                    <select name="master_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700 searchable-select">
                         <option value="">-- Pilih Master Barang --</option>
                         @foreach($masterItems as $item)
                             <option value="{{ $item->id }}">{{ $item->nama_barang }}</option>
@@ -2057,39 +2057,95 @@
 
 @endsection
 
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<style>
-    .select2-container--default .select2-selection--single {
-        border-color: #d1d5db;
-        height: 38px;
-        padding: 4px 0;
-        border-radius: 0.5rem;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        top: 6px;
-    }
-</style>
-@endpush
+@endsection
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    $(document).ready(function() {
-        // Regular filter
-        $('select[name="mobil_id"].select2-basic').select2({
-            placeholder: 'Semua Plat',
-            allowClear: true,
-            width: '100%'
-        });
+    // Custom Vanilla JS Searchable Dropdown
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchableSelects = document.querySelectorAll('.searchable-select');
+        
+        searchableSelects.forEach(select => {
+            const container = select.parentElement;
+            container.classList.add('relative');
+            
+            // Create search input
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = select.options[0].text || 'Cari...';
+            searchInput.className = select.className + ' pr-10';
+            searchInput.value = select.options[select.selectedIndex].text !== 'Semua Plat' && select.options[select.selectedIndex].text !== '-- Pilih Master Barang --' ? select.options[select.selectedIndex].text : '';
+            
+            // Hide original select but keep it for form submission
+            select.style.display = 'none';
+            
+            // Create options list
+            const optionsList = document.createElement('div');
+            optionsList.className = 'absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden';
+            
+            // Toggle dropdown
+            searchInput.addEventListener('focus', () => {
+                renderOptions('');
+                optionsList.classList.remove('hidden');
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    optionsList.classList.add('hidden');
+                    // Reset input to current selection if nothing was picked
+                    if (select.selectedIndex >= 0) {
+                        const currentText = select.options[select.selectedIndex].text;
+                        if (currentText !== 'Semua Plat' && currentText !== '-- Pilih Master Barang --') {
+                            searchInput.value = currentText;
+                        } else {
+                            searchInput.value = '';
+                        }
+                    }
+                }
+            });
 
-        // Modal version
-        $('select[name="master_id"].select2-basic').select2({
-            placeholder: '-- Pilih Master Barang --',
-            allowClear: true,
-            width: '100%',
-            dropdownParent: $('#valuasiModal')
+            function renderOptions(filter) {
+                optionsList.innerHTML = '';
+                const searchTerm = filter.toLowerCase();
+                let hasMatch = false;
+
+                Array.from(select.options).forEach((option, index) => {
+                    if (option.text.toLowerCase().includes(searchTerm)) {
+                        const item = document.createElement('div');
+                        item.className = 'px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm ' + (select.selectedIndex === index ? 'bg-blue-100 font-semibold' : '');
+                        item.textContent = option.text;
+                        item.addEventListener('click', () => {
+                            select.selectedIndex = index;
+                            searchInput.value = option.text !== 'Semua Plat' && option.text !== '-- Pilih Master Barang --' ? option.text : '';
+                            optionsList.classList.add('hidden');
+                            
+                            // Trigger change event for form submission if needed
+                            select.dispatchEvent(new Event('change'));
+                            
+                            // If it's a filter form, maybe submit?
+                            if (select.closest('form') && select.name === 'mobil_id') {
+                                // select.closest('form').submit(); // Uncomment if auto-submit is desired
+                            }
+                        });
+                        optionsList.appendChild(item);
+                        hasMatch = true;
+                    }
+                });
+
+                if (!hasMatch) {
+                    const noResult = document.createElement('div');
+                    noResult.className = 'px-4 py-2 text-gray-400 text-sm italic';
+                    noResult.textContent = 'Tidak ada hasil';
+                    optionsList.appendChild(noResult);
+                }
+            }
+
+            searchInput.addEventListener('input', (e) => {
+                renderOptions(e.target.value);
+            });
+
+            container.appendChild(searchInput);
+            container.appendChild(optionsList);
         });
     });
 </script>

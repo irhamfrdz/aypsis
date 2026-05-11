@@ -4,20 +4,6 @@
 @section('page_title', 'Riwayat Stock')
 
 @section('content')
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<style>
-    .select2-container--default .select2-selection--single {
-        border-color: #d1d5db;
-        height: 38px;
-        padding: 4px 0;
-        border-radius: 0.5rem;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        top: 6px;
-    }
-</style>
-@endpush
 <div class="container mx-auto px-4 py-8">
     {{-- Header Section --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8">
@@ -85,7 +71,7 @@
             </div>
             <div class="flex-1 min-w-[200px]">
                 <label for="mobil_id" class="block text-sm font-medium text-gray-700 mb-1">Plat Mobil</label>
-                <select name="mobil_id" id="mobil_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm select2-filter">
+                <select name="mobil_id" id="mobil_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm searchable-select">
                     <option value="">Semua Plat</option>
                     @foreach($kendaraans as $m)
                         <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>
@@ -267,14 +253,85 @@
 @endsection
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('.select2-filter').select2({
-            placeholder: 'Semua Plat',
-            allowClear: true,
-            width: '100%'
+    // Custom Vanilla JS Searchable Dropdown
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchableSelects = document.querySelectorAll('.searchable-select');
+        
+        searchableSelects.forEach(select => {
+            const container = select.parentElement;
+            container.classList.add('relative');
+            
+            // Create search input
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = select.options[0].text || 'Cari...';
+            searchInput.className = select.className + ' pr-10';
+            searchInput.value = select.options[select.selectedIndex].text !== 'Semua Plat' ? select.options[select.selectedIndex].text : '';
+            
+            // Hide original select but keep it for form submission
+            select.style.display = 'none';
+            
+            // Create options list
+            const optionsList = document.createElement('div');
+            optionsList.className = 'absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden';
+            
+            // Toggle dropdown
+            searchInput.addEventListener('focus', () => {
+                renderOptions('');
+                optionsList.classList.remove('hidden');
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!container.contains(e.target)) {
+                    optionsList.classList.add('hidden');
+                    // Reset input to current selection if nothing was picked
+                    if (select.selectedIndex >= 0) {
+                        const currentText = select.options[select.selectedIndex].text;
+                        if (currentText !== 'Semua Plat') {
+                            searchInput.value = currentText;
+                        } else {
+                            searchInput.value = '';
+                        }
+                    }
+                }
+            });
+
+            function renderOptions(filter) {
+                optionsList.innerHTML = '';
+                const searchTerm = filter.toLowerCase();
+                let hasMatch = false;
+
+                Array.from(select.options).forEach((option, index) => {
+                    if (option.text.toLowerCase().includes(searchTerm)) {
+                        const item = document.createElement('div');
+                        item.className = 'px-4 py-2 hover:bg-indigo-50 cursor-pointer text-sm ' + (select.selectedIndex === index ? 'bg-indigo-100 font-semibold text-indigo-700' : '');
+                        item.textContent = option.text;
+                        item.addEventListener('click', () => {
+                            select.selectedIndex = index;
+                            searchInput.value = option.text !== 'Semua Plat' ? option.text : '';
+                            optionsList.classList.add('hidden');
+                            select.dispatchEvent(new Event('change'));
+                        });
+                        optionsList.appendChild(item);
+                        hasMatch = true;
+                    }
+                });
+
+                if (!hasMatch) {
+                    const noResult = document.createElement('div');
+                    noResult.className = 'px-4 py-2 text-gray-400 text-sm italic';
+                    noResult.textContent = 'Tidak ada hasil';
+                    optionsList.appendChild(noResult);
+                }
+            }
+
+            searchInput.addEventListener('input', (e) => {
+                renderOptions(e.target.value);
+            });
+
+            container.appendChild(searchInput);
+            container.appendChild(optionsList);
         });
     });
 </script>
