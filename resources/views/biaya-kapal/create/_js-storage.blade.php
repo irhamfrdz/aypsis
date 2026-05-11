@@ -267,7 +267,7 @@
                                     <label class="text-[10px] text-gray-400 uppercase font-bold">Massa 1</label>
                                     <input type="number" 
                                            class="storage-kontainer-hari-massa-1 w-14 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
-                                           value="1" min="0"
+                                           value="0" min="0"
                                            data-bl-id="${kontainer.id}">
                                 </div>
                                 <div class="flex items-center gap-1">

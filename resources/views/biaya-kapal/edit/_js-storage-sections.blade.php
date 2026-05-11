@@ -41,7 +41,7 @@
                             datak.containers.forEach(c => {
                                 const savedData = saved.find(s => s.bl_id == c.id);
                                 const isChecked = !!savedData;
-                                const hariMassa1Value = savedData && savedData.hari_massa_1 ? savedData.hari_massa_1 : (savedData && savedData.hari ? savedData.hari : 1);
+                                const hariMassa1Value = savedData && savedData.hari_massa_1 !== undefined ? savedData.hari_massa_1 : (savedData && savedData.hari ? savedData.hari : 0);
                                 const hariMassa2Value = savedData && savedData.hari_massa_2 ? savedData.hari_massa_2 : 0;
 
                                 const row = document.createElement('label');
@@ -392,7 +392,7 @@
                                     <label class="text-[10px] text-gray-400 uppercase font-bold">Massa 1</label>
                                     <input type="number" 
                                            class="storage-kontainer-hari-massa-1 w-14 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
-                                           value="1" min="0"
+                                           value="0" min="0"
                                            data-bl-id="${kontainer.id}">
                                 </div>
                                 <div class="flex items-center gap-1">

@@ -1049,7 +1049,7 @@ class BiayaKapalController extends Controller
                                     'bl_id'           => $k['bl_id'],
                                     'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
                                     'size'            => $k['size'] ?? null,
-                                    'hari_massa_1'    => $k['hari_massa_1'] ?? 1,
+                                    'hari_massa_1'    => $k['hari_massa_1'] ?? 0,
                                     'hari_massa_2'    => $k['hari_massa_2'] ?? 0,
                                 ];
                             }
@@ -3429,7 +3429,7 @@ class BiayaKapalController extends Controller
                                         'bl_id'           => $k['bl_id'],
                                         'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
                                         'size'            => $k['size'] ?? null,
-                                        'hari_massa_1'    => $k['hari_massa_1'] ?? 1,
+                                        'hari_massa_1'    => $k['hari_massa_1'] ?? 0,
                                         'hari_massa_2'    => $k['hari_massa_2'] ?? 0,
                                     ];
                                 }
