@@ -466,10 +466,14 @@
             })
             .then(r => {
                 if (!r.ok) {
-                    return r.json().then(data => {
-                        throw new Error(data.message || 'Server error ' + r.status);
-                    }).catch(() => {
-                        throw new Error('Server error ' + r.status);
+                    return r.text().then(text => {
+                        try {
+                            const data = JSON.parse(text);
+                            throw new Error(data.message || 'Server error ' + r.status);
+                        } catch (e) {
+                            console.error('Non-JSON error response:', text);
+                            throw new Error('Server error ' + r.status + '. Lihat console untuk detail.');
+                        }
                     });
                 }
                 return r.json();

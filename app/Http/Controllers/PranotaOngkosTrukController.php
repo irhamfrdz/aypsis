@@ -101,17 +101,23 @@ class PranotaOngkosTrukController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'tanggal_pranota' => 'required|date',
-            'items' => 'required|array',
-            'items.*.nominal' => 'required|numeric',
-        ]);
-
-        DB::beginTransaction();
+        \Illuminate\Support\Facades\Log::info('PranotaOngkosTrukController@store started', ['payload' => $request->all()]);
+        
         try {
+            $request->validate([
+                'tanggal_pranota' => 'required|date',
+                'items' => 'required|array',
+                'items.*.nominal' => 'required|numeric',
+            ]);
+            \Illuminate\Support\Facades\Log::info('Validation passed');
+
+            \Illuminate\Support\Facades\DB::beginTransaction();
+            \Illuminate\Support\Facades\Log::info('Transaction started');
+
             // Generate nomor pranota
             $nomorTerakhir = NomorTerakhir::where('modul', 'POT')->lockForUpdate()->first();
             if (!$nomorTerakhir) {
+                \Illuminate\Support\Facades\Log::info('NomorTerakhir POT not found, creating new');
                 $nomorTerakhir = NomorTerakhir::create(['modul' => 'POT', 'nomor_terakhir' => 0]);
             }
             $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
@@ -119,35 +125,48 @@ class PranotaOngkosTrukController extends Controller
             $bulan = now()->format('m');
             $no_pranota = "POT{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
             
+            \Illuminate\Support\Facades\Log::info('Generated no_pranota: ' . $no_pranota);
+
             $nomorTerakhir->nomor_terakhir = $nextNumber;
             $nomorTerakhir->save();
+            \Illuminate\Support\Facades\Log::info('NomorTerakhir updated');
+
+            $adjustment = $request->filled('adjustment') ? (float)$request->adjustment : 0;
+            $itemsTotal = collect($request->items)->sum('nominal');
+            $totalNominal = $itemsTotal + $adjustment;
 
             $pranota = PranotaOngkosTruk::create([
                 'no_pranota' => $no_pranota,
                 'tanggal_pranota' => $request->tanggal_pranota,
-                'adjustment' => $request->adjustment ?? 0,
-                'total_nominal' => collect($request->items)->sum('nominal') + ($request->adjustment ?? 0),
+                'adjustment' => $adjustment,
+                'total_nominal' => $totalNominal,
                 'keterangan' => $request->keterangan,
                 'status' => 'submitted',
                 'created_by' => Auth::id(),
             ]);
+            \Illuminate\Support\Facades\Log::info('Pranota created', ['id' => $pranota->id]);
 
             foreach ($request->items as $item) {
                 // Skip if item doesn't have required data
-                if (!isset($item['id']) || !isset($item['type'])) continue;
+                if (!isset($item['id']) || !isset($item['type'])) {
+                    \Illuminate\Support\Facades\Log::warning('Skipping item due to missing id or type', ['item' => $item]);
+                    continue;
+                }
 
                 PranotaOngkosTrukItem::create([
                     'pranota_ongkos_truk_id' => $pranota->id,
                     'surat_jalan_id' => $item['type'] === 'SuratJalan' ? $item['id'] : null,
                     'surat_jalan_bongkaran_id' => $item['type'] === 'SuratJalanBongkaran' ? $item['id'] : null,
                     'no_surat_jalan' => $item['no_surat_jalan'] ?? '-',
-                    'tanggal' => isset($item['tanggal']) && $item['tanggal'] !== '-' ? \Carbon\Carbon::parse($item['tanggal'])->format('Y-m-d') : null,
+                    'tanggal' => isset($item['tanggal']) && $item['tanggal'] !== '-' ? \Carbon\Carbon::createFromFormat('d/M/Y', $item['tanggal'])->format('Y-m-d') : null,
                     'nominal' => $item['nominal'] ?? 0,
                     'type' => $item['type'],
                 ]);
             }
+            \Illuminate\Support\Facades\Log::info('Items created');
 
-            DB::commit();
+            \Illuminate\Support\Facades\DB::commit();
+            \Illuminate\Support\Facades\Log::info('Transaction committed');
 
             if ($request->ajax()) {
                 return response()->json([
@@ -158,12 +177,33 @@ class PranotaOngkosTrukController extends Controller
             }
 
             return redirect()->route('pranota-ongkos-truk.show', $pranota->id)->with('success', 'Pranota Ongkos Truk berhasil disimpan.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if (\Illuminate\Support\Facades\DB::transactionLevel() > 0) {
+                \Illuminate\Support\Facades\DB::rollBack();
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal: ' . implode(', ', collect($e->errors())->flatten()->toArray()),
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
-            DB::rollBack();
+            if (\Illuminate\Support\Facades\DB::transactionLevel() > 0) {
+                \Illuminate\Support\Facades\DB::rollBack();
+            }
+            \Illuminate\Support\Facades\Log::error('PranotaOngkosTrukController@store error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal menyimpan pranota: ' . $e->getMessage()
+                    'message' => 'Gagal menyimpan pranota: ' . $e->getMessage(),
+                    'debug' => [
+                        'exception' => get_class($e),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine()
+                    ]
                 ], 500);
             }
             return back()->with('error', 'Gagal menyimpan pranota: ' . $e->getMessage());
