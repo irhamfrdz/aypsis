@@ -93,6 +93,7 @@
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sumber</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Identitas</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Kapal</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tujuan</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Penerima / Pengirim</th>
                         <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Dokumen</th>
@@ -121,6 +122,11 @@
                                 <span class="text-sm font-mono font-semibold text-gray-700 bg-gray-100 px-2 py-1 rounded">
                                     {{ $item['no_kontainer'] ?: '-' }}
                                 </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900 font-medium">
+                                    {{ $item['kapal'] ?: '-' }}
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm text-gray-900 font-medium">
@@ -196,7 +202,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-20 text-center">
+                            <td colspan="8" class="px-6 py-20 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                                         <i class="fas fa-folder-open text-gray-300 text-3xl"></i>

@@ -60,7 +60,22 @@ class TandaTerimaApprovalController extends Controller
         $results = collect();
 
         if ($type === 'all' || $type === 'fcl') {
-            $tandaTerimaQuery->latest()->limit(100)->get()->each(function($item) use ($results) {
+            $tandaTerimaQuery->with(['prospeks'])->latest()->limit(100)->get()->each(function($item) use ($results) {
+                // Get kapal from prospek or manifests or bls
+                $kapal = '-';
+                if ($item->prospeks->isNotEmpty()) {
+                    $kapal = $item->prospeks->map(function($p) {
+                        $vessel = $p->nama_kapal;
+                        if (!$vessel) {
+                            $vessel = \App\Models\Bl::where('prospek_id', $p->id)->value('nama_kapal');
+                        }
+                        if (!$vessel) {
+                            $vessel = \App\Models\Manifest::where('prospek_id', $p->id)->value('nama_kapal');
+                        }
+                        return $vessel;
+                    })->filter()->first() ?? '-';
+                }
+
                 $results->push([
                     'id' => $item->id,
                     'type' => 'FCL',
@@ -71,6 +86,7 @@ class TandaTerimaApprovalController extends Controller
                     'pengirim' => $item->pengirim,
                     'tujuan' => $item->tujuan_pengiriman,
                     'no_kontainer' => $item->no_kontainer,
+                    'kapal' => $kapal,
                     'asuransi_paths' => $this->getDocumentsArray($item),
                     'is_approved' => $item->is_asuransi_approved,
                     'approved_at' => $item->asuransi_approved_at,
@@ -81,6 +97,11 @@ class TandaTerimaApprovalController extends Controller
 
         if ($type === 'all' || $type === 'ttsj') {
             $ttsjQuery->latest()->limit(100)->get()->each(function($item) use ($results) {
+                // Get kapal from manifest or bl matching this TTSJ number
+                $kapal = \App\Models\Manifest::where('nomor_tanda_terima', $item->no_tanda_terima)->value('nama_kapal') 
+                    ?? \App\Models\Bl::where('nomor_bl', $item->no_tanda_terima)->value('nama_kapal') 
+                    ?? '-';
+
                 $results->push([
                     'id' => $item->id,
                     'type' => 'TTSJ',
@@ -91,6 +112,7 @@ class TandaTerimaApprovalController extends Controller
                     'pengirim' => $item->pengirim,
                     'tujuan' => $item->tujuan_pengiriman,
                     'no_kontainer' => $item->no_kontainer,
+                    'kapal' => $kapal,
                     'asuransi_paths' => $this->getDocumentsArray($item),
                     'is_approved' => $item->is_asuransi_approved,
                     'approved_at' => $item->asuransi_approved_at,
@@ -101,6 +123,14 @@ class TandaTerimaApprovalController extends Controller
 
         if ($type === 'all' || $type === 'lcl') {
             $lclQuery->latest()->limit(100)->get()->each(function($item) use ($results) {
+                // Get kapal from manifest or bl matching this container number
+                $kapal = '-';
+                if ($item->nomor_kontainer) {
+                    $kapal = \App\Models\Manifest::where('nomor_kontainer', $item->nomor_kontainer)->value('nama_kapal') 
+                        ?? \App\Models\Bl::where('nomor_kontainer', $item->nomor_kontainer)->value('nama_kapal') 
+                        ?? '-';
+                }
+
                 $results->push([
                     'id' => $item->id,
                     'type' => 'LCL',
@@ -111,6 +141,7 @@ class TandaTerimaApprovalController extends Controller
                     'pengirim' => $item->nama_pengirim,
                     'tujuan' => $item->tujuanKirim->nama_tujuan ?? '-',
                     'no_kontainer' => $item->nomor_kontainer,
+                    'kapal' => $kapal,
                     'asuransi_paths' => $this->getDocumentsArray($item),
                     'is_approved' => $item->is_asuransi_approved,
                     'approved_at' => $item->asuransi_approved_at,
