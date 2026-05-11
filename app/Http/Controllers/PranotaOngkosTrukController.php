@@ -295,6 +295,12 @@ class PranotaOngkosTrukController extends Controller
         return view('pranota-ongkos-truk.show', compact('pranota'));
     }
 
+    public function print($id)
+    {
+        $pranota = PranotaOngkosTruk::with(['items.suratJalan.uangJalan', 'items.suratJalanBongkaran.uangJalan', 'creator'])->findOrFail($id);
+        return view('pranota-ongkos-truk.print', compact('pranota'));
+    }
+
     public function destroy($id)
     {
         $pranota = PranotaOngkosTruk::findOrFail($id);

@@ -12,9 +12,9 @@
                 <i class="fas fa-arrow-left"></i> Kembali ke Daftar
             </a>
             <div class="flex gap-3">
-                <button onclick="window.print()" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-bold text-sm flex items-center gap-2">
+                <a href="{{ route('pranota-ongkos-truk.print', $pranota->id) }}" target="_blank" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-bold text-sm flex items-center gap-2">
                     <i class="fas fa-print"></i> Cetak
-                </button>
+                </a>
             </div>
         </div>
 
