@@ -644,6 +644,19 @@ class BiayaKapalController extends Controller
             'lolo_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // STORAGE sections validation
+            'storage_sections' => 'nullable|array',
+            'storage_sections.*.kapal' => 'nullable|string|max:255',
+            'storage_sections.*.voyage' => 'nullable|string|max:255',
+            'storage_sections.*.lokasi' => 'nullable|string|max:255',
+            'storage_sections.*.vendor' => 'nullable|string|max:255',
+            'storage_sections.*.kontainer' => 'nullable|array',
+            'storage_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'storage_sections.*.kontainer.*.hari_massa_1' => 'nullable|numeric|min:0',
+            'storage_sections.*.kontainer.*.hari_massa_2' => 'nullable|numeric|min:0',
+            'storage_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'storage_sections.*.pph' => 'nullable|numeric|min:0',
+            'storage_sections.*.adjustment' => 'nullable|numeric',
+            'storage_sections.*.notes_adjustment' => 'nullable|string',
             'storage_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // DEMURRAGE sections validation
@@ -1036,7 +1049,8 @@ class BiayaKapalController extends Controller
                                     'bl_id'           => $k['bl_id'],
                                     'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
                                     'size'            => $k['size'] ?? null,
-                                    'hari'            => $k['hari'] ?? 1,
+                                    'hari_massa_1'    => $k['hari_massa_1'] ?? 1,
+                                    'hari_massa_2'    => $k['hari_massa_2'] ?? 0,
                                 ];
                             }
                         }
@@ -3415,7 +3429,8 @@ class BiayaKapalController extends Controller
                                         'bl_id'           => $k['bl_id'],
                                         'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
                                         'size'            => $k['size'] ?? null,
-                                        'hari'            => $k['hari'] ?? 1,
+                                        'hari_massa_1'    => $k['hari_massa_1'] ?? 1,
+                                        'hari_massa_2'    => $k['hari_massa_2'] ?? 0,
                                     ];
                                 }
                             }

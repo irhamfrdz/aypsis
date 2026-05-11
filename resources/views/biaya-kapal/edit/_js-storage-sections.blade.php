@@ -41,7 +41,8 @@
                             datak.containers.forEach(c => {
                                 const savedData = saved.find(s => s.bl_id == c.id);
                                 const isChecked = !!savedData;
-                                const hariValue = savedData && savedData.hari ? savedData.hari : 1;
+                                const hariMassa1Value = savedData && savedData.hari_massa_1 ? savedData.hari_massa_1 : (savedData && savedData.hari ? savedData.hari : 1);
+                                const hariMassa2Value = savedData && savedData.hari_massa_2 ? savedData.hari_massa_2 : 0;
 
                                 const row = document.createElement('label');
                                 row.className = 'flex items-center gap-3 p-3 bg-gray-50 hover:bg-sky-50 rounded-lg cursor-pointer border border-gray-200 hover:border-sky-300 transition-all';
@@ -59,17 +60,27 @@
                                             <span class="ml-2 text-xs bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">${c.size_kontainer || '-'}'</span>
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <label class="text-[10px] text-gray-400 uppercase font-bold">Hari</label>
-                                        <input type="number" 
-                                               class="storage-kontainer-hari w-16 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
-                                               value="${hariValue}" min="1"
-                                               data-bl-id="${c.id}">
+                                    <div class="flex items-center gap-4">
+                                        <div class="flex items-center gap-1">
+                                            <label class="text-[10px] text-gray-400 uppercase font-bold">Massa 1</label>
+                                            <input type="number" 
+                                                   class="storage-kontainer-hari-massa-1 w-14 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
+                                                   value="${hariMassa1Value}" min="0"
+                                                   data-bl-id="${c.id}">
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <label class="text-[10px] text-gray-400 uppercase font-bold">Massa 2</label>
+                                            <input type="number" 
+                                                   class="storage-kontainer-hari-massa-2 w-14 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
+                                                   value="${hariMassa2Value}" min="0"
+                                                   data-bl-id="${c.id}">
+                                        </div>
                                     </div>
                                 `;
 
                                 const checkbox = row.querySelector('.storage-kontainer-checkbox');
-                                const hariInput = row.querySelector('.storage-kontainer-hari');
+                                const hariMassa1Input = row.querySelector('.storage-kontainer-hari-massa-1');
+                                const hariMassa2Input = row.querySelector('.storage-kontainer-hari-massa-2');
 
                                 checkbox.addEventListener('change', function() {
                                     const blId = this.dataset.blId;
@@ -82,7 +93,8 @@
                                                 <input type="hidden" name="storage_sections[${sIdx}][kontainer][${blId}][bl_id]" value="${blId}">
                                                 <input type="hidden" name="storage_sections[${sIdx}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
                                                 <input type="hidden" name="storage_sections[${sIdx}][kontainer][${blId}][size]" value="${this.dataset.size}">
-                                                <input type="hidden" name="storage_sections[${sIdx}][kontainer][${blId}][hari]" class="hari-hidden" value="${hariInput.value}">`;
+                                                <input type="hidden" name="storage_sections[${sIdx}][kontainer][${blId}][hari_massa_1]" class="hari-massa-1-hidden" value="${hariMassa1Input.value}">
+                                                <input type="hidden" name="storage_sections[${sIdx}][kontainer][${blId}][hari_massa_2]" class="hari-massa-2-hidden" value="${hariMassa2Input.value}">`;
                                             hiddenInputsContainer.appendChild(hiddenGroup);
                                         }
                                     } else {
@@ -90,9 +102,17 @@
                                     }
                                 });
 
-                                hariInput.addEventListener('input', function() {
+                                hariMassa1Input.addEventListener('input', function() {
                                     const blId = this.dataset.blId;
-                                    const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-hidden`);
+                                    const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-massa-1-hidden`);
+                                    if (existingInput) {
+                                        existingInput.value = this.value;
+                                    }
+                                });
+
+                                hariMassa2Input.addEventListener('input', function() {
+                                    const blId = this.dataset.blId;
+                                    const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-massa-2-hidden`);
                                     if (existingInput) {
                                         existingInput.value = this.value;
                                     }
@@ -367,17 +387,27 @@
                                     <span class="ml-2 text-xs bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">${kontainer.size_kontainer || '-'}'</span>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <label class="text-[10px] text-gray-400 uppercase font-bold">Hari</label>
-                                <input type="number" 
-                                       class="storage-kontainer-hari w-16 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
-                                       value="1" min="1"
-                                       data-bl-id="${kontainer.id}">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-1">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">Massa 1</label>
+                                    <input type="number" 
+                                           class="storage-kontainer-hari-massa-1 w-14 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
+                                           value="1" min="0"
+                                           data-bl-id="${kontainer.id}">
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">Massa 2</label>
+                                    <input type="number" 
+                                           class="storage-kontainer-hari-massa-2 w-14 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
+                                           value="0" min="0"
+                                           data-bl-id="${kontainer.id}">
+                                </div>
                             </div>
                         `;
 
                         const checkbox = row.querySelector('.storage-kontainer-checkbox');
-                        const hariInput = row.querySelector('.storage-kontainer-hari');
+                        const hariMassa1Input = row.querySelector('.storage-kontainer-hari-massa-1');
+                        const hariMassa2Input = row.querySelector('.storage-kontainer-hari-massa-2');
 
                         checkbox.addEventListener('change', function() {
                             const blId = this.dataset.blId;
@@ -390,7 +420,8 @@
                                         <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][bl_id]" value="${blId}">
                                         <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
                                         <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">
-                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari]" class="hari-hidden" value="${hariInput.value}">`;
+                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari_massa_1]" class="hari-massa-1-hidden" value="${hariMassa1Input.value}">
+                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari_massa_2]" class="hari-massa-2-hidden" value="${hariMassa2Input.value}">`;
                                     hiddenInputsContainer.appendChild(hiddenGroup);
                                 }
                             } else {
@@ -398,9 +429,17 @@
                             }
                         });
 
-                        hariInput.addEventListener('input', function() {
+                        hariMassa1Input.addEventListener('input', function() {
                             const blId = this.dataset.blId;
-                            const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-hidden`);
+                            const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-massa-1-hidden`);
+                            if (existingInput) {
+                                existingInput.value = this.value;
+                            }
+                        });
+
+                        hariMassa2Input.addEventListener('input', function() {
+                            const blId = this.dataset.blId;
+                            const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-massa-2-hidden`);
                             if (existingInput) {
                                 existingInput.value = this.value;
                             }

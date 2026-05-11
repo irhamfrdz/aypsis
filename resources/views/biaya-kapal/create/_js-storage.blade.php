@@ -262,17 +262,27 @@
                                     <span class="ml-2 text-xs bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">${kontainer.size_kontainer || '-'}'</span>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <label class="text-[10px] text-gray-400 uppercase font-bold">Hari</label>
-                                <input type="number" 
-                                       class="storage-kontainer-hari w-16 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
-                                       value="1" min="1"
-                                       data-bl-id="${kontainer.id}">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-1">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">Massa 1</label>
+                                    <input type="number" 
+                                           class="storage-kontainer-hari-massa-1 w-14 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
+                                           value="1" min="0"
+                                           data-bl-id="${kontainer.id}">
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">Massa 2</label>
+                                    <input type="number" 
+                                           class="storage-kontainer-hari-massa-2 w-14 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-sky-500"
+                                           value="0" min="0"
+                                           data-bl-id="${kontainer.id}">
+                                </div>
                             </div>
                         `;
 
                         const checkbox = row.querySelector('.storage-kontainer-checkbox');
-                        const hariInput = row.querySelector('.storage-kontainer-hari');
+                        const hariMassa1Input = row.querySelector('.storage-kontainer-hari-massa-1');
+                        const hariMassa2Input = row.querySelector('.storage-kontainer-hari-massa-2');
 
                         checkbox.addEventListener('change', function() {
                             const blId = this.dataset.blId;
@@ -282,10 +292,11 @@
                                     const hiddenGroup = document.createElement('div');
                                     hiddenGroup.setAttribute('data-bl-id', blId);
                                     hiddenGroup.innerHTML = `
-                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][bl_id]" value="${blId}">
-                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
-                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">
-                                        <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari]" class="hari-hidden" value="${hariInput.value}">`;
+                                    <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][bl_id]" value="${blId}">
+                                    <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][nomor_kontainer]" value="${this.dataset.nomor}">
+                                    <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][size]" value="${this.dataset.size}">
+                                    <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari_massa_1]" class="hari-massa-1-hidden" value="${hariMassa1Input.value}">
+                                    <input type="hidden" name="storage_sections[${sectionIndex}][kontainer][${blId}][hari_massa_2]" class="hari-massa-2-hidden" value="${hariMassa2Input.value}">`;
                                     hiddenInputsContainer.appendChild(hiddenGroup);
                                 }
                             } else {
@@ -294,9 +305,18 @@
                             calculateStorageSectionSubtotal(section);
                         });
 
-                        hariInput.addEventListener('input', function() {
+                        hariMassa1Input.addEventListener('input', function() {
                             const blId = this.dataset.blId;
-                            const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-hidden`);
+                            const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-massa-1-hidden`);
+                            if (existingInput) {
+                                existingInput.value = this.value;
+                            }
+                            calculateStorageSectionSubtotal(section);
+                        });
+
+                        hariMassa2Input.addEventListener('input', function() {
+                            const blId = this.dataset.blId;
+                            const existingInput = hiddenInputsContainer.querySelector(`[data-bl-id="${blId}"] .hari-massa-2-hidden`);
                             if (existingInput) {
                                 existingInput.value = this.value;
                             }
@@ -330,8 +350,8 @@
                 checkedCbs.forEach(cb => {
                     const blId = cb.dataset.blId;
                     const size = cb.dataset.size;
-                    const hariInput = sec.querySelector(`.storage-kontainer-hari[data-bl-id="${blId}"]`);
-                    const hari = parseInt(hariInput.value) || 0;
+                    const hariMassa1 = parseInt(sec.querySelector(`.storage-kontainer-hari-massa-1[data-bl-id="${blId}"]`).value) || 0;
+                    const hariMassa2 = parseInt(sec.querySelector(`.storage-kontainer-hari-massa-2[data-bl-id="${blId}"]`).value) || 0;
                     
                     // Normalize size (20, 40, 45)
                     let normSize = size || '20';
@@ -345,8 +365,9 @@
                         (p.size_kontainer ? p.size_kontainer.toString() : '') === normSize
                     );
                     
-                    const tarif = pricelist ? parseFloat(pricelist.biaya_per_hari) : 0;
-                    calculatedSubtotal += (tarif * hari);
+                    const tarif1 = pricelist ? parseFloat(pricelist.tarif_massa_1) : 0;
+                    const tarif2 = pricelist ? parseFloat(pricelist.tarif_massa_2 || 0) : 0;
+                    calculatedSubtotal += (tarif1 * hariMassa1) + (tarif2 * hariMassa2);
                 });
             }
             
