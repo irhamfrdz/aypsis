@@ -362,7 +362,14 @@
                                         @if(!empty($k['size']))
                                             <span style="color: #666; font-size: 0.85em;">{{ $k['size'] }}'</span>
                                         @endif
-                                        @if(!empty($k['hari']))
+                                        @if(!empty($k['hari_massa_1']) || !empty($k['hari_massa_2']))
+                                            @if(!empty($k['hari_massa_1']))
+                                                <span style="color: #d9534f; font-size: 0.85em; font-weight: bold;">(M1: {{ $k['hari_massa_1'] }} hr)</span>
+                                            @endif
+                                            @if(!empty($k['hari_massa_2']))
+                                                <span style="color: #d9534f; font-size: 0.85em; font-weight: bold;">(M2: {{ $k['hari_massa_2'] }} hr)</span>
+                                            @endif
+                                        @elseif(!empty($k['hari']))
                                             <span style="color: #d9534f; font-size: 0.85em; font-weight: bold;">({{ $k['hari'] }} hr)</span>
                                         @endif
                                     </div>

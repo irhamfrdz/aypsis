@@ -939,8 +939,19 @@
                                                     -
                                                 @endif
                                             </td>
-                                            <td class="px-4 py-2 text-sm text-gray-800 text-center font-bold">
-                                                {{ $k['hari'] ?? '1' }}
+                                            <td class="px-4 py-2 text-sm text-gray-800 text-center">
+                                                @if(isset($k['hari_massa_1']) || isset($k['hari_massa_2']))
+                                                    <div class="flex flex-col items-center">
+                                                        @if(isset($k['hari_massa_1']))
+                                                            <span class="text-xs text-blue-600 font-bold">M1: {{ $k['hari_massa_1'] }} hr</span>
+                                                        @endif
+                                                        @if(isset($k['hari_massa_2']))
+                                                            <span class="text-xs text-rose-600 font-bold">M2: {{ $k['hari_massa_2'] }} hr</span>
+                                                        @endif
+                                                    </div>
+                                                @else
+                                                    <span class="font-bold">{{ $k['hari'] ?? '1' }}</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
