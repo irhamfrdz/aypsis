@@ -2324,7 +2324,7 @@ document.addEventListener('click', function(event) {
 
 function printSJBongkaran(suratJalanId) {
     // Print existing surat jalan bongkaran
-    window.open('/surat-jalan-bongkaran/print/' + suratJalanId, '_blank');
+    window.open('/surat-jalan-bongkaran-batam/' + suratJalanId + '/print', '_blank');
 }
 
 function deleteSuratJalan(suratJalanId) {
