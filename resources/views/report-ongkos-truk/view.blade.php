@@ -328,17 +328,26 @@
             document.getElementById('pranotaModal').classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
             // Reset form inside modal
-            document.getElementById('modal_vendor_id').value = '';
-            document.getElementById('modal_supir_id').value = '';
-            document.getElementById('modal_keterangan').value = '';
+            const keterangan = document.getElementById('modal_keterangan');
+            const adjustment = document.getElementById('modal_adjustment');
+            if (keterangan) keterangan.value = '';
+            if (adjustment) adjustment.value = '';
         };
 
         window.generateNomorPranota = function() {
             const input = document.getElementById('modal_nomor_pranota');
             input.value = 'Generating...';
             
-            fetch('{{ route('pranota-ongkos-truk.generate-nomor', [], false) }}')
-                .then(r => r.json())
+            fetch('{{ route('pranota-ongkos-truk.generate-nomor', [], false) }}', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(r => {
+                    if (!r.ok) throw new Error('Server returned ' + r.status);
+                    return r.json();
+                })
                 .then(data => {
                     if (data.success) {
                         input.value = data.nomor_pranota;
@@ -346,7 +355,8 @@
                         input.value = 'Error generating';
                     }
                 })
-                .catch(() => {
+                .catch(e => {
+                    console.error(e);
                     input.value = 'Error generating';
                 });
         };
@@ -357,19 +367,27 @@
 
             const url = `{{ route('pranota-ongkos-truk.get-preview-data', [], false) }}?selected_ids=${ids}&types=${types}`;
             
-            fetch(url)
-                .then(r => r.json())
+            fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(r => {
+                    if (!r.ok) throw new Error('Server returned ' + r.status);
+                    return r.json();
+                })
                 .then(data => {
                     if (data.success) {
                         populateModalTable(data.items);
                     } else {
-                        alert('Gagal mengambil data preview.');
+                        alert('Gagal mengambil data preview: ' + (data.message || 'Unknown error'));
                         closePranotaModal();
                     }
                 })
                 .catch(e => {
                     console.error(e);
-                    alert('Terjadi kesalahan saat memproses data.');
+                    alert('Terjadi kesalahan: ' + e.message);
                     closePranotaModal();
                 });
         }
@@ -441,11 +459,21 @@
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify(payload)
             })
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) {
+                    return r.json().then(data => {
+                        throw new Error(data.message || 'Server error ' + r.status);
+                    }).catch(() => {
+                        throw new Error('Server error ' + r.status);
+                    });
+                }
+                return r.json();
+            })
             .then(data => {
                 if (data.success) {
                     location.href = data.redirect_url;
@@ -457,7 +485,7 @@
             })
             .catch(e => {
                 console.error(e);
-                alert('Terjadi kesalahan sistem.');
+                alert('Kesalahan: ' + e.message);
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             });

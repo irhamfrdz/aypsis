@@ -16,8 +16,11 @@ class PranotaOngkosTruk extends Model
         'no_pranota',
         'tanggal_pranota',
         'total_nominal',
+        'adjustment',
         'keterangan',
         'status',
+        'supir_id',
+        'vendor_id',
         'created_by',
     ];
 

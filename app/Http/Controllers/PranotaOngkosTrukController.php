@@ -133,13 +133,16 @@ class PranotaOngkosTrukController extends Controller
             ]);
 
             foreach ($request->items as $item) {
+                // Skip if item doesn't have required data
+                if (!isset($item['id']) || !isset($item['type'])) continue;
+
                 PranotaOngkosTrukItem::create([
                     'pranota_ongkos_truk_id' => $pranota->id,
                     'surat_jalan_id' => $item['type'] === 'SuratJalan' ? $item['id'] : null,
                     'surat_jalan_bongkaran_id' => $item['type'] === 'SuratJalanBongkaran' ? $item['id'] : null,
-                    'no_surat_jalan' => $item['no_surat_jalan'],
-                    'tanggal' => $item['tanggal'],
-                    'nominal' => $item['nominal'],
+                    'no_surat_jalan' => $item['no_surat_jalan'] ?? '-',
+                    'tanggal' => isset($item['tanggal']) && $item['tanggal'] !== '-' ? \Carbon\Carbon::parse($item['tanggal'])->format('Y-m-d') : null,
+                    'nominal' => $item['nominal'] ?? 0,
                     'type' => $item['type'],
                 ]);
             }
@@ -190,53 +193,60 @@ class PranotaOngkosTrukController extends Controller
 
     public function getPreviewData(Request $request)
     {
-        $selectedIds = $request->filled('selected_ids') ? explode(',', $request->selected_ids) : [];
-        $types = $request->filled('types') ? explode(',', $request->types) : [];
+        try {
+            $selectedIds = array_filter(explode(',', $request->input('selected_ids', '')));
+            $types = array_filter(explode(',', $request->input('types', '')));
 
-        $items = collect();
-        foreach ($selectedIds as $index => $id) {
-            $type = $types[$index] ?? '';
-            if ($type === 'SuratJalan') {
-                $sj = SuratJalan::with(['supirKaryawan', 'tujuanPengambilanRelation', 'uangJalan'])->find($id);
-                if ($sj) {
-                    $ongkosTruk = $this->calculateOngkosTruk($sj);
-                    $uangJalanNominal = $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0;
-                    $nominalBersih = $ongkosTruk - $uangJalanNominal;
+            $items = collect();
+            foreach ($selectedIds as $index => $id) {
+                $type = $types[$index] ?? '';
+                if ($type === 'SuratJalan') {
+                    $sj = SuratJalan::with(['supirKaryawan', 'tujuanPengambilanRelation', 'uangJalan'])->find($id);
+                    if ($sj) {
+                        $ongkosTruk = $this->calculateOngkosTruk($sj);
+                        $uangJalanNominal = $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0;
+                        $nominalBersih = (float)$ongkosTruk - (float)$uangJalanNominal;
 
-                    $items->push([
-                        'id' => $id,
-                        'no_surat_jalan' => $sj->no_surat_jalan,
-                        'tanggal' => $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/M/Y') : '-',
-                        'nominal' => $nominalBersih,
-                        'type' => $type,
-                        'supir' => $sj->supirKaryawan ? ($sj->supirKaryawan->nama_panggilan ?? $sj->supirKaryawan->nama_lengkap) : ($sj->supir ?: '-'),
-                        'no_plat' => $sj->no_plat ?: '-'
-                    ]);
-                }
-            } elseif ($type === 'SuratJalanBongkaran') {
-                $sjb = SuratJalanBongkaran::with(['supirKaryawan', 'tujuanPengambilanRelation', 'uangJalan'])->find($id);
-                if ($sjb) {
-                    $ongkosTruk = $this->calculateOngkosTruk($sjb);
-                    $uangJalanNominal = $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0;
-                    $nominalBersih = $ongkosTruk - $uangJalanNominal;
+                        $items->push([
+                            'id' => $id,
+                            'no_surat_jalan' => $sj->no_surat_jalan,
+                            'tanggal' => $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/M/Y') : '-',
+                            'nominal' => $nominalBersih,
+                            'type' => $type,
+                            'supir' => $sj->supirKaryawan ? ($sj->supirKaryawan->nama_panggilan ?? $sj->supirKaryawan->nama_lengkap) : ($sj->supir ?: '-'),
+                            'no_plat' => $sj->no_plat ?: '-'
+                        ]);
+                    }
+                } elseif ($type === 'SuratJalanBongkaran') {
+                    $sjb = SuratJalanBongkaran::with(['supirKaryawan', 'tujuanPengambilanRelation', 'uangJalan'])->find($id);
+                    if ($sjb) {
+                        $ongkosTruk = $this->calculateOngkosTruk($sjb);
+                        $uangJalanNominal = $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0;
+                        $nominalBersih = (float)$ongkosTruk - (float)$uangJalanNominal;
 
-                    $items->push([
-                        'id' => $id,
-                        'no_surat_jalan' => $sjb->nomor_surat_jalan,
-                        'tanggal' => $sjb->tanggal_surat_jalan ? $sjb->tanggal_surat_jalan->format('d/M/Y') : '-',
-                        'nominal' => $nominalBersih,
-                        'type' => $type,
-                        'supir' => $sjb->supirKaryawan ? ($sjb->supirKaryawan->nama_panggilan ?? $sjb->supirKaryawan->nama_lengkap) : ($sjb->supir ?: '-'),
-                        'no_plat' => $sjb->no_plat ?: '-'
-                    ]);
+                        $items->push([
+                            'id' => $id,
+                            'no_surat_jalan' => $sjb->nomor_surat_jalan,
+                            'tanggal' => $sjb->tanggal_surat_jalan ? $sjb->tanggal_surat_jalan->format('d/M/Y') : '-',
+                            'nominal' => $nominalBersih,
+                            'type' => $type,
+                            'supir' => $sjb->supirKaryawan ? ($sjb->supirKaryawan->nama_panggilan ?? $sjb->supirKaryawan->nama_lengkap) : ($sjb->supir ?: '-'),
+                            'no_plat' => $sjb->no_plat ?: '-'
+                        ]);
+                    }
                 }
             }
-        }
 
-        return response()->json([
-            'success' => true,
-            'items' => $items
-        ]);
+            return response()->json([
+                'success' => true,
+                'items' => $items
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memproses data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show($id)
