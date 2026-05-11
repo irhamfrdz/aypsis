@@ -244,3 +244,15 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('.select2-filter').select2({
+            placeholder: 'Semua Plat',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+@endpush
