@@ -1,20 +1,40 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    // Fixed paper size: Half-Folio only
-    $paperSize = 'Half-Folio';
-    
-    // Half-Folio paper dimensions and styles
-    $currentPaper = [
-        'size' => '8.5in 6.5in', // Folio width x half height
-        'width' => '8.5in',
-        'height' => '6.5in',
-        'containerWidth' => '8.5in',
-        'fontSize' => '10px',
-        'headerH1' => '14px',
-        'tableFont' => '10px',
-        'signatureBottom' => '3mm'
+    $paperSize = request('paper_size', 'Half-Folio');
+    $paperMap = [
+        'Half-Folio' => [
+            'size' => '215.9mm 165.1mm',
+            'width' => '215.9mm',
+            'height' => '165.1mm',
+            'containerWidth' => '195.9mm', // width - 2*margin
+            'fontSize' => '10px',
+            'headerH1' => '14px',
+            'tableFont' => '10px',
+            'signatureBottom' => '3mm'
+        ],
+        'A4' => [
+            'size' => 'A4',
+            'width' => '210mm',
+            'height' => '297mm',
+            'containerWidth' => '190mm', // width - 2*margin
+            'fontSize' => '11px',
+            'headerH1' => '16px',
+            'tableFont' => '11px',
+            'signatureBottom' => '5mm'
+        ],
+        'Folio' => [
+            'size' => '215.9mm 330.2mm',
+            'width' => '215.9mm',
+            'height' => '330.2mm',
+            'containerWidth' => '195.9mm',
+            'fontSize' => '11px',
+            'headerH1' => '16px',
+            'tableFont' => '11px',
+            'signatureBottom' => '5mm'
+        ]
     ];
+    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-Folio'];
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -29,7 +49,7 @@
 
         @page {
             size: {{ $currentPaper['size'] }} portrait;
-            margin: 0;
+            margin: 10mm;
         }
 
         html {
@@ -45,7 +65,6 @@
             background: white;
             position: relative;
             width: {{ $currentPaper['width'] }};
-            height: {{ $currentPaper['height'] }};
             margin: 0;
             padding: 0;
         }
@@ -53,11 +72,9 @@
         .container {
             width: {{ $currentPaper['containerWidth'] }};
             max-width: {{ $currentPaper['containerWidth'] }};
-            min-height: {{ $currentPaper['height'] }};
             margin: 0 auto;
-            padding: 3mm 4mm;
+            padding: 0;
             position: relative;
-            padding-bottom: 10px;
             box-sizing: border-box;
             background: white;
         }
@@ -138,7 +155,7 @@
         @media print {
             @page {
                 size: {{ $currentPaper['size'] }} portrait;
-                margin: 0;
+                margin: 10mm;
             }
 
             .no-print {
@@ -147,18 +164,14 @@
 
             html, body {
                 width: {{ $currentPaper['width'] }};
-                height: auto;
-                min-height: {{ $currentPaper['height'] }};
                 margin: 0;
                 padding: 0;
             }
 
             .container {
                 width: {{ $currentPaper['containerWidth'] }};
-                height: auto;
-                min-height: {{ $currentPaper['height'] }};
-                padding: 3mm;
-                margin: 0;
+                margin: 0 auto;
+                padding: 0;
                 box-sizing: border-box;
             }
 
@@ -172,22 +185,30 @@
 <body>
     <!-- Print Instructions Banner (hidden when printing) -->
     <div class="no-print" style="position: fixed; top: 10px; left: 10px; right: 10px; background: #fef3c7; padding: 10px 15px; border: 2px solid #f59e0b; border-radius: 8px; z-index: 1001; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 11px;">
-        <div style="display: flex; align-items: start; gap: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 15px;">
             <div style="flex: 1;">
-                <strong>⚠️ PENTING - Setting Print untuk Half-Folio:</strong><br>
-                1. Scale: <strong>100% / Actual Size</strong> | 2. Orientation: <strong>Portrait</strong> | 3. Paper: <strong>Legal/Folio</strong><br>
-                ✂️ Setelah print, potong kertas Folio menjadi 2 bagian horizontal.
+                <strong>⚠️ PENTING - Setting Print:</strong><br>
+                1. Scale: <strong>100%</strong> | 2. Orientation: <strong>Portrait</strong> | 3. Margin: <strong>Default</strong><br>
+                Gunakan menu di kanan untuk ganti ukuran kertas (A4 / Half-Folio).
             </div>
-            <button onclick="window.print()" style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                🖨️ CETAK
-            </button>
-            <button onclick="window.close()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-                TUTUP
-            </button>
+            <div style="display: flex; gap: 8px;">
+                <div style="background: white; padding: 5px 10px; border-radius: 5px; border: 1px solid #d1d5db; display: flex; align-items: center; gap: 5px;">
+                    <span style="font-weight: bold; color: #374151;">Ukuran:</span>
+                    <a href="?paper_size=Half-Folio" style="text-decoration: none; padding: 2px 8px; border-radius: 4px; font-size: 10px; {{ $paperSize === 'Half-Folio' ? 'background: #007bff; color: white;' : 'background: #e5e7eb; color: #4b5563;' }}">Half-Folio</a>
+                    <a href="?paper_size=A4" style="text-decoration: none; padding: 2px 8px; border-radius: 4px; font-size: 10px; {{ $paperSize === 'A4' ? 'background: #007bff; color: white;' : 'background: #e5e7eb; color: #4b5563;' }}">A4</a>
+                    <a href="?paper_size=Folio" style="text-decoration: none; padding: 2px 8px; border-radius: 4px; font-size: 10px; {{ $paperSize === 'Folio' ? 'background: #007bff; color: white;' : 'background: #e5e7eb; color: #4b5563;' }}">Folio</a>
+                </div>
+                <button onclick="window.print()" style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                    🖨️ CETAK
+                </button>
+                <button onclick="window.close()" style="background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+                    TUTUP
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="container" style="margin-top: 60px;">
+    <div class="container" style="margin-top: 80px;">
         <!-- Header -->
         <div class="header">
             <h1>PERMOHONAN TRANSFER</h1>
