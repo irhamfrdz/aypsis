@@ -83,10 +83,19 @@
     <div class="mb-6">
         <form method="GET" action="{{ route('stock-amprahan.index') }}" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari berdasarkan nama barang atau no. bukti..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            <select name="mobil_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white">
+            <select name="type_amprahan" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white">
+                <option value="">Semua Tipe</option>
+                <option value="Stock" {{ request('type_amprahan') == 'Stock' ? 'selected' : '' }}>Stock</option>
+                <option value="Pemakaian" {{ request('type_amprahan') == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
+                <option value="Perbaikan" {{ request('type_amprahan') == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
+                <option value="Perlengkapan" {{ request('type_amprahan') == 'Perlengkapan' ? 'selected' : '' }}>Perlengkapan</option>
+                <option value="Peralatan" {{ request('type_amprahan') == 'Peralatan' ? 'selected' : '' }}>Peralatan</option>
+                <option value="Transportasi" {{ request('type_amprahan') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
+            </select>
+            <select name="mobil_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white select2-basic">
                 <option value="">Semua Plat</option>
                 @foreach($kendaraans as $m)
-                    <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }}</option>
+                    <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
                 @endforeach
             </select>
             <div class="flex space-x-2">
@@ -110,6 +119,36 @@
         <i class="fas fa-chart-pie text-indigo-600"></i>
         Rekap Stock Amprahan
     </h3>
+
+    {{-- Selected Vehicle Summary Card --}}
+    @if(isset($selectedMobil))
+    <div class="mb-8 p-6 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-xl text-white">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex items-center gap-5">
+                <div class="p-4 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 shadow-inner">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-black tracking-tight">{{ $selectedMobil->nomor_polisi }}</h2>
+                    <p class="text-blue-100 font-medium opacity-90">{{ $selectedMobil->merek }} - {{ $selectedMobil->tipe }}</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <div class="px-6 py-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-1">Total Pemakaian</p>
+                    <p class="text-2xl font-black">{{ number_format($stats['usage_by_plate'], 0, ',', '.') }} <span class="text-sm font-medium">Item</span></p>
+                </div>
+                <div class="px-6 py-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/10">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-1">Jenis Barang</p>
+                    <p class="text-2xl font-black">{{ $items->total() }} <span class="text-sm font-medium">Jenis</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Stats Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -264,9 +303,16 @@
 
                         <!-- Qty -->
                         <td class="px-3 py-3 whitespace-nowrap text-center">
-                            <span class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold {{ $item->jumlah > 0 ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200' }}">
-                                {{ number_format($item->jumlah, 0, ',', '.') }} {{ $item->satuan ?? '-' }}
-                            </span>
+                            <div class="flex flex-col items-center">
+                                <span class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-bold {{ $item->jumlah > 0 ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200' }}">
+                                    Stock: {{ number_format($item->jumlah, 0, ',', '.') }} {{ $item->satuan ?? '-' }}
+                                </span>
+                                @if(isset($selectedMobil))
+                                <span class="mt-1 text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+                                    Pakai: {{ number_format($item->usages_sum_jumlah ?? 0, 0, ',', '.') }} {{ $item->satuan ?? '-' }}
+                                </span>
+                                @endif
+                            </div>
                         </td>
 
                         <!-- Keuangan -->
@@ -2004,4 +2050,33 @@
 </script>
 
 @endsection
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--single {
+        border-color: #d1d5db;
+        height: 38px;
+        padding: 4px 0;
+        border-radius: 0.5rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        top: 6px;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2-basic').select2({
+            placeholder: 'Semua Plat',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+@endpush
 

@@ -66,14 +66,28 @@ class StockAmprahanController extends Controller
                 $query->where('lokasi', $lokasi);
             }
         }
+
+        if ($request->filled('type_amprahan')) {
+            $query->where('type_amprahan', $request->type_amprahan);
+        }
         
+        $selectedMobil = null;
         if ($request->filled('mobil_id')) {
             $mobilId = $request->mobil_id;
+            $selectedMobil = \App\Models\Mobil::find($mobilId);
+            
             $query->whereHas('usages', function($q) use ($mobilId) {
                 $q->where('kendaraan_id', $mobilId)
                   ->orWhere('truck_id', $mobilId)
                   ->orWhere('buntut_id', $mobilId);
             });
+
+            // Replace withSum to only count usage for this specific plate
+            $query->withSum(['usages as usages_sum_jumlah' => function($q) use ($mobilId) {
+                $q->where('kendaraan_id', $mobilId)
+                  ->orWhere('truck_id', $mobilId)
+                  ->orWhere('buntut_id', $mobilId);
+            }], 'jumlah');
         }
         
         $items = $query->paginate(20)->withQueryString();
@@ -100,11 +114,21 @@ class StockAmprahanController extends Controller
                 $q->whereNotIn('lokasi', ['KANTOR AYP JAKARTA', 'KANTOR AYP BATAM'])
                   ->orWhereNull('lokasi');
             })->sum('jumlah'),
+            'usage_by_plate' => 0
         ];
+
+        if ($request->filled('mobil_id')) {
+            $mobilId = $request->mobil_id;
+            $stats['usage_by_plate'] = \App\Models\StockAmprahanUsage::where(function($q) use ($mobilId) {
+                $q->where('kendaraan_id', $mobilId)
+                  ->orWhere('truck_id', $mobilId)
+                  ->orWhere('buntut_id', $mobilId);
+            })->sum('jumlah');
+        }
 
         $masterItems = \App\Models\MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'selectedMobil'));
     }
 
     public function create()
