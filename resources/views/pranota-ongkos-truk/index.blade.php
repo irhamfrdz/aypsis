@@ -74,6 +74,9 @@
                                     <a href="{{ route('pranota-ongkos-truk.print', $pranota->id) }}" target="_blank" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Cetak">
                                         <i class="fas fa-print"></i>
                                     </a>
+                                    <a href="{{ route('pranota-ongkos-truk.export', $pranota->id) }}" class="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors" title="Download Excel">
+                                        <i class="fas fa-file-excel"></i>
+                                    </a>
                                     @can('pranota-ongkos-truk-delete')
                                     <form action="{{ route('pranota-ongkos-truk.destroy', $pranota->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota ini?')">
                                         @csrf

@@ -312,4 +312,12 @@ class PranotaOngkosTrukController extends Controller
         $pranota->delete();
         return redirect()->route('pranota-ongkos-truk.index')->with('success', 'Pranota berhasil dihapus.');
     }
+
+    public function export($id)
+    {
+        $pranota = PranotaOngkosTruk::with(['items.suratJalan.tujuanPengambilanRelation', 'items.suratJalanBongkaran.tujuanPengambilanRelation'])->findOrFail($id);
+        $fileName = 'Pranota_Ongkos_Truk_' . $pranota->no_pranota . '.xlsx';
+        
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PranotaOngkosTrukExport($pranota), $fileName);
+    }
 }

@@ -1,0 +1,141 @@
+<?php
+
+namespace App\Exports;
+
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+
+class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents, WithColumnFormatting
+{
+    protected $pranota;
+
+    public function __construct($pranota)
+    {
+        $this->pranota = $pranota;
+    }
+
+    public function collection()
+    {
+        return $this->pranota->items->map(function($item, $index) {
+            $tujuan = '-';
+            if ($item->type === 'SuratJalan' && $item->suratJalan) {
+                $tujuan = $item->suratJalan->tujuanPengambilanRelation->ke ?? $item->suratJalan->tujuan_pengambilan ?? '-';
+            } elseif ($item->type === 'SuratJalanBongkaran' && $item->suratJalanBongkaran) {
+                $tujuan = $item->suratJalanBongkaran->tujuanPengambilanRelation->ke ?? $item->suratJalanBongkaran->tujuan_pengambilan ?? '-';
+            }
+
+            return [
+                $index + 1,
+                $item->no_surat_jalan,
+                $item->tanggal ? $item->tanggal->format('d/m/Y') : '-',
+                $tujuan,
+                (float)$item->nominal,
+            ];
+        });
+    }
+
+    public function headings(): array
+    {
+        return [
+            'No',
+            'No Surat Jalan',
+            'Tanggal',
+            'Tujuan',
+            'Nominal',
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'E' => '#,##0',
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function(AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                
+                // Insert title rows
+                $sheet->insertNewRowBefore(1, 4);
+                $sheet->setCellValue('A1', 'PRANOTA ONGKOS TRUK');
+                $sheet->setCellValue('A2', 'Nomor: ' . $this->pranota->no_pranota);
+                $sheet->setCellValue('A3', 'Tanggal: ' . $this->pranota->tanggal_pranota->format('d/m/Y'));
+                
+                $lastCol = 'E';
+                $headerRow = 5;
+                $dataStartRow = 6;
+                
+                // Merge and style titles
+                $sheet->mergeCells("A1:{$lastCol}1");
+                $sheet->getStyle("A1")->getFont()->setBold(true)->setSize(14);
+                $sheet->getStyle("A1")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                
+                $sheet->getStyle("A2:A3")->getFont()->setBold(true);
+
+                // Style Header
+                $sheet->getStyle("A{$headerRow}:{$lastCol}{$headerRow}")->applyFromArray([
+                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => '4472C4'],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN],
+                    ],
+                ]);
+
+                // Find Last Data Row and Add Summary Rows
+                $lastDataRow = $sheet->getHighestRow();
+                $currentRow = $lastDataRow + 1;
+
+                // Subtotal
+                $sheet->setCellValue("D{$currentRow}", 'Subtotal');
+                $sheet->setCellValue("E{$currentRow}", "=SUM(E{$dataStartRow}:E{$lastDataRow})");
+                $sheet->getStyle("D{$currentRow}:E{$currentRow}")->getFont()->setBold(true);
+                $currentRow++;
+
+                // Adjustment
+                if ($this->pranota->adjustment != 0) {
+                    $sheet->setCellValue("D{$currentRow}", 'Adjustment');
+                    $sheet->setCellValue("E{$currentRow}", (float)$this->pranota->adjustment);
+                    $sheet->getStyle("D{$currentRow}:E{$currentRow}")->getFont()->setBold(true);
+                    $currentRow++;
+                }
+
+                // Total
+                $sheet->setCellValue("D{$currentRow}", 'TOTAL');
+                $sheet->setCellValue("E{$currentRow}", (float)$this->pranota->total_nominal);
+                $sheet->getStyle("D{$currentRow}:E{$currentRow}")->applyFromArray([
+                    'font' => ['bold' => true, 'size' => 12],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'E2EFDA'],
+                    ],
+                ]);
+
+                // Table borders
+                $sheet->getStyle("A{$headerRow}:{$lastCol}{$currentRow}")->applyFromArray([
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => Border::BORDER_THIN],
+                    ],
+                ]);
+
+                $sheet->getStyle("E{$dataStartRow}:E{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+            },
+        ];
+    }
+}
