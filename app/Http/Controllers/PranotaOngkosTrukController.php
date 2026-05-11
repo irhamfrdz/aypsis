@@ -279,6 +279,7 @@ class PranotaOngkosTrukController extends Controller
                             'tujuan' => $sjb->tujuanPengambilanRelation->ke ?? $sjb->tujuan_pengambilan ?? '-'
                         ]);
                     }
+                }
             }
 
             return response()->json([
