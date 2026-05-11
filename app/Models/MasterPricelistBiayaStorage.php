@@ -13,12 +13,14 @@ class MasterPricelistBiayaStorage extends Model
         'vendor',
         'lokasi',
         'size_kontainer',
-        'biaya_per_hari',
+        'tarif_massa_1',
+        'tarif_massa_2',
         'status',
         'keterangan',
     ];
 
     protected $casts = [
-        'biaya_per_hari' => 'decimal:2',
+        'tarif_massa_1' => 'decimal:2',
+        'tarif_massa_2' => 'decimal:2',
     ];
 }

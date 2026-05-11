@@ -44,10 +44,17 @@
                     </select>
                 </div>
 
-                {{-- Biaya per Hari --}}
+                {{-- Tarif Massa 1 --}}
                 <div>
-                    <label for="biaya_per_hari" class="block text-sm font-medium text-gray-700 mb-1">Tarif Per Hari (Rp) <span class="text-red-500">*</span></label>
-                    <input type="number" name="biaya_per_hari" id="biaya_per_hari" value="{{ old('biaya_per_hari', 0) }}" required
+                    <label for="tarif_massa_1" class="block text-sm font-medium text-gray-700 mb-1">Tarif Massa 1 (Rp) <span class="text-red-500">*</span></label>
+                    <input type="number" name="tarif_massa_1" id="tarif_massa_1" value="{{ old('tarif_massa_1', 0) }}" required
+                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                </div>
+
+                {{-- Tarif Massa 2 --}}
+                <div>
+                    <label for="tarif_massa_2" class="block text-sm font-medium text-gray-700 mb-1">Tarif Massa 2 (Rp)</label>
+                    <input type="number" name="tarif_massa_2" id="tarif_massa_2" value="{{ old('tarif_massa_2', 0) }}"
                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                 </div>
 
