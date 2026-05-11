@@ -7,8 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="w-full max-w-md bg-white rounded-lg shadow-md p-8">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-md p-8 relative overflow-hidden">
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">AYPSIS Login</h2>
+
+        <!-- Success Animation Overlay -->
+        <div id="success-overlay" class="hidden absolute inset-0 bg-indigo-600 z-50 flex-col items-center justify-center transition-opacity duration-300 rounded-lg">
+            <div id="check-circle" class="transform scale-0 transition-transform duration-500 ease-out bg-white rounded-full p-4 mb-4 shadow-lg">
+                <svg class="w-16 h-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h2 class="text-white text-2xl font-bold animate-pulse">Login Berhasil!</h2>
+            <p class="text-indigo-200 mt-2 text-sm">Mengarahkan...</p>
+        </div>
 
         <!-- Menampilkan pesan sukses jika ada -->
         @if (session('success'))
@@ -111,4 +122,55 @@
         </p>
     </div>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const loginBtn = document.querySelector('button[type="submit"]');
+        const overlay = document.getElementById('success-overlay');
+        const checkCircle = document.getElementById('check-circle');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Disable button and show loading state
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memproses...';
+            
+            try {
+                const formData = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Success! Show animation overlay
+                    overlay.classList.remove('hidden');
+                    overlay.classList.add('flex');
+                    
+                    // Trigger checkmark animation
+                    setTimeout(() => {
+                        checkCircle.classList.remove('scale-0');
+                        checkCircle.classList.add('scale-100');
+                    }, 50);
+
+                    // Redirect after animation
+                    setTimeout(() => {
+                        window.location.href = response.url || '/';
+                    }, 1500);
+                } else {
+                    // If login failed, just submit the form normally to let Laravel handle showing the validation errors/redirects
+                    form.submit();
+                }
+            } catch (error) {
+                // If network error, submit normally
+                form.submit();
+            }
+        });
+    });
+</script>
 </html>
