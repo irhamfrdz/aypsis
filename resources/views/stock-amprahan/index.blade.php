@@ -2057,8 +2057,6 @@
 
 @endsection
 
-@endsection
-
 @push('scripts')
 <script>
     // Custom Vanilla JS Searchable Dropdown
