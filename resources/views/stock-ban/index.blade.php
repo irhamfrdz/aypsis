@@ -407,6 +407,32 @@
                         <div class="text-2xl font-bold text-amber-900">{{ $banDijual }}</div>
                         <p class="text-xs text-amber-600 mt-1">Laku</p>
                     </div>
+
+                    <!-- Rusak Belum Terjual -->
+                    @php
+                        $rusakStok = $stockBans->where('kondisi', 'afkir')->where('status', 'Stok')->count();
+                    @endphp
+                    <div id="card-rusak-stok" onclick="setCardFilter('rusak-stok', false)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-red-600 uppercase">Rusak Belum Terjual</span>
+                            <i class="fas fa-trash-alt text-red-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-red-900">{{ $rusakStok }}</div>
+                        <p class="text-xs text-red-600 mt-1">Ready</p>
+                    </div>
+
+                    <!-- Rusak Sudah Terjual -->
+                    @php
+                        $rusakTerjual = $stockBans->where('kondisi', 'afkir')->where('status', 'Dijual')->count();
+                    @endphp
+                    <div id="card-rusak-terjual" onclick="setCardFilter('rusak-terjual', false)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-orange-600 uppercase">Rusak Terjual</span>
+                            <i class="fas fa-hand-holding-usd text-orange-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-orange-900">{{ $rusakTerjual }}</div>
+                        <p class="text-xs text-orange-600 mt-1">Laku</p>
+                    </div>
                 </div>
             </div>
 
@@ -925,6 +951,32 @@
                         </div>
                         <div class="text-2xl font-bold text-amber-900">{{ $banDijualBtm }}</div>
                         <p class="text-xs text-amber-600 mt-1">Laku</p>
+                    </div>
+
+                    <!-- Rusak Belum Terjual -->
+                    @php
+                        $rusakStokBtm = $banBatamList->where('kondisi', 'afkir')->where('status', 'Stok')->count();
+                    @endphp
+                    <div id="card-batam-rusak-stok" onclick="setCardFilter('rusak-stok', true)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-red-600 uppercase">Rusak Belum Terjual</span>
+                            <i class="fas fa-trash-alt text-red-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-red-900">{{ $rusakStokBtm }}</div>
+                        <p class="text-xs text-red-600 mt-1">Ready</p>
+                    </div>
+
+                    <!-- Rusak Sudah Terjual -->
+                    @php
+                        $rusakTerjualBtm = $banBatamList->where('kondisi', 'afkir')->where('status', 'Dijual')->count();
+                    @endphp
+                    <div id="card-batam-rusak-terjual" onclick="setCardFilter('rusak-terjual', true)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-orange-600 uppercase">Rusak Terjual</span>
+                            <i class="fas fa-hand-holding-usd text-orange-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-orange-900">{{ $rusakTerjualBtm }}</div>
+                        <p class="text-xs text-orange-600 mt-1">Laku</p>
                     </div>
                 </div>
             </div>
@@ -2573,7 +2625,9 @@
                 'dikembalikan': 'ring-rose-400',
                 'dijual': 'ring-amber-400',
                 'gudang-batam': 'ring-indigo-400',
-                'dikirim-tp': 'ring-teal-400'
+                'dikirim-tp': 'ring-teal-400',
+                'rusak-stok': 'ring-red-400',
+                'rusak-terjual': 'ring-orange-400'
             };
             activeCard.classList.add(colorMap[filterType]);
         }
@@ -2891,6 +2945,8 @@
                     else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
                     else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
+                    else if (currentCardFilter === 'rusak-stok') filterMatch = kondisi === 'afkir' && status === 'stok';
+                    else if (currentCardFilter === 'rusak-terjual') filterMatch = kondisi === 'afkir' && status === 'dijual';
                 }
 
                 if ((textMatch || searchTerm === '') && filterMatch) {
@@ -2940,6 +2996,8 @@
                     else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
                     else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
+                    else if (currentCardFilter === 'rusak-stok') filterMatch = kondisi === 'afkir' && status === 'stok';
+                    else if (currentCardFilter === 'rusak-terjual') filterMatch = kondisi === 'afkir' && status === 'dijual';
                 }
 
                 if ((textMatch || searchTerm === '') && filterMatch) {
