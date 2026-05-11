@@ -131,6 +131,7 @@ class StockKontainerController extends Controller
      */
     public function show(StockKontainer $stockKontainer)
     {
+        $stockKontainer->load(['gudang', 'auditCreated']);
         return view('master-stock-kontainer.show', compact('stockKontainer'));
     }
 

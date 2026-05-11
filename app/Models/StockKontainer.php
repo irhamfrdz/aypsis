@@ -143,6 +143,14 @@ class StockKontainer extends Model
     }
 
     /**
+     * Get the audit log for when this record was created.
+     */
+    public function auditCreated()
+    {
+        return $this->morphOne(AuditLog::class, 'auditable')->where('action', 'created');
+    }
+
+    /**
      * Check if this kontainer has duplicate in kontainers table
      */
     public function hasDuplicateInKontainers()

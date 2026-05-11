@@ -119,6 +119,10 @@
                                 <dt class="text-sm font-medium text-gray-500">Tanggal Keluar</dt>
                                 <dd class="text-sm text-gray-900">{{ $stockKontainer->tanggal_keluar?->format('d/m/Y') ?? '-' }}</dd>
                             </div>
+                            <div class="pt-2 border-t border-gray-100">
+                                <dt class="text-sm font-medium text-gray-500">Input Oleh</dt>
+                                <dd class="text-sm text-gray-900 font-semibold">{{ $stockKontainer->auditCreated?->user_name ?? 'System' }}</dd>
+                            </div>
                         </dl>
                     </div>
 
@@ -158,6 +162,7 @@
             <!-- Footer Actions -->
             <div class="bg-gray-50 px-6 py-4 flex justify-between items-center">
                 <div class="text-sm text-gray-500">
+                    Input Oleh: <span class="font-medium text-gray-700">{{ $stockKontainer->auditCreated?->user_name ?? 'System' }}</span> |
                     Dibuat: {{ $stockKontainer->created_at->format('d/m/Y H:i') }} |
                     Diupdate: {{ $stockKontainer->updated_at->format('d/m/Y H:i') }}
                 </div>
