@@ -98,12 +98,22 @@
                 <option value="Peralatan" {{ request('type_amprahan') == 'Peralatan' ? 'selected' : '' }}>Peralatan</option>
                 <option value="Transportasi" {{ request('type_amprahan') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
             </select>
-            <select name="mobil_id" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white searchable-select">
-                <option value="">Semua Plat</option>
-                @foreach($kendaraans as $m)
-                    <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>{{ $m->nomor_polisi }} ({{ $m->merek }})</option>
-                @endforeach
-            </select>
+            <div class="flex-1 min-w-[180px]">
+                <select name="mobil_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white searchable-select">
+                    <option value="">Semua Plat</option>
+                    @foreach($kendaraans as $m)
+                        @php
+                            $displayText = trim(($m->nomor_polisi ?: '') . ' (' . ($m->merek ?: 'Tanpa Merek') . ')');
+                            if (empty(trim($m->nomor_polisi)) && empty(trim($m->merek))) {
+                                $displayText = "Kendaraan ID: " . $m->id;
+                            }
+                        @endphp
+                        <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>
+                            {{ $displayText }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <div class="flex space-x-2">
                 <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2102,7 +2112,10 @@
             
             // Create options list
             const optionsList = document.createElement('div');
-            optionsList.className = 'absolute z-[9999] w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-72 overflow-y-auto hidden py-1';
+            optionsList.className = 'absolute z-[9999] left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl max-h-72 overflow-y-auto hidden py-1';
+            optionsList.style.minWidth = '100%';
+            optionsList.style.width = 'max-content';
+            optionsList.style.maxWidth = '350px';
             
             // Toggle dropdown
             const openDropdown = () => {

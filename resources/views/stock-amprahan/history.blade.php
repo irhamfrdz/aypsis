@@ -74,8 +74,14 @@
                 <select name="mobil_id" id="mobil_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm searchable-select">
                     <option value="">Semua Plat</option>
                     @foreach($kendaraans as $m)
+                        @php
+                            $displayText = trim(($m->nomor_polisi ?: '') . ' (' . ($m->merek ?: 'Tanpa Merek') . ')');
+                            if (empty(trim($m->nomor_polisi)) && empty(trim($m->merek))) {
+                                $displayText = "Kendaraan ID: " . $m->id;
+                            }
+                        @endphp
                         <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>
-                            {{ $m->nomor_polisi }} ({{ $m->merek }})
+                            {{ $displayText }}
                         </option>
                     @endforeach
                 </select>
