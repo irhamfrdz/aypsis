@@ -141,6 +141,8 @@ class TandaTerimaController extends Controller
         $kegiatan = $request->input('kegiatan', '');
         $mode = $request->input('mode', '');
         $perPage = $request->input('rows_per_page', 25);
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
         // Get last update time from cache
         $lastUpdate = \Illuminate\Support\Facades\Cache::get('last_manifest_update');
@@ -221,6 +223,14 @@ class TandaTerimaController extends Controller
                 $suratQuery->where('kegiatan', $kegiatan);
             }
 
+            // Apply date range filter
+            if ($startDate) {
+                $suratQuery->whereDate('tanggal_surat_jalan', '>=', $startDate);
+            }
+            if ($endDate) {
+                $suratQuery->whereDate('tanggal_surat_jalan', '<=', $endDate);
+            }
+
             // Only include surat jalan that do not yet have a tanda terima
             $suratQuery->whereDoesntHave('tandaTerima');
 
@@ -235,7 +245,7 @@ class TandaTerimaController extends Controller
 
             $suratJalans = $suratQuery->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->except('page'));
 
-            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers', 'lastUpdateStr'));
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers', 'lastUpdateStr', 'startDate', 'endDate'));
         }
         
         // If mode is 'with_tanda_terima' then we should list Surat Jalan that have Tanda Terima
@@ -282,11 +292,19 @@ class TandaTerimaController extends Controller
                 $query->where('sj.kegiatan', $kegiatan);
             }
 
+            // Apply date range filter
+            if ($startDate) {
+                $query->whereDate('sj.tanggal_surat_jalan', '>=', $startDate);
+            }
+            if ($endDate) {
+                $query->whereDate('sj.tanggal_surat_jalan', '<=', $endDate);
+            }
+
             $suratJalansWithTandaTerima = $query->orderBy('tt.created_at', 'desc')
                 ->paginate($perPage)
                 ->appends($request->except('page'));
 
-            return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers', 'lastUpdateStr'));
+            return view('tanda-terima.index', compact('suratJalansWithTandaTerima', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers', 'lastUpdateStr', 'startDate', 'endDate'));
         }
         // Query tanda terima with relations
         $query = TandaTerima::with(['suratJalan.order.pengirim', 'suratJalan.uangJalan']);
@@ -336,6 +354,14 @@ class TandaTerimaController extends Controller
             $query->where('kegiatan', $kegiatan);
         }
 
+        // Apply date range filter
+        if ($startDate) {
+            $query->whereDate('tanggal', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('tanggal', '<=', $endDate);
+        }
+
         // Order by newest and paginate
         $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->except('page'));
 
@@ -374,6 +400,14 @@ class TandaTerimaController extends Controller
                 $suratQuery->where('kegiatan', $kegiatan);
             }
 
+            // Apply date range filter to fallback
+            if ($startDate) {
+                $suratQuery->whereDate('tanggal_surat_jalan', '>=', $startDate);
+            }
+            if ($endDate) {
+                $suratQuery->whereDate('tanggal_surat_jalan', '<=', $endDate);
+            }
+
             // Only include surat jalan without tanda terima
             $suratQuery->whereDoesntHave('tandaTerima');
 
@@ -391,10 +425,10 @@ class TandaTerimaController extends Controller
             // Return the view with missing surat jalan results and a fallback flag
             $mode = 'missing';
             $fallback_missing = true;
-            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'fallback_missing', 'kegiatanList', 'allKontainers', 'lastUpdateStr'));
+            return view('tanda-terima.index', compact('suratJalans', 'search', 'status', 'kegiatan', 'mode', 'fallback_missing', 'kegiatanList', 'allKontainers', 'lastUpdateStr', 'startDate', 'endDate'));
         }
 
-        return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers', 'lastUpdateStr'));
+        return view('tanda-terima.index', compact('tandaTerimas', 'search', 'status', 'kegiatan', 'mode', 'kegiatanList', 'allKontainers', 'lastUpdateStr', 'startDate', 'endDate'));
     }
 
     /**
@@ -1668,7 +1702,7 @@ class TandaTerimaController extends Controller
     public function exportFiltered(Request $request)
     {
         try {
-            $filters = $request->only(['search', 'mode', 'status', 'kegiatan']);
+            $filters = $request->only(['search', 'mode', 'status', 'kegiatan', 'start_date', 'end_date']);
             $fileName = 'tanda_terima_export_' . date('Ymd_His') . '.xlsx';
 
             // If mode is missing, we will export surat jalans without tanda terima

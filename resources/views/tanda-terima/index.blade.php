@@ -66,6 +66,8 @@
                         <input type="hidden" name="search" value="{{ request('search') }}">
                         <input type="hidden" name="status" value="{{ request('status') }}">
                         <input type="hidden" name="kegiatan" value="{{ request('kegiatan') }}">
+                        <input type="hidden" name="start_date" value="{{ $startDate ?? request('start_date') }}">
+                        <input type="hidden" name="end_date" value="{{ $endDate ?? request('end_date') }}">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
                             <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -81,6 +83,8 @@
                             <input type="hidden" name="mode" value="missing">
                             <input type="hidden" name="search" value="{{ request('search') }}">
                             <input type="hidden" name="kegiatan" value="{{ request('kegiatan') }}">
+                            <input type="hidden" name="start_date" value="{{ $startDate ?? request('start_date') }}">
+                            <input type="hidden" name="end_date" value="{{ $endDate ?? request('end_date') }}">
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
                                 <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -95,6 +99,8 @@
                         <input type="hidden" name="search" value="{{ request('search') }}">
                         <input type="hidden" name="status" value="{{ request('status') }}">
                         <input type="hidden" name="kegiatan" value="{{ request('kegiatan') }}">
+                        <input type="hidden" name="start_date" value="{{ $startDate ?? request('start_date') }}">
+                        <input type="hidden" name="end_date" value="{{ $endDate ?? request('end_date') }}">
                         <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
                             <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -182,14 +188,14 @@
                                placeholder="Cari no. surat jalan, kontainer, kapal, supir..."
                                value="{{ request('search') }}">
                     </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-2">
                         <select name="mode" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="" {{ ($mode ?? request('mode')) == '' ? 'selected' : '' }}>Daftar Tanda Terima</option>
                             <option value="missing" {{ ($mode ?? request('mode')) == 'missing' ? 'selected' : '' }}>Surat Jalan Belum Ada Tanda Terima</option>
                             <option value="with_tanda_terima" {{ ($mode ?? request('mode')) == 'with_tanda_terima' ? 'selected' : '' }}>Surat Jalan Sudah Ada Tanda Terima</option>
                         </select>
                     </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-2">
                         <select name="kegiatan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Semua Kegiatan</option>
                             @foreach($kegiatanList as $kegiatanItem)
@@ -200,13 +206,21 @@
                         </select>
                     </div>
                     <div class="md:col-span-1.5">
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
-                            <i class="fas fa-search mr-2"></i> Cari
-                        </button>
+                        <input type="date" name="start_date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                               title="Dari Tanggal" value="{{ $startDate ?? request('start_date') }}">
                     </div>
                     <div class="md:col-span-1.5">
+                        <input type="date" name="end_date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                               title="Ke Tanggal" value="{{ $endDate ?? request('end_date') }}">
+                    </div>
+                    <div class="md:col-span-1">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="md:col-span-1">
                         <a href="{{ route('tanda-terima.index') }}" class="block text-center w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200">
-                            <i class="fas fa-redo mr-2"></i> Reset
+                            <i class="fas fa-redo"></i>
                         </a>
                     </div>
                 </div>

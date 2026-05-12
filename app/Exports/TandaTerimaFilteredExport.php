@@ -26,6 +26,9 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
 
     public function collection()
     {
+        $startDate = $this->filters['start_date'] ?? null;
+        $endDate = $this->filters['end_date'] ?? null;
+
         // If mode is 'missing', export SuratJalan rows matching filters
         if ($this->mode === 'missing') {
             $query = SuratJalan::query();
@@ -48,6 +51,13 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                 $query->where('kegiatan', $this->filters['kegiatan']);
             }
 
+            if ($startDate) {
+                $query->whereDate('tanggal_surat_jalan', '>=', $startDate);
+            }
+            if ($endDate) {
+                $query->whereDate('tanggal_surat_jalan', '<=', $endDate);
+            }
+
             // Only missing tanda terima
             $query->whereDoesntHave('tandaTerima');
 
@@ -57,11 +67,12 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                     $s->tanggal_surat_jalan ? $s->tanggal_surat_jalan->format('d/M/Y') : '-',
                     $s->no_kontainer,
                     $s->no_seal ?? '-',
+                    $s->size ?? '-',
                     $s->supir ?? '-',
-                    $s->no_plat,
+                    $s->no_plat ?? '-',
                     $s->kegiatan,
                     optional($s->order->pengirim)->nama_pengirim ?? '-',
-                    '-',
+                    $s->tujuan_pengiriman ?? '-',
                 ];
             });
 
@@ -90,6 +101,13 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                 $ttQuery->where('kegiatan', $this->filters['kegiatan']);
             }
 
+            if ($startDate) {
+                $ttQuery->whereDate('tanggal', '>=', $startDate);
+            }
+            if ($endDate) {
+                $ttQuery->whereDate('tanggal', '<=', $endDate);
+            }
+
             $ttRows = $ttQuery->orderBy('created_at', 'desc')->get()->map(function($t) {
                 $kegiatanName = MasterKegiatan::where('kode_kegiatan', $t->kegiatan)->value('nama_kegiatan') ?? $t->kegiatan;
                 $tanggal = data_get($t, 'suratJalan.tanggal_surat_jalan') ? \Carbon\Carbon::parse(data_get($t, 'suratJalan.tanggal_surat_jalan'))->format('d/M/Y') : ($t->tanggal_checkpoint_supir ? $t->tanggal_checkpoint_supir->format('d/M/Y') : '-');
@@ -101,14 +119,18 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                     $tanggal,
                     $t->no_kontainer,
                     $t->no_seal ?? '-',
+                    $t->size ?? '-',
                     data_get($t, 'suratJalan.supir', '-'),
+                    $t->no_plat ?? data_get($t, 'suratJalan.no_plat', '-'),
+                    $t->estimasi_nama_kapal ?? '-',
                     $t->jenis_barang,
                     $tujuanAmbil,
                     $t->tujuan_pengiriman ?: '-',
                     $kegiatanName,
                     $t->status,
                     data_get($t, 'suratJalan.order.pengirim.nama_pengirim', '-'),
-                    $t->tujuan_pengiriman ?: '-',
+                    $t->no_dn ?? '-',
+                    $t->surat_jalan_pabrik ?? '-',
                 ];
             });
 
@@ -129,6 +151,14 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
             if (!empty($this->filters['kegiatan'])) {
                 $sjQuery->where('kegiatan', $this->filters['kegiatan']);
             }
+
+            if ($startDate) {
+                $sjQuery->whereDate('tanggal_surat_jalan', '>=', $startDate);
+            }
+            if ($endDate) {
+                $sjQuery->whereDate('tanggal_surat_jalan', '<=', $endDate);
+            }
+
             $sjQuery->whereDoesntHave('tandaTerima');
             $sjQuery->whereHas('uangJalans', function($uangJalanQuery) {
                 $uangJalanQuery->whereHas('pranotaUangJalan', function($pranotaQuery) {
@@ -146,13 +176,17 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                     $s->tanggal_surat_jalan ? $s->tanggal_surat_jalan->format('d/M/Y') : '-',
                     $s->no_kontainer,
                     $s->no_seal ?? '-',
+                    $s->size ?? '-',
                     $s->supir ?? '-',
+                    $s->no_plat ?? '-',
                     '-',
-                    optional($s->order->pengirim)->nama_pengirim ?? '-',
                     '-',
+                    '-',
+                    $s->tujuan_pengiriman ?? '-',
                     $s->kegiatan,
                     'Belum Ada Tanda Terima',
                     optional($s->order->pengirim)->nama_pengirim ?? '-',
+                    '-',
                     '-',
                 ];
             });
@@ -182,6 +216,13 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
             $query->where('kegiatan', $this->filters['kegiatan']);
         }
 
+        if ($startDate) {
+            $query->whereDate('tanggal', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('tanggal', '<=', $endDate);
+        }
+
         $rows = $query->orderBy('created_at', 'desc')->get()->map(function($t) {
             $kegiatanName = MasterKegiatan::where('kode_kegiatan', $t->kegiatan)->value('nama_kegiatan') ?? $t->kegiatan;
             $tanggal = data_get($t, 'suratJalan.tanggal_surat_jalan') ? \Carbon\Carbon::parse(data_get($t, 'suratJalan.tanggal_surat_jalan'))->format('d/M/Y') : ($t->tanggal_checkpoint_supir ? $t->tanggal_checkpoint_supir->format('d/M/Y') : '-');
@@ -193,14 +234,18 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
                 $tanggal,
                 $t->no_kontainer,
                 $t->no_seal ?? '-',
+                $t->size ?? '-',
                 data_get($t, 'suratJalan.supir', '-'),
+                $t->no_plat ?? data_get($t, 'suratJalan.no_plat', '-'),
+                $t->estimasi_nama_kapal ?? '-',
                 $t->jenis_barang,
                 $tujuanAmbil,
                 $t->tujuan_pengiriman ?: '-',
                 $kegiatanName,
                 $t->status,
                 data_get($t, 'suratJalan.order.pengirim.nama_pengirim', '-'),
-                $t->tujuan_pengiriman ?: '-',
+                $t->no_dn ?? '-',
+                $t->surat_jalan_pabrik ?? '-',
             ];
         });
 
@@ -210,11 +255,11 @@ class TandaTerimaFilteredExport implements FromCollection, WithHeadings, ShouldA
     public function headings(): array
     {
         if ($this->mode === 'missing') {
-            return ['No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Supir', 'No. Plat', 'Kegiatan', 'Pengirim', 'Tujuan'];
+            return ['No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Size', 'Supir', 'No. Plat', 'Kegiatan', 'Pengirim', 'Tujuan'];
         }
 
         // For Tanda Terima and combined mode, use the Tanda Terima heading layout
-        return ['ID', 'ID Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Supir', 'Jenis Barang', 'Tujuan Ambil', 'Tujuan Kirim', 'Kegiatan', 'Status', 'Pengirim', 'Tujuan'];
+        return ['ID', 'ID Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Size', 'Supir', 'No. Plat', 'Nama Kapal', 'Jenis Barang', 'Tujuan Ambil', 'Tujuan Kirim', 'Kegiatan', 'Status', 'Pengirim', 'No. DN', 'SJ Pabrik'];
     }
 
     public function registerEvents(): array
