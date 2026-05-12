@@ -145,38 +145,11 @@
                 });
             }
 
-            // Handle form submission
-            document.getElementById('tujuanKirimForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
+            // Handle form submission - simplified to allow natural navigation to success page
+            document.getElementById('tujuanKirimForm').addEventListener('submit', function() {
                 const submitButton = this.querySelector('button[type="submit"]');
-                
-                // Disable submit button
                 submitButton.disabled = true;
                 submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
-                
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.text())
-                .then(html => {
-                    // Replace entire body with success page
-                    document.body.innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan saat menyimpan data');
-                    
-                    // Re-enable submit button
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Tujuan Kirim';
-                });
             });
         });
     </script>

@@ -49,33 +49,51 @@
         let countdown = 3;
         const countdownElement = document.getElementById('countdown');
 
-        // Send message to parent window immediately
+        // Send message to parent window
         function sendMessage() {
-            if (window.opener) {
+            if (window.opener && !window.opener.closed) {
                 const tujuanKirimData = @json($tujuanKirim);
-                console.log('Sending tujuan-kirim data from order form:', tujuanKirimData);
+                console.log('Sending tujuan-kirim data:', tujuanKirimData);
 
                 try {
+                    // Send with both possible type formats for compatibility
                     window.opener.postMessage({
                         type: 'tujuan-kirim-added',
                         data: tujuanKirimData
                     }, '*');
-                    console.log('Message sent successfully to parent window');
+                    
+                    window.opener.postMessage({
+                        type: 'tujuanKirimAdded',
+                        data: tujuanKirimData
+                    }, '*');
+                    
+                    console.log('Message sent successfully');
+                    return true;
                 } catch (error) {
-                    console.error('Error sending message to parent:', error);
+                    console.error('Error sending message:', error);
+                    return false;
                 }
-            } else {
-                console.log('No opener window found');
             }
+            return false;
         }
 
         // Function to close window
         function closeWindow() {
-            if (window.opener) {
-                window.close();
-            } else {
-                history.back();
-            }
+            console.log('Attempting to close window...');
+            sendMessage();
+            
+            // Wait a bit to ensure message is received before closing
+            setTimeout(() => {
+                if (window.opener) {
+                    window.close();
+                } else {
+                    // Fallback for non-popups
+                    window.close(); // Try anyway
+                    setTimeout(() => {
+                        if (!window.closed) history.back();
+                    }, 500);
+                }
+            }, 300);
         }
 
         // Send message immediately on load
@@ -94,10 +112,8 @@
             }
         }, 1000);
 
-        // Handle window beforeunload to ensure message is sent
-        window.addEventListener('beforeunload', function() {
-            sendMessage();
-        });
+        // Also close if button is clicked
+        document.querySelector('button').onclick = closeWindow;
     </script>
 </body>
 </html>
