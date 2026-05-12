@@ -1240,8 +1240,12 @@
         }
     }
 
+    // Track which popup was opened to handle the message response correctly
+    let lastPopupOpened = null;
+
     // Function to open penerima popup window
     function openPenerimaPopup() {
+        lastPopupOpened = 'penerima';
         const width = 600;
         const height = 500;
         const left = (screen.width - width) / 2;
@@ -1262,6 +1266,7 @@
 
     // Function to open pengirim popup window
     function openPengirimPopup() {
+        lastPopupOpened = 'pengirim';
         const width = 600;
         const height = 500;
         const left = (screen.width - width) / 2;
@@ -1285,29 +1290,54 @@
         // Verify origin for security
         if (event.origin !== window.location.origin) return;
         
-        if (event.data.type === 'penerimaAdded') {
-            const newData = event.data.penerima;
+        console.log('Message received from popup:', event.data);
+
+        // Handle based on event type and tracker
+        if (event.data.type === 'penerimaAdded' || lastPopupOpened === 'penerima' || lastPopupOpened === 'pengirim') {
+            const data = event.data.penerima || event.data.data || event.data;
+            if (!data || !data.nama) return;
+
+            const newName = data.nama;
+            const newAlamat = data.alamat || '';
             
-            // Add to both penerima and pengirim select (same data source)
-            const penerimaSelect = jQuery('.select2-penerima');
-            const pengirimSelect = jQuery('.select2-pengirim');
+            // Determine which field to update
+            const isPenerima = lastPopupOpened === 'penerima' || (event.data.type === 'penerimaAdded' && lastPopupOpened !== 'pengirim');
+            const selectId = isPenerima ? '.select2-penerima' : '.select2-pengirim';
+            const otherSelectId = isPenerima ? '.select2-pengirim' : '.select2-penerima';
             
-            // Add new option to penerima
-            const penerimaOption = new Option(newData.nama, newData.nama, true, true);
-            jQuery(penerimaOption).attr('data-alamat', newData.alamat || '');
-            penerimaSelect.append(penerimaOption);
+            const mainSelect = jQuery(selectId);
+            const otherSelect = jQuery(otherSelectId);
+
+            // Add new option to main select and select it
+            if (mainSelect.length) {
+                if (mainSelect.find("option[value='" + newName + "']").length === 0) {
+                    const newOption = new Option(newName, newName, true, true);
+                    jQuery(newOption).attr('data-alamat', newAlamat);
+                    mainSelect.append(newOption);
+                } else {
+                    mainSelect.val(newName);
+                }
+                mainSelect.trigger('change');
+            }
+
+            // Add new option to other select as well (but don't select it)
+            if (otherSelect.length && otherSelect.find("option[value='" + newName + "']").length === 0) {
+                const otherOption = new Option(newName, newName, false, false);
+                jQuery(otherOption).attr('data-alamat', newAlamat);
+                otherSelect.append(otherOption);
+                otherSelect.trigger('change.select2');
+            }
+
+            // If it was penerima, also update the address field
+            if (isPenerima) {
+                jQuery('#alamat_penerima').val(newAlamat);
+            }
             
-            // Add new option to pengirim  
-            const pengirimOption = new Option(newData.nama, newData.nama, false, false);
-            jQuery(pengirimOption).attr('data-alamat', newData.alamat || '');
-            pengirimSelect.append(pengirimOption);
-            
-            // Trigger select2 change and auto-fill alamat for penerima
-            penerimaSelect.trigger('change');
-            jQuery('#alamat_penerima').val(newData.alamat || '');
-            
-            console.log('✓ New penerima/pengirim added:', newData.nama);
+            console.log('✓ New ' + (isPenerima ? 'penerima' : 'pengirim') + ' added and selected:', newName);
         }
+        
+        // Reset tracker
+        lastPopupOpened = null;
     });
 
     function initializeNoKontainerDropdown() {

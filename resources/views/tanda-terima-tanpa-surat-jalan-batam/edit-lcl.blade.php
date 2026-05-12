@@ -1504,8 +1504,12 @@ function removeExistingImage(button, path) {
         });
     }
     
+    // Track which popup was opened to handle the message response correctly
+    let lastPopupOpened = null;
+
     // Function to open popup for adding new penerima
     function openPenerimaPopup() {
+        lastPopupOpened = 'penerima';
         const popupWidth = 700;
         const popupHeight = 600;
         const left = (screen.width - popupWidth) / 2;
@@ -1520,6 +1524,7 @@ function removeExistingImage(button, path) {
     
     // Function to open popup for adding new pengirim
     function openPengirimPopup() {
+        lastPopupOpened = 'pengirim';
         const popupWidth = 700;
         const popupHeight = 600;
         const left = (screen.width - popupWidth) / 2;
@@ -1535,55 +1540,64 @@ function removeExistingImage(button, path) {
     // Listen for messages from popup window
     window.addEventListener('message', function(event) {
         // Verify origin for security
-        if (event.origin !== window.location.origin) {
-            return;
-        }
+        if (event.origin !== window.location.origin) return;
         
-        if (event.data && event.data.type === 'penerimaAdded') {
-            const penerimaData = event.data.penerima;
-            const $ = window.select2Jq || window.jQuery || (typeof jQuery !== 'undefined' ? jQuery : null);
-            console.log('Received penerima data:', penerimaData);
+        console.log('Message received from popup:', event.data);
+
+        // Handle based on event type and tracker
+        if (event.data.type === 'penerimaAdded' || lastPopupOpened === 'penerima' || lastPopupOpened === 'pengirim') {
+            const data = event.data.penerima || event.data.data || event.data;
+            if (!data || !data.nama) return;
+
+            const newName = data.nama;
+            const newAlamat = data.alamat || '';
             
-            // Create new option for all penerima and pengirim dropdowns
-            const newOptionPenerima = new Option(
-                penerimaData.nama,
-                penerimaData.nama,
-                true,
-                true
-            );
-            $(newOptionPenerima).attr('data-alamat', penerimaData.alamat || '');
-            
-            const newOptionPengirim = new Option(
-                penerimaData.nama,
-                penerimaData.nama,
-                false,
-                false
-            );
-            $(newOptionPengirim).attr('data-alamat', penerimaData.alamat || '');
-            
-            // Add to all penerima dropdowns
-            $('.select2-penerima').each(function() {
-                $(this).append($(newOptionPenerima).clone());
+            const $ = window.jQuery || window.select2Jq || (typeof jQuery !== 'undefined' ? jQuery : null);
+            if (!$) return;
+
+            // Determine if it was triggered by a specific field
+            const isPenerima = lastPopupOpened === 'penerima' || (event.data.type === 'penerimaAdded' && lastPopupOpened !== 'pengirim');
+            const targetClass = '.select2-penerima'; // In LCL edit, we usually add to all dropdowns
+            const otherClass = '.select2-pengirim';
+
+            // Add to target dropdowns
+            $(targetClass).each(function() {
+                const select = $(this);
+                if (select.find("option[value='" + newName + "']").length === 0) {
+                    const newOption = new Option(newName, newName, isPenerima, isPenerima);
+                    select.attr('data-alamat', newAlamat);
+                    select.append(newOption);
+                } else if (isPenerima) {
+                    select.val(newName);
+                }
+                if (isPenerima) select.trigger('change');
             });
-            
-            // Add to all pengirim dropdowns
-            $('.select2-pengirim').each(function() {
-                $(this).append($(newOptionPengirim).clone());
+
+            // Add to other dropdowns
+            $(otherClass).each(function() {
+                const select = $(this);
+                if (select.find("option[value='" + newName + "']").length === 0) {
+                    const newOption = new Option(newName, newName, !isPenerima, !isPenerima);
+                    select.attr('data-alamat', newAlamat);
+                    select.append(newOption);
+                } else if (!isPenerima) {
+                    select.val(newName);
+                }
+                if (!isPenerima) select.trigger('change');
             });
-            
+
             // Show success notification
             const successMsg = document.createElement('div');
             successMsg.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg z-50';
             successMsg.innerHTML = `
-                <strong>Berhasil!</strong> ${penerimaData.nama} telah ditambahkan.
+                <strong>Berhasil!</strong> ${newName} telah ditambahkan sebagai ${isPenerima ? 'penerima' : 'pengirim'}.
             `;
             document.body.appendChild(successMsg);
-            
-            // Remove notification after 3 seconds
-            setTimeout(() => {
-                successMsg.remove();
-            }, 3000);
+            setTimeout(() => successMsg.remove(), 3000);
         }
+        
+        // Reset tracker
+        lastPopupOpened = null;
     });
 </script>
 @endpush

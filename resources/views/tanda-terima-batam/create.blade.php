@@ -1496,8 +1496,12 @@
         }
     });
 
+    // Track which popup was opened to handle the message response correctly
+    let lastPopupOpened = null;
+
     // Function to open penerima popup window
     function openPenerimaPopup() {
+        lastPopupOpened = 'penerima';
         const width = 600;
         const height = 500;
         const left = (screen.width - width) / 2;
@@ -1521,21 +1525,38 @@
         // Verify origin for security
         if (event.origin !== window.location.origin) return;
         
-        if (event.data.type === 'penerimaAdded') {
-            const newPenerima = event.data.penerima;
+        console.log('Message received from popup:', event.data);
+
+        // Handle based on event type and tracker
+        if (event.data.type === 'penerimaAdded' || lastPopupOpened === 'penerima') {
+            const data = event.data.penerima || event.data.data || event.data;
+            if (!data || !data.nama) return;
+
+            const newName = data.nama;
+            const newAlamat = data.alamat || '';
             
             // Add new option to select
-            const select = $('#penerima');
-            const newOption = new Option(newPenerima.nama, newPenerima.nama, true, true);
-            $(newOption).attr('data-alamat', newPenerima.alamat || '');
-            select.append(newOption);
-            
-            // Trigger select2 change and auto-fill alamat
-            select.trigger('change');
-            $('#alamat_penerima').val(newPenerima.alamat || '');
-            
-            console.log('✓ New penerima added:', newPenerima.nama);
+            const select = jQuery('#penerima');
+            if (select.length) {
+                // Check if option already exists
+                if (select.find("option[value='" + newName + "']").length === 0) {
+                    const newOption = new Option(newName, newName, true, true);
+                    jQuery(newOption).attr('data-alamat', newAlamat);
+                    select.append(newOption);
+                } else {
+                    select.val(newName);
+                }
+                
+                // Trigger select2 change and auto-fill alamat
+                select.trigger('change');
+                jQuery('#alamat_penerima').val(newAlamat);
+                
+                console.log('✓ New penerima selected:', newName);
+            }
         }
+        
+        // Reset tracker
+        lastPopupOpened = null;
     });
 
     function calculateVolume(rowElement) {

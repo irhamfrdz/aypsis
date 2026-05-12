@@ -1065,8 +1065,12 @@
         }
     }
 
+    // Track which popup was opened to handle the message response correctly
+    let lastPopupOpened = null;
+
     // Function to open pengirim popup window
     function openPengirimPopup() {
+        lastPopupOpened = 'pengirim';
         const width = 600;
         const height = 500;
         const left = (screen.width - width) / 2;
@@ -1087,6 +1091,7 @@
 
     // Function to open penerima popup window
     function openPenerimaPopup() {
+        lastPopupOpened = 'penerima';
         const width = 600;
         const height = 500;
         const left = (screen.width - width) / 2;
@@ -1110,33 +1115,61 @@
         // Verify origin for security
         if (event.origin !== window.location.origin) return;
         
-        if (event.data.type === 'penerimaAdded') {
-            const newPenerima = event.data.penerima;
+        console.log('Message received from popup:', event.data);
+
+        // Handle based on event type and tracker
+        if (event.data.type === 'penerimaAdded' || lastPopupOpened === 'penerima') {
+            const data = event.data.penerima || event.data.data || event.data;
+            if (!data || !data.nama) return;
+
+            const newName = data.nama;
+            const newAlamat = data.alamat || '';
             
             // Add new option to select
-            const select = $('#penerima');
-            const newOption = new Option(newPenerima.nama, newPenerima.nama, true, true);
-            $(newOption).attr('data-alamat', newPenerima.alamat || '');
-            select.append(newOption);
+            const select = jQuery('#penerima');
+            if (select.length) {
+                // Check if option already exists
+                if (select.find("option[value='" + newName + "']").length === 0) {
+                    const newOption = new Option(newName, newName, true, true);
+                    jQuery(newOption).attr('data-alamat', newAlamat);
+                    select.append(newOption);
+                } else {
+                    select.val(newName);
+                }
+                
+                // Trigger select2 change and auto-fill alamat
+                select.trigger('change');
+                jQuery('#alamat_penerima').val(newAlamat);
+                
+                console.log('✓ New penerima selected:', newName);
+            }
+        } else if (event.data.type === 'pengirim-added' || lastPopupOpened === 'pengirim') {
+            const data = event.data.data || event.data.pengirim || event.data;
+            if (!data) return;
             
-            // Trigger select2 change and auto-fill alamat
-            select.trigger('change');
-            $('#alamat_penerima').val(newPenerima.alamat || '');
-            
-            console.log('✓ New penerima added:', newPenerima.nama);
-        } else if (event.data.type === 'pengirim-added') {
-            const newPengirim = event.data.data;
+            const newName = data.nama_pengirim || data.nama || '';
+            if (!newName) return;
             
             // Add new option to select
-            const select = $('#pengirim');
-            const newOption = new Option(newPengirim.nama_pengirim, newPengirim.nama_pengirim, true, true);
-            select.append(newOption);
-            
-            // Trigger select2 change
-            select.trigger('change');
-            
-            console.log('✓ New pengirim added:', newPengirim.nama_pengirim);
+            const select = jQuery('#pengirim');
+            if (select.length) {
+                // Check if option already exists
+                if (select.find("option[value='" + newName + "']").length === 0) {
+                    const newOption = new Option(newName, newName, true, true);
+                    select.append(newOption);
+                } else {
+                    select.val(newName);
+                }
+                
+                // Trigger select2 change
+                select.trigger('change');
+                
+                console.log('✓ New pengirim selected:', newName);
+            }
         }
+        
+        // Reset tracker
+        lastPopupOpened = null;
     });
 
     function initializePengirimDropdown() {
@@ -1151,26 +1184,6 @@
             searchInput.value = selectedOption.textContent.trim();
         } else if (hiddenSelect.value) {
             searchInput.value = hiddenSelect.value;
-        }
-    }
-
-    function calculateVolume(rowElement) {
-        const panjangInput = rowElement.querySelector('[name^="panjang"]');
-        const lebarInput = rowElement.querySelector('[name^="lebar"]');
-        const tinggiInput = rowElement.querySelector('[name^="tinggi"]');
-        const jumlahInput = rowElement.querySelector('[name^="jumlah"]');
-        const volumeInput = rowElement.querySelector('[name^="meter_kubik"]');
-
-        const panjang = parseFloat(panjangInput.value) || 0;
-        const lebar = parseFloat(lebarInput.value) || 0;
-        const tinggi = parseFloat(tinggiInput.value) || 0;
-        const jumlah = parseFloat(jumlahInput.value) || 0;
-
-        if (panjang > 0 && lebar > 0 && tinggi > 0 && jumlah > 0) {
-            const volume = panjang * tinggi * lebar * jumlah;
-            volumeInput.value = volume.toFixed(3);
-        } else {
-            volumeInput.value = '';
         }
     }
 
