@@ -229,14 +229,20 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="pengirim" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Pengirim
-                                    </label>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label for="pengirim" class="block text-xs font-medium text-gray-500">
+                                            Pengirim
+                                        </label>
+                                        <button type="button"
+                                                onclick="openPengirimPopup()"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors">
+                                            <i class="fas fa-plus mr-1"></i>
+                                            Tambah Pengirim Baru
+                                        </button>
+                                    </div>
                                     <select name="pengirim"
                                             id="pengirim"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm select2-pengirim cursor-not-allowed"
-                                            readonly
-                                            disabled>
+                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-pengirim">
                                         <option value="">-- Pilih Pengirim --</option>
                                         @foreach($pengirims as $pengirim)
                                             <option value="{{ $pengirim->nama_pengirim }}"
@@ -1627,6 +1633,27 @@
     // Track which popup was opened to handle the message response correctly
     let lastPopupOpened = null;
 
+    // Function to open pengirim popup window
+    function openPengirimPopup() {
+        lastPopupOpened = 'pengirim';
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("order.pengirim.create", ["popup" => "true"], false) }}',
+            'TambahPengirim',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
+    }
+
     // Function to open penerima popup window
     function openPenerimaPopup() {
         lastPopupOpened = 'penerima';
@@ -1648,7 +1675,7 @@
         }
     }
 
-    // Listen for message from popup when new penerima is added
+    // Listen for message from popup when new penerima or pengirim is added
     window.addEventListener('message', function(event) {
         // Verify origin for security
         if (event.origin !== window.location.origin) return;
@@ -1680,6 +1707,29 @@
                 jQuery('#alamat_penerima').val(newAlamat);
                 
                 console.log('✓ New penerima selected:', newName);
+            }
+        } else if (event.data.type === 'pengirim-added' || lastPopupOpened === 'pengirim') {
+            const data = event.data.data || event.data.pengirim || event.data;
+            if (!data) return;
+            
+            const newName = data.nama_pengirim || data.nama || '';
+            if (!newName) return;
+            
+            // Add new option to select
+            const select = jQuery('#pengirim');
+            if (select.length) {
+                // Check if option already exists
+                if (select.find("option[value='" + newName + "']").length === 0) {
+                    const newOption = new Option(newName, newName, true, true);
+                    select.append(newOption);
+                } else {
+                    select.val(newName);
+                }
+                
+                // Trigger select2 change
+                select.trigger('change');
+                
+                console.log('✓ New pengirim selected:', newName);
             }
         }
         
