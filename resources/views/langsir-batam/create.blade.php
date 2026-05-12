@@ -61,14 +61,27 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
+                            <div class="relative kontainer-dropdown-container">
                                 <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">No. Kontainer <span class="text-red-500">*</span></label>
-                                <input type="text" name="no_kontainer" value="{{ old('no_kontainer') }}" required placeholder="Cth: TEXU1234567"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all uppercase">
+                                <div class="relative">
+                                    <input type="text" id="kontainer_search" placeholder="Cari kontainer..." autocomplete="off" value="{{ old('no_kontainer') }}"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all uppercase">
+                                    <input type="hidden" name="no_kontainer" id="no_kontainer" value="{{ old('no_kontainer') }}">
+                                    <div id="kontainer_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                                        @foreach($all_kontainers as $k)
+                                            <div class="px-4 py-2 hover:bg-blue-50 hover:text-blue-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 kontainer-item" 
+                                                 data-no="{{ $k->no_kontainer }}"
+                                                 data-size="{{ $k->size }}">
+                                                <div class="font-medium">{{ $k->no_kontainer }}</div>
+                                                <div class="text-[10px] text-gray-400 uppercase">{{ $k->size }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Size <span class="text-red-500">*</span></label>
-                                <select name="size" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                                <select name="size" id="size_select" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                                     <option value="20FT" {{ old('size') == '20FT' ? 'selected' : '' }}>20 FT</option>
                                     <option value="40FT" {{ old('size') == '40FT' ? 'selected' : '' }}>40 FT</option>
                                 </select>
@@ -216,6 +229,57 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Searchable Dropdown for Kontainer
+    const kontainerSearch = document.getElementById('kontainer_search');
+    const kontainerList = document.getElementById('kontainer_list');
+    const kontainerHidden = document.getElementById('no_kontainer');
+    const sizeSelect = document.getElementById('size_select');
+    const kontainerItems = document.querySelectorAll('.kontainer-item');
+
+    kontainerSearch.addEventListener('focus', () => {
+        kontainerList.classList.remove('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.kontainer-dropdown-container')) {
+            kontainerList.classList.add('hidden');
+        }
+        if (!e.target.closest('.supir-dropdown-container')) {
+            supirList.classList.add('hidden');
+        }
+    });
+
+    kontainerSearch.addEventListener('input', () => {
+        const filter = kontainerSearch.value.toLowerCase();
+        kontainerItems.forEach(item => {
+            const no = item.getAttribute('data-no').toLowerCase();
+            if (no.includes(filter)) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+        kontainerList.classList.remove('hidden');
+    });
+
+    kontainerItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const no = item.getAttribute('data-no');
+            const size = item.getAttribute('data-size');
+
+            kontainerSearch.value = no;
+            kontainerHidden.value = no;
+            if (sizeSelect) {
+                // Set size select value and handle if size is different from standard
+                if (size.includes('20')) sizeSelect.value = '20FT';
+                else if (size.includes('40')) sizeSelect.value = '40FT';
+                else sizeSelect.value = size; // fallback
+            }
+
+            kontainerList.classList.add('hidden');
+        });
+    });
+
     // Searchable Dropdown for Supir
     const supirSearch = document.getElementById('supir_search');
     const supirList = document.getElementById('supir_list');
@@ -226,12 +290,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     supirSearch.addEventListener('focus', () => {
         supirList.classList.remove('hidden');
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.supir-dropdown-container')) {
-            supirList.classList.add('hidden');
-        }
     });
 
     supirSearch.addEventListener('input', () => {
