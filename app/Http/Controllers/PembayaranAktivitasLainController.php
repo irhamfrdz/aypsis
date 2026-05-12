@@ -631,14 +631,113 @@ class PembayaranAktivitasLainController extends Controller
     public function edit(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
         $akunBiaya = DB::table('akun_coa')
-            ->where(function($q) {
-                $q->where('tipe_akun', 'like', '%biaya%')
-                  ->orWhere('tipe_akun', 'like', '%beban%');
-            })
             ->orderBy('kode_nomor')
             ->get();
 
-        return view('pembayaran-aktivitas-lain.edit', compact('pembayaranAktivitasLain', 'akunBiaya'));
+        $mobils = DB::table('mobils')
+            ->select('id', 'nomor_polisi', 'merek', 'jenis', 'no_kir')
+            ->orderBy('nomor_polisi')
+            ->get();
+        
+        // Get voyages from both bls and pergerakan_kapal tables
+        $voyagesBl = DB::table('bls')
+            ->select('no_voyage as voyage', 'nama_kapal')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->distinct()
+            ->orderBy('no_voyage')
+            ->get();
+            
+        $voyagesPergerakan = DB::table('pergerakan_kapal')
+            ->select('voyage', 'nama_kapal')
+            ->whereNotNull('voyage')
+            ->where('voyage', '!=', '')
+            ->distinct()
+            ->orderBy('voyage')
+            ->get();
+            
+        // Combine and deduplicate voyages
+        $allVoyages = collect();
+        
+        foreach ($voyagesBl as $voyage) {
+            $allVoyages->push((object)[
+                'voyage' => $voyage->voyage,
+                'nama_kapal' => $voyage->nama_kapal,
+                'source' => 'BL'
+            ]);
+        }
+        
+        foreach ($voyagesPergerakan as $voyage) {
+            // Only add if not already exists
+            $exists = $allVoyages->where('voyage', $voyage->voyage)
+                                ->where('nama_kapal', $voyage->nama_kapal)
+                                ->first();
+            if (!$exists) {
+                $allVoyages->push((object)[
+                    'voyage' => $voyage->voyage,
+                    'nama_kapal' => $voyage->nama_kapal,
+                    'source' => 'Pergerakan Kapal'
+                ]);
+            }
+        }
+        
+        $voyages = $allVoyages->sortBy('voyage')->values();
+        
+        $akunBank = DB::table('akun_coa')
+            ->where(function($q) {
+                $q->where('tipe_akun', 'like', '%kas%')
+                  ->orWhere('tipe_akun', 'like', '%bank%');
+            })
+            ->orderBy('kode_nomor')
+            ->get();
+            
+        $karyawans = DB::table('karyawans')
+            ->select('id', 'nama_lengkap', 'pekerjaan')
+            ->orderBy('nama_lengkap')
+            ->get();
+        
+        // Get surat jalans for adjustment payments from surat_jalans table
+        $suratJalansRegular = DB::table('surat_jalans')
+            ->leftJoin('uang_jalans', 'surat_jalans.id', '=', 'uang_jalans.surat_jalan_id')
+            ->select(
+                'surat_jalans.id',
+                'surat_jalans.no_surat_jalan',
+                'surat_jalans.tujuan_pengiriman',
+                DB::raw('COALESCE(uang_jalans.jumlah_total, 0) as uang_jalan'),
+                DB::raw("'regular' as source")
+            )
+            ->whereNotNull('surat_jalans.no_surat_jalan')
+            ->where('surat_jalans.no_surat_jalan', '!=', '')
+            ->get();
+        
+        // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
+        $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
+            ->leftJoin('uang_jalans', 'surat_jalan_bongkarans.id', '=', 'uang_jalans.surat_jalan_bongkaran_id')
+            ->select(
+                'surat_jalan_bongkarans.id',
+                DB::raw('surat_jalan_bongkarans.nomor_surat_jalan as no_surat_jalan'),
+                'surat_jalan_bongkarans.tujuan_pengiriman',
+                DB::raw('COALESCE(uang_jalans.jumlah_total, 0) as uang_jalan'),
+                DB::raw("'bongkar' as source")
+            )
+            ->whereNotNull('surat_jalan_bongkarans.nomor_surat_jalan')
+            ->where('surat_jalan_bongkarans.nomor_surat_jalan', '!=', '')
+            ->get();
+        
+        // Combine both surat jalans
+        $suratJalans = $suratJalansRegular->merge($suratJalansBongkar)
+            ->sortBy('no_surat_jalan')
+            ->values();
+
+        return view('pembayaran-aktivitas-lain.edit', compact(
+            'pembayaranAktivitasLain', 
+            'akunBiaya', 
+            'akunBank', 
+            'mobils', 
+            'voyages', 
+            'karyawans', 
+            'suratJalans'
+        ));
     }
 
     public function update(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
@@ -648,20 +747,68 @@ class PembayaranAktivitasLainController extends Controller
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
             'jenis_penyesuaian' => 'nullable|string|max:255',
+            'tipe_penyesuaian' => 'nullable|array',
+            'tipe_penyesuaian.*' => 'string|in:mel,parkir,pelancar,kawalan,krani',
+            'tipe_penyesuaian_detail' => 'nullable|array',
+            'tipe_penyesuaian_detail.*.tipe' => 'required|string|in:mel,parkir,pelancar,kawalan,krani',
+            'tipe_penyesuaian_detail.*.nominal' => 'required|integer|min:0',
+            'sub_jenis_kendaraan' => 'nullable|string|max:255',
+            'nomor_polisi' => 'nullable|string|max:255',
+            'nomor_voyage' => 'nullable|string|max:255',
             'no_surat_jalan' => 'nullable|string|max:255',
-            'keterangan' => 'nullable|string',
+            'penerima' => 'required|string|max:255',
+            'keterangan' => 'required|string',
             'jumlah' => 'required|integer|min:0',
-            'metode_pembayaran' => 'required|string',
-            'debit_kredit' => 'required|string',
+            'debit_kredit' => 'required|in:debit,kredit',
             'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_bank_id' => 'required|exists:akun_coa,id',
         ]);
 
         try {
+            DB::beginTransaction();
+
+            // Reverse old journal entries balances
+            $oldTransactions = CoaTransaction::where('nomor_referensi', $pembayaranAktivitasLain->nomor)->get();
+            foreach ($oldTransactions as $transaction) {
+                $account = Coa::find($transaction->coa_id);
+                if ($account) {
+                    if ($transaction->debit > 0) {
+                        $account->update(['saldo' => $account->saldo - $transaction->debit]);
+                    } else if ($transaction->kredit > 0) {
+                        $account->update(['saldo' => $account->saldo + $transaction->kredit]);
+                    }
+                }
+                $transaction->delete();
+            }
+
+            // Update main record
             $pembayaranAktivitasLain->update($validated);
+
+            // Re-create journal entries
+            $this->createDoubleBookJournal($pembayaranAktivitasLain, $validated);
+
+            DB::commit();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Data pembayaran berhasil diupdate',
+                    'redirect' => route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain)
+                ]);
+            }
 
             return redirect()->route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain)
                 ->with('success', 'Data pembayaran berhasil diupdate');
         } catch (\Exception $e) {
+            DB::rollBack();
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Gagal update data: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->withInput()->with('error', 'Gagal update data: ' . $e->getMessage());
         }
     }
