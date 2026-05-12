@@ -24,64 +24,132 @@
             <!-- Hidden field to mark as popup -->
             <input type="hidden" name="popup" value="1">
 
-            <!-- Nama Penerima -->
-            <div>
-                <label for="nama_penerima" class="block text-sm font-medium text-gray-700 mb-2">
-                    Nama Penerima <span class="text-red-500">*</span>
-                </label>
-                <input type="text" 
-                       id="nama_penerima" 
-                       name="nama_penerima" 
-                       value="{{ old('nama_penerima', $penerima->nama_penerima) }}"
-                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('nama_penerima') border-red-500 @enderror"
-                       placeholder="Masukkan nama penerima"
-                       required
-                       autofocus>
-                @error('nama_penerima')
-                    <p class="mt-1 text-sm text-red-600">
-                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                    </p>
-                @enderror
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Nama Penerima -->
+                <div class="md:col-span-2">
+                    <label for="nama_penerima" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nama Penerima <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           id="nama_penerima" 
+                           name="nama_penerima" 
+                           value="{{ old('nama_penerima', $penerima->nama_penerima) }}"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('nama_penerima') border-red-500 @enderror"
+                           placeholder="Masukkan nama penerima"
+                           required
+                           autofocus>
+                    @error('nama_penerima')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
 
-            <!-- Alamat -->
-            <div>
-                <label for="alamat" class="block text-sm font-medium text-gray-700 mb-2">
-                    Alamat
-                </label>
-                <textarea id="alamat" 
-                          name="alamat" 
-                          rows="3"
-                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('alamat') border-red-500 @enderror"
-                          placeholder="Masukkan alamat lengkap (opsional)">{{ old('alamat', $penerima->alamat) }}</textarea>
-                @error('alamat')
-                    <p class="mt-1 text-sm text-red-600">
-                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                    </p>
-                @enderror
-            </div>
+                <!-- Contact Person -->
+                <div class="md:col-span-2">
+                    <label for="contact_person" class="block text-sm font-medium text-gray-700 mb-2">
+                        Contact Person
+                    </label>
+                    <input type="text" 
+                           id="contact_person" 
+                           name="contact_person" 
+                           value="{{ old('contact_person', $penerima->contact_person) }}"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('contact_person') border-red-500 @enderror"
+                           placeholder="Masukkan nama kontak">
+                    @error('contact_person')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
 
-            <!-- NPWP -->
-            <div>
-                <label for="npwp" class="block text-sm font-medium text-gray-700 mb-2">
-                    NPWP
-                </label>
-                <input type="text" 
-                       id="npwp" 
-                       name="npwp" 
-                       value="{{ old('npwp', $penerima->npwp) }}"
-                       maxlength="20"
-                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('npwp') border-red-500 @enderror"
-                       placeholder="Masukkan NPWP (opsional)">
-                @error('npwp')
-                    <p class="mt-1 text-sm text-red-600">
-                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
-                    </p>
-                @enderror
-            </div>
+                <!-- Alamat -->
+                <div class="md:col-span-2">
+                    <label for="alamat" class="block text-sm font-medium text-gray-700 mb-2">
+                        Alamat
+                    </label>
+                    <textarea id="alamat" 
+                              name="alamat" 
+                              rows="3"
+                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('alamat') border-red-500 @enderror"
+                              placeholder="Masukkan alamat lengkap (opsional)">{{ old('alamat', $penerima->alamat) }}</textarea>
+                    @error('alamat')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
 
-            <!-- Status (Hidden - keep existing) -->
-            <input type="hidden" name="status" value="{{ $penerima->status }}">
+                <!-- NPWP -->
+                <div>
+                    <label for="npwp" class="block text-sm font-medium text-gray-700 mb-2">
+                        NPWP
+                    </label>
+                    <input type="text" 
+                           id="npwp" 
+                           name="npwp" 
+                           value="{{ old('npwp', $penerima->npwp) }}"
+                           maxlength="20"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('npwp') border-red-500 @enderror"
+                           placeholder="Masukkan NPWP">
+                    @error('npwp')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <!-- NITKU -->
+                <div>
+                    <label for="nitku" class="block text-sm font-medium text-gray-700 mb-2">
+                        NITKU
+                    </label>
+                    <input type="text" 
+                           id="nitku" 
+                           name="nitku" 
+                           value="{{ old('nitku', $penerima->nitku) }}"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('nitku') border-red-500 @enderror"
+                           placeholder="Masukkan NITKU">
+                    @error('nitku')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <!-- IU BP Kawasan -->
+                <div>
+                    <label for="iu_bp_kawasan" class="block text-sm font-medium text-gray-700 mb-2">
+                        IU BP Kawasan
+                    </label>
+                    <select id="iu_bp_kawasan" 
+                            name="iu_bp_kawasan" 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                        <option value="tidak ada" {{ old('iu_bp_kawasan', $penerima->iu_bp_kawasan) == 'tidak ada' ? 'selected' : '' }}>Tidak Ada</option>
+                        <option value="ada" {{ old('iu_bp_kawasan', $penerima->iu_bp_kawasan) == 'ada' ? 'selected' : '' }}>Ada</option>
+                    </select>
+                </div>
+
+                <!-- Status (Hidden - keep existing) -->
+                <input type="hidden" name="status" value="{{ $penerima->status }}">
+
+                <!-- Catatan -->
+                <div class="md:col-span-2">
+                    <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Catatan
+                    </label>
+                    <textarea id="catatan" 
+                              name="catatan" 
+                              rows="2"
+                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('catatan') border-red-500 @enderror"
+                              placeholder="Masukkan catatan tambahan">{{ old('catatan', $penerima->catatan) }}</textarea>
+                    @error('catatan')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
+            </div>
 
             <!-- Buttons -->
             <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">

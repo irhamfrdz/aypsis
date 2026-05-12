@@ -262,9 +262,13 @@ class PenerimaController extends Controller
     {
         $validated = $request->validate([
             'nama_penerima' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
+            'nitku' => 'nullable|string|max:255',
+            'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
+            'iu_bp_kawasan' => 'nullable|in:ada,tidak ada',
         ]);
 
         DB::beginTransaction();

@@ -71,6 +71,44 @@
                     @enderror
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Harga Krani 20ft Field -->
+                    <div>
+                        <label for="harga_krani_20ft" class="block text-sm font-medium text-gray-700 mb-2">
+                            Harga Krani 20ft
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                                Rp
+                            </span>
+                            <input type="number" name="harga_krani_20ft" id="harga_krani_20ft" value="{{ old('harga_krani_20ft', $pengirim->harga_krani_20ft ?? 0) }}" min="0" step="1000"
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 @error('harga_krani_20ft') border-red-500 @enderror"
+                                   placeholder="0">
+                        </div>
+                        @error('harga_krani_20ft')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Harga Krani 40ft Field -->
+                    <div>
+                        <label for="harga_krani_40ft" class="block text-sm font-medium text-gray-700 mb-2">
+                            Harga Krani 40ft
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                                Rp
+                            </span>
+                            <input type="number" name="harga_krani_40ft" id="harga_krani_40ft" value="{{ old('harga_krani_40ft', $pengirim->harga_krani_40ft ?? 0) }}" min="0" step="1000"
+                                   class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 @error('harga_krani_40ft') border-red-500 @enderror"
+                                   placeholder="0">
+                        </div>
+                        @error('harga_krani_40ft')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
                 <!-- Status Field -->
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-2">

@@ -310,6 +310,8 @@ class PengirimController extends Controller
             'kode' => 'required|string|unique:pengirim,kode,' . $pengirim->id,
             'nama_pengirim' => 'required|string|max:255',
             'catatan' => 'nullable|string',
+            'harga_krani_20ft' => 'nullable|numeric|min:0',
+            'harga_krani_40ft' => 'nullable|numeric|min:0',
             'status' => 'required|in:active,inactive',
         ]);
 
