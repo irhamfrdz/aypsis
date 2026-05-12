@@ -223,51 +223,162 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 5%">No</th>
-                        <th style="width: 25%">NO SURAT JALAN</th>
-                        <th style="width: 15%">TANGGAL</th>
-                        <th style="width: 35%">TUJUAN</th>
-                        <th style="width: 20%">NOMINAL</th>
+                        <th style="width: 4%">No</th>
+                        <th style="width: 10%">TGL SJ</th>
+                        <th style="width: 10%">TGL TT</th>
+                        <th style="width: 14%">NO SURAT JALAN</th>
+                        <th style="width: 10%">NO PLAT</th>
+                        <th style="width: 5%">SIZE</th>
+                        <th style="width: 11%">NO BUKTI</th>
+                        <th style="width: 14%">TUJUAN</th>
+                        <th style="width: 8%">ONGKOS</th>
+                        <th style="width: 6%">UJ</th>
+                        <th style="width: 8%">NOMINAL</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($pranota->items as $index => $item)
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
-                            <td class="text-center font-bold">{{ $item->no_surat_jalan }}</td>
-                            <td class="text-center">{{ $item->tanggal ? $item->tanggal->format('d/m/Y') : '-' }}</td>
-                            <td>
-                                @php
-                                    $tujuan = '-';
-                                    if($item->type === 'SuratJalan' && $item->suratJalan) {
-                                        $tujuan = $item->suratJalan->tujuanPengambilanRelation->ke ?? $item->suratJalan->tujuan_pengambilan ?? '-';
-                                    } elseif($item->type === 'SuratJalanBongkaran' && $item->suratJalanBongkaran) {
-                                        $tujuan = $item->suratJalanBongkaran->tujuanPengambilanRelation->ke ?? $item->suratJalanBongkaran->tujuan_pengambilan ?? '-';
+                            @php
+                                $noPlat = '-';
+                                $tglSj = $item->tanggal ? $item->tanggal->format('d/M/Y') : '-';
+                                $tglTt = '-';
+                                $size = '-';
+                                $ongkosTruk = 0;
+                                $uangJalan = 0;
+                                $tujuan = '-';
+                                $noBukti = '-';
+                                
+                                if($item->type === 'SuratJalan' && $item->suratJalan) {
+                                    $noPlat = $item->suratJalan->no_plat ?? '-';
+                                    $size = $item->suratJalan->size ?? '-';
+                                    $tglSj = $item->suratJalan->tanggal_surat_jalan ? $item->suratJalan->tanggal_surat_jalan->format('d/M/Y') : $tglSj;
+                                    $tujuan = $item->suratJalan->tujuanPengambilanRelation->ke ?? $item->suratJalan->tujuan_pengambilan ?? '-';
+                                    
+                                    // Ongkos Truck Logic
+                                    if ($item->suratJalan->tujuanPengambilanRelation) {
+                                        $sz = strtolower($item->suratJalan->size ?? '');
+                                        $ongkosTruk = str_contains($sz, '40') 
+                                            ? ($item->suratJalan->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0)
+                                            : ($item->suratJalan->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0);
                                     }
-                                @endphp
-                                {{ $tujuan }}
-                            </td>
-                            <td class="text-right">{{ number_format($item->nominal, 0, ',', '.') }}</td>
+                                    if ($item->suratJalan->tujuan_pengambilan == "PULO GADUNG ( BESI SCRAP )") {
+                                        $ongkosTruk = 1050000;
+                                    }
+                                    
+                                    // Uang Jalan
+                                    $uj = $item->suratJalan->uangJalan;
+                                    $uangJalan = $uj ? $uj->jumlah_total : 0;
+                                    
+                                    // No Bukti Logic
+                                    if ($uj && count($uj->pranotaUangJalan) > 0) {
+                                        $buktis = collect();
+                                        foreach ($uj->pranotaUangJalan as $puj) {
+                                            if ($puj->pembayaranPranotaUangJalans) {
+                                                $buktis = $buktis->merge($puj->pembayaranPranotaUangJalans->pluck('nomor_accurate'));
+                                            }
+                                        }
+                                        $noBukti = $buktis->filter()->unique()->implode(', ') ?: '-';
+                                    }
+
+                                    // Tgl TT Logic
+                                    if ($item->suratJalan->tanggal_tanda_terima) {
+                                        $tglTt = $item->suratJalan->tanggal_tanda_terima->format('d/M/Y');
+                                    } elseif ($item->suratJalan->tandaTerima && $item->suratJalan->tandaTerima->tanggal) {
+                                        $tglTt = $item->suratJalan->tandaTerima->tanggal->format('d/M/Y');
+                                    }
+                                } elseif($item->type === 'SuratJalanBongkaran' && $item->suratJalanBongkaran) {
+                                    $noPlat = $item->suratJalanBongkaran->no_plat ?? '-';
+                                    $size = $item->suratJalanBongkaran->size ?? '-';
+                                    $tglSj = $item->suratJalanBongkaran->tanggal_surat_jalan ? $item->suratJalanBongkaran->tanggal_surat_jalan->format('d/M/Y') : $tglSj;
+                                    $tujuan = $item->suratJalanBongkaran->tujuanPengambilanRelation->ke ?? $item->suratJalanBongkaran->tujuan_pengambilan ?? '-';
+
+                                    // Ongkos Truck Logic
+                                    if ($item->suratJalanBongkaran->tujuanPengambilanRelation) {
+                                        $sz = strtolower($item->suratJalanBongkaran->size ?? '');
+                                        $ongkosTruk = str_contains($sz, '40') 
+                                            ? ($item->suratJalanBongkaran->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0)
+                                            : ($item->suratJalanBongkaran->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0);
+                                    }
+                                    if ($item->suratJalanBongkaran->tujuan_pengambilan == "PULO GADUNG ( BESI SCRAP )") {
+                                        $ongkosTruk = 1050000;
+                                    }
+
+                                    // Uang Jalan
+                                    $ujb = $item->suratJalanBongkaran->uangJalan;
+                                    $uangJalan = $ujb ? $ujb->jumlah_total : 0;
+                                    
+                                    // No Bukti Logic
+                                    if ($ujb && count($ujb->pranotaUangJalan) > 0) {
+                                        $buktis = collect();
+                                        foreach ($ujb->pranotaUangJalan as $puj) {
+                                            if ($puj->pembayaranPranotaUangJalans) {
+                                                $buktis = $buktis->merge($puj->pembayaranPranotaUangJalans->pluck('nomor_accurate'));
+                                            }
+                                        }
+                                        $noBukti = $buktis->filter()->unique()->implode(', ') ?: '-';
+                                    }
+
+                                    // Tgl TT Logic
+                                    if ($item->suratJalanBongkaran->tandaTerima && $item->suratJalanBongkaran->tandaTerima->tanggal_tanda_terima) {
+                                        $tglTt = $item->suratJalanBongkaran->tandaTerima->tanggal_tanda_terima->format('d/M/Y');
+                                    }
+                                }
+                            @endphp
+                            <td class="text-center whitespace-nowrap">{{ $tglSj }}</td>
+                            <td class="text-center whitespace-nowrap">{{ $tglTt }}</td>
+                            <td class="text-center font-bold">{{ $item->no_surat_jalan }}</td>
+                            <td class="text-center">{{ $noPlat }}</td>
+                            <td class="text-center">{{ $size }}</td>
+                            <td class="text-center" style="font-size: 8px;">{{ $noBukti }}</td>
+                            <td>{{ $tujuan }}</td>
+                            <td class="text-right">{{ number_format($ongkosTruk, 0, ',', '.') }}</td>
+                            <td class="text-right">{{ number_format($uangJalan, 0, ',', '.') }}</td>
+                            <td class="text-right font-bold">{{ number_format($item->nominal, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                     
+                    @php
+                        $grandTotalOngkos = 0;
+                        $grandTotalUj = 0;
+                        foreach($pranota->items as $it) {
+                            $sz = strtolower($it->suratJalan ? ($it->suratJalan->size ?? '') : ($it->suratJalanBongkaran ? ($it->suratJalanBongkaran->size ?? '') : ''));
+                            $rel = $it->suratJalan ? $it->suratJalan->tujuanPengambilanRelation : ($it->suratJalanBongkaran ? $it->suratJalanBongkaran->tujuanPengambilanRelation : null);
+                            $tp = $it->suratJalan ? $it->suratJalan->tujuan_pengambilan : ($it->suratJalanBongkaran ? $it->suratJalanBongkaran->tujuan_pengambilan : '');
+                            
+                            $ok = 0;
+                            if ($rel) {
+                                $ok = str_contains($sz, '40') ? ($rel->ongkos_truk_40ft ?? 0) : ($rel->ongkos_truk_20ft ?? 0);
+                            }
+                            if ($tp == "PULO GADUNG ( BESI SCRAP )") $ok = 1050000;
+                            
+                            $uj = $it->suratJalan ? ($it->suratJalan->uangJalan ? $it->suratJalan->uangJalan->jumlah_total : 0) : ($it->suratJalanBongkaran ? ($it->suratJalanBongkaran->uangJalan ? $it->suratJalanBongkaran->uangJalan->jumlah_total : 0) : 0);
+                            
+                            $grandTotalOngkos += $ok;
+                            $grandTotalUj += $uj;
+                        }
+                    @endphp
+
                     <!-- Subtotal Row -->
                     <tr>
-                        <td colspan="4" class="text-right font-bold">Subtotal</td>
+                        <td colspan="8" class="text-right font-bold">Subtotal</td>
+                        <td class="text-right font-bold">{{ number_format($grandTotalOngkos, 0, ',', '.') }}</td>
+                        <td class="text-right font-bold">{{ number_format($grandTotalUj, 0, ',', '.') }}</td>
                         <td class="text-right font-bold">{{ number_format($pranota->items->sum('nominal'), 0, ',', '.') }}</td>
                     </tr>
                     
                     <!-- Adjustment Row -->
                     @if($pranota->adjustment != 0)
                     <tr>
-                        <td colspan="4" class="text-right">Adjustment</td>
+                        <td colspan="10" class="text-right">Adjustment</td>
                         <td class="text-right">{{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     @endif
                     
                     <!-- Total Row -->
                     <tr style="background-color: #f0f0f0; font-weight: bold;">
-                        <td colspan="4" class="text-right">TOTAL</td>
+                        <td colspan="10" class="text-right">TOTAL</td>
                         <td class="text-right">{{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
                     </tr>
                 </tbody>

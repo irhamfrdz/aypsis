@@ -76,6 +76,7 @@ class AsuransiTandaTerimaController extends Controller
                     DB::raw('COALESCE(tanda_terimas.nama_barang, surat_jalans.jenis_barang) as fallback_nama_barang'), 
                     DB::raw('COALESCE(tanda_terimas.jumlah, surat_jalans.jumlah_kontainer) as fallback_kuantitas'), 
                     'tanda_terimas.satuan as fallback_satuan',
+                    'tanda_terimas.tujuan_pengiriman',
                     'tanda_terimas.estimasi_nama_kapal as ship_name',
                     'asuransi_tanda_terimas.nama_kapal as insurance_ship',
                     'asuransi_tanda_terimas.nilai_barang as amount',
@@ -160,6 +161,7 @@ class AsuransiTandaTerimaController extends Controller
                     DB::raw('COALESCE(nama_barang, jenis_barang) as fallback_nama_barang'), 
                     'jumlah_barang as fallback_kuantitas', 
                     'satuan_barang as fallback_satuan',
+                    'tujuan_pengiriman',
                     DB::raw('NULL as ship_name'),
                     'asuransi_tanda_terimas.nama_kapal as insurance_ship',
                     'asuransi_tanda_terimas.nilai_barang as amount',
@@ -207,6 +209,7 @@ class AsuransiTandaTerimaController extends Controller
                         ->whereRaw('tanda_terima_lcl_kontainer_pivot.id = (SELECT MAX(id) FROM tanda_terima_lcl_kontainer_pivot WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id)');
                 })
                 ->leftJoin('asuransi_tanda_terimas', 'tanda_terimas_lcl.id', '=', 'asuransi_tanda_terimas.tanda_terima_lcl_id')
+                ->leftJoin('master_tujuan_kirim', 'tanda_terimas_lcl.tujuan_pengiriman_id', '=', 'master_tujuan_kirim.id')
                 ->select(
                     'tanda_terimas_lcl.id', 
                     DB::raw("'lcl' as type"), 
@@ -214,6 +217,7 @@ class AsuransiTandaTerimaController extends Controller
                     'tanggal_tanda_terima as date', 
                     'nama_pengirim as pengirim', 
                     'nama_penerima as penerima', 
+                    'master_tujuan_kirim.nama_tujuan as tujuan_pengiriman',
                     DB::raw('COALESCE(tanda_terima_lcl_kontainer_pivot.nomor_kontainer, tanda_terimas_lcl.nomor_kontainer) as no_kontainer'),
                     DB::raw('NULL as ship_name'),
                     'asuransi_tanda_terimas.nama_kapal as insurance_ship',

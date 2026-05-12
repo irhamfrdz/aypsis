@@ -80,7 +80,7 @@
                 <tr>
                     <td></td>
                     <td></td>
-                    <td align="left" colspan="3" style="color: #FF0000;">{{ $first->penerima }} - BATAM</td>
+                    <td align="left" colspan="3" style="color: #FF0000;">{{ $first->penerima }} - {{ strtoupper($first->tujuan_pengiriman ?: 'BATAM') }}</td>
                     <td></td>
                     <td></td>
                     <td></td>
