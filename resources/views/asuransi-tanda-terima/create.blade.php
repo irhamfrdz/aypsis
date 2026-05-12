@@ -242,9 +242,16 @@
                             <div class="flex flex-wrap gap-2" id="info_images_list">
                                 @if(!empty($existingImages))
                                     @foreach($existingImages as $imgUrl)
-                                        <a href="{{ $imgUrl }}" target="_blank" class="block w-20 h-20 rounded-lg overflow-hidden border border-blue-200 hover:border-blue-400 transition shadow-sm">
-                                            <img src="{{ $imgUrl }}" class="w-full h-full object-cover">
-                                        </a>
+                                        <div class="relative group">
+                                            <a href="{{ $imgUrl }}" target="_blank" class="block w-20 h-20 rounded-lg overflow-hidden border border-blue-200 hover:border-blue-400 transition shadow-sm">
+                                                <img src="{{ $imgUrl }}" class="w-full h-full object-cover">
+                                            </a>
+                                            <a href="{{ $imgUrl }}" download class="absolute -bottom-1 -right-1 p-1.5 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition opacity-0 group-hover:opacity-100 flex items-center justify-center transform hover:scale-110 z-10">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                </svg>
+                                            </a>
+                                        </div>
                                     @endforeach
                                 @endif
                             </div>
@@ -663,6 +670,9 @@
                 if (data.images && data.images.length > 0 && imagesWrapper && imagesList) {
                     imagesWrapper.classList.remove('hidden');
                     data.images.forEach(imgUrl => {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'relative group';
+
                         const imgAnchor = document.createElement('a');
                         imgAnchor.href = imgUrl;
                         imgAnchor.target = '_blank';
@@ -672,8 +682,20 @@
                         img.src = imgUrl;
                         img.className = 'w-full h-full object-cover';
                         
+                        const downloadBtn = document.createElement('a');
+                        downloadBtn.href = imgUrl;
+                        downloadBtn.download = '';
+                        downloadBtn.className = 'absolute -bottom-1 -right-1 p-1.5 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition opacity-0 group-hover:opacity-100 flex items-center justify-center transform hover:scale-110 z-10';
+                        downloadBtn.innerHTML = `
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                        `;
+                        
                         imgAnchor.appendChild(img);
-                        imagesList.appendChild(imgAnchor);
+                        wrapper.appendChild(imgAnchor);
+                        wrapper.appendChild(downloadBtn);
+                        imagesList.appendChild(wrapper);
                     });
                 }
             })
