@@ -2539,8 +2539,11 @@
         }
     });
     
+    let lastPopupOpened = '';
+
     // Function to open penerima popup window
     function openPenerimaPopup() {
+        lastPopupOpened = 'penerima';
         const width = 600;
         const height = 500;
         const left = (screen.width - width) / 2;
@@ -2561,6 +2564,7 @@
 
     // Function to open pengirim popup window
     function openPengirimPopup() {
+        lastPopupOpened = 'pengirim';
         const width = 600;
         const height = 500;
         const left = (screen.width - width) / 2;
@@ -2591,21 +2595,30 @@
             const penerimaSelect = $('#penerima');
             const pengirimSelect = $('#pengirim');
             
+            // Determine which one should be selected
+            const selectAsPenerima = lastPopupOpened === 'penerima';
+            const selectAsPengirim = lastPopupOpened === 'pengirim';
+            
             // Add new option to penerima
-            const penerimaOption = new Option(newData.nama, newData.nama, true, true);
+            const penerimaOption = new Option(newData.nama, newData.nama, selectAsPenerima, selectAsPenerima);
             $(penerimaOption).attr('data-alamat', newData.alamat || '');
             penerimaSelect.append(penerimaOption);
             
             // Add new option to pengirim  
-            const pengirimOption = new Option(newData.nama, newData.nama, false, false);
+            const pengirimOption = new Option(newData.nama, newData.nama, selectAsPengirim, selectAsPengirim);
             $(pengirimOption).attr('data-alamat', newData.alamat || '');
             pengirimSelect.append(pengirimOption);
             
-            // Trigger select2 change and auto-fill alamat for penerima
-            penerimaSelect.trigger('change');
-            $('#alamat_penerima').val(newData.alamat || '');
+            // Trigger select2 change and auto-fill alamat for the active one
+            if (selectAsPenerima) {
+                penerimaSelect.trigger('change');
+                $('#alamat_penerima').val(newData.alamat || '');
+            } else if (selectAsPengirim) {
+                pengirimSelect.trigger('change');
+                $('#alamat_pengirim').val(newData.alamat || '');
+            }
             
-            console.log('✓ New penerima/pengirim added:', newData.nama);
+            console.log('✓ New ' + lastPopupOpened + ' added:', newData.nama);
         }
     });
 

@@ -1141,8 +1141,11 @@
         }
     }
     
+    let lastPopupOpened = '';
+
     // Function to open popup for adding new penerima
     function openPenerimaPopup() {
+        lastPopupOpened = 'penerima';
         const popupWidth = 700;
         const popupHeight = 600;
         const left = (screen.width - popupWidth) / 2;
@@ -1157,6 +1160,7 @@
     
     // Function to open popup for adding new pengirim
     function openPengirimPopup() {
+        lastPopupOpened = 'pengirim';
         const popupWidth = 700;
         const popupHeight = 600;
         const left = (screen.width - popupWidth) / 2;
@@ -1181,32 +1185,50 @@
             const $ = window.select2Jq || window.jQuery || (typeof jQuery !== 'undefined' ? jQuery : null);
             console.log('Received penerima data:', penerimaData);
             
-            // Create new option for all penerima and pengirim dropdowns
+            // Determine which one should be selected
+            const selectAsPenerima = lastPopupOpened === 'penerima';
+            const selectAsPengirim = lastPopupOpened === 'pengirim';
+            
+            // Create new option for all penerima dropdowns
             const newOptionPenerima = new Option(
                 penerimaData.nama,
                 penerimaData.nama,
-                false,
-                false
+                selectAsPenerima,
+                selectAsPenerima
             );
             $(newOptionPenerima).attr('data-alamat', penerimaData.alamat || '');
             
+            // Create new option for all pengirim dropdowns
             const newOptionPengirim = new Option(
                 penerimaData.nama,
                 penerimaData.nama,
-                false,
-                false
+                selectAsPengirim,
+                selectAsPengirim
             );
             $(newOptionPengirim).attr('data-alamat', penerimaData.alamat || '');
             
             // Add to all penerima dropdowns
             $('.select2-penerima').each(function() {
                 $(this).append($(newOptionPenerima).clone());
+                if (selectAsPenerima) {
+                    $(this).trigger('change');
+                }
             });
             
             // Add to all pengirim dropdowns
             $('.select2-pengirim').each(function() {
                 $(this).append($(newOptionPengirim).clone());
+                if (selectAsPengirim) {
+                    $(this).trigger('change');
+                }
             });
+
+            // Auto-fill alamat
+            if (selectAsPenerima) {
+                $('#alamat_penerima').val(penerimaData.alamat || '');
+            } else if (selectAsPengirim) {
+                $('#alamat_pengirim').val(penerimaData.alamat || '');
+            }
             
             // Show success notification
             const successMsg = document.createElement('div');
