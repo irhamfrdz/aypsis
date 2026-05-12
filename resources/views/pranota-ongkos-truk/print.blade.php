@@ -388,10 +388,10 @@
 
                     <!-- Subtotal Row -->
                     <tr>
-                        <td colspan="6" class="text-right font-bold"></td>
+                        <td colspan="6" class="text-right font-bold">Subtotal</td>
                         <td class="text-center font-bold">{{ $grandTotalRitS }}</td>
                         <td class="text-center font-bold">{{ $grandTotalRitK }}</td>
-                        <td colspan="2" class="text-right font-bold">Subtotal</td>
+                        <td colspan="2" class="text-right font-bold"></td>
                         <td class="text-right font-bold">{{ number_format($grandTotalOngkos, 0, ',', '.') }}</td>
                         <td class="text-right font-bold">{{ number_format($grandTotalUj, 0, ',', '.') }}</td>
                         <td class="text-right font-bold">{{ number_format($pranota->items->sum('nominal'), 0, ',', '.') }}</td>
@@ -407,12 +407,7 @@
                     
                     <!-- Total Row -->
                     <tr style="background-color: #f0f0f0; font-weight: bold;">
-                        <td colspan="6" class="text-right"></td>
-                        <td class="text-center">{{ $grandTotalRitS }}</td>
-                        <td class="text-center">{{ $grandTotalRitK }}</td>
-                        <td colspan="2" class="text-right">TOTAL</td>
-                        <td class="text-right">{{ number_format($grandTotalOngkos, 0, ',', '.') }}</td>
-                        <td class="text-right">{{ number_format($grandTotalUj, 0, ',', '.') }}</td>
+                        <td colspan="12" class="text-right">TOTAL</td>
                         <td class="text-right">{{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
                     </tr>
                 </tbody>
