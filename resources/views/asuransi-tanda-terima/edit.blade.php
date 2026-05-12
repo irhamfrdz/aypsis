@@ -183,13 +183,13 @@
                                         <a href="{{ $imgUrl }}" target="_blank" class="block w-20 h-20 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition shadow-sm">
                                             <img src="{{ $imgUrl }}" class="w-full h-full object-cover">
                                         </a>
-                                        <a href="{{ $imgUrl }}" download class="absolute -bottom-1 -right-1 p-1.5 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition opacity-0 group-hover:opacity-100 flex items-center justify-center transform hover:scale-110 z-10">
+                                        <a href="{{ $imgUrl }}" download="" class="absolute -bottom-1 -right-1 p-1.5 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition opacity-0 group-hover:opacity-100 flex items-center justify-center transform hover:scale-110 z-10" title="Download Gambar">
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                                             </svg>
                                         </a>
                                     </div>
-                                @<ctrl95>foreach
+                                @endforeach
                             </div>
                         </div>
                     @endif
