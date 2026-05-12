@@ -292,4 +292,33 @@ class PengirimController extends Controller
         // Always return popup success view for order form
         return view('master-pengirim.success-for-order', compact('pengirim'));
     }
+
+    /**
+     * Show the form for editing specifically for Tanda Terima form.
+     */
+    public function editForTandaTerima(Pengirim $pengirim)
+    {
+        return view('master-pengirim.edit-for-tanda-terima', compact('pengirim'));
+    }
+
+    /**
+     * Update a newly created resource in storage specifically for Tanda Terima form.
+     */
+    public function updateForTandaTerima(Request $request, Pengirim $pengirim)
+    {
+        $request->validate([
+            'kode' => 'required|string|unique:pengirim,kode,' . $pengirim->id,
+            'nama_pengirim' => 'required|string|max:255',
+            'catatan' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $pengirim->update($request->all());
+
+        // Return popup success view
+        return view('master-pengirim.success-for-order', [
+            'pengirim' => $pengirim,
+            'message' => 'Pengirim berhasil diperbarui!'
+        ]);
+    }
 }

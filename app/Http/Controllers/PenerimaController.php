@@ -246,4 +246,46 @@ class PenerimaController extends Controller
                            ->with('error', 'Gagal menambahkan penerima: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Show the form for editing from Tanda Terima form (popup mode)
+     */
+    public function editForTandaTerima(Penerima $penerima)
+    {
+        return view('master-penerima.edit-for-tanda-terima', compact('penerima'));
+    }
+
+    /**
+     * Update from Tanda Terima form (popup mode)
+     */
+    public function updateForTandaTerima(Request $request, Penerima $penerima)
+    {
+        $validated = $request->validate([
+            'nama_penerima' => 'required|string|max:255',
+            'alamat' => 'nullable|string',
+            'npwp' => 'nullable|string|max:20',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $penerima->update($validated);
+
+            DB::commit();
+            
+            // Store updated data in session for popup message
+            session([
+                'penerima_nama' => $penerima->nama_penerima,
+                'penerima_alamat' => $penerima->alamat,
+            ]);
+
+            return redirect()->back()
+                           ->with('success', 'Penerima berhasil diperbarui')
+                           ->with('popup', true);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withInput()
+                           ->with('error', 'Gagal memperbarui penerima: ' . $e->getMessage());
+        }
+    }
 }

@@ -2122,11 +2122,23 @@ Route::middleware([
          ->name('master-pengirim-penerima.import')
          ->middleware('can:master-pengirim-penerima-create');
     
-    // Popup routes for adding penerima from tanda terima
+    // Popup routes for adding/editing penerima from tanda terima
     Route::get('tanda-terima/penerima/create', [PenerimaController::class, 'createForTandaTerima'])
          ->name('tanda-terima.penerima.create');
     Route::post('tanda-terima/penerima/store', [PenerimaController::class, 'storeForTandaTerima'])
          ->name('tanda-terima.penerima.store');
+    Route::get('tanda-terima/penerima/{penerima}/edit', [PenerimaController::class, 'editForTandaTerima'])
+         ->name('tanda-terima.penerima.edit');
+    Route::put('tanda-terima/penerima/{penerima}', [PenerimaController::class, 'updateForTandaTerima'])
+         ->name('tanda-terima.penerima.update');
+
+    // Popup routes for adding/editing pengirim from tanda terima
+    Route::get('tanda-terima/pengirim/create', [PengirimController::class, 'createForOrder'])
+         ->name('order.pengirim.create'); // Keep existing name for compatibility
+    Route::get('tanda-terima/pengirim/{pengirim}/edit', [PengirimController::class, 'editForTandaTerima'])
+         ->name('tanda-terima.pengirim.edit');
+    Route::put('tanda-terima/pengirim/{pengirim}', [PengirimController::class, 'updateForTandaTerima'])
+         ->name('tanda-terima.pengirim.update');
     
     // 📦 Master Pengirim/Penerima Management with permissions
     Route::resource('master-pengirim-penerima', MasterPengirimPenerimaController::class)

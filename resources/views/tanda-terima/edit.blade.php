@@ -377,17 +377,26 @@
                                 <label for="pengirim" class="block text-xs font-medium text-gray-500">
                                     Pengirim <span class="text-red-500">*</span>
                                 </label>
-                                <button type="button"
-                                        onclick="openPengirimPopup()"
-                                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors">
-                                    <i class="fas fa-plus mr-1"></i>
-                                    Tambah Pengirim Baru
-                                </button>
+                                        <button type="button"
+                                                onclick="openEditPengirimPopup()"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-300 rounded hover:bg-amber-100 transition-colors ml-2"
+                                                title="Edit pengirim yang dipilih">
+                                            <i class="fas fa-edit mr-1"></i>
+                                            Edit Pengirim
+                                        </button>
+                                        <button type="button"
+                                                onclick="openPengirimPopup()"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors ml-auto">
+                                            <i class="fas fa-plus mr-1"></i>
+                                            Tambah Pengirim Baru
+                                        </button>
                             </div>
                             <select name="pengirim" id="pengirim" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm select2-pengirim @error('pengirim') border-red-500 @enderror">
                                 <option value="">-- Pilih Pengirim --</option>
                                 @foreach($pengirims as $p)
-                                    <option value="{{ $p->nama_pengirim }}" {{ old('pengirim', $tandaTerima->pengirim ?? ($tandaTerima->suratJalan->order->pengirim->nama_pengirim ?? '')) == $p->nama_pengirim ? 'selected' : '' }}>
+                                    <option value="{{ $p->nama_pengirim }}" 
+                                            data-id="{{ $p->id }}"
+                                            {{ old('pengirim', $tandaTerima->pengirim ?? ($tandaTerima->suratJalan->order->pengirim->nama_pengirim ?? '')) == $p->nama_pengirim ? 'selected' : '' }}>
                                         {{ $p->nama_pengirim }}
                                     </option>
                                 @endforeach
@@ -416,8 +425,15 @@
                                     Penerima <span class="text-red-500">*</span>
                                 </label>
                                 <button type="button"
+                                        onclick="openEditPenerimaPopup()"
+                                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-300 rounded hover:bg-amber-100 transition-colors ml-2"
+                                        title="Edit penerima yang dipilih">
+                                    <i class="fas fa-edit mr-1"></i>
+                                    Edit Penerima
+                                </button>
+                                <button type="button"
                                         onclick="openPenerimaPopup()"
-                                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors">
+                                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors ml-auto">
                                     <i class="fas fa-plus mr-1"></i>
                                     Tambah Penerima Baru
                                 </button>
@@ -429,6 +445,7 @@
                                 @if(isset($masterPenerimaList))
                                     @foreach($masterPenerimaList as $penerimaItem)
                                         <option value="{{ $penerimaItem->nama_penerima }}"
+                                                data-id="{{ $penerimaItem->id }}"
                                                 data-alamat="{{ $penerimaItem->alamat ?? '' }}"
                                                 {{ old('penerima', $tandaTerima->penerima) == $penerimaItem->nama_penerima ? 'selected' : '' }}>
                                             {{ $penerimaItem->nama_penerima }}
@@ -1096,46 +1113,42 @@
     // Track which popup was opened to handle the message response correctly
     let lastPopupOpened = null;
 
-    // Function to open pengirim popup window
-    function openPengirimPopup() {
-        lastPopupOpened = 'pengirim';
-        const width = 600;
-        const height = 500;
-        const left = (screen.width - width) / 2;
-        const top = (screen.height - height) / 2;
+    function openEditPengirimPopup() {
+        const pengirimSelect = document.getElementById('pengirim');
+        const selectedOption = pengirimSelect.options[pengirimSelect.selectedIndex];
+        const pengirimId = selectedOption ? selectedOption.getAttribute('data-id') : null;
         
-        const popup = window.open(
-            '{{ route("order.pengirim.create", ["popup" => "true"], false) }}',
-            'TambahPengirim',
-            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-        );
-        
-        if (popup) {
-            popup.focus();
-        } else {
-            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        if (!pengirimId || pengirimSelect.value === "") {
+            alert('Silakan pilih pengirim yang valid untuk diedit.');
+            return;
         }
+        
+        const url = `{{ url('tanda-terima/pengirim') }}/${pengirimId}/edit?popup=true`;
+        window.open(url, 'Edit Pengirim', 'width=800,height=600,scrollbars=yes');
     }
 
-    // Function to open penerima popup window
-    function openPenerimaPopup() {
-        lastPopupOpened = 'penerima';
-        const width = 600;
-        const height = 500;
-        const left = (screen.width - width) / 2;
-        const top = (screen.height - height) / 2;
+    function openPengirimPopup() {
+        const url = `{{ route("order.pengirim.create", ["popup" => "true"], false) }}`;
+        window.open(url, 'Tambah Pengirim', 'width=800,height=600,scrollbars=yes');
+    }
+
+    function openEditPenerimaPopup() {
+        const penerimaSelect = document.getElementById('penerima');
+        const selectedOption = penerimaSelect.options[penerimaSelect.selectedIndex];
+        const penerimaId = selectedOption ? selectedOption.getAttribute('data-id') : null;
         
-        const popup = window.open(
-            '{{ route("tanda-terima.penerima.create", [], false) }}',
-            'TambahPenerima',
-            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
-        );
-        
-        if (popup) {
-            popup.focus();
-        } else {
-            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        if (!penerimaId || penerimaSelect.value === "") {
+            alert('Silakan pilih penerima yang valid untuk diedit.');
+            return;
         }
+        
+        const url = `{{ url('tanda-terima/penerima') }}/${penerimaId}/edit?popup=true`;
+        window.open(url, 'Edit Penerima', 'width=800,height=600,scrollbars=yes');
+    }
+
+    function openPenerimaPopup() {
+        const url = `{{ route('tanda-terima.penerima.create') }}`;
+        window.open(url, 'Tambah Penerima', 'width=800,height=600,scrollbars=yes');
     }
 
     // Listen for message from popup when new penerima or pengirim is added
@@ -1157,11 +1170,13 @@
             const select = jQuery('#penerima');
             if (select.length) {
                 // Check if option already exists
-                if (select.find("option[value='" + newName + "']").length === 0) {
+                const existingOption = select.find("option[value='" + newName + "']");
+                if (existingOption.length === 0) {
                     const newOption = new Option(newName, newName, true, true);
                     jQuery(newOption).attr('data-alamat', newAlamat);
                     select.append(newOption);
                 } else {
+                    existingOption.attr('data-alamat', newAlamat);
                     select.val(newName);
                 }
                 
