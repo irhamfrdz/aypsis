@@ -107,7 +107,7 @@
                                         $canView = auth()->user()->can('tanda-terima-tanpa-surat-jalan-view');
                                     } elseif ($asuransiTandaTerima->tanda_terima_lcl_id) {
                                         $route = route('tanda-terima-lcl.show', $asuransiTandaTerima->tanda_terima_lcl_id);
-                                        $canView = auth()->user()->can('tanda-terima-lcl-view');
+                                        $canView = auth()->user()->can('tanda-terima-tanpa-surat-jalan-view');
                                     }
                                 @endphp
                                 
