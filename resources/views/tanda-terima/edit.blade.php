@@ -397,6 +397,20 @@
                             @enderror
                         </div>
                         <div>
+                            <label for="pic_pengirim" class="block text-xs font-medium text-gray-500 mb-2">
+                                PIC Pengirim
+                            </label>
+                            <input type="text"
+                                   name="pic_pengirim"
+                                   id="pic_pengirim"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('pic_pengirim') border-red-500 @enderror"
+                                   placeholder="Nama PIC pengirim"
+                                   value="{{ old('pic_pengirim', $tandaTerima->pic_pengirim) }}">
+                            @error('pic_pengirim')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label for="penerima" class="block text-xs font-medium text-gray-500">
                                     Penerima <span class="text-red-500">*</span>
@@ -428,6 +442,20 @@
                             <p class="mt-1 text-xs text-gray-500">
                                 <i class="fas fa-search mr-1"></i>Ketik untuk mencari penerima
                             </p>
+                        </div>
+                        <div>
+                            <label for="pic_penerima" class="block text-xs font-medium text-gray-500 mb-2">
+                                PIC Penerima
+                            </label>
+                            <input type="text"
+                                   name="pic_penerima"
+                                   id="pic_penerima"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('pic_penerima') border-red-500 @enderror"
+                                   placeholder="Nama PIC penerima"
+                                   value="{{ old('pic_penerima', $tandaTerima->pic_penerima) }}">
+                            @error('pic_penerima')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div class="md:col-span-2">
                             <label for="alamat_penerima" class="block text-xs font-medium text-gray-500 mb-2">

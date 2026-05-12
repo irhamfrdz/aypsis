@@ -488,6 +488,7 @@ class TandaTerimaController extends Controller
             'surat_jalan_pabrik' => 'nullable|string|max:255',
             'rit' => 'nullable|string|max:255',
             'pengirim' => 'nullable|string|max:255',
+            'pic_pengirim' => 'nullable|string|max:255',
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string|max:255',
             'jenis_barang' => 'nullable|string|max:255',
@@ -537,6 +538,7 @@ class TandaTerimaController extends Controller
             'tonase.*' => 'nullable|numeric|min:0',
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'penerima' => 'nullable|string|max:255',
+            'pic_penerima' => 'nullable|string|max:255',
             'alamat_penerima' => 'nullable|string',
             'catatan' => 'nullable|string',
             'nomor_kontainer' => 'nullable|array',
@@ -590,7 +592,8 @@ class TandaTerimaController extends Controller
             $tandaTerima->size = $suratJalan->size;
             $tandaTerima->jumlah_kontainer = $suratJalan->jumlah_kontainer;
             $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
-            $tandaTerima->pengirim = $suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : null;
+            $tandaTerima->pengirim = $request->pengirim ?: ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : null);
+            $tandaTerima->pic_pengirim = $request->pic_pengirim;
             
             // Additional data from form
             $tandaTerima->estimasi_nama_kapal = $request->estimasi_nama_kapal;
@@ -607,6 +610,7 @@ class TandaTerimaController extends Controller
             $tandaTerima->tanggal_garasi = $request->tanggal_garasi;
             $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
             $tandaTerima->penerima = $request->penerima;
+            $tandaTerima->pic_penerima = $request->pic_penerima;
             $tandaTerima->alamat_penerima = $request->alamat_penerima;
             $tandaTerima->catatan = $request->catatan;
             $tandaTerima->lembur = $request->boolean('lembur');
@@ -1160,6 +1164,9 @@ class TandaTerimaController extends Controller
             'nginap' => 'nullable|boolean',
             'tidak_lembur_nginap' => 'nullable|boolean',
             'pengirim' => 'nullable|string|max:255',
+            'pic_pengirim' => 'nullable|string|max:255',
+            'penerima' => 'nullable|string|max:255',
+            'pic_penerima' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -1222,7 +1229,9 @@ class TandaTerimaController extends Controller
                 'supir_pengganti' => $request->supir_pengganti,
                 'kenek_pengganti' => $request->kenek_pengganti,
                 'pengirim' => $request->pengirim,
+                'pic_pengirim' => $request->pic_pengirim,
                 'penerima' => $request->penerima,
+                'pic_penerima' => $request->pic_penerima,
                 'alamat_penerima' => $request->alamat_penerima,
                 'updated_by' => Auth::id(),
             ];
