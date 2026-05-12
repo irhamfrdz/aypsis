@@ -223,17 +223,19 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 4%">No</th>
-                        <th style="width: 10%">TGL SJ</th>
-                        <th style="width: 10%">TGL TT</th>
-                        <th style="width: 14%">NO SURAT JALAN</th>
-                        <th style="width: 10%">NO PLAT</th>
-                        <th style="width: 5%">SIZE</th>
+                        <th style="width: 3%">No</th>
+                        <th style="width: 8%">TGL SJ</th>
+                        <th style="width: 8%">TGL TT</th>
+                        <th style="width: 12%">NO SURAT JALAN</th>
+                        <th style="width: 9%">NO PLAT</th>
+                        <th style="width: 4%">SIZE</th>
+                        <th style="width: 4%">RIT S</th>
+                        <th style="width: 4%">RIT K</th>
                         <th style="width: 11%">NO BUKTI</th>
-                        <th style="width: 14%">TUJUAN</th>
+                        <th style="width: 13%">TUJUAN</th>
                         <th style="width: 8%">ONGKOS</th>
                         <th style="width: 6%">UJ</th>
-                        <th style="width: 8%">NOMINAL</th>
+                        <th style="width: 10%">NOMINAL</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -325,12 +327,25 @@
                                         $tglTt = $item->suratJalanBongkaran->tandaTerima->tanggal_tanda_terima->format('d/M/Y');
                                     }
                                 }
+
+                                // Rit Logic
+                                $ritSupir = 0;
+                                $ritKenek = 0;
+                                if ($item->type === 'SuratJalan' && $item->suratJalan) {
+                                    $ritSupir = ($item->suratJalan->supir || $item->suratJalan->supir2 || $item->suratJalan->supirKaryawan) ? 1 : 0;
+                                    $ritKenek = ($item->suratJalan->kenek || $item->suratJalan->kenekKaryawan) ? 1 : 0;
+                                } elseif ($item->type === 'SuratJalanBongkaran' && $item->suratJalanBongkaran) {
+                                    $ritSupir = ($item->suratJalanBongkaran->supir || $item->suratJalanBongkaran->supir2 || $item->suratJalanBongkaran->supirKaryawan) ? 1 : 0;
+                                    $ritKenek = ($item->suratJalanBongkaran->kenek || $item->suratJalanBongkaran->kenekKaryawan) ? 1 : 0;
+                                }
                             @endphp
                             <td class="text-center whitespace-nowrap">{{ $tglSj }}</td>
                             <td class="text-center whitespace-nowrap">{{ $tglTt }}</td>
                             <td class="text-center font-bold">{{ $item->no_surat_jalan }}</td>
                             <td class="text-center">{{ $noPlat }}</td>
                             <td class="text-center">{{ $size }}</td>
+                            <td class="text-center">{{ $ritSupir }}</td>
+                            <td class="text-center">{{ $ritKenek }}</td>
                             <td class="text-center" style="font-size: 8px;">{{ $noBukti }}</td>
                             <td>{{ $tujuan }}</td>
                             <td class="text-right">{{ number_format($ongkosTruk, 0, ',', '.') }}</td>
@@ -342,6 +357,8 @@
                     @php
                         $grandTotalOngkos = 0;
                         $grandTotalUj = 0;
+                        $grandTotalRitS = 0;
+                        $grandTotalRitK = 0;
                         foreach($pranota->items as $it) {
                             $sz = strtolower($it->suratJalan ? ($it->suratJalan->size ?? '') : ($it->suratJalanBongkaran ? ($it->suratJalanBongkaran->size ?? '') : ''));
                             $rel = $it->suratJalan ? $it->suratJalan->tujuanPengambilanRelation : ($it->suratJalanBongkaran ? $it->suratJalanBongkaran->tujuanPengambilanRelation : null);
@@ -357,12 +374,24 @@
                             
                             $grandTotalOngkos += $ok;
                             $grandTotalUj += $uj;
+
+                            // Rit Totals
+                            if ($it->type === 'SuratJalan' && $it->suratJalan) {
+                                $grandTotalRitS += ($it->suratJalan->supir || $it->suratJalan->supir2 || $it->suratJalan->supirKaryawan) ? 1 : 0;
+                                $grandTotalRitK += ($it->suratJalan->kenek || $it->suratJalan->kenekKaryawan) ? 1 : 0;
+                            } elseif ($it->type === 'SuratJalanBongkaran' && $it->suratJalanBongkaran) {
+                                $grandTotalRitS += ($it->suratJalanBongkaran->supir || $it->suratJalanBongkaran->supir2 || $it->suratJalanBongkaran->supirKaryawan) ? 1 : 0;
+                                $grandTotalRitK += ($it->suratJalanBongkaran->kenek || $it->suratJalanBongkaran->kenekKaryawan) ? 1 : 0;
+                            }
                         }
                     @endphp
 
                     <!-- Subtotal Row -->
                     <tr>
-                        <td colspan="8" class="text-right font-bold">Subtotal</td>
+                        <td colspan="6" class="text-right font-bold">Subtotal</td>
+                        <td class="text-center font-bold">{{ $grandTotalRitS }}</td>
+                        <td class="text-center font-bold">{{ $grandTotalRitK }}</td>
+                        <td colspan="2" class="text-right font-bold"></td>
                         <td class="text-right font-bold">{{ number_format($grandTotalOngkos, 0, ',', '.') }}</td>
                         <td class="text-right font-bold">{{ number_format($grandTotalUj, 0, ',', '.') }}</td>
                         <td class="text-right font-bold">{{ number_format($pranota->items->sum('nominal'), 0, ',', '.') }}</td>
@@ -371,14 +400,14 @@
                     <!-- Adjustment Row -->
                     @if($pranota->adjustment != 0)
                     <tr>
-                        <td colspan="10" class="text-right">Adjustment</td>
+                        <td colspan="12" class="text-right">Adjustment</td>
                         <td class="text-right">{{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     @endif
                     
                     <!-- Total Row -->
                     <tr style="background-color: #f0f0f0; font-weight: bold;">
-                        <td colspan="10" class="text-right">TOTAL</td>
+                        <td colspan="12" class="text-right">TOTAL</td>
                         <td class="text-right">{{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
                     </tr>
                 </tbody>

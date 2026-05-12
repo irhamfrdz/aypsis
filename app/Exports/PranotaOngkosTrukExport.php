@@ -24,14 +24,8 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
     public function collection()
     {
         return $this->pranota->items->map(function($item, $index) {
-            $tujuan = '-';
-            $size = '-';
-            $no_plat = '-';
-            $tgl_sj = $item->tanggal ? $item->tanggal->format('d/m/Y') : '-';
-            $tgl_tt = '-';
-            $no_bukti = '-';
-            $ongkos_truk = 0;
-            $uang_jalan = 0;
+            $rit_supir = 0;
+            $rit_kenek = 0;
 
             if ($item->type === 'SuratJalan' && $item->suratJalan) {
                 $sj = $item->suratJalan;
@@ -40,6 +34,10 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $no_plat = $sj->no_plat ?? '-';
                 $tgl_sj = $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/M/Y') : $tgl_sj;
                 
+                // Rit Logic
+                $rit_supir = ($sj->supir || $sj->supir2 || $sj->supirKaryawan) ? 1 : 0;
+                $rit_kenek = ($sj->kenek || $sj->kenekKaryawan) ? 1 : 0;
+
                 // Ongkos Truck Logic
                 if ($sj->tujuanPengambilanRelation) {
                     $sz = strtolower($sj->size ?? '');
@@ -77,6 +75,10 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $no_plat = $sjb->no_plat ?? '-';
                 $tgl_sj = $sjb->tanggal_surat_jalan ? $sjb->tanggal_surat_jalan->format('d/M/Y') : $tgl_sj;
                 
+                // Rit Logic
+                $rit_supir = ($sjb->supir || $sjb->supir2 || $sjb->supirKaryawan) ? 1 : 0;
+                $rit_kenek = ($sjb->kenek || $sjb->kenekKaryawan) ? 1 : 0;
+
                 // Ongkos Truck Logic
                 if ($sjb->tujuanPengambilanRelation) {
                     $sz = strtolower($sjb->size ?? '');
@@ -116,6 +118,8 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $no_plat,
                 $tujuan,
                 $size,
+                $rit_supir,
+                $rit_kenek,
                 (float)$ongkos_truk,
                 (float)$uang_jalan,
                 (float)$item->nominal,
@@ -134,6 +138,8 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
             'No Plat',
             'Tujuan',
             'Size',
+            'Rit Supir',
+            'Rit Kenek',
             'Ongkos',
             'UJ',
             'Nominal',
@@ -143,9 +149,9 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
     public function columnFormats(): array
     {
         return [
-            'I' => '#,##0',
-            'J' => '#,##0',
             'K' => '#,##0',
+            'L' => '#,##0',
+            'M' => '#,##0',
         ];
     }
 
@@ -165,7 +171,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                     $sheet->getStyle("A4")->getFont()->setBold(true);
                 }
                 
-                $lastCol = 'K';
+                $lastCol = 'M';
                 $headerRow = 6;
                 $dataStartRow = 7;
                 
@@ -197,26 +203,28 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $currentRow = $lastDataRow + 1;
 
                 // Subtotal
-                $sheet->setCellValue("J{$currentRow}", 'Subtotal');
-                $sheet->setCellValue("K{$currentRow}", "=SUM(K{$dataStartRow}:K{$lastDataRow})");
-                $sheet->getStyle("J{$currentRow}:K{$currentRow}")->getFont()->setBold(true);
+                $sheet->setCellValue("I{$currentRow}", "=SUM(I{$dataStartRow}:I{$lastDataRow})");
+                $sheet->setCellValue("J{$currentRow}", "=SUM(J{$dataStartRow}:J{$lastDataRow})");
+                $sheet->setCellValue("L{$currentRow}", 'Subtotal');
+                $sheet->setCellValue("M{$currentRow}", "=SUM(M{$dataStartRow}:M{$lastDataRow})");
+                $sheet->getStyle("I{$currentRow}:M{$currentRow}")->getFont()->setBold(true);
                 $currentRow++;
 
                 // Adjustment
                 if ($this->pranota->adjustment != 0) {
-                    $sheet->setCellValue("J{$currentRow}", 'Adjustment');
-                    $sheet->setCellValue("K{$currentRow}", (float)$this->pranota->adjustment);
+                    $sheet->setCellValue("L{$currentRow}", 'Adjustment');
+                    $sheet->setCellValue("M{$currentRow}", (float)$this->pranota->adjustment);
                     if ($this->pranota->keterangan) {
-                        $sheet->setCellValue("L{$currentRow}", "(" . $this->pranota->keterangan . ")");
+                        $sheet->setCellValue("N{$currentRow}", "(" . $this->pranota->keterangan . ")");
                     }
-                    $sheet->getStyle("J{$currentRow}:K{$currentRow}")->getFont()->setBold(true);
+                    $sheet->getStyle("L{$currentRow}:M{$currentRow}")->getFont()->setBold(true);
                     $currentRow++;
                 }
 
                 // Total
-                $sheet->setCellValue("J{$currentRow}", 'TOTAL');
-                $sheet->setCellValue("K{$currentRow}", (float)$this->pranota->total_nominal);
-                $sheet->getStyle("J{$currentRow}:K{$currentRow}")->applyFromArray([
+                $sheet->setCellValue("L{$currentRow}", 'TOTAL');
+                $sheet->setCellValue("M{$currentRow}", (float)$this->pranota->total_nominal);
+                $sheet->getStyle("L{$currentRow}:M{$currentRow}")->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
@@ -231,7 +239,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                     ],
                 ]);
 
-                $sheet->getStyle("I{$dataStartRow}:K{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+                $sheet->getStyle("K{$dataStartRow}:M{$currentRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
             },
         ];
     }
