@@ -11,6 +11,13 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
@@ -2347,8 +2354,6 @@
         <div class="p-6">
             @yield('content')
         </div>
-    </div>        <!-- Mobile overlay -->
-        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden"></div>
     </div>
 
     {{-- jQuery CDN - Required for many scripts --}}
