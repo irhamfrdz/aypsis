@@ -112,12 +112,38 @@
                                 @endphp
                                 
                                 @if($route && $canView)
-                                    <a href="{{ $route }}" target="_blank" class="flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition duration-200 bg-white px-3 py-2 rounded-md shadow-sm border border-blue-100">
-                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                        </svg>
-                                        Lihat Tanda Terima
-                                    </a>
+                                    <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                        <a href="{{ $route }}" target="_blank" class="flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition duration-200 bg-white px-3 py-2 rounded-md shadow-sm border border-blue-100">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                            Lihat
+                                        </a>
+
+                                        @php
+                                            $editRoute = null;
+                                            $canEdit = false;
+                                            if ($asuransiTandaTerima->tanda_terima_id) {
+                                                $editRoute = route('tanda-terima.edit', $asuransiTandaTerima->tanda_terima_id);
+                                                $canEdit = auth()->user()->can('tanda-terima-update');
+                                            } elseif ($asuransiTandaTerima->tanda_terima_tanpa_sj_id) {
+                                                $editRoute = route('tanda-terima-tanpa-surat-jalan.edit', $asuransiTandaTerima->tanda_terima_tanpa_sj_id);
+                                                $canEdit = auth()->user()->can('tanda-terima-tanpa-surat-jalan-update');
+                                            } elseif ($asuransiTandaTerima->tanda_terima_lcl_id) {
+                                                $editRoute = route('tanda-terima-lcl.edit', $asuransiTandaTerima->tanda_terima_lcl_id);
+                                                $canEdit = auth()->user()->can('tanda-terima-tanpa-surat-jalan-update');
+                                            }
+                                        @endphp
+
+                                        @if($editRoute && $canEdit)
+                                            <a href="{{ $editRoute }}" target="_blank" class="flex items-center text-orange-600 hover:text-orange-800 font-medium text-sm transition duration-200 bg-white px-3 py-2 rounded-md shadow-sm border border-orange-100">
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                                Edit
+                                            </a>
+                                        @endif
+                                    </div>
                                 @endif
                             @endif
                         </div>
