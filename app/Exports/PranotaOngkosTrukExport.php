@@ -203,28 +203,30 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $currentRow = $lastDataRow + 1;
 
                 // Subtotal
+                $sheet->setCellValue("H{$currentRow}", 'Subtotal');
                 $sheet->setCellValue("I{$currentRow}", "=SUM(I{$dataStartRow}:I{$lastDataRow})");
                 $sheet->setCellValue("J{$currentRow}", "=SUM(J{$dataStartRow}:J{$lastDataRow})");
-                $sheet->setCellValue("L{$currentRow}", 'Subtotal');
+                $sheet->setCellValue("K{$currentRow}", "=SUM(K{$dataStartRow}:K{$lastDataRow})");
+                $sheet->setCellValue("L{$currentRow}", "=SUM(L{$dataStartRow}:L{$lastDataRow})");
                 $sheet->setCellValue("M{$currentRow}", "=SUM(M{$dataStartRow}:M{$lastDataRow})");
-                $sheet->getStyle("I{$currentRow}:M{$currentRow}")->getFont()->setBold(true);
+                $sheet->getStyle("H{$currentRow}:M{$currentRow}")->getFont()->setBold(true);
                 $currentRow++;
 
                 // Adjustment
                 if ($this->pranota->adjustment != 0) {
-                    $sheet->setCellValue("L{$currentRow}", 'Adjustment');
+                    $sheet->setCellValue("H{$currentRow}", 'Adjustment');
                     $sheet->setCellValue("M{$currentRow}", (float)$this->pranota->adjustment);
                     if ($this->pranota->keterangan) {
                         $sheet->setCellValue("N{$currentRow}", "(" . $this->pranota->keterangan . ")");
                     }
-                    $sheet->getStyle("L{$currentRow}:M{$currentRow}")->getFont()->setBold(true);
+                    $sheet->getStyle("H{$currentRow}:M{$currentRow}")->getFont()->setBold(true);
                     $currentRow++;
                 }
 
                 // Total
-                $sheet->setCellValue("L{$currentRow}", 'TOTAL');
+                $sheet->setCellValue("H{$currentRow}", 'TOTAL');
                 $sheet->setCellValue("M{$currentRow}", (float)$this->pranota->total_nominal);
-                $sheet->getStyle("L{$currentRow}:M{$currentRow}")->applyFromArray([
+                $sheet->getStyle("H{$currentRow}:M{$currentRow}")->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
