@@ -59,8 +59,8 @@ class LangsirBatamController extends Controller
             ->orderBy('nama_panggilan', 'asc')
             ->get();
             
-        $kontainers = \App\Models\Kontainer::select('no_kontainer', 'size')->get();
-        $stock_kontainers = \App\Models\StockKontainer::select('no_kontainer', 'size')->get();
+        $kontainers = \App\Models\Kontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
+        $stock_kontainers = \App\Models\StockKontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
             
         return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers'));
@@ -113,8 +113,8 @@ class LangsirBatamController extends Controller
             ->orderBy('nama_panggilan', 'asc')
             ->get();
 
-        $kontainers = \App\Models\Kontainer::select('no_kontainer', 'size')->get();
-        $stock_kontainers = \App\Models\StockKontainer::select('no_kontainer', 'size')->get();
+        $kontainers = \App\Models\Kontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
+        $stock_kontainers = \App\Models\StockKontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
 
         return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers'));
