@@ -839,19 +839,48 @@ class PranotaUangRitController extends Controller
         }
 
         // Get surat jalan numbers from the combined field
-        $suratJalanNomors = explode(', ', $pranotaUangRit->no_surat_jalan);
+        $suratJalanNomorsRaw = explode(', ', $pranotaUangRit->no_surat_jalan);
+        $regularNomors = [];
+        $bongkaranNomors = [];
         
-        // Get surat jalans that are part of this pranota
-        $suratJalans = SuratJalan::whereIn('no_surat_jalan', $suratJalanNomors)
-            ->orderBy('tanggal_surat_jalan', 'desc')
-            ->get();
+        foreach ($suratJalanNomorsRaw as $nomor) {
+            $trimmed = trim($nomor);
+            if (str_contains($trimmed, '(Bongkaran)')) {
+                $bongkaranNomors[] = trim(str_replace('(Bongkaran)', '', $trimmed));
+            } else {
+                $regularNomors[] = $trimmed;
+            }
+        }
+        
+        // Fetch regular Surat Jalan
+        $suratJalans = SuratJalan::whereIn('no_surat_jalan', $regularNomors)->get();
+        
+        // Fetch Surat Jalan Bongkaran
+        $bongkarans = SuratJalanBongkaran::whereIn('nomor_surat_jalan', $bongkaranNomors)->get();
+        
+        // Map Bongkarans to match the SuratJalan structure for the view
+        $mappedBongkarans = $bongkarans->map(function($b) {
+            return (object)[
+                'no_surat_jalan' => $b->nomor_surat_jalan . ' (Bongkaran)',
+                'tanggal_surat_jalan' => $b->tanggal_surat_jalan,
+                'supir' => $b->supir,
+                'uang_rit_supir' => $b->uang_rit_supir,
+            ];
+        });
+        
+        // Merge collections
+        $allSuratJalans = $suratJalans->concat($mappedBongkarans)->sortByDesc('tanggal_surat_jalan');
         
         // Get supir details for this pranota
         $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
             ->orderBy('supir_nama')
             ->get();
 
-        return view('pranota-uang-rit.edit', compact('pranotaUangRit', 'suratJalans', 'supirDetails'));
+        return view('pranota-uang-rit.edit', [
+            'pranotaUangRit' => $pranotaUangRit,
+            'suratJalans' => $allSuratJalans,
+            'supirDetails' => $supirDetails
+        ]);
     }
 
     /**

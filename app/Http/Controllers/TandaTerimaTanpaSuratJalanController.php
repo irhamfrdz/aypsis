@@ -71,6 +71,22 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $query->whereBetween('tanggal_tanda_terima', [$request->start_date, $request->end_date]);
             }
 
+            // Seal status filter untuk LCL
+            if ($request->filled('seal_status')) {
+                if ($request->seal_status === 'sealed') {
+                    $query->whereHas('kontainerPivot', function($q) {
+                        $q->whereNotNull('nomor_seal')->where('nomor_seal', '!=', '');
+                    });
+                } elseif ($request->seal_status === 'unsealed') {
+                    $query->where(function($q) {
+                        $q->whereDoesntHave('kontainerPivot')
+                          ->orWhereHas('kontainerPivot', function($sq) {
+                              $sq->whereNull('nomor_seal')->orWhere('nomor_seal', '');
+                          });
+                    });
+                }
+            }
+
             // Eager load semua relasi
             $tandaTerimas = $query->with([
                     'term', 
@@ -96,11 +112,22 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $isLclData = true;
         } else {
             // Data default dari tabel tanda_terima_tanpa_surat_jalan untuk FCL dan Cargo
-            $query = TandaTerimaTanpaSuratJalan::query();
+            $query = TandaTerimaTanpaSuratJalan::with(['term', 'creator']);
 
             // Filter berdasarkan tipe jika bukan LCL
             if ($request->filled('tipe') && in_array($tipe, ['fcl', 'cargo'])) {
                 $query->where('tipe_kontainer', $tipe);
+            }
+
+            // Seal status filter untuk non-LCL
+            if ($request->filled('seal_status')) {
+                if ($request->seal_status === 'sealed') {
+                    $query->whereNotNull('no_seal')->where('no_seal', '!=', '');
+                } elseif ($request->seal_status === 'unsealed') {
+                    $query->where(function($q) {
+                        $q->whereNull('no_seal')->orWhere('no_seal', '');
+                    });
+                }
             }
 
             // Search functionality

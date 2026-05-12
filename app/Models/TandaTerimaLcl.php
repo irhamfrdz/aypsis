@@ -137,7 +137,43 @@ namespace App\Models;
          */
         public function getNomorKontainerAttribute()
         {
-            return $this->kontainerPivot()->latest()->first()?->nomor_kontainer;
+            // First check if it has a direct column (if it was added)
+            if (isset($this->attributes['nomor_kontainer']) && !empty($this->attributes['nomor_kontainer'])) {
+                return $this->attributes['nomor_kontainer'];
+            }
+            
+            // Otherwise get from pivot collection (if loaded) or query
+            $pivot = $this->relationLoaded('kontainerPivot') 
+                ? $this->kontainerPivot->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->sortByDesc('created_at')->first()
+                : $this->kontainerPivot()->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->latest()->first();
+                
+            return $pivot?->nomor_kontainer;
+        }
+
+        /**
+         * Get nomor seal from pivot
+         */
+        public function getNomorSealAttribute()
+        {
+            // Try to find any pivot that has a seal
+            $pivot = $this->relationLoaded('kontainerPivot')
+                ? $this->kontainerPivot->whereNotNull('nomor_seal')->where('nomor_seal', '!=', '')->sortByDesc('created_at')->first()
+                : $this->kontainerPivot()->whereNotNull('nomor_seal')->where('nomor_seal', '!=', '')->latest()->first();
+                
+            return $pivot ? $pivot->nomor_seal : null;
+        }
+
+        /**
+         * Get tanggal seal from pivot
+         */
+        public function getTanggalSealAttribute()
+        {
+            $pivot = $this->relationLoaded('kontainerPivot')
+                ? $this->kontainerPivot->whereNotNull('nomor_seal')->where('nomor_seal', '!=', '')->sortByDesc('created_at')->first()
+                : $this->kontainerPivot()->whereNotNull('nomor_seal')->where('nomor_seal', '!=', '')->latest()->first();
+                
+            $date = $pivot ? $pivot->tanggal_seal : null;
+            return $date ? \Carbon\Carbon::parse($date) : null;
         }
         
         /**

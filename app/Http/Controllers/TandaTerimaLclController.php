@@ -233,7 +233,8 @@ class TandaTerimaLclController extends Controller
             'tujuanPengiriman', 
             'items',
             'createdBy',
-            'updatedBy'
+            'updatedBy',
+            'kontainerPivot'
         ])->findOrFail($id);
         
         return view('tanda-terima-tanpa-surat-jalan.show-lcl', compact('tandaTerima'));
@@ -649,18 +650,7 @@ class TandaTerimaLclController extends Controller
 
             // If seal is filled, automatically create prospek
             if ($shouldCreateProspek) {
-                $this->createProspekFromLcl($ids, $prospekCreated, $prospekMessage);
-                
-                // Update prospek with seal number if created
-                if ($prospekCreated && $nomorSeal) {
-                    $prospek = Prospek::where('nomor_kontainer', $request->nomor_kontainer)
-                        ->orderBy('created_at', 'desc')
-                        ->first();
-                    
-                    if ($prospek) {
-                        $prospek->update(['no_seal' => $nomorSeal]);
-                    }
-                }
+                $this->createProspekFromLcl($ids, $prospekCreated, $prospekMessage, $nomorSeal, now()->format('Y-m-d'));
             }
         });
 
@@ -714,17 +704,22 @@ class TandaTerimaLclController extends Controller
         $prospekMessage = '';
 
         DB::transaction(function () use ($ids, $request, &$prospekCreated, &$prospekMessage) {
-            // Update seal information
-            TandaTerimaLcl::whereIn('id', $ids)->update([
+            // Update seal information in PIVOT table (since main LCL table doesn't have seal columns)
+            \App\Models\TandaTerimaLclKontainerPivot::whereIn('tanda_terima_lcl_id', $ids)->update([
                 'nomor_seal' => $request->nomor_seal,
                 'tanggal_seal' => $request->tanggal_seal,
+                'updated_at' => now()
+            ]);
+
+            // Update main tanda terima records audit trail
+            TandaTerimaLcl::whereIn('id', $ids)->update([
                 'updated_by' => Auth::id(),
                 'updated_at' => now()
             ]);
 
             // If kirim_ke_prospek is checked, create prospek entry
             if ($request->has('kirim_ke_prospek') && $request->kirim_ke_prospek) {
-                $this->createProspekFromLcl($ids, $prospekCreated, $prospekMessage);
+                $this->createProspekFromLcl($ids, $prospekCreated, $prospekMessage, $request->nomor_seal, $request->tanggal_seal);
             }
         });
 
@@ -1231,9 +1226,8 @@ class TandaTerimaLclController extends Controller
 
     /**
      * Create prospek entry from LCL data
-
      */
-    private function createProspekFromLcl($ids, &$prospekCreated, &$prospekMessage)
+    private function createProspekFromLcl($ids, &$prospekCreated, &$prospekMessage, $nomorSeal = null, $tanggalSeal = null)
     {
         try {
             // Get the LCL data with all pivot relationships
@@ -1300,7 +1294,8 @@ class TandaTerimaLclController extends Controller
                 'ukuran' => $sizeKontainer,
                 'tipe' => 'LCL',
                 'nomor_kontainer' => $nomorKontainer,
-                'no_seal' => '', // Will be filled by assignContainer if seal is provided
+                'no_seal' => $nomorSeal ?: ($kontainerPivot->nomor_seal ?? ''), 
+                'tanggal' => $tanggalSeal ?: ($kontainerPivot->tanggal_seal ?? now()->format('Y-m-d')),
                 'tujuan_pengiriman' => $firstTandaTerima->tujuanPengiriman->nama_tujuan ?? $allPenerima->first() ?? '',
                 'nama_kapal' => '', // Will be filled later in prospek
                 'keterangan' => 'Transfer dari Tanda Terima LCL - Total: ' . $tandaTerimas->count() . ' items',

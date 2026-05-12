@@ -5365,6 +5365,11 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/tagihan', [App\Http\Controllers\ReportTagihanController::class, 'index'])->name('tagihan.index');
     Route::get('/tagihan/export', [App\Http\Controllers\ReportTagihanController::class, 'export'])->name('tagihan.export');
 
+    // Report Tanda Terima Jakarta
+    Route::get('/tanda-terima-jakarta', [App\Http\Controllers\ReportTandaTerimaJakartaController::class, 'index'])->name('tanda-terima-jakarta.index');
+    Route::get('/tanda-terima-jakarta/view', [App\Http\Controllers\ReportTandaTerimaJakartaController::class, 'view'])->name('tanda-terima-jakarta.view');
+    Route::get('/tanda-terima-jakarta/export', [App\Http\Controllers\ReportTandaTerimaJakartaController::class, 'export'])->name('tanda-terima-jakarta.export');
+
     // Report Kas Truck
     Route::get('/kas-truck', [App\Http\Controllers\Report\KasTruckController::class, 'index'])->name('kas-truck.index');
     Route::get('/kas-truck/view', [App\Http\Controllers\Report\KasTruckController::class, 'view'])->name('kas-truck.view');

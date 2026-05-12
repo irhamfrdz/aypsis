@@ -305,12 +305,19 @@
                                     <td class="px-2 py-2 whitespace-nowrap">
                                         <div class="text-[11px] font-medium text-gray-900">
                                             @if(isset($isLclData) && $isLclData)
-                                                {{ $tandaTerima->kontainerPivot->first()->nomor_kontainer ?? '-' }}
+                                                @php $firstPivot = $tandaTerima->kontainerPivot->first(); @endphp
+                                                {{ $firstPivot->nomor_kontainer ?? '-' }}
+                                                @if($firstPivot && $firstPivot->nomor_seal)
+                                                    <span class="block text-[9px] text-green-600 font-bold mt-0.5"><i class="fas fa-lock text-[8px] mr-0.5"></i>{{ $firstPivot->nomor_seal }}</span>
+                                                @endif
                                                 @if($tandaTerima->kontainerPivot && $tandaTerima->kontainerPivot->count() > 1)
                                                     <span class="text-[10px] text-blue-600 font-bold">+{{ $tandaTerima->kontainerPivot->count() - 1 }}</span>
                                                 @endif
                                             @else
                                                 {{ $tandaTerima->no_kontainer ?? '-' }}
+                                                @if($tandaTerima->no_seal)
+                                                    <span class="block text-[9px] text-green-600 font-bold mt-0.5"><i class="fas fa-lock text-[8px] mr-0.5"></i>{{ $tandaTerima->no_seal }}</span>
+                                                @endif
                                             @endif
                                         </div>
                                         <div class="text-[10px] text-gray-500 mt-0.5">
