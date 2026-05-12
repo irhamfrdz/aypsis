@@ -143,6 +143,56 @@
                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">{{ old('keterangan', $asuransiTandaTerima->keterangan) }}</textarea>
                         @error('keterangan') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
+
+                    @php
+                        $receiptImages = [];
+                        $source = $asuransiTandaTerima->source;
+                        if ($source) {
+                            $rawImages = null;
+                            if ($asuransiTandaTerima->tanda_terima_id) {
+                                $rawImages = $source->gambar_checkpoint;
+                                if (empty($rawImages) && $source->suratJalan) {
+                                    $rawImages = $source->suratJalan->gambar_checkpoint;
+                                }
+                            } elseif ($asuransiTandaTerima->tanda_terima_tanpa_sj_id) {
+                                $rawImages = $source->gambar_tanda_terima;
+                            } elseif ($asuransiTandaTerima->tanda_terima_lcl_id) {
+                                $rawImages = $source->gambar_surat_jalan;
+                            }
+
+                            if ($rawImages) {
+                                $decoded = is_string($rawImages) ? json_decode($rawImages, true) : $rawImages;
+                                if (is_array($decoded)) {
+                                    foreach ($decoded as $img) {
+                                        if ($img) {
+                                            $path = str_replace('public/', '', $img);
+                                            $receiptImages[] = asset('storage/' . $path);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    @endphp
+
+                    @if(!empty($receiptImages))
+                        <div class="md:col-span-2 mt-6 pt-6 border-t border-gray-100">
+                            <label class="block text-xs font-bold text-blue-700 uppercase mb-3">Lampiran Gambar Tanda Terima</label>
+                            <div class="flex flex-wrap gap-3">
+                                @foreach($receiptImages as $imgUrl)
+                                    <div class="relative group">
+                                        <a href="{{ $imgUrl }}" target="_blank" class="block w-20 h-20 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition shadow-sm">
+                                            <img src="{{ $imgUrl }}" class="w-full h-full object-cover">
+                                        </a>
+                                        <a href="{{ $imgUrl }}" download class="absolute -bottom-1 -right-1 p-1.5 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition opacity-0 group-hover:opacity-100 flex items-center justify-center transform hover:scale-110 z-10">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                @<ctrl95>foreach
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="mt-8 flex justify-end space-x-3">

@@ -188,6 +188,56 @@
                     @endif
                 </div>
 
+                @php
+                    $receiptImages = [];
+                    $source = $asuransiTandaTerima->source;
+                    if ($source) {
+                        $rawImages = null;
+                        if ($asuransiTandaTerima->tanda_terima_id) {
+                            $rawImages = $source->gambar_checkpoint;
+                            if (empty($rawImages) && $source->suratJalan) {
+                                $rawImages = $source->suratJalan->gambar_checkpoint;
+                            }
+                        } elseif ($asuransiTandaTerima->tanda_terima_tanpa_sj_id) {
+                            $rawImages = $source->gambar_tanda_terima;
+                        } elseif ($asuransiTandaTerima->tanda_terima_lcl_id) {
+                            $rawImages = $source->gambar_surat_jalan;
+                        }
+
+                        if ($rawImages) {
+                            $decoded = is_string($rawImages) ? json_decode($rawImages, true) : $rawImages;
+                            if (is_array($decoded)) {
+                                foreach ($decoded as $img) {
+                                    if ($img) {
+                                        $path = str_replace('public/', '', $img);
+                                        $receiptImages[] = asset('storage/' . $path);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                @endphp
+
+                @if(!empty($receiptImages))
+                    <div class="md:col-span-2 mt-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Lampiran Gambar Tanda Terima</h3>
+                        <div class="flex flex-wrap gap-4">
+                            @foreach($receiptImages as $imgUrl)
+                                <div class="relative group">
+                                    <a href="{{ $imgUrl }}" target="_blank" class="block w-24 h-24 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition shadow-sm">
+                                        <img src="{{ $imgUrl }}" class="w-full h-full object-cover">
+                                    </a>
+                                    <a href="{{ $imgUrl }}" download class="absolute -bottom-1 -right-1 p-1.5 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition opacity-0 group-hover:opacity-100 flex items-center justify-center transform hover:scale-110 z-10">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Audit info -->
                 <div class="md:col-span-2 pt-6 border-t mt-4 text-xs text-gray-500 flex justify-between">
                     <span>Dibuat oleh: {{ $asuransiTandaTerima->creator->name ?? 'System' }} ({{ $asuransiTandaTerima->created_at->format('d/m/Y H:i') }})</span>
