@@ -88,9 +88,38 @@
                 <div class="md:col-span-2">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Informasi Sumber Data</h3>
                     <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                        <label class="block text-xs text-gray-500 uppercase font-bold mb-2">Terhubung ke {{ $asuransiTandaTerima->source_type_name }}</label>
-                        <div class="text-lg text-gray-900">
-                            {{ $asuransiTandaTerima->source_number }}
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <label class="block text-xs text-gray-500 uppercase font-bold mb-2">Terhubung ke {{ $asuransiTandaTerima->source_type_name }}</label>
+                                <div class="text-xl font-bold text-gray-900">
+                                    {{ $asuransiTandaTerima->source_number }}
+                                </div>
+                            </div>
+                            @if($asuransiTandaTerima->source)
+                                @php
+                                    $route = null;
+                                    $canView = false;
+                                    if ($asuransiTandaTerima->tanda_terima_id) {
+                                        $route = route('tanda-terima.show', $asuransiTandaTerima->tanda_terima_id);
+                                        $canView = auth()->user()->can('tanda-terima-view');
+                                    } elseif ($asuransiTandaTerima->tanda_terima_tanpa_sj_id) {
+                                        $route = route('tanda-terima-tanpa-surat-jalan.show', $asuransiTandaTerima->tanda_terima_tanpa_sj_id);
+                                        $canView = auth()->user()->can('tanda-terima-tanpa-surat-jalan-view');
+                                    } elseif ($asuransiTandaTerima->tanda_terima_lcl_id) {
+                                        $route = route('tanda-terima-lcl.show', $asuransiTandaTerima->tanda_terima_lcl_id);
+                                        $canView = auth()->user()->can('tanda-terima-lcl-view');
+                                    }
+                                @endphp
+                                
+                                @if($route && $canView)
+                                    <a href="{{ $route }}" target="_blank" class="flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition duration-200 bg-white px-3 py-2 rounded-md shadow-sm border border-blue-100">
+                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                        </svg>
+                                        Lihat Tanda Terima
+                                    </a>
+                                @endif
+                            @endif
                         </div>
                         @if($asuransiTandaTerima->source)
                             <div class="mt-4 grid grid-cols-2 gap-4 text-sm mt-4 pt-4 border-t border-gray-200">
