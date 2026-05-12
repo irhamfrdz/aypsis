@@ -911,14 +911,14 @@ class PranotaUangRitController extends Controller
             $totalTabunganKeseluruhan = 0.0;
             $totalBpjsKeseluruhan = 0.0;
             
-            foreach ($supirDetails as $supirNama => $details) {
+            foreach ($supirDetails as $detailId => $details) {
                 $hutang = floatval($details['hutang'] ?? 0);
                 $tabungan = floatval($details['tabungan'] ?? 0);
                 $bpjs = floatval($details['bpjs'] ?? 0);
                 
-                // Update detail per supir
-                PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
-                    ->where('supir_nama', $supirNama)
+                // Update detail per supir using the primary key (ID)
+                // This is more reliable than using the name which caused a type mismatch
+                PranotaUangRitSupirDetail::where('id', $detailId)
                     ->update([
                         'hutang' => $hutang,
                         'tabungan' => $tabungan,
