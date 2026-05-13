@@ -114,6 +114,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     'no_seal' => $item->no_seal,
                     'size' => $item->size,
                     'pengirim' => $item->pengirim,
+                    'shipper_address_raw' => null, // TandaTerima doesn't have this field directly
                     'penerima' => $item->penerima,
                     'address_raw' => $item->alamat_penerima,
                     'cp_raw' => $item->pic_penerima,
@@ -165,6 +166,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     'no_seal' => $item->no_seal,
                     'size' => $item->size_kontainer,
                     'pengirim' => $item->pengirim,
+                    'shipper_address_raw' => $item->alamat_pengirim,
                     'penerima' => $item->penerima,
                     'address_raw' => $item->alamat_penerima,
                     'cp_raw' => $item->pic_penerima ?: $item->pic,
@@ -202,6 +204,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     'no_seal' => $item->nomor_seal,
                     'size' => $item->kontainerPivot->first()->size_kontainer ?? '-',
                     'pengirim' => $item->nama_pengirim,
+                    'shipper_address_raw' => $item->alamat_pengirim,
                     'penerima' => $item->nama_penerima,
                     'address_raw' => $item->alamat_penerima,
                     'cp_raw' => $item->pic_penerima,
@@ -216,15 +219,18 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
 
         // Enhance with lookup data
         $enhancedData = $data->map(function($item) {
-            $name = strtoupper(trim($item['penerima']));
-            $lookup = $this->penerimaLookup[$name] ?? null;
+            $pName = strtoupper(trim($item['penerima']));
+            $pLookup = $this->penerimaLookup[$pName] ?? null;
             
+            $sName = strtoupper(trim($item['pengirim']));
+            $sLookup = $this->penerimaLookup[$sName] ?? null;
+
             // Prioritize address and CP from the record itself, fallback to lookup
-            $item['p_address'] = $item['address_raw'] ?: ($lookup['address'] ?? '-');
-            $item['p_cp'] = $item['cp_raw'] ?: ($lookup['cp'] ?? '-');
-            
-            // NPWP usually only in lookup
-            $item['p_npwp'] = $lookup['npwp'] ?? '-';
+            $item['p_address'] = $item['address_raw'] ?: ($pLookup['address'] ?? '-');
+            $item['p_cp'] = $item['cp_raw'] ?: ($pLookup['cp'] ?? '-');
+            $item['p_npwp'] = $pLookup['npwp'] ?? '-';
+
+            $item['s_address'] = $item['shipper_address_raw'] ?: ($sLookup['address'] ?? '-');
             
             return $item;
         });
@@ -393,6 +399,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'Meass',
             'Size',
             'SHIPPER',
+            'Shipper Address',
             'CONSIGNEE',
             'Consignee Address',
             'NPWP',
@@ -429,14 +436,15 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                 '', // Q: Meass
                 $row['size'], // R: Size
                 '', // S: SHIPPER
-                '', // T: CONSIGNEE
-                '', // U: Address
-                '', // V: NPWP
-                '', // W: Contact Person
-                '', // X: Document PPFTZ
-                '', // Y: TERM
-                $row['tujuan'], // Z
-                ''  // AA: Keterangan
+                '', // T: Shipper Address
+                '', // U: CONSIGNEE
+                '', // V: Address
+                '', // W: NPWP
+                '', // X: Contact Person
+                '', // Y: Document PPFTZ
+                '', // Z: TERM
+                $row['tujuan'], // AA
+                ''  // AB: Keterangan
             ];
         }
 
@@ -461,14 +469,15 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             $row['p_meass'] ?? '', // Q: Meass
             $row['size'], // R: Size
             $row['pengirim'], // S: SHIPPER
-            $row['penerima'], // T: CONSIGNEE
-            $row['p_address'] ?? '-', // U: Address
-            $row['p_npwp'] ?? '-', // V: NPWP
-            $row['p_cp'] ?? '-', // W: Contact Person
-            $row['ppftz'] ?? '-', // X: Document PPFTZ
-            $row['term'] ?? '-', // Y: TERM
-            $row['tujuan'], // Z: Tujuan
-            $row['keterangan'] // AA: Keterangan
+            $row['s_address'] ?? '-', // T: Shipper Address
+            $row['penerima'], // U: CONSIGNEE
+            $row['p_address'] ?? '-', // V: Address
+            $row['p_npwp'] ?? '-', // W: NPWP
+            $row['p_cp'] ?? '-', // X: Contact Person
+            $row['ppftz'] ?? '-', // Y: Document PPFTZ
+            $row['term'] ?? '-', // Z: TERM
+            $row['tujuan'], // AA: Tujuan
+            $row['keterangan'] // AB: Keterangan
         ];
 
         // If it's a combined standard row, inject the container header values
@@ -493,9 +502,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'C' => 15, 'D' => 15, 'E' => 20, 'F' => 20,
             'G' => 8,  'H' => 10, 'I' => 20, 'J' => 8,  'K' => 8,  'L' => 15,
             'M' => 10, 'N' => 12, 'O' => 40, 'P' => 12, 'Q' => 12, // Perincian
-            'R' => 10, 'S' => 25, 'T' => 25, // Size, Shipper, Consignee
-            'U' => 40, 'V' => 20, 'W' => 20, 'X' => 20, 'Y' => 15, // Address, NPWP, CP, PPFTZ, TERM
-            'Z' => 25, 'AA' => 30 // Tujuan, Keterangan
+            'R' => 10, 'S' => 25, 'T' => 35, 'U' => 25, // Size, Shipper, Shipper Address, Consignee
+            'V' => 40, 'W' => 20, 'X' => 20, 'Y' => 20, 'Z' => 15, // Consignee Address, NPWP, CP, PPFTZ, TERM
+            'AA' => 25, 'AB' => 30 // Tujuan, Keterangan
         ];
         foreach ($widths as $col => $width) {
             $sheet->getColumnDimension($col)->setWidth($width);
@@ -517,14 +526,15 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'M' => 'PERINCIAN', // Main header for perincian
             'R' => 'Size',
             'S' => 'SHIPPER',
-            'T' => 'CONSIGNEE',
-            'U' => 'Consignee Address',
-            'V' => 'NPWP',
-            'W' => 'Contact Person',
-            'X' => 'Document PPFTZ',
-            'Y' => 'TERM',
-            'Z' => 'Tujuan',
-            'AA' => 'Keterangan'
+            'T' => 'Shipper Address',
+            'U' => 'CONSIGNEE',
+            'V' => 'Consignee Address',
+            'W' => 'NPWP',
+            'X' => 'Contact Person',
+            'Y' => 'Document PPFTZ',
+            'Z' => 'TERM',
+            'AA' => 'Tujuan',
+            'AB' => 'Keterangan'
         ];
 
         foreach ($headerValues as $col => $val) {
@@ -554,9 +564,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         
         // Standard Headers (Light Gray)
         $sheet->getStyle('A1:F2')->applyFromArray($this->getStandardHeaderStyle());
-        $sheet->getStyle('R1:T2')->applyFromArray($this->getStandardHeaderStyle()); // Size to Consignee
-        $sheet->getStyle('U1:Y2')->applyFromArray($this->getStandardHeaderStyle()); // New columns
-        $sheet->getStyle('Z1:AA2')->applyFromArray($this->getStandardHeaderStyle()); // End columns
+        $sheet->getStyle('R1:U2')->applyFromArray($this->getStandardHeaderStyle()); // Size to Consignee
+        $sheet->getStyle('V1:Z2')->applyFromArray($this->getStandardHeaderStyle()); // New columns
+        $sheet->getStyle('AA1:AB2')->applyFromArray($this->getStandardHeaderStyle()); // End columns
 
         // Manifest Section (Light Green)
         $sheet->getStyle('G1:L2')->applyFromArray([
@@ -585,12 +595,12 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         ]);
 
         // General styling for all headers (Row 1 & 2)
-        $sheet->getStyle('A1:AA2')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AA2')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:AB2')->getFont()->setBold(true);
+        $sheet->getStyle('A1:AB2')->getAlignment()->setWrapText(true);
         
         // Style for content data
         return [
-            'A:AA' => [
+            'A:AB' => [
                 'alignment' => [
                     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
                     'wrapText' => true,
