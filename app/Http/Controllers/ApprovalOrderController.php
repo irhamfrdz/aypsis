@@ -162,7 +162,15 @@ class ApprovalOrderController extends Controller
             'alamat_penerima' => 'nullable|string',
             'ftz03_option' => 'required|in:exclude,include,none',
             'sppb_option' => 'required|in:exclude,include,none',
-            'buruh_bongkar_option' => 'required|in:exclude,include,none'
+            'buruh_bongkar_option' => 'required|in:exclude,include,none',
+            'nama_barang_dimensi' => 'nullable|array',
+            'jumlah_dimensi' => 'nullable|array',
+            'satuan_dimensi' => 'nullable|array',
+            'panjang' => 'nullable|array',
+            'lebar' => 'nullable|array',
+            'tinggi' => 'nullable|array',
+            'meter_kubik' => 'nullable|array',
+            'tonase' => 'nullable|array',
         ]);
 
         try {
@@ -198,6 +206,42 @@ class ApprovalOrderController extends Controller
             // Update Buruh Bongkar
             $order->exclude_buruh_bongkar = $request->buruh_bongkar_option == 'exclude';
             $order->include_buruh_bongkar = $request->buruh_bongkar_option == 'include';
+
+            // Process Dimensi & Volume
+            $dimensiItems = [];
+            $totalJumlah = 0;
+            $totalTonase = 0;
+            $totalVolume = 0;
+            $namaBarangList = [];
+
+            if ($request->has('nama_barang_dimensi')) {
+                foreach ($request->nama_barang_dimensi as $key => $val) {
+                    // Check if row has any data
+                    if (empty($val) && empty($request->panjang[$key]) && empty($request->lebar[$key]) && empty($request->tonase[$key])) continue;
+                    
+                    $item = [
+                        'nama_barang' => $val,
+                        'jumlah' => $request->jumlah_dimensi[$key] ?? 0,
+                        'satuan' => $request->satuan_dimensi[$key] ?? '',
+                        'panjang' => $request->panjang[$key] ?? 0,
+                        'lebar' => $request->lebar[$key] ?? 0,
+                        'tinggi' => $request->tinggi[$key] ?? 0,
+                        'meter_kubik' => $request->meter_kubik[$key] ?? 0,
+                        'tonase' => $request->tonase[$key] ?? 0,
+                    ];
+                    $dimensiItems[] = $item;
+                    $totalJumlah += (int)($item['jumlah'] ?? 0);
+                    $totalTonase += (float)($item['tonase'] ?? 0);
+                    $totalVolume += (float)($item['meter_kubik'] ?? 0);
+                    if (!empty($val)) $namaBarangList[] = $val;
+                }
+            }
+
+            $order->dimensi_items = $dimensiItems;
+            $order->jumlah = $totalJumlah;
+            $order->tonase = $totalTonase;
+            $order->meter_kubik = $totalVolume;
+            $order->nama_barang = $namaBarangList;
             
             $order->save();
 
@@ -224,7 +268,13 @@ class ApprovalOrderController extends Controller
                         'pengirim' => $namaPengirim,
                         'alamat_pengirim' => $alamatPengirim,
                         'penerima' => $namaPenerima,
-                        'alamat_penerima' => $alamatPenerima
+                        'alamat_penerima' => $alamatPenerima,
+                        'jumlah' => $totalJumlah,
+                        'tonase' => $totalTonase,
+                        'meter_kubik' => $totalVolume,
+                        'dimensi_items' => $dimensiItems,
+                        'nama_barang' => $namaBarangList,
+                        'satuan' => count($dimensiItems) > 0 ? ($dimensiItems[0]['satuan'] ?? null) : null,
                     ]);
                 }
             }

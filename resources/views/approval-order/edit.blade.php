@@ -8,6 +8,12 @@
 @endsection
 
 @section('content')
+@php
+    $dimensiItems = $order->dimensi_items ?? [];
+    if (is_string($dimensiItems)) {
+        $dimensiItems = json_decode($dimensiItems, true) ?? [];
+    }
+@endphp
 <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -393,6 +399,151 @@
                     </div>
                 </div>
 
+                <!-- Dimensi & Volume Section -->
+                <div class="mb-6 border-t border-gray-200 pt-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-base font-semibold text-gray-900">Dimensi dan Volume</h3>
+                        <button type="button" id="add-dimensi-btn"
+                                class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-xs font-medium rounded hover:bg-indigo-700 transition duration-200">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            + Tambah Dimensi
+                        </button>
+                    </div>
+
+                    <div id="dimensi-container" class="space-y-4">
+                        @if(count($dimensiItems) > 0)
+                            @foreach($dimensiItems as $index => $item)
+                            <div class="dimensi-row p-4 bg-gray-50 rounded-lg border border-gray-200 relative">
+                                @if($index > 0)
+                                <button type="button" class="remove-dimensi-btn absolute top-2 right-2 text-red-500 hover:text-red-700 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                                @endif
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Nama Barang</label>
+                                        <input type="text" name="nama_barang_dimensi[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="Nama barang"
+                                               value="{{ $item['nama_barang'] ?? '' }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Jumlah</label>
+                                        <input type="number" name="jumlah_dimensi[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0" min="0" step="1"
+                                               value="{{ $item['jumlah'] ?? '' }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Satuan</label>
+                                        <input type="text" name="satuan_dimensi[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="Pcs, Kg, Box"
+                                               value="{{ $item['satuan'] ?? '' }}">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Panjang (m)</label>
+                                        <input type="number" name="panjang[]"
+                                               class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0.000" min="0" step="0.001"
+                                               value="{{ $item['panjang'] ?? '' }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Lebar (m)</label>
+                                        <input type="number" name="lebar[]"
+                                               class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0.000" min="0" step="0.001"
+                                               value="{{ $item['lebar'] ?? '' }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Tinggi (m)</label>
+                                        <input type="number" name="tinggi[]"
+                                               class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0.000" min="0" step="0.001"
+                                               value="{{ $item['tinggi'] ?? '' }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Volume (m³)</label>
+                                        <input type="number" name="meter_kubik[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm cursor-not-allowed"
+                                               placeholder="0.000" min="0" step="0.001" readonly
+                                               value="{{ $item['meter_kubik'] ?? '' }}">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Tonase (Ton)</label>
+                                        <input type="number" name="tonase[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0.000" min="0" step="0.001"
+                                               value="{{ $item['tonase'] ?? '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        @else
+                            <div class="dimensi-row p-4 bg-gray-50 rounded-lg border border-gray-200 relative">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Nama Barang</label>
+                                        <input type="text" name="nama_barang_dimensi[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="Nama barang">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Jumlah</label>
+                                        <input type="number" name="jumlah_dimensi[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0" min="0" step="1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Satuan</label>
+                                        <input type="text" name="satuan_dimensi[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="Pcs, Kg, Box">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Panjang (m)</label>
+                                        <input type="number" name="panjang[]"
+                                               class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0.000" min="0" step="0.001">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Lebar (m)</label>
+                                        <input type="number" name="lebar[]"
+                                               class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0.000" min="0" step="0.001">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Tinggi (m)</label>
+                                        <input type="number" name="tinggi[]"
+                                               class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0.000" min="0" step="0.001">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Volume (m³)</label>
+                                        <input type="number" name="meter_kubik[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm cursor-not-allowed"
+                                               placeholder="0.000" min="0" step="0.001" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Tonase (Ton)</label>
+                                        <input type="number" name="tonase[]"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                               placeholder="0.000" min="0" step="0.001">
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                     <a href="{{ old('return_url', $return_url ?? request('return_url')) ?: route('approval-order.index') }}" 
                        class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -753,6 +904,111 @@
 
         // Initialize dropdowns after all listeners are attached
         initDropdowns();
+
+        // Dimensi & Volume handlers
+        const addButton = document.getElementById('add-dimensi-btn');
+        const container = document.getElementById('dimensi-container');
+
+        if (addButton && container) {
+            addButton.addEventListener('click', function() {
+                const newRow = document.createElement('div');
+                newRow.className = 'dimensi-row p-4 bg-gray-50 rounded-lg border border-gray-200 relative mt-4';
+                newRow.innerHTML = `
+                    <button type="button" class="remove-dimensi-btn absolute top-2 right-2 text-red-500 hover:text-red-700 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Nama Barang</label>
+                            <input type="text" name="nama_barang_dimensi[]" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Nama barang">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Jumlah</label>
+                            <input type="number" name="jumlah_dimensi[]" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="0" min="0" step="1">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Satuan</label>
+                            <input type="text" name="satuan_dimensi[]" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Pcs, Kg, Box">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Panjang (m)</label>
+                            <input type="number" name="panjang[]" class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="0.000" min="0" step="0.001">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Lebar (m)</label>
+                            <input type="number" name="lebar[]" class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="0.000" min="0" step="0.001">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Tinggi (m)</label>
+                            <input type="number" name="tinggi[]" class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="0.000" min="0" step="0.001">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Volume (m³)</label>
+                            <input type="number" name="meter_kubik[]" class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm cursor-not-allowed" placeholder="0.000" min="0" step="0.001" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Tonase (Ton)</label>
+                            <input type="number" name="tonase[]" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="0.000" min="0" step="0.001">
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(newRow);
+
+                newRow.querySelector('.remove-dimensi-btn').addEventListener('click', function() {
+                    newRow.remove();
+                });
+
+                newRow.querySelectorAll('.dimensi-input, [name^="jumlah_dimensi"]').forEach(input => {
+                    input.addEventListener('input', function() {
+                        calculateVolume(newRow);
+                    });
+                });
+            });
+        }
+
+        // Attach listeners to existing rows
+        document.querySelectorAll('.dimensi-row').forEach(row => {
+            row.querySelectorAll('.dimensi-input, [name^="jumlah_dimensi"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    calculateVolume(row);
+                });
+            });
+
+            const removeBtn = row.querySelector('.remove-dimensi-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function() {
+                    row.remove();
+                });
+            }
+        });
+
+        // Initial volume calculation
+        document.querySelectorAll('.dimensi-row').forEach(row => calculateVolume(row));
     });
+
+    function calculateVolume(rowElement) {
+        const panjangInput = rowElement.querySelector('[name^="panjang"]');
+        const lebarInput = rowElement.querySelector('[name^="lebar"]');
+        const tinggiInput = rowElement.querySelector('[name^="tinggi"]');
+        const jumlahInput = rowElement.querySelector('[name^="jumlah_dimensi"]');
+        const volumeInput = rowElement.querySelector('[name^="meter_kubik"]');
+
+        const panjang = parseFloat(panjangInput.value) || 0;
+        const lebar = parseFloat(lebarInput.value) || 0;
+        const tinggi = parseFloat(tinggiInput.value) || 0;
+        const jumlah = parseFloat(jumlahInput.value) || 0;
+
+        if (panjang > 0 && lebar > 0 && tinggi > 0 && jumlah > 0) {
+            const volume = panjang * tinggi * lebar * jumlah;
+            volumeInput.value = volume.toFixed(3);
+        } else {
+            volumeInput.value = '';
+        }
+    }
 </script>
 @endpush

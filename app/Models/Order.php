@@ -43,7 +43,12 @@ class Order extends Model
         'alamat_pengirim',
         'jenis_barang_id',
         'status',
-        'catatan'
+        'catatan',
+        'jumlah',
+        'tonase',
+        'meter_kubik',
+        'dimensi_items',
+        'nama_barang'
     ];
 
     protected $casts = [
@@ -60,6 +65,11 @@ class Order extends Model
         'units' => 'integer',
         'sisa' => 'integer',
         'completion_percentage' => 'decimal:2',
+        'dimensi_items' => 'array',
+        'nama_barang' => 'array',
+        'tonase' => 'decimal:3',
+        'meter_kubik' => 'decimal:3',
+        'jumlah' => 'integer',
     ];
 
     // Accessor to ensure processing_history is always an array
