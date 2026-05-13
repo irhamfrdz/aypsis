@@ -1044,14 +1044,6 @@ class TandaTerimaController extends Controller
                 'status' => 'sudah_checkpoint'
             ]);
 
-            // Sync back cargo data to the original Order for consistency
-            if ($suratJalan->order) {
-                $suratJalan->order->update([
-                    'dimensi_items' => $tandaTerima->dimensi_items,
-                    'alamat_pengirim' => $tandaTerima->alamat_pengirim,
-                ]);
-            }
-
             // Update related Prospek data for newly created TandaTerima
             $updatedProspekCount = $this->updateRelatedProspekData($tandaTerima, $request);
 
@@ -1583,14 +1575,6 @@ class TandaTerimaController extends Controller
                             'no_kontainer' => $suratJalanUpdateData['no_kontainer'] ?? null,
                             'no_seal' => $suratJalanUpdateData['no_seal'] ?? null,
                             'tanggal_checkpoint' => $suratJalanUpdateData['tanggal_checkpoint'] ?? null,
-                        ]);
-                    }
-
-                    // Sync back cargo data to the original Order for consistency
-                    if ($suratJalan->order) {
-                        $suratJalan->order->update([
-                            'dimensi_items' => $tandaTerima->dimensi_items,
-                            'alamat_pengirim' => $tandaTerima->alamat_pengirim,
                         ]);
                     }
                 }
