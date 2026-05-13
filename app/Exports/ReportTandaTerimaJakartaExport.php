@@ -75,16 +75,35 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                 // Extract items for perincian
                 $items = [];
                 if (!empty($item->dimensi_items)) {
-                    $items = collect($item->dimensi_items)->map(fn($i) => [
-                        'qty' => $i['jumlah'] ?? $i['qty'] ?? 0,
-                        'satuan' => $i['satuan'] ?? '',
-                        'nama' => $i['nama_barang'] ?? $i['nama'] ?? ''
-                    ])->toArray();
+                    $items = collect($item->dimensi_items)->map(function($i) use ($item) {
+                        $qty = data_get($i, 'jumlah') ?? data_get($i, 'qty') ?? 0;
+                        $satuan = data_get($i, 'satuan') ?? '';
+                        $nama = data_get($i, 'nama_barang') ?? data_get($i, 'nama') ?? '';
+                        
+                        // Fallback to jenis_barang if nama is empty
+                        if (empty($nama)) {
+                            $nama = $item->jenis_barang;
+                        }
+                        
+                        return [
+                            'qty' => $qty,
+                            'satuan' => $satuan,
+                            'nama' => $nama
+                        ];
+                    })->toArray();
                 } else {
+                    $nama = $item->nama_barang;
+                    if (is_array($nama)) {
+                        $nama = implode(', ', $nama);
+                    }
+                    if (empty($nama)) {
+                        $nama = $item->jenis_barang;
+                    }
+
                     $items = [[
                         'qty' => $item->jumlah ?? 0,
                         'satuan' => $item->satuan ?? '',
-                        'nama' => is_array($item->nama_barang) ? implode(', ', $item->nama_barang) : $item->nama_barang
+                        'nama' => $nama
                     ]];
                 }
 
@@ -114,17 +133,27 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             ->with(['dimensiItems'])
             ->get()
             ->map(function($item) {
-                $items = $item->dimensiItems->map(fn($i) => [
-                    'qty' => $i->jumlah ?? 0,
-                    'satuan' => $i->satuan ?? '',
-                    'nama' => $i->nama_barang ?? ''
-                ])->toArray();
+                $items = $item->dimensiItems->map(function($i) use ($item) {
+                    $nama = $i->nama_barang;
+                    if (empty($nama)) {
+                        $nama = $item->jenis_barang;
+                    }
+                    return [
+                        'qty' => $i->jumlah ?? 0,
+                        'satuan' => $i->satuan ?? '',
+                        'nama' => $nama
+                    ];
+                })->toArray();
 
                 if (empty($items)) {
+                    $nama = $item->nama_barang;
+                    if (empty($nama)) {
+                        $nama = $item->jenis_barang;
+                    }
                     $items = [[
                         'qty' => $item->jumlah_barang ?? 0,
                         'satuan' => $item->satuan_barang ?? '',
-                        'nama' => $item->nama_barang ?? ''
+                        'nama' => $nama
                     ]];
                 }
 
@@ -154,11 +183,17 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             ->with(['tujuanKirim', 'kontainerPivot', 'items'])
             ->get()
             ->map(function($item) {
-                $items = $item->items->map(fn($i) => [
-                    'qty' => $i->jumlah ?? 0,
-                    'satuan' => $i->satuan ?? '',
-                    'nama' => $i->nama_barang ?? ''
-                ])->toArray();
+                $items = $item->items->map(function($i) use ($item) {
+                    $nama = $i->nama_barang;
+                    if (empty($nama)) {
+                        $nama = $item->kegiatan; // LCL often uses kegiatan as fallback for goods
+                    }
+                    return [
+                        'qty' => $i->jumlah ?? 0,
+                        'satuan' => $i->satuan ?? '',
+                        'nama' => $nama
+                    ];
+                })->toArray();
 
                 return [
                     'source' => 'LCL',
