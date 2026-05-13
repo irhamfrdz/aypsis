@@ -21,6 +21,14 @@
     }
     
     $jumlahKontainer = old('jumlah_kontainer', ($suratJalan->jumlah_kontainer ?: (count($nomorKontainerArray) ?: 1)));
+
+    $dimensiItems = [];
+    if ($suratJalan->order && $suratJalan->order->dimensi_items) {
+        $dimensiItems = $suratJalan->order->dimensi_items;
+        if (is_string($dimensiItems)) {
+            $dimensiItems = json_decode($dimensiItems, true) ?? [];
+        }
+    }
 @endphp
 
 <div class="container mx-auto px-4 py-8">
@@ -275,7 +283,7 @@
                                               id="alamat_pengirim"
                                               rows="3"
                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('alamat_pengirim') border-red-500 @enderror"
-                                              placeholder="Alamat lengkap pengirim">{{ old('alamat_pengirim') }}</textarea>
+                                              placeholder="Alamat lengkap pengirim">{{ old('alamat_pengirim', ($suratJalan->order ? $suratJalan->order->alamat_pengirim : '')) }}</textarea>
                                     @error('alamat_pengirim')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
@@ -886,160 +894,256 @@
                             </div>
 
                             <div id="dimensi-container">
-                                <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
-                                        <div>
-                                            <label for="nama_barang_0" class="block text-xs font-medium text-gray-500 mb-2">
-                                                Nama Barang
-                                            </label>
-                                            <input type="text"
-                                                   name="nama_barang[]"
-                                                   id="nama_barang_0"
-                                                   class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('nama_barang.0') ? 'border-red-500' : '' }}"
-                                                   placeholder="Nama barang"
-                                                   value="{{ old('nama_barang.0') }}"
-                                                   oninput="toggleUkuranField(this)">
-                                            @if($errors->has('nama_barang.0'))
-                                                <p class="mt-1 text-xs text-red-600">{{ $errors->first('nama_barang.0') }}</p>
-                                            @endif
+                                @if(count($dimensiItems) > 0)
+                                    @foreach($dimensiItems as $index => $item)
+                                    <div class="dimensi-row mb-4 pb-4 border-b border-purple-200 relative">
+                                        @if($index > 0)
+                                        <button type="button" class="remove-dimensi-btn absolute top-0 right-0 text-red-500 hover:text-red-700 transition">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                        @endif
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
+                                            <div>
+                                                <label for="nama_barang_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Nama Barang
+                                                </label>
+                                                <input type="text"
+                                                       name="nama_barang[]"
+                                                       id="nama_barang_{{ $index }}"
+                                                       class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('nama_barang.' . $index) ? 'border-red-500' : '' }}"
+                                                       placeholder="Nama barang"
+                                                       value="{{ old('nama_barang.' . $index, $item['nama_barang'] ?? '') }}"
+                                                       oninput="toggleUkuranField(this)">
+                                            </div>
+                                            <div class="ukuran-container hidden">
+                                                <label for="ukuran_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Ukuran
+                                                </label>
+                                                <input type="text"
+                                                       name="ukuran[]"
+                                                       id="ukuran_{{ $index }}"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="Contoh: 40x40"
+                                                       value="{{ old('ukuran.' . $index, $item['ukuran'] ?? '') }}">
+                                            </div>
+                                            <div>
+                                                <label for="jumlah_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Jumlah
+                                                </label>
+                                                <input type="number"
+                                                       name="jumlah[]"
+                                                       id="jumlah_{{ $index }}"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0"
+                                                       value="{{ old('jumlah.' . $index, $item['jumlah'] ?? '') }}"
+                                                       min="0"
+                                                       step="1">
+                                            </div>
+                                            <div>
+                                                <label for="satuan_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Satuan
+                                                </label>
+                                                <input type="text"
+                                                       name="satuan[]"
+                                                       id="satuan_{{ $index }}"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="Pcs, Kg, Box"
+                                                       value="{{ old('satuan.' . $index, $item['satuan'] ?? '') }}">
+                                            </div>
                                         </div>
-                                        <div class="ukuran-container hidden">
-                                            <label for="ukuran_0" class="block text-xs font-medium text-gray-500 mb-2">
-                                                Ukuran
-                                            </label>
-                                            <input type="text"
-                                                   name="ukuran[]"
-                                                   id="ukuran_0"
-                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('ukuran.0') ? 'border-red-500' : '' }}"
-                                                   placeholder="Contoh: 40x40"
-                                                   value="{{ old('ukuran.0') }}">
-                                            @if($errors->has('ukuran.0'))
-                                                <p class="mt-1 text-xs text-red-600">{{ $errors->first('ukuran.0') }}</p>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <label for="jumlah_0" class="block text-xs font-medium text-gray-500 mb-2">
-                                                Jumlah
-                                            </label>
-                                            <input type="number"
-                                                   name="jumlah[]"
-                                                   id="jumlah_0"
-                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('jumlah.0') ? 'border-red-500' : '' }}"
-                                                   placeholder="0"
-                                                   value="{{ old('jumlah.0') }}"
-                                                   min="0"
-                                                   step="1">
-                                            @if($errors->has('jumlah.0'))
-                                                <p class="mt-1 text-xs text-red-600">{{ $errors->first('jumlah.0') }}</p>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <label for="satuan_0" class="block text-xs font-medium text-gray-500 mb-2">
-                                                Satuan
-                                            </label>
-                                            <input type="text"
-                                                   name="satuan[]"
-                                                   id="satuan_0"
-                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('satuan.0') ? 'border-red-500' : '' }}"
-                                                   placeholder="Pcs, Kg, Box"
-                                                   value="{{ old('satuan.0') }}">
-                                            @if($errors->has('satuan.0'))
-                                                <p class="mt-1 text-xs text-red-600">{{ $errors->first('satuan.0') }}</p>
-                                            @endif
+
+                                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                            <div>
+                                                <label for="panjang_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Panjang (m)
+                                                </label>
+                                                <input type="number"
+                                                       name="panjang[]"
+                                                       id="panjang_{{ $index }}"
+                                                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0.000"
+                                                       value="{{ old('panjang.' . $index, $item['panjang'] ?? '') }}"
+                                                       min="0"
+                                                       step="0.001"
+                                                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                            </div>
+                                            <div>
+                                                <label for="lebar_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Lebar (m)
+                                                </label>
+                                                <input type="number"
+                                                       name="lebar[]"
+                                                       id="lebar_{{ $index }}"
+                                                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0.000"
+                                                       value="{{ old('lebar.' . $index, $item['lebar'] ?? '') }}"
+                                                       min="0"
+                                                       step="0.001"
+                                                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                            </div>
+                                            <div>
+                                                <label for="tinggi_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Tinggi (m)
+                                                </label>
+                                                <input type="number"
+                                                       name="tinggi[]"
+                                                       id="tinggi_{{ $index }}"
+                                                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0.000"
+                                                       value="{{ old('tinggi.' . $index, $item['tinggi'] ?? '') }}"
+                                                       min="0"
+                                                       step="0.001"
+                                                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                            </div>
+                                            <div>
+                                                <label for="meter_kubik_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Volume (m³)
+                                                </label>
+                                                <input type="number"
+                                                       name="meter_kubik[]"
+                                                       id="meter_kubik_{{ $index }}"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
+                                                       placeholder="0.000"
+                                                       value="{{ old('meter_kubik.' . $index, $item['meter_kubik'] ?? '') }}"
+                                                       min="0"
+                                                       step="0.001"
+                                                       readonly>
+                                            </div>
+                                            <div>
+                                                <label for="tonase_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Tonase (Ton)
+                                                </label>
+                                                <input type="number"
+                                                       name="tonase[]"
+                                                       id="tonase_{{ $index }}"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0.000"
+                                                       value="{{ old('tonase.' . $index, $item['tonase'] ?? (count($dimensiItems) == 0 ? 15 : '')) }}"
+                                                       min="0"
+                                                       step="0.001">
+                                            </div>
                                         </div>
                                     </div>
+                                    @endforeach
+                                @else
+                                    <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
+                                            <div>
+                                                <label for="nama_barang_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Nama Barang
+                                                </label>
+                                                <input type="text"
+                                                       name="nama_barang[]"
+                                                       id="nama_barang_0"
+                                                       class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="Nama barang"
+                                                       oninput="toggleUkuranField(this)">
+                                            </div>
+                                            <div class="ukuran-container hidden">
+                                                <label for="ukuran_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Ukuran
+                                                </label>
+                                                <input type="text"
+                                                       name="ukuran[]"
+                                                       id="ukuran_0"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="Contoh: 40x40">
+                                            </div>
+                                            <div>
+                                                <label for="jumlah_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Jumlah
+                                                </label>
+                                                <input type="number"
+                                                       name="jumlah[]"
+                                                       id="jumlah_0"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0"
+                                                       min="0"
+                                                       step="1">
+                                            </div>
+                                            <div>
+                                                <label for="satuan_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Satuan
+                                                </label>
+                                                <input type="text"
+                                                       name="satuan[]"
+                                                       id="satuan_0"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="Pcs, Kg, Box">
+                                            </div>
+                                        </div>
 
-                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                                <div>
-                                    <label for="panjang_0" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Panjang (m)
-                                    </label>
-                                    <input type="number"
-                                           name="panjang[]"
-                                           id="panjang_0"
-                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('panjang.0') ? 'border-red-500' : '' }}"
-                                           placeholder="0.000"
-                                           value="{{ old('panjang.0') }}"
-                                           min="0"
-                                           step="0.001"
-                                           onchange="calculateVolume(this.closest('.dimensi-row'))">
-                                    @if($errors->has('panjang.0'))
-                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('panjang.0') }}</p>
-                                    @endif
-                                </div>
-                                <div>
-                                    <label for="lebar_0" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Lebar (m)
-                                    </label>
-                                    <input type="number"
-                                           name="lebar[]"
-                                           id="lebar_0"
-                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('lebar.0') ? 'border-red-500' : '' }}"
-                                           placeholder="0.000"
-                                           value="{{ old('lebar.0') }}"
-                                           min="0"
-                                           step="0.001"
-                                           onchange="calculateVolume(this.closest('.dimensi-row'))">
-                                    @if($errors->has('lebar.0'))
-                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('lebar.0') }}</p>
-                                    @endif
-                                </div>
-                                <div>
-                                    <label for="tinggi_0" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Tinggi (m)
-                                    </label>
-                                    <input type="number"
-                                           name="tinggi[]"
-                                           id="tinggi_0"
-                                           class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('tinggi.0') ? 'border-red-500' : '' }}"
-                                           placeholder="0.000"
-                                           value="{{ old('tinggi.0') }}"
-                                           min="0"
-                                           step="0.001"
-                                           onchange="calculateVolume(this.closest('.dimensi-row'))">
-                                    @if($errors->has('tinggi.0'))
-                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('tinggi.0') }}</p>
-                                    @endif
-                                </div>
-                                <div>
-                                    <label for="meter_kubik_0" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Volume (m³)
-                                    </label>
-                                    <input type="number"
-                                           name="meter_kubik[]"
-                                           id="meter_kubik_0"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm {{ $errors->has('meter_kubik.0') ? 'border-red-500' : '' }}"
-                                           placeholder="0.000"
-                                           value="{{ old('meter_kubik.0') }}"
-                                           min="0"
-                                           step="0.001"
-                                           readonly>
-                                    @if($errors->has('meter_kubik.0'))
-                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('meter_kubik.0') }}</p>
-                                    @endif
-                                </div>
-                                <div>
-                                    <label for="tonase_0" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Tonase (Ton)
-                                    </label>
-                                    <input type="number"
-                                           name="tonase[]"
-                                           id="tonase_0"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm {{ $errors->has('tonase.0') ? 'border-red-500' : '' }}"
-                                           placeholder="0.000"
-                                           value="{{ old('tonase.0', 15) }}"
-                                           min="0"
-                                           step="0.001">
-                                    @if($errors->has('tonase.0'))
-                                        <p class="mt-1 text-xs text-red-600">{{ $errors->first('tonase.0') }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-2">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Volume akan dihitung otomatis dari panjang × lebar × tinggi
-                            </p>
-                                </div>
+                                        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                            <div>
+                                                <label for="panjang_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Panjang (m)
+                                                </label>
+                                                <input type="number"
+                                                       name="panjang[]"
+                                                       id="panjang_0"
+                                                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0.000"
+                                                       min="0"
+                                                       step="0.001"
+                                                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                            </div>
+                                            <div>
+                                                <label for="lebar_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Lebar (m)
+                                                </label>
+                                                <input type="number"
+                                                       name="lebar[]"
+                                                       id="lebar_0"
+                                                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0.000"
+                                                       min="0"
+                                                       step="0.001"
+                                                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                            </div>
+                                            <div>
+                                                <label for="tinggi_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Tinggi (m)
+                                                </label>
+                                                <input type="number"
+                                                       name="tinggi[]"
+                                                       id="tinggi_0"
+                                                       class="dimensi-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0.000"
+                                                       min="0"
+                                                       step="0.001"
+                                                       onchange="calculateVolume(this.closest('.dimensi-row'))">
+                                            </div>
+                                            <div>
+                                                <label for="meter_kubik_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Volume (m³)
+                                                </label>
+                                                <input type="number"
+                                                       name="meter_kubik[]"
+                                                       id="meter_kubik_0"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
+                                                       placeholder="0.000"
+                                                       min="0"
+                                                       step="0.001"
+                                                       readonly>
+                                            </div>
+                                            <div>
+                                                <label for="tonase_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                                    Tonase (Ton)
+                                                </label>
+                                                <input type="number"
+                                                       name="tonase[]"
+                                                       id="tonase_0"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                       placeholder="0.000"
+                                                       value="15"
+                                                       min="0"
+                                                       step="0.001">
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
 

@@ -699,11 +699,33 @@ class TandaTerimaController extends Controller
                         'tonase' => isset($tonaseArray[$index]) && $tonaseArray[$index] !== '' ? round((float) $tonaseArray[$index], 3) : null,
                     ];
                 }
+
+                // Prepare dimensi_items for the new column (parity with Order)
+                $dimensiItems = [];
+                $namaBarangList = [];
+                foreach ($dimensiDetails as $detail) {
+                    $dimensiItems[] = [
+                        'nama_barang' => $detail['nama_barang'],
+                        'jumlah' => $detail['jumlah'],
+                        'satuan' => $detail['satuan'],
+                        'panjang' => $detail['panjang'],
+                        'lebar' => $detail['lebar'],
+                        'tinggi' => $detail['tinggi'],
+                        'ukuran' => $detail['ukuran'],
+                        'meter_kubik' => $detail['meter_kubik'],
+                        'tonase' => $detail['tonase'],
+                    ];
+                    if ($detail['nama_barang']) {
+                        $namaBarangList[] = $detail['nama_barang'];
+                    }
+                }
             }
             
             // Simpan dimensi details jika ada
             if (!empty($dimensiDetails)) {
                 $tandaTerima->dimensi_details = $dimensiDetails;
+                $tandaTerima->dimensi_items = $dimensiItems;
+                $tandaTerima->nama_barang = $namaBarangList;
                 
                 // Simpan dimensi pertama ke field tunggal untuk backward compatibility
                 $firstDimensi = $dimensiDetails[0];
@@ -1381,6 +1403,28 @@ class TandaTerimaController extends Controller
             // Save dimensi_details if we have them from arrays
             if (!empty($dimensiDetails)) {
                 $updateData['dimensi_details'] = $dimensiDetails;
+                
+                // Prepare dimensi_items and nama_barang for the new columns
+                $dimensiItems = [];
+                $namaBarangList = [];
+                foreach ($dimensiDetails as $detail) {
+                    $dimensiItems[] = [
+                        'nama_barang' => $detail['nama_barang'],
+                        'jumlah' => $detail['jumlah'],
+                        'satuan' => $detail['satuan'],
+                        'panjang' => $detail['panjang'],
+                        'lebar' => $detail['lebar'],
+                        'tinggi' => $detail['tinggi'],
+                        'ukuran' => $detail['ukuran'],
+                        'meter_kubik' => $detail['meter_kubik'],
+                        'tonase' => $detail['tonase'],
+                    ];
+                    if ($detail['nama_barang']) {
+                        $namaBarangList[] = $detail['nama_barang'];
+                    }
+                }
+                $updateData['dimensi_items'] = $dimensiItems;
+                $updateData['nama_barang'] = $namaBarangList;
                 
                 // Also save first dimensi to single fields for backward compatibility
                 $firstDimensi = $dimensiDetails[0];
