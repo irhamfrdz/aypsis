@@ -615,6 +615,20 @@
                                 @php
                                     $namaBarang = $tandaTerima->nama_barang;
                                     
+                                    // Jika nama_barang adalah array, ambil item pertama atau join
+                                    if (is_array($namaBarang)) {
+                                        $count = count($namaBarang);
+                                        if ($count > 0) {
+                                            $firstItem = $namaBarang[0];
+                                            $namaBarang = $firstItem;
+                                            if ($count > 1) {
+                                                $namaBarang .= ' (+' . ($count - 1) . ' lainnya)';
+                                            }
+                                        } else {
+                                            $namaBarang = null;
+                                        }
+                                    }
+                                    
                                     // Coba ambil dari dimensi_items atau dimensi_details jika nama_barang kosong
                                     if (!$namaBarang) {
                                         $dimensiItems = [];
