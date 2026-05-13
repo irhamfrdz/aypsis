@@ -1603,7 +1603,7 @@
                                     @if($item->qty > 0)
                                         <button type="button" 
                                             class="text-green-600 hover:text-green-900" 
-                                            onclick="openStockUsageModal('{{ $item->id }}', '{{ $item->jenis }}', '{{ $item->nama }}', '{{ $item->qty }}')"
+                                            onclick="openStockUsageModal('{{ $item->id }}', '{{ addslashes($item->jenis) }}', '{{ addslashes($item->nama) }}', '{{ $item->qty }}')"
                                             title="Gunakan Stock">
                                             <i class="fas fa-sign-out-alt"></i>
                                         </button>
@@ -1664,7 +1664,7 @@
                     
                     <div class="flex flex-wrap justify-end gap-2 pt-2 border-t border-gray-50">
                         @if($item->qty > 0)
-                            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" onclick="openStockUsageModal('{{ $item->id }}', '{{ $item->jenis }}', '{{ $item->nama }}', '{{ $item->qty }}')" title="Gunakan Stock"><i class="fas fa-sign-out-alt text-xs"></i></button>
+                            <button type="button" class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" onclick="openStockUsageModal('{{ $item->id }}', '{{ addslashes($item->jenis) }}', '{{ addslashes($item->nama) }}', '{{ $item->qty }}')" title="Gunakan Stock"><i class="fas fa-sign-out-alt text-xs"></i></button>
                         @endif
                         <a href="{{ $item->url_detail }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600" title="Informasi Lengkap"><i class="fas fa-eye text-xs"></i></a>
                         <a href="{{ $item->url_detail }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600" title="Riwayat Keluar/Masuk"><i class="fas fa-history text-xs"></i></a>
@@ -3710,6 +3710,14 @@
 
 <script>
     function openStockUsageModal(id, jenis, nama, qty) {
+        console.log('openStockUsageModal called with:', {id, jenis, nama, qty});
+        
+        const modal = document.getElementById('stockUsageModal');
+        if (!modal) {
+            console.error('stockUsageModal element NOT FOUND!');
+            return;
+        }
+
         document.getElementById('usage_item_id').value = id;
         document.getElementById('usage_item_jenis').value = jenis;
         document.getElementById('usage_display_jenis').textContent = jenis;
@@ -3721,23 +3729,46 @@
         // Reset selections
         document.getElementById('usage_penerima').value = '';
         const textUsagePenerima = document.getElementById('text-usage_penerima');
-        if (textUsagePenerima.tagName === 'INPUT') {
-            textUsagePenerima.value = '';
-        } else {
-            textUsagePenerima.textContent = '-- Pilih Penerima --';
+        if (textUsagePenerima) {
+            if (textUsagePenerima.tagName === 'INPUT') {
+                textUsagePenerima.value = '';
+            } else {
+                textUsagePenerima.textContent = '-- Pilih Penerima --';
+            }
         }
+
         document.getElementById('usage_gudang').value = '';
-        document.getElementById('text-usage_gudang').textContent = '-- Pilih Gudang --';
+        const textUsageGudang = document.getElementById('text-usage_gudang');
+        if (textUsageGudang) textUsageGudang.textContent = '-- Pilih Gudang --';
+
         document.getElementById('usage_kapal').value = '';
-        document.getElementById('text-usage_kapal').textContent = '-- Pilih Kapal --';
+        const textUsageKapal = document.getElementById('text-usage_kapal');
+        if (textUsageKapal) textUsageKapal.textContent = '-- Pilih Kapal --';
+
         document.getElementById('usage_keterangan').value = '';
         document.getElementById('usage_tanggal_digunakan').value = new Date().toISOString().split('T')[0];
 
-        document.getElementById('stockUsageModal').classList.remove('hidden');
+        // Show modal with premium handling
+        modal.classList.remove('hidden');
+        
+        // Move modal to body to avoid parent container issues
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
+        // Force show with highest priority
+        modal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
+        
+        console.log('stockUsageModal shown');
     }
 
     function closeStockUsageModal() {
-        document.getElementById('stockUsageModal').classList.add('hidden');
+        console.log('closeStockUsageModal called');
+        const modal = document.getElementById('stockUsageModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style'); // Remove inline styles
+        }
     }
 
     function filterBarangLainnya(name, element) {
