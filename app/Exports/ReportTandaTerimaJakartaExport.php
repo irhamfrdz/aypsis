@@ -114,7 +114,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     'no_seal' => $item->no_seal,
                     'size' => $item->size,
                     'pengirim' => $item->pengirim,
-                    'shipper_address_raw' => null, // TandaTerima doesn't have this field directly
+                    'shipper_address_raw' => $item->alamat_pengirim,
                     'penerima' => $item->penerima,
                     'address_raw' => $item->alamat_penerima,
                     'cp_raw' => $item->pic_penerima,

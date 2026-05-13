@@ -32,6 +32,7 @@ class TandaTerima extends Model
         'tujuan_pengiriman',
         'pengirim',
         'pic_pengirim',
+        'alamat_pengirim',
         'penerima',
         'pic_penerima',
         'alamat_penerima',

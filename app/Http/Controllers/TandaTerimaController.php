@@ -523,6 +523,7 @@ class TandaTerimaController extends Controller
             'rit' => 'nullable|string|max:255',
             'pengirim' => 'nullable|string|max:255',
             'pic_pengirim' => 'nullable|string|max:255',
+            'alamat_pengirim' => 'nullable|string',
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string|max:255',
             'jenis_barang' => 'nullable|string|max:255',
@@ -628,6 +629,20 @@ class TandaTerimaController extends Controller
             $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
             $tandaTerima->pengirim = $request->pengirim ?: ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : null);
             $tandaTerima->pic_pengirim = $request->pic_pengirim;
+            
+            // Handle alamat_pengirim with fallback to master data
+            if ($request->filled('alamat_pengirim')) {
+                $tandaTerima->alamat_pengirim = $request->alamat_pengirim;
+            } else {
+                // Try to find in master data
+                $namaPengirim = $tandaTerima->pengirim;
+                if ($namaPengirim) {
+                    $masterPengirim = \App\Models\Pengirim::where('nama_pengirim', $namaPengirim)->first();
+                    if ($masterPengirim) {
+                        $tandaTerima->alamat_pengirim = $masterPengirim->alamat;
+                    }
+                }
+            }
             
             // Additional data from form
             $tandaTerima->estimasi_nama_kapal = $request->estimasi_nama_kapal;
@@ -1199,6 +1214,7 @@ class TandaTerimaController extends Controller
             'tidak_lembur_nginap' => 'nullable|boolean',
             'pengirim' => 'nullable|string|max:255',
             'pic_pengirim' => 'nullable|string|max:255',
+            'alamat_pengirim' => 'nullable|string',
             'penerima' => 'nullable|string|max:255',
             'pic_penerima' => 'nullable|string|max:255',
         ]);
@@ -1264,6 +1280,7 @@ class TandaTerimaController extends Controller
                 'kenek_pengganti' => $request->kenek_pengganti,
                 'pengirim' => $request->pengirim,
                 'pic_pengirim' => $request->pic_pengirim,
+                'alamat_pengirim' => $request->alamat_pengirim,
                 'penerima' => $request->penerima,
                 'pic_penerima' => $request->pic_penerima,
                 'alamat_penerima' => $request->alamat_penerima,

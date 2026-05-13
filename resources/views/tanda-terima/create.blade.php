@@ -246,6 +246,7 @@
                                         <option value="">-- Pilih Pengirim --</option>
                                         @foreach($pengirims as $pengirim)
                                             <option value="{{ $pengirim->nama_pengirim }}"
+                                                    data-alamat="{{ $pengirim->alamat }}"
                                                     {{ old('pengirim', ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '')) == $pengirim->nama_pengirim ? 'selected' : '' }}>
                                                 {{ $pengirim->nama_pengirim }}
                                             </option>
@@ -265,6 +266,22 @@
                                     @error('pic_pengirim')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="alamat_pengirim" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Alamat Pengirim
+                                    </label>
+                                    <textarea name="alamat_pengirim"
+                                              id="alamat_pengirim"
+                                              rows="3"
+                                              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('alamat_pengirim') border-red-500 @enderror"
+                                              placeholder="Alamat lengkap pengirim">{{ old('alamat_pengirim') }}</textarea>
+                                    @error('alamat_pengirim')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                        <i class="fas fa-info-circle mr-1"></i>Alamat pengirim akan terisi otomatis saat memilih pengirim, namun dapat diubah sesuai kebutuhan
+                                    </p>
                                 </div>
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
@@ -1313,6 +1330,28 @@
                         return "Mencari...";
                     }
                 }
+            });
+
+            // Auto-fill alamat pengirim when pengirim is selected
+            $('#pengirim').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                var alamat = $(selectedOption).data('alamat');
+                
+                console.log('Pengirim selected:', e.params.data.id);
+                console.log('Alamat Pengirim:', alamat);
+                
+                if (alamat) {
+                    $('#alamat_pengirim').val(alamat);
+                    console.log('✓ Alamat pengirim auto-filled');
+                } else {
+                    $('#alamat_pengirim').val('');
+                }
+            });
+
+            // Clear alamat when pengirim is cleared
+            $('#pengirim').on('select2:clear', function(e) {
+                $('#alamat_pengirim').val('');
+                console.log('✓ Alamat pengirim cleared');
             });
 
             // Initialize Select2 for tujuan kirim dropdown

@@ -396,6 +396,7 @@
                                 @foreach($pengirims as $p)
                                     <option value="{{ $p->nama_pengirim }}" 
                                             data-id="{{ $p->id }}"
+                                            data-alamat="{{ $p->alamat }}"
                                             {{ old('pengirim', $tandaTerima->pengirim ?? ($tandaTerima->suratJalan->order->pengirim->nama_pengirim ?? '')) == $p->nama_pengirim ? 'selected' : '' }}>
                                         {{ $p->nama_pengirim }}
                                     </option>
@@ -418,6 +419,22 @@
                             @error('pic_pengirim')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="alamat_pengirim" class="block text-xs font-medium text-gray-500 mb-2">
+                                Alamat Pengirim
+                            </label>
+                            <textarea name="alamat_pengirim"
+                                      id="alamat_pengirim"
+                                      rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('alamat_pengirim') border-red-500 @enderror"
+                                      placeholder="Alamat lengkap pengirim">{{ old('alamat_pengirim', $tandaTerima->alamat_pengirim) }}</textarea>
+                            @error('alamat_pengirim')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                <i class="fas fa-info-circle mr-1"></i>Alamat pengirim akan terisi otomatis saat memilih pengirim, namun dapat diubah sesuai kebutuhan
+                            </p>
                         </div>
                         <div>
                             <div class="flex items-center justify-between mb-2">
@@ -1064,13 +1081,27 @@
         
         jQuery(document).ready(function($) {
             if (typeof $.fn.select2 !== 'undefined') {
-                $('.select2-kapal, .select2-tujuan-kirim, .select2-kontainer, .select2-supir-pengganti, .select2-kenek, .select2-kenek-pengganti, .select2-krani-pengganti, .select2-pengirim').select2({
+                $('.select2-kapal, .select2-tujuan-kirim, .select2-kontainer, .select2-supir-pengganti, .select2-kenek, .select2-kenek-pengganti, .select2-krani-pengganti').select2({
                     placeholder: function() {
                         return $(this).data('placeholder') || '-- Pilih --';
                     },
                     allowClear: true,
                     width: '100%',
                     tags: $(this).hasClass('select2-kontainer')
+                });
+
+                $('.select2-pengirim').select2({
+                    placeholder: '-- Pilih Pengirim --',
+                    allowClear: true,
+                    width: '100%'
+                }).on('select2:select', function(e) {
+                    var selectedOption = $(this).find('option:selected');
+                    var alamat = selectedOption.data('alamat');
+                    if (alamat) {
+                        $('#alamat_pengirim').val(alamat);
+                    }
+                }).on('select2:clear', function(e) {
+                    $('#alamat_pengirim').val('');
                 });
                 
                 // Initialize Select2 for Penerima with auto-fill alamat
