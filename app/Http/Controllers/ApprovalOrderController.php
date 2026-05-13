@@ -142,8 +142,9 @@ class ApprovalOrderController extends Controller
         $order = Order::with(['pengirim', 'jenisBarang', 'term'])->findOrFail($id);
         $terms = Term::orderBy('kode')->get();
         $penerimas = Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
+        $pengirims = \App\Models\Pengirim::where('status', 'active')->orderBy('nama_pengirim')->get();
 
-        return view('approval-order.edit', compact('order', 'terms', 'penerimas'));
+        return view('approval-order.edit', compact('order', 'terms', 'penerimas', 'pengirims'));
     }
 
     /**
@@ -153,6 +154,8 @@ class ApprovalOrderController extends Controller
     {
         $request->validate([
             'term_id' => 'required|exists:terms,id',
+            'pengirim_id' => 'nullable|exists:pengirims,id',
+            'alamat_pengirim' => 'nullable|string',
             'penerima_id' => 'nullable|exists:penerimas,id',
             'notify_party_id' => 'nullable|exists:penerimas,id',
             'kontak_penerima' => 'nullable|string|max:255',
@@ -165,6 +168,10 @@ class ApprovalOrderController extends Controller
         try {
             $order = Order::findOrFail($id);
             $order->term_id = $request->term_id;
+            
+            // Update Informasi Pengirim
+            $order->pengirim_id = $request->pengirim_id;
+            $order->alamat_pengirim = $request->alamat_pengirim;
             
             // Update Informasi Penerima
             $order->penerima_id = $request->penerima_id;

@@ -10,12 +10,11 @@ class Pengirim extends Model
     
     use Auditable;
 
-protected $fillable = [
+    protected $fillable = [
         'kode',
         'nama_pengirim',
+        'alamat',
         'catatan',
-        'harga_krani_20ft',
-        'harga_krani_40ft',
         'status'
     ];
 }

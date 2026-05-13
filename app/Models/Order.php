@@ -40,6 +40,7 @@ class Order extends Model
         'include_buruh_bongkar',
         'term_id',
         'pengirim_id',
+        'alamat_pengirim',
         'jenis_barang_id',
         'status',
         'catatan'

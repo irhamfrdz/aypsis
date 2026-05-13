@@ -135,6 +135,67 @@
                     @enderror
                 </div>
 
+                <!-- Informasi Pengirim Section -->
+                <div class="mb-6 border-t border-gray-200 pt-6">
+                    <h3 class="text-base font-semibold text-gray-900 mb-4">Informasi Pengirim</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="pengirim_id" class="text-sm font-medium text-gray-700">
+                                    Pengirim
+                                </label>
+                                <div class="flex gap-2">
+                                    <a href="{{ route('order.pengirim.create') }}" id="add_pengirim_link"
+                                       class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                       title="Tambah">
+                                        Tambah
+                                    </a>
+                                    <a href="#" id="edit_pengirim_link"
+                                       class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
+                                       title="Edit">
+                                        Edit
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-pengirim">
+                                    <input type="text" id="search_pengirim" placeholder="Search..." autocomplete="off"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="pengirim_id" id="pengirim_id"
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('pengirim_id') border-red-500 @enderror">
+                                        <option value="">Select an option</option>
+                                        @foreach($pengirims as $p)
+                                            <option value="{{ $p->id }}" 
+                                                    data-alamat="{{ $p->alamat }}"
+                                                    {{ old('pengirim_id', $order->pengirim_id) == $p->id ? 'selected' : '' }}>
+                                                {{ $p->nama_pengirim }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_pengirim" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            @error('pengirim_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label for="alamat_pengirim" class="block text-sm font-medium text-gray-700 mb-2">
+                                Alamat Pengirim
+                            </label>
+                            <textarea name="alamat_pengirim" id="alamat_pengirim" rows="3"
+                                      placeholder="Alamat lengkap pengirim"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('alamat_pengirim') border-red-300 @enderror">{{ old('alamat_pengirim', $order->alamat_pengirim ?? ($order->pengirim->alamat ?? '')) }}</textarea>
+                            @error('alamat_pengirim')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Informasi Penerima Section -->
                 <div class="mb-6 border-t border-gray-200 pt-6">
                     <h3 class="text-base font-semibold text-gray-900 mb-4">Informasi Penerima</h3>
@@ -368,25 +429,27 @@
                         option.setAttribute('data-alamat', newData.alamat || '');
                         option.setAttribute('data-kontak', newData.kontak || '');
                         select.add(option);
-                        
-                        // We need to trigger a refresh of the searchable dropdown
-                        // But since createSearchableDropdown uses closure variables, 
-                        // we might need to manually trigger a re-render or 
-                        // just let the user re-search.
-                        // Actually, the easiest way is to re-initialize or 
-                        // make createSearchableDropdown return an object with an update method.
                     }
                 });
 
-                // Let's reload the page or re-fetch? 
-                // Better to just update the UI without reload.
-                // Re-initialize dropdowns to include the new option in originalOptions
                 initDropdowns();
-                
-                // Set the value to the newly added item for the one that opened it
-                // We don't easily know which one opened it without a state, 
-                // but the current implementation opens the same route for both.
-                // Usually it's the Penerima one that's most common.
+            } else if (event.data.type === 'pengirim-added') {
+                const newData = event.data.data;
+                const select = document.getElementById('pengirim_id');
+                if (select) {
+                    const option = new Option(newData.nama_pengirim, newData.id);
+                    option.setAttribute('data-alamat', newData.alamat || '');
+                    select.add(option);
+                    
+                    // Select the new pengirim
+                    select.value = newData.id;
+                    const searchInput = document.getElementById('search_pengirim');
+                    if (searchInput) searchInput.value = newData.nama_pengirim;
+                    
+                    const alamatTextarea = document.getElementById('alamat_pengirim');
+                    if (alamatTextarea) alamatTextarea.value = newData.alamat || '';
+                }
+                initDropdowns();
             }
         });
 
@@ -395,6 +458,15 @@
             // First clear any existing searchable dropdown containers if needed
             // But here they are already in the HTML.
             
+            // Initialize Pengirim dropdown
+            createSearchableDropdown({
+                selectId: 'pengirim_id',
+                searchId: 'search_pengirim',
+                dropdownId: 'dropdown_options_pengirim',
+                containerClass: 'dropdown-container-pengirim',
+                alamatId: 'alamat_pengirim'
+            });
+
             // Initialize Penerima dropdown
             createSearchableDropdown({
                 selectId: 'penerima_id',
@@ -413,8 +485,6 @@
                 containerClass: 'dropdown-container-notify-party'
             });
         }
-
-        initDropdowns();
 
         // Function to create searchable dropdown
         function createSearchableDropdown(config) {
@@ -525,10 +595,75 @@
                 }
             });
 
+            // Trigger initial change event to show/hide edit button
+            selectElement.dispatchEvent(new Event('change'));
+
             // Handle keyboard navigation
             searchInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     dropdownOptions.classList.add('hidden');
+                }
+            });
+        }
+
+        // Handle Pengirim "Tambah" link logic
+        const addPengirimLink = document.getElementById('add_pengirim_link');
+        const searchPengirimInput = document.getElementById('search_pengirim');
+        if (addPengirimLink && searchPengirimInput) {
+            addPengirimLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const searchValue = searchPengirimInput.value.trim();
+                let url = "{{ route('order.pengirim.create', [], false) }}";
+
+                const params = new URLSearchParams();
+                params.append('popup', '1');
+
+                if (searchValue) {
+                    params.append('search', searchValue);
+                }
+
+                url += '?' + params.toString();
+
+                const popup = window.open(
+                    url,
+                    'addPengirim',
+                    'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+                );
+
+                if (popup) {
+                    popup.focus();
+                }
+            });
+        }
+
+        // Handle Pengirim "Edit" link logic
+        const editPengirimLink = document.getElementById('edit_pengirim_link');
+        const pengirimSelect = document.getElementById('pengirim_id');
+        if (editPengirimLink && pengirimSelect) {
+            editPengirimLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const pengirimId = pengirimSelect.value;
+                if (!pengirimId) return;
+
+                let url = "{{ route('tanda-terima.pengirim.edit', ':id', false) }}".replace(':id', pengirimId);
+                url += '?popup=1';
+
+                const popup = window.open(
+                    url,
+                    'editPengirim',
+                    'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+                );
+
+                if (popup) {
+                    popup.focus();
+                }
+            });
+
+            pengirimSelect.addEventListener('change', function() {
+                if (this.value) {
+                    editPengirimLink.classList.remove('hidden');
+                } else {
+                    editPengirimLink.classList.add('hidden');
                 }
             });
         }
@@ -615,6 +750,9 @@
                 }
             });
         }
+
+        // Initialize dropdowns after all listeners are attached
+        initDropdowns();
     });
 </script>
 @endpush
