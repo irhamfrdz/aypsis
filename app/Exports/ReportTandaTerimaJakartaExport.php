@@ -17,11 +17,51 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
 {
     protected $startDate;
     protected $endDate;
+    protected $penerimaLookup = [];
+    protected $termLookup = [];
 
     public function __construct($startDate, $endDate)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
+        $this->initializeLookups();
+    }
+
+    protected function initializeLookups()
+    {
+        // Fetch from Penerima model
+        \App\Models\Penerima::all()->each(function($p) {
+            $name = strtoupper(trim($p->nama_penerima));
+            if (!isset($this->penerimaLookup[$name])) {
+                $this->penerimaLookup[$name] = [
+                    'npwp' => $p->npwp,
+                    'cp' => $p->contact_person,
+                    'address' => $p->alamat
+                ];
+            }
+        });
+
+        // Fetch from MasterPengirimPenerima (complement)
+        \App\Models\MasterPengirimPenerima::all()->each(function($p) {
+            $name = strtoupper(trim($p->nama));
+            if (!isset($this->penerimaLookup[$name])) {
+                $this->penerimaLookup[$name] = [
+                    'npwp' => $p->npwp,
+                    'cp' => '',
+                    'address' => $p->alamat
+                ];
+            } else {
+                // If already exists but NPWP is empty, try to fill it
+                if (empty($this->penerimaLookup[$name]['npwp'])) {
+                    $this->penerimaLookup[$name]['npwp'] = $p->npwp;
+                }
+            }
+        });
+
+        // Fetch Terms
+        \App\Models\Term::all()->each(function($t) {
+            $this->termLookup[$t->id] = $t->nama_status;
+        });
     }
 
     public function collection()
@@ -58,8 +98,12 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     'size' => $item->size,
                     'pengirim' => $item->pengirim,
                     'penerima' => $item->penerima,
+                    'address_raw' => $item->alamat_penerima,
+                    'cp_raw' => $item->pic_penerima,
                     'tujuan' => $item->tujuan_pengiriman,
                     'keterangan' => $item->kegiatan,
+                    'ppftz' => $this->getPpftzFromDocs($item->dokumen_ppbj),
+                    'term' => $item->term,
                     'perincian_items' => $items,
                 ];
             });
@@ -94,8 +138,12 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     'size' => $item->size_kontainer,
                     'pengirim' => $item->pengirim,
                     'penerima' => $item->penerima,
+                    'address_raw' => $item->alamat_penerima,
+                    'cp_raw' => $item->pic_penerima ?: $item->pic,
                     'tujuan' => $item->tujuan_pengiriman,
                     'keterangan' => $item->aktifitas,
+                    'ppftz' => $this->getPpftzFromDocs($item->dokumen_ppbj),
+                    'term' => $this->termLookup[$item->term_id] ?? '-',
                     'perincian_items' => $items,
                 ];
             });
@@ -122,15 +170,34 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     'size' => $item->kontainerPivot->first()->size_kontainer ?? '-',
                     'pengirim' => $item->nama_pengirim,
                     'penerima' => $item->nama_penerima,
+                    'address_raw' => $item->alamat_penerima,
+                    'cp_raw' => $item->pic_penerima,
                     'tujuan' => $item->tujuanKirim?->nama_tujuan ?? '-',
                     'keterangan' => $item->kegiatan,
+                    'ppftz' => $this->getPpftzFromDocs($item->dokumen_ppbj),
+                    'term' => $this->termLookup[$item->term_id] ?? '-',
                     'perincian_items' => $items,
                 ];
             });
         $data = $data->concat($ttLCL);
 
+        // Enhance with lookup data
+        $enhancedData = $data->map(function($item) {
+            $name = strtoupper(trim($item['penerima']));
+            $lookup = $this->penerimaLookup[$name] ?? null;
+            
+            // Prioritize address and CP from the record itself, fallback to lookup
+            $item['p_address'] = $item['address_raw'] ?: ($lookup['address'] ?? '-');
+            $item['p_cp'] = $item['cp_raw'] ?: ($lookup['cp'] ?? '-');
+            
+            // NPWP usually only in lookup
+            $item['p_npwp'] = $lookup['npwp'] ?? '-';
+            
+            return $item;
+        });
+
         // Sort data first to enable grouping
-        $sortedData = $data->sortBy([
+        $sortedData = $enhancedData->sortBy([
             [function($item) {
                 $hasContainer = !empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
                 $hasSeal = !empty($item['no_seal']) && $item['no_seal'] != '-';
@@ -250,6 +317,11 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'Size',
             'SHIPPER',
             'CONSIGNEE',
+            'Consignee Address',
+            'NPWP',
+            'Contact Person',
+            'Document PPFTZ',
+            'TERM',
             'Tujuan',
             'Keterangan'
         ];
@@ -273,10 +345,15 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                 '', // L: Satuan
                 '', // M: Nama Barang
                 $row['size'], // N
-                '', // O: Pengirim (Empty for header)
-                '', // P: Penerima (Empty for header)
-                $row['tujuan'], // Q (Empty for header)
-                ''  // R: Keterangan (Empty for header)
+                '', // O: Shipper
+                '', // P: Consignee
+                '', // Q: Address
+                '', // R: NPWP
+                '', // S: CP
+                '', // T: PPFTZ
+                '', // U: TERM
+                $row['tujuan'], // V
+                ''  // W: Keterangan
             ];
         }
 
@@ -298,8 +375,13 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             $row['size'], // N
             $row['pengirim'], // O
             $row['penerima'], // P
-            $row['tujuan'], // Q
-            $row['keterangan'] // R
+            $row['p_address'] ?? '-', // Q
+            $row['p_npwp'] ?? '-', // R
+            $row['p_cp'] ?? '-', // S
+            $row['ppftz'] ?? '-', // T
+            $row['term'] ?? '-', // U
+            $row['tujuan'], // V
+            $row['keterangan'] // W
         ];
     }
 
@@ -310,7 +392,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'A' => 15, 'B' => 15, 'C' => 20, 'D' => 20,
             'E' => 8,  'F' => 10, 'G' => 20, 'H' => 8,  'I' => 8,  'J' => 15,
             'K' => 10, 'L' => 12, 'M' => 50, // Perincian
-            'N' => 10, 'O' => 25, 'P' => 25, 'Q' => 25, 'R' => 30 // Original trailing columns
+            'N' => 10, 'O' => 25, 'P' => 25, // Shipper, Consignee
+            'Q' => 40, 'R' => 20, 'S' => 20, 'T' => 20, 'U' => 15, // New columns
+            'V' => 25, 'W' => 30 // Original trailing columns
         ];
         foreach ($widths as $col => $width) {
             $sheet->getColumnDimension($col)->setWidth($width);
@@ -331,8 +415,13 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'N' => 'Size',
             'O' => 'SHIPPER',
             'P' => 'CONSIGNEE',
-            'Q' => 'Tujuan',
-            'R' => 'Keterangan'
+            'Q' => 'Consignee Address',
+            'R' => 'NPWP',
+            'S' => 'Contact Person',
+            'T' => 'Document PPFTZ',
+            'U' => 'TERM',
+            'V' => 'Tujuan',
+            'W' => 'Keterangan'
         ];
 
         foreach ($headerValues as $col => $val) {
@@ -357,7 +446,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         
         // Standard Headers (Light Gray)
         $sheet->getStyle('A1:D2')->applyFromArray($this->getStandardHeaderStyle());
-        $sheet->getStyle('N1:R2')->applyFromArray($this->getStandardHeaderStyle());
+        $sheet->getStyle('N1:P2')->applyFromArray($this->getStandardHeaderStyle()); // Size to Consignee
+        $sheet->getStyle('Q1:U2')->applyFromArray($this->getStandardHeaderStyle()); // New columns
+        $sheet->getStyle('V1:W2')->applyFromArray($this->getStandardHeaderStyle()); // End columns
 
         // Manifest Section (Light Green)
         $sheet->getStyle('E1:J2')->applyFromArray([
@@ -386,17 +477,36 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         ]);
 
         // General styling for all headers (Row 1 & 2)
-        $sheet->getStyle('A1:R2')->getFont()->setBold(true);
-        $sheet->getStyle('A1:R2')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:W2')->getFont()->setBold(true);
+        $sheet->getStyle('A1:W2')->getAlignment()->setWrapText(true);
         
         // Style for content data
         return [
-            'A:R' => [
+            'A:W' => [
                 'alignment' => [
                     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
                 ],
             ],
         ];
+    }
+
+    protected function getPpftzFromDocs($docs)
+    {
+        if (empty($docs)) return '-';
+        if (is_string($docs)) {
+            $docs = json_decode($docs, true);
+        }
+        if (!is_array($docs)) return '-';
+        
+        // Look for common PPFTZ identifiers in PPBJ or other docs
+        foreach ($docs as $doc) {
+            if (is_string($doc) && (str_contains(strtoupper($doc), 'FTZ') || str_contains(strtoupper($doc), 'PPFTZ'))) {
+                return $doc;
+            }
+        }
+        
+        // Fallback to first document if exists
+        return $docs[0] ?? '-';
     }
 
     protected function getStandardHeaderStyle()
