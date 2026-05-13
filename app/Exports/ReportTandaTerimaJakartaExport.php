@@ -90,14 +90,18 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                         return [
                             'qty' => $qty,
                             'satuan' => $satuan,
-                            'nama' => $nama
+                            'nama' => $nama,
+                            'weight' => data_get($i, 'tonase') ?? 0,
+                            'meass' => data_get($i, 'meter_kubik') ?? 0,
                         ];
                     })->toArray();
                 } else {
                     $items = [[
                         'qty' => $item->jumlah ?? 0,
                         'satuan' => $item->satuan ?? '',
-                        'nama' => !empty($item->nama_barang) ? (is_array($item->nama_barang) ? implode(', ', $item->nama_barang) : $item->nama_barang) : $item->jenis_barang
+                        'nama' => !empty($item->nama_barang) ? (is_array($item->nama_barang) ? implode(', ', $item->nama_barang) : $item->nama_barang) : $item->jenis_barang,
+                        'weight' => $item->tonase ?? 0,
+                        'meass' => $item->meter_kubik ?? 0,
                     ]];
                 }
 
@@ -132,7 +136,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     return [
                         'qty' => $i->jumlah ?? 0,
                         'satuan' => $i->satuan ?? '',
-                        'nama' => $nama
+                        'nama' => $nama,
+                        'weight' => $i->tonase ?? 0,
+                        'meass' => $i->meter_kubik ?? 0,
                     ];
                 })->toArray();
 
@@ -144,7 +150,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     $items = [[
                         'qty' => $item->jumlah_barang ?? 0,
                         'satuan' => $item->satuan_barang ?? '',
-                        'nama' => $nama
+                        'nama' => $nama,
+                        'weight' => $item->tonase ?? 0,
+                        'meass' => $item->meter_kubik ?? 0,
                     ]];
                 }
 
@@ -179,7 +187,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     return [
                         'qty' => $i->jumlah ?? 0,
                         'satuan' => $i->satuan ?? '',
-                        'nama' => $nama
+                        'nama' => $nama,
+                        'weight' => $i->tonase ?? 0,
+                        'meass' => $i->meter_kubik ?? 0,
                     ];
                 })->toArray();
 
@@ -279,6 +289,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                             'qty' => implode("\n", array_column($perincian, 'qty')),
                             'satuan' => implode("\n", array_column($perincian, 'satuan')),
                             'nama' => implode("\n", array_column($perincian, 'nama')),
+                            'weight' => implode("\n", array_column($perincian, 'weight')),
+                            'meass' => implode("\n", array_column($perincian, 'meass')),
                         ];
                         $perincian = [$pItem];
                     }
@@ -307,6 +319,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                         $row['p_qty'] = $pItem['qty'];
                         $row['p_satuan'] = $pItem['satuan'];
                         $row['p_nama'] = $pItem['nama'];
+                        $row['p_weight'] = $pItem['weight'];
+                        $row['p_meass'] = $pItem['meass'];
                         $finalData->push($row);
                     }
                 }
@@ -322,6 +336,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                             'qty' => implode("\n", array_column($perincian, 'qty')),
                             'satuan' => implode("\n", array_column($perincian, 'satuan')),
                             'nama' => implode("\n", array_column($perincian, 'nama')),
+                            'weight' => implode("\n", array_column($perincian, 'weight')),
+                            'meass' => implode("\n", array_column($perincian, 'meass')),
                         ];
                         $perincian = [$pItem];
                     }
@@ -344,6 +360,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                         $row['p_qty'] = $pItem['qty'];
                         $row['p_satuan'] = $pItem['satuan'];
                         $row['p_nama'] = $pItem['nama'];
+                        $row['p_weight'] = $pItem['weight'];
+                        $row['p_meass'] = $pItem['meass'];
                         $finalData->push($row);
                     }
                 }
@@ -370,6 +388,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'Qty',
             'Satuan',
             'Nama Barang',
+            'Weight',
+            'Meass',
             'Size',
             'SHIPPER',
             'CONSIGNEE',
@@ -401,16 +421,18 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                 '', // L: Qty
                 '', // M: Satuan
                 '', // N: Nama Barang
-                $row['size'], // O: Size
-                '', // P: SHIPPER
-                '', // Q: CONSIGNEE
-                '', // R: Address
-                '', // S: NPWP
-                '', // T: Contact Person
-                '', // U: Document PPFTZ
-                '', // V: TERM
-                $row['tujuan'], // W
-                ''  // X: Keterangan
+                '', // O: Weight
+                '', // P: Meass
+                $row['size'], // Q: Size
+                '', // R: SHIPPER
+                '', // S: CONSIGNEE
+                '', // T: Address
+                '', // U: NPWP
+                '', // V: Contact Person
+                '', // W: Document PPFTZ
+                '', // X: TERM
+                $row['tujuan'], // Y
+                ''  // Z: Keterangan
             ];
         }
 
@@ -430,16 +452,18 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             $row['p_qty'] ?? '', // L: Qty
             $row['p_satuan'] ?? '', // M: Satuan
             $row['p_nama'] ?? '', // N: Nama Barang
-            $row['size'], // O: Size
-            $row['pengirim'], // P: SHIPPER
-            $row['penerima'], // Q: CONSIGNEE
-            $row['p_address'] ?? '-', // R: Address
-            $row['p_npwp'] ?? '-', // S: NPWP
-            $row['p_cp'] ?? '-', // T: Contact Person
-            $row['ppftz'] ?? '-', // U: Document PPFTZ
-            $row['term'] ?? '-', // V: TERM
-            $row['tujuan'], // W: Tujuan
-            $row['keterangan'] // X: Keterangan
+            $row['p_weight'] ?? '', // O: Weight
+            $row['p_meass'] ?? '', // P: Meass
+            $row['size'], // Q: Size
+            $row['pengirim'], // R: SHIPPER
+            $row['penerima'], // S: CONSIGNEE
+            $row['p_address'] ?? '-', // T: Address
+            $row['p_npwp'] ?? '-', // U: NPWP
+            $row['p_cp'] ?? '-', // V: Contact Person
+            $row['ppftz'] ?? '-', // W: Document PPFTZ
+            $row['term'] ?? '-', // X: TERM
+            $row['tujuan'], // Y: Tujuan
+            $row['keterangan'] // Z: Keterangan
         ];
 
         // If it's a combined standard row, inject the container header values
@@ -462,10 +486,10 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'A' => 25, // No. TT / SJ
             'B' => 15, 'C' => 15, 'D' => 20, 'E' => 20,
             'F' => 8,  'G' => 10, 'H' => 20, 'I' => 8,  'J' => 8,  'K' => 15,
-            'L' => 10, 'M' => 12, 'N' => 50, // Perincian
-            'O' => 10, 'P' => 25, 'Q' => 25, // Size, Shipper, Consignee
-            'R' => 40, 'S' => 20, 'T' => 20, 'U' => 20, 'V' => 15, // Address, NPWP, CP, PPFTZ, TERM
-            'W' => 25, 'X' => 30 // Tujuan, Keterangan
+            'L' => 10, 'M' => 12, 'N' => 40, 'O' => 12, 'P' => 12, // Perincian
+            'Q' => 10, 'R' => 25, 'S' => 25, // Size, Shipper, Consignee
+            'T' => 40, 'U' => 20, 'V' => 20, 'W' => 20, 'X' => 15, // Address, NPWP, CP, PPFTZ, TERM
+            'Y' => 25, 'Z' => 30 // Tujuan, Keterangan
         ];
         foreach ($widths as $col => $width) {
             $sheet->getColumnDimension($col)->setWidth($width);
@@ -484,16 +508,16 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'E' => 'SEAL NO',
             'F' => 'MANIFEST', // Main header for manifest
             'L' => 'PERINCIAN', // Main header for perincian
-            'O' => 'Size',
-            'P' => 'SHIPPER',
-            'Q' => 'CONSIGNEE',
-            'R' => 'Consignee Address',
-            'S' => 'NPWP',
-            'T' => 'Contact Person',
-            'U' => 'Document PPFTZ',
-            'V' => 'TERM',
-            'W' => 'Tujuan',
-            'X' => 'Keterangan'
+            'Q' => 'Size',
+            'R' => 'SHIPPER',
+            'S' => 'CONSIGNEE',
+            'T' => 'Consignee Address',
+            'U' => 'NPWP',
+            'V' => 'Contact Person',
+            'W' => 'Document PPFTZ',
+            'X' => 'TERM',
+            'Y' => 'Tujuan',
+            'Z' => 'Keterangan'
         ];
 
         foreach ($headerValues as $col => $val) {
@@ -505,22 +529,27 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         
         // Merges for the main headers
         $sheet->mergeCells('F1:K1');
-        $sheet->mergeCells('L1:N1');
+        $sheet->mergeCells('L1:P1');
         
         // Row 2 Sub-headers
-        $sheet->setCellValue('F2', 'DESCRIPTION OF GOODS MANIFEST');
-        $sheet->mergeCells('F2:K2');
+        $sheet->setCellValue('F2', 'Qty');
+        $sheet->setCellValue('G2', 'Satuan');
+        $sheet->setCellValue('H2', 'DESCRIPTION OF GOODS MANIFEST');
+        $sheet->mergeCells('H2:K2');
         
-        $sheet->setCellValue('L2', 'DESCRIPTION OF GOODS');
-        $sheet->mergeCells('L2:N2');
+        $sheet->setCellValue('L2', 'Qty');
+        $sheet->setCellValue('M2', 'Satuan');
+        $sheet->setCellValue('N2', 'Nama Barang');
+        $sheet->setCellValue('O2', 'Weight');
+        $sheet->setCellValue('P2', 'Meass');
 
         // --- Apply Styles ---
         
         // Standard Headers (Light Gray)
         $sheet->getStyle('A1:E2')->applyFromArray($this->getStandardHeaderStyle());
-        $sheet->getStyle('O1:Q2')->applyFromArray($this->getStandardHeaderStyle()); // Size to Consignee
-        $sheet->getStyle('R1:V2')->applyFromArray($this->getStandardHeaderStyle()); // New columns
-        $sheet->getStyle('W1:X2')->applyFromArray($this->getStandardHeaderStyle()); // End columns
+        $sheet->getStyle('Q1:S2')->applyFromArray($this->getStandardHeaderStyle()); // Size to Consignee
+        $sheet->getStyle('T1:X2')->applyFromArray($this->getStandardHeaderStyle()); // New columns
+        $sheet->getStyle('Y1:Z2')->applyFromArray($this->getStandardHeaderStyle()); // End columns
 
         // Manifest Section (Light Green)
         $sheet->getStyle('F1:K2')->applyFromArray([
@@ -536,7 +565,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         ]);
 
         // Perincian Section (Cyan/Blue)
-        $sheet->getStyle('L1:N2')->applyFromArray([
+        $sheet->getStyle('L1:P2')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
@@ -549,12 +578,12 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         ]);
 
         // General styling for all headers (Row 1 & 2)
-        $sheet->getStyle('A1:X2')->getFont()->setBold(true);
-        $sheet->getStyle('A1:X2')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:Z2')->getFont()->setBold(true);
+        $sheet->getStyle('A1:Z2')->getAlignment()->setWrapText(true);
         
         // Style for content data
         return [
-            'A:X' => [
+            'A:Z' => [
                 'alignment' => [
                     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
                     'wrapText' => true,
