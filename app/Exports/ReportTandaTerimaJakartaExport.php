@@ -74,17 +74,19 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             ->map(function($item) {
                 // Extract items for perincian
                 $items = [];
-                if (!empty($item->dimensi_items)) {
-                    $items = collect($item->dimensi_items)->map(function($i) use ($item) {
+                $dimensi = !empty($item->dimensi_details) ? $item->dimensi_details : $item->dimensi_items;
+
+                if (!empty($dimensi)) {
+                    $items = collect($dimensi)->map(function($i) use ($item) {
                         $qty = data_get($i, 'jumlah') ?? data_get($i, 'qty') ?? 0;
                         $satuan = data_get($i, 'satuan') ?? '';
-                        $nama = data_get($i, 'nama_barang') ?? data_get($i, 'nama') ?? '';
+                        $nama = data_get($i, 'nama_barang') ?: data_get($i, 'nama') ?: $item->nama_barang ?: $item->jenis_barang;
                         
-                        // Fallback to jenis_barang if nama is empty
-                        if (empty($nama)) {
-                            $nama = $item->jenis_barang;
+                        // Handle if $item->nama_barang was an array (unlikely but for safety)
+                        if (is_array($nama)) {
+                            $nama = implode(', ', $nama);
                         }
-                        
+
                         return [
                             'qty' => $qty,
                             'satuan' => $satuan,
@@ -92,18 +94,10 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                         ];
                     })->toArray();
                 } else {
-                    $nama = $item->nama_barang;
-                    if (is_array($nama)) {
-                        $nama = implode(', ', $nama);
-                    }
-                    if (empty($nama)) {
-                        $nama = $item->jenis_barang;
-                    }
-
                     $items = [[
                         'qty' => $item->jumlah ?? 0,
                         'satuan' => $item->satuan ?? '',
-                        'nama' => $nama
+                        'nama' => !empty($item->nama_barang) ? (is_array($item->nama_barang) ? implode(', ', $item->nama_barang) : $item->nama_barang) : $item->jenis_barang
                     ]];
                 }
 
@@ -134,10 +128,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             ->get()
             ->map(function($item) {
                 $items = $item->dimensiItems->map(function($i) use ($item) {
-                    $nama = $i->nama_barang;
-                    if (empty($nama)) {
-                        $nama = $item->jenis_barang;
-                    }
+                    $nama = $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->jenis_barang;
                     return [
                         'qty' => $i->jumlah ?? 0,
                         'satuan' => $i->satuan ?? '',
@@ -184,10 +175,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             ->get()
             ->map(function($item) {
                 $items = $item->items->map(function($i) use ($item) {
-                    $nama = $i->nama_barang;
-                    if (empty($nama)) {
-                        $nama = $item->kegiatan; // LCL often uses kegiatan as fallback for goods
-                    }
+                    $nama = $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->kegiatan ?: $item->jenis_barang;
                     return [
                         'qty' => $i->jumlah ?? 0,
                         'satuan' => $i->satuan ?? '',
@@ -257,14 +245,20 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                        !empty($firstItem['no_seal']) && $firstItem['no_seal'] != '-';
 
             if ($hasInfo) {
-                // Add Header Row for the Group
-                $finalData->push([
-                    'type' => 'header',
-                    'no_kontainer' => $firstItem['no_kontainer'],
-                    'no_seal' => $firstItem['no_seal'],
-                    'size' => $firstItem['size'],
-                    'tujuan' => $firstItem['tujuan'],
-                ]);
+                // Special check: If this group is Standard, we don't want a separate header row
+                // We will merge container info into the item row itself
+                $isStandard = ($firstItem['source'] === 'Standard');
+
+                if (!$isStandard) {
+                    // Add Header Row for the Group (Non-Standard like LCL)
+                    $finalData->push([
+                        'type' => 'header',
+                        'no_kontainer' => $firstItem['no_kontainer'],
+                        'no_seal' => $firstItem['no_seal'],
+                        'size' => $firstItem['size'],
+                        'tujuan' => $firstItem['tujuan'],
+                    ]);
+                }
 
                 // Add Item Rows with numbering (01, 01a, 01b...)
                 foreach ($items as $idx => $item) {
@@ -279,11 +273,26 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                         $perincian = [['qty' => '', 'satuan' => '', 'nama' => '']];
                     }
 
+                    // Special case for Standard: condense all items into 1 row
+                    if ($item['source'] === 'Standard' && count($perincian) > 1) {
+                        $pItem = [
+                            'qty' => implode("\n", array_column($perincian, 'qty')),
+                            'satuan' => implode("\n", array_column($perincian, 'satuan')),
+                            'nama' => implode("\n", array_column($perincian, 'nama')),
+                        ];
+                        $perincian = [$pItem];
+                    }
+
                     foreach ($perincian as $pIdx => $pItem) {
                         $row = $item;
                         $row['type'] = 'item';
                         $row['display_number'] = ($pIdx === 0) ? $number : '';
                         
+                        // If Standard, we inject the container header info into the first perincian row
+                        if ($item['source'] === 'Standard' && $pIdx === 0) {
+                            $row['is_combined_standard'] = true;
+                        }
+
                         // Clear Tanda Terima info for additional perincian rows to keep it clean
                         if ($pIdx > 0) {
                             $row['tanggal'] = null;
@@ -306,6 +315,17 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                 // For items without container/seal info, just add them normally
                 foreach ($items as $item) {
                     $perincian = $item['perincian_items'] ?? [['qty' => '', 'satuan' => '', 'nama' => '']];
+                    
+                    // Special case for Standard: condense all items into 1 row
+                    if ($item['source'] === 'Standard' && count($perincian) > 1) {
+                        $pItem = [
+                            'qty' => implode("\n", array_column($perincian, 'qty')),
+                            'satuan' => implode("\n", array_column($perincian, 'satuan')),
+                            'nama' => implode("\n", array_column($perincian, 'nama')),
+                        ];
+                        $perincian = [$pItem];
+                    }
+
                     foreach ($perincian as $pIdx => $pItem) {
                         $row = $item;
                         $row['type'] = 'item';
@@ -369,58 +389,70 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             return [
                 '', // A: NO. TANDA TERIMA / SJ
                 '', // B: B/L NO
-                '', // B: HS CODE
-                $row['no_kontainer'], // C: MARK AND NUMBERS
-                $row['no_seal'], // D: SEAL NO
-                '1', // E: Qty
-                'Unit', // F: Satuan
-                'Container ' . ($row['size'] ?: '-') . ' feet stc :', // G: Desc
-                '', // H
+                '', // C: HS CODE
+                $row['no_kontainer'], // D: MARK AND NUMBERS
+                $row['no_seal'], // E: SEAL NO
+                '1', // F: Qty
+                'Unit', // G: Satuan
+                'Container ' . ($row['size'] ?: '-') . ' feet stc :', // H: Desc
                 '', // I
-                'General cargo', // J
-                '', // K: Qty
-                '', // L: Satuan
+                '', // J
+                'General cargo', // K: Activity
+                '', // L: Qty
+                '', // M: Satuan
                 '', // N: Nama Barang
-                $row['size'], // O
-                '', // P: Shipper
-                '', // P: Consignee
-                '', // Q: Address
-                '', // R: NPWP
-                '', // S: CP
-                '', // T: PPFTZ
-                '', // U: TERM
+                $row['size'], // O: Size
+                '', // P: SHIPPER
+                '', // Q: CONSIGNEE
+                '', // R: Address
+                '', // S: NPWP
+                '', // T: Contact Person
+                '', // U: Document PPFTZ
+                '', // V: TERM
                 $row['tujuan'], // W
                 ''  // X: Keterangan
             ];
         }
 
         // Item row
-        return [
+        $data = [
             $row['no_tt'], // A: NO. TANDA TERIMA / SJ
             '', // B: B/L NO
-            '', // B: HS CODE
-            '', // C: MARK AND NUMBERS (Removed numbering as requested)
-            '', // D: SEAL NO (Empty for item)
-            '', // E: Qty (Empty for item)
-            '', // F: Satuan (Empty for item)
-            '', // G: Desc (Empty for item)
-            '', // H
+            '', // C: HS CODE
+            '', // D: MARK AND NUMBERS
+            '', // E: SEAL NO
+            '', // F: Qty
+            '', // G: Satuan
+            '', // H: Desc
             '', // I
             '', // J
-            $row['p_qty'] ?? '', // L
-            $row['p_satuan'] ?? '', // M
-            $row['p_nama'] ?? '', // N
-            $row['size'], // O
-            $row['pengirim'], // P
-            $row['penerima'], // Q
-            $row['p_address'] ?? '-', // R
-            $row['p_npwp'] ?? '-', // S
-            $row['p_cp'] ?? '-', // T
-            $row['ppftz'] ?? '-', // U
-            $row['term'] ?? '-', // V
-            $row['tujuan'], // W
-            $row['keterangan'] // X
+            '', // K: Activity
+            $row['p_qty'] ?? '', // L: Qty
+            $row['p_satuan'] ?? '', // M: Satuan
+            $row['p_nama'] ?? '', // N: Nama Barang
+            $row['size'], // O: Size
+            $row['pengirim'], // P: SHIPPER
+            $row['penerima'], // Q: CONSIGNEE
+            $row['p_address'] ?? '-', // R: Address
+            $row['p_npwp'] ?? '-', // S: NPWP
+            $row['p_cp'] ?? '-', // T: Contact Person
+            $row['ppftz'] ?? '-', // U: Document PPFTZ
+            $row['term'] ?? '-', // V: TERM
+            $row['tujuan'], // W: Tujuan
+            $row['keterangan'] // X: Keterangan
         ];
+
+        // If it's a combined standard row, inject the container header values
+        if (!empty($row['is_combined_standard'])) {
+            $data[3] = $row['no_kontainer']; // D: MARK AND NUMBERS
+            $data[4] = $row['no_seal']; // E: SEAL NO
+            $data[5] = '1'; // F: Qty
+            $data[6] = 'Unit'; // G: Satuan
+            $data[7] = 'Container ' . ($row['size'] ?: '-') . ' feet stc :'; // H: Desc
+            $data[10] = 'General cargo'; // K: Activity
+        }
+
+        return $data;
     }
 
     public function styles(Worksheet $sheet)
@@ -525,6 +557,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'A:X' => [
                 'alignment' => [
                     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
+                    'wrapText' => true,
                 ],
             ],
         ];
