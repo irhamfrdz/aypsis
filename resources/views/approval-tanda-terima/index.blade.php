@@ -322,6 +322,26 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- SI (Shipping Instruction) -->
+                        <div class="p-4 bg-gray-50/50 border border-gray-200 rounded-xl hover:border-indigo-200 transition-colors">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700">Dokumen SI (Shipping Instruction)</label>
+                                    <span class="text-[10px] text-gray-400">PDF, JPG, PNG (Max 10MB)</span>
+                                </div>
+                                <button type="button" onclick="addFileInput('si-container', 'file_si[]')" 
+                                        class="text-[10px] font-bold uppercase bg-indigo-100 text-indigo-700 px-2.5 py-1.5 rounded-lg hover:bg-indigo-200 transition-all flex items-center gap-1">
+                                    <i class="fas fa-plus"></i> Tambah
+                                </button>
+                            </div>
+                            <div id="si-container" class="space-y-2">
+                                <div class="relative flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group">
+                                    <input type="file" name="file_si[]" accept=".pdf,.jpg,.jpeg,.png"
+                                           class="flex-1 text-xs text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="p-6 bg-gray-50 flex items-center justify-end gap-3 rounded-b-2xl">
@@ -372,11 +392,12 @@
         document.getElementById('upload_identity').value = identity;
 
         // Clear additional rows and keep only one for each
-        ['ppbj-container', 'packing-list-container', 'invoice-container', 'faktur-pajak-container'].forEach(containerId => {
+        ['ppbj-container', 'packing-list-container', 'invoice-container', 'faktur-pajak-container', 'si-container'].forEach(containerId => {
             const container = document.getElementById(containerId);
             const inputName = containerId === 'ppbj-container' ? 'file_ppbj[]' : 
                              containerId === 'packing-list-container' ? 'file_packing_list[]' :
-                             containerId === 'invoice-container' ? 'file_invoice[]' : 'file_faktur_pajak[]';
+                             containerId === 'invoice-container' ? 'file_invoice[]' : 
+                             containerId === 'faktur-pajak-container' ? 'file_faktur_pajak[]' : 'file_si[]';
             
             container.innerHTML = `
                 <div class="relative flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group">

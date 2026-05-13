@@ -168,6 +168,8 @@ class TandaTerimaApprovalController extends Controller
             'file_invoice.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
             'file_faktur_pajak' => 'nullable|array',
             'file_faktur_pajak.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'file_si' => 'nullable|array',
+            'file_si.*' => 'file|mimes:pdf,jpg,jpeg,png|max:10240',
         ]);
 
         $model = $this->getModel($sourceType, $id);
@@ -176,7 +178,8 @@ class TandaTerimaApprovalController extends Controller
             'file_ppbj' => 'dokumen_ppbj', 
             'file_packing_list' => 'dokumen_packing_list', 
             'file_invoice' => 'dokumen_invoice', 
-            'file_faktur_pajak' => 'dokumen_faktur_pajak'
+            'file_faktur_pajak' => 'dokumen_faktur_pajak',
+            'file_si' => 'dokumen_si'
         ];
 
         $uploaded = false;
@@ -294,7 +297,8 @@ class TandaTerimaApprovalController extends Controller
             'dokumen_ppbj' => 'PPBJ',
             'dokumen_packing_list' => 'Packing List',
             'dokumen_invoice' => 'Invoice',
-            'dokumen_faktur_pajak' => 'Faktur Pajak'
+            'dokumen_faktur_pajak' => 'Faktur Pajak',
+            'dokumen_si' => 'SI (Shipping Instruction)'
         ];
 
         foreach ($cols as $col => $typeName) {

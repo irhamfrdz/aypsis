@@ -65,6 +65,7 @@ class TandaTerimaTanpaSuratJalan extends Model
         'dokumen_packing_list',
         'dokumen_invoice',
         'dokumen_faktur_pajak',
+        'dokumen_si',
     ];
 
     protected $casts = [
@@ -86,6 +87,7 @@ class TandaTerimaTanpaSuratJalan extends Model
         'dokumen_packing_list' => 'array',
         'dokumen_invoice' => 'array',
         'dokumen_faktur_pajak' => 'array',
+        'dokumen_si' => 'array',
     ];
 
     /**
