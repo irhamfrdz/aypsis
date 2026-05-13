@@ -70,7 +70,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
 
         // 3. Tanda Terima LCL
         $ttLCL = TandaTerimaLcl::whereBetween('tanggal_tanda_terima', [$this->startDate, $this->endDate])
-            ->with(['tujuanKirim'])
+            ->with(['tujuanKirim', 'kontainerPivot'])
             ->get()
             ->map(function($item) {
                 return [
@@ -80,7 +80,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     'no_sj_pabrik' => $item->surat_jalan_pabrik,
                     'no_kontainer' => $item->nomor_kontainer,
                     'no_seal' => $item->nomor_seal,
-                    'size' => '-',
+                    'size' => $item->kontainerPivot->first()->size_kontainer ?? '-',
                     'pengirim' => $item->nama_pengirim,
                     'penerima' => $item->nama_penerima,
                     'tujuan' => $item->tujuanKirim?->nama_tujuan ?? '-',

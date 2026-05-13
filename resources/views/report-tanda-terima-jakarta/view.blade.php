@@ -52,6 +52,7 @@
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">No. TT / SJ</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">No. Kontainer / Seal</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Size</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Pengirim</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Penerima</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Tujuan</th>
@@ -85,9 +86,9 @@
                                 @if($row['no_seal'] && $row['no_seal'] != '-')
                                     <div class="text-[10px] text-green-600 font-bold mt-0.5"><i class="fas fa-lock text-[9px] mr-1"></i>{{ $row['no_seal'] }}</div>
                                 @endif
-                                @if($row['size'] && $row['size'] != '-')
-                                    <div class="text-xs text-gray-400">({{ $row['size'] }})</div>
-                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                {{ $row['size'] ?: '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                 {{ Str::limit($row['pengirim'], 20) }}
@@ -104,7 +105,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-10 text-center text-gray-500 italic">
+                            <td colspan="9" class="px-6 py-10 text-center text-gray-500 italic">
                                 No data found for the selected period.
                             </td>
                         </tr>
