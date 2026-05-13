@@ -201,8 +201,36 @@ class ApprovalOrderController extends Controller
             
             $order->save();
 
+            // Sync with SuratJalan and TandaTerima
+            $order->load(['suratJalans.tandaTerima', 'pengirim']);
+            $namaPengirim = $order->pengirim->nama_pengirim ?? null;
+            $alamatPengirim = $order->alamat_pengirim;
+            $penerimaId = $order->penerima_id;
+            $namaPenerima = $order->penerima;
+            $alamatPenerima = $order->alamat_penerima;
+
+            foreach ($order->suratJalans as $suratJalan) {
+                // Update SuratJalan
+                $suratJalan->update([
+                    'pengirim' => $namaPengirim,
+                    'alamat' => $alamatPengirim,
+                    'penerima_id' => $penerimaId,
+                    'alamat_penerima' => $alamatPenerima
+                ]);
+
+                // Update TandaTerima
+                if ($suratJalan->tandaTerima) {
+                    $suratJalan->tandaTerima->update([
+                        'pengirim' => $namaPengirim,
+                        'alamat_pengirim' => $alamatPengirim,
+                        'penerima' => $namaPenerima,
+                        'alamat_penerima' => $alamatPenerima
+                    ]);
+                }
+            }
+
             return redirect()->route('approval-order.index')
-                           ->with('success', 'Data Order berhasil diupdate');
+                           ->with('success', 'Data Order berhasil diupdate dan disinkronkan ke Tanda Terima');
 
         } catch (\Exception $e) {
             return redirect()->back()

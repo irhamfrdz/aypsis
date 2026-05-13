@@ -163,7 +163,7 @@ class PengirimController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode' => 'required|string|unique:pengirim,kode',
+            'kode' => 'required|string|unique:pengirims,kode',
             'nama_pengirim' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
@@ -211,7 +211,7 @@ class PengirimController extends Controller
         $pengirim = Pengirim::findOrFail($id);
 
         $request->validate([
-            'kode' => 'required|string|unique:pengirim,kode,' . $id,
+            'kode' => 'required|string|unique:pengirims,kode,' . $id,
             'nama_pengirim' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
@@ -305,7 +305,7 @@ class PengirimController extends Controller
     public function updateForTandaTerima(Request $request, Pengirim $pengirim)
     {
         $request->validate([
-            'kode' => 'required|string|unique:pengirim,kode,' . $pengirim->id,
+            'kode' => 'required|string|unique:pengirims,kode,' . $pengirim->id,
             'nama_pengirim' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',

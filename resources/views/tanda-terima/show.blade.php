@@ -173,6 +173,10 @@
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->pengirim ?: '-' }}</dd>
                         </div>
                         <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Alamat Pengirim</dt>
+                            <dd class="text-sm text-gray-900">{{ $tandaTerima->alamat_pengirim ?: '-' }}</dd>
+                        </div>
+                        <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">PIC Pengirim</dt>
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->pic_pengirim ?: '-' }}</dd>
                         </div>
