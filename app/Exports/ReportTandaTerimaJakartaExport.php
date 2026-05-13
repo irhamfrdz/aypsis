@@ -301,6 +301,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
     public function headings(): array
     {
         return [
+            'NO. TANDA TERIMA / SJ',
             'B/L NO',
             'HS CODE',
             'MARK AND NUMBERS',
@@ -331,7 +332,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
     {
         if ($row['type'] === 'header') {
             return [
-                '', // A: B/L NO
+                '', // A: NO. TANDA TERIMA / SJ
+                '', // B: B/L NO
                 '', // B: HS CODE
                 $row['no_kontainer'], // C: MARK AND NUMBERS
                 $row['no_seal'], // D: SEAL NO
@@ -343,23 +345,24 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                 'General cargo', // J
                 '', // K: Qty
                 '', // L: Satuan
-                '', // M: Nama Barang
-                $row['size'], // N
-                '', // O: Shipper
+                '', // N: Nama Barang
+                $row['size'], // O
+                '', // P: Shipper
                 '', // P: Consignee
                 '', // Q: Address
                 '', // R: NPWP
                 '', // S: CP
                 '', // T: PPFTZ
                 '', // U: TERM
-                $row['tujuan'], // V
-                ''  // W: Keterangan
+                $row['tujuan'], // W
+                ''  // X: Keterangan
             ];
         }
 
         // Item row
         return [
-            '', // A: B/L NO
+            $row['no_tt'], // A: NO. TANDA TERIMA / SJ
+            '', // B: B/L NO
             '', // B: HS CODE
             '', // C: MARK AND NUMBERS (Removed numbering as requested)
             '', // D: SEAL NO (Empty for item)
@@ -369,19 +372,19 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             '', // H
             '', // I
             '', // J
-            $row['p_qty'] ?? '', // K
-            $row['p_satuan'] ?? '', // L
-            $row['p_nama'] ?? '', // M
-            $row['size'], // N
-            $row['pengirim'], // O
-            $row['penerima'], // P
-            $row['p_address'] ?? '-', // Q
-            $row['p_npwp'] ?? '-', // R
-            $row['p_cp'] ?? '-', // S
-            $row['ppftz'] ?? '-', // T
-            $row['term'] ?? '-', // U
-            $row['tujuan'], // V
-            $row['keterangan'] // W
+            $row['p_qty'] ?? '', // L
+            $row['p_satuan'] ?? '', // M
+            $row['p_nama'] ?? '', // N
+            $row['size'], // O
+            $row['pengirim'], // P
+            $row['penerima'], // Q
+            $row['p_address'] ?? '-', // R
+            $row['p_npwp'] ?? '-', // S
+            $row['p_cp'] ?? '-', // T
+            $row['ppftz'] ?? '-', // U
+            $row['term'] ?? '-', // V
+            $row['tujuan'], // W
+            $row['keterangan'] // X
         ];
     }
 
@@ -389,12 +392,13 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
     {
         // Set explicit widths to prevent "too large" columns
         $widths = [
-            'A' => 15, 'B' => 15, 'C' => 20, 'D' => 20,
-            'E' => 8,  'F' => 10, 'G' => 20, 'H' => 8,  'I' => 8,  'J' => 15,
-            'K' => 10, 'L' => 12, 'M' => 50, // Perincian
-            'N' => 10, 'O' => 25, 'P' => 25, // Shipper, Consignee
-            'Q' => 40, 'R' => 20, 'S' => 20, 'T' => 20, 'U' => 15, // New columns
-            'V' => 25, 'W' => 30 // Original trailing columns
+            'A' => 25, // No. TT / SJ
+            'B' => 15, 'C' => 15, 'D' => 20, 'E' => 20,
+            'F' => 8,  'G' => 10, 'H' => 20, 'I' => 8,  'J' => 8,  'K' => 15,
+            'L' => 10, 'M' => 12, 'N' => 50, // Perincian
+            'O' => 10, 'P' => 25, 'Q' => 25, // Size, Shipper, Consignee
+            'R' => 40, 'S' => 20, 'T' => 20, 'U' => 20, 'V' => 15, // Address, NPWP, CP, PPFTZ, TERM
+            'W' => 25, 'X' => 30 // Tujuan, Keterangan
         ];
         foreach ($widths as $col => $width) {
             $sheet->getColumnDimension($col)->setWidth($width);
@@ -406,52 +410,53 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         // --- Row 1 & 2: Set Values and Merges ---
         // Column mapping for easy iteration
         $headerValues = [
-            'A' => 'B/L NO',
-            'B' => 'HS CODE',
-            'C' => 'MARK AND NUMBERS',
-            'D' => 'SEAL NO',
-            'E' => 'MANIFEST', // Main header for manifest
-            'K' => 'PERINCIAN', // Main header for perincian
-            'N' => 'Size',
-            'O' => 'SHIPPER',
-            'P' => 'CONSIGNEE',
-            'Q' => 'Consignee Address',
-            'R' => 'NPWP',
-            'S' => 'Contact Person',
-            'T' => 'Document PPFTZ',
-            'U' => 'TERM',
-            'V' => 'Tujuan',
-            'W' => 'Keterangan'
+            'A' => 'NO. TANDA TERIMA / SJ',
+            'B' => 'B/L NO',
+            'C' => 'HS CODE',
+            'D' => 'MARK AND NUMBERS',
+            'E' => 'SEAL NO',
+            'F' => 'MANIFEST', // Main header for manifest
+            'L' => 'PERINCIAN', // Main header for perincian
+            'O' => 'Size',
+            'P' => 'SHIPPER',
+            'Q' => 'CONSIGNEE',
+            'R' => 'Consignee Address',
+            'S' => 'NPWP',
+            'T' => 'Contact Person',
+            'U' => 'Document PPFTZ',
+            'V' => 'TERM',
+            'W' => 'Tujuan',
+            'X' => 'Keterangan'
         ];
 
         foreach ($headerValues as $col => $val) {
             $sheet->setCellValue("{$col}1", $val);
-            if (!in_array($col, ['E', 'K'])) {
+            if (!in_array($col, ['F', 'L'])) {
                 $sheet->mergeCells("{$col}1:{$col}2");
             }
         }
         
         // Merges for the main headers
-        $sheet->mergeCells('E1:J1');
-        $sheet->mergeCells('K1:M1');
+        $sheet->mergeCells('F1:K1');
+        $sheet->mergeCells('L1:N1');
         
         // Row 2 Sub-headers
-        $sheet->setCellValue('E2', 'DESCRIPTION OF GOODS MANIFEST');
-        $sheet->mergeCells('E2:J2');
+        $sheet->setCellValue('F2', 'DESCRIPTION OF GOODS MANIFEST');
+        $sheet->mergeCells('F2:K2');
         
-        $sheet->setCellValue('K2', 'DESCRIPTION OF GOODS');
-        $sheet->mergeCells('K2:M2');
+        $sheet->setCellValue('L2', 'DESCRIPTION OF GOODS');
+        $sheet->mergeCells('L2:N2');
 
         // --- Apply Styles ---
         
         // Standard Headers (Light Gray)
-        $sheet->getStyle('A1:D2')->applyFromArray($this->getStandardHeaderStyle());
-        $sheet->getStyle('N1:P2')->applyFromArray($this->getStandardHeaderStyle()); // Size to Consignee
-        $sheet->getStyle('Q1:U2')->applyFromArray($this->getStandardHeaderStyle()); // New columns
-        $sheet->getStyle('V1:W2')->applyFromArray($this->getStandardHeaderStyle()); // End columns
+        $sheet->getStyle('A1:E2')->applyFromArray($this->getStandardHeaderStyle());
+        $sheet->getStyle('O1:Q2')->applyFromArray($this->getStandardHeaderStyle()); // Size to Consignee
+        $sheet->getStyle('R1:V2')->applyFromArray($this->getStandardHeaderStyle()); // New columns
+        $sheet->getStyle('W1:X2')->applyFromArray($this->getStandardHeaderStyle()); // End columns
 
         // Manifest Section (Light Green)
-        $sheet->getStyle('E1:J2')->applyFromArray([
+        $sheet->getStyle('F1:K2')->applyFromArray([
             'font' => ['bold' => true, 'size' => 11],
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
@@ -464,7 +469,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         ]);
 
         // Perincian Section (Cyan/Blue)
-        $sheet->getStyle('K1:M2')->applyFromArray([
+        $sheet->getStyle('L1:N2')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
@@ -477,12 +482,12 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         ]);
 
         // General styling for all headers (Row 1 & 2)
-        $sheet->getStyle('A1:W2')->getFont()->setBold(true);
-        $sheet->getStyle('A1:W2')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:X2')->getFont()->setBold(true);
+        $sheet->getStyle('A1:X2')->getAlignment()->setWrapText(true);
         
         // Style for content data
         return [
-            'A:W' => [
+            'A:X' => [
                 'alignment' => [
                     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
                 ],
