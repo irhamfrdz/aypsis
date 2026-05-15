@@ -5933,13 +5933,13 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
             Route::post('master-pricelist-tujuan-kontainer-sewa', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'store'])
                  ->name('master-pricelist-tujuan-kontainer-sewa.store')
                  ->middleware('can:master-pricelist-tujuan-kontainer-sewa-create');
-            Route::get('master-pricelist-tujuan-kontainer-sewa/{masterPricelistTujuanKontainerSewa}/edit', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'edit'])
+            Route::get('master-pricelist-tujuan-kontainer-sewa/{pricelist}/edit', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'edit'])
                  ->name('master-pricelist-tujuan-kontainer-sewa.edit')
                  ->middleware('can:master-pricelist-tujuan-kontainer-sewa-update');
-            Route::put('master-pricelist-tujuan-kontainer-sewa/{masterPricelistTujuanKontainerSewa}', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'update'])
+            Route::put('master-pricelist-tujuan-kontainer-sewa/{pricelist}', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'update'])
                  ->name('master-pricelist-tujuan-kontainer-sewa.update')
                  ->middleware('can:master-pricelist-tujuan-kontainer-sewa-update');
-            Route::delete('master-pricelist-tujuan-kontainer-sewa/{masterPricelistTujuanKontainerSewa}', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'destroy'])
+            Route::delete('master-pricelist-tujuan-kontainer-sewa/{pricelist}', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'destroy'])
                  ->name('master-pricelist-tujuan-kontainer-sewa.destroy')
                  ->middleware('can:master-pricelist-tujuan-kontainer-sewa-delete');
 

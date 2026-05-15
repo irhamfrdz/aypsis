@@ -58,7 +58,7 @@ class MasterPricelistTujuanKontainerSewaController extends Controller
             ->with('success', 'Pricelist tujuan berhasil ditambahkan');
     }
 
-    public function edit(MasterPricelistTujuanKontainerSewa $masterPricelistTujuanKontainerSewa)
+    public function edit(MasterPricelistTujuanKontainerSewa $pricelist)
     {
         $user = Auth::user();
         if (!$user->can('master-pricelist-tujuan-kontainer-sewa-update')) {
@@ -66,11 +66,11 @@ class MasterPricelistTujuanKontainerSewaController extends Controller
         }
 
         return view('master-pricelist-tujuan-kontainer-sewa.edit', [
-            'pricelist' => $masterPricelistTujuanKontainerSewa
+            'pricelist' => $pricelist
         ]);
     }
 
-    public function update(Request $request, MasterPricelistTujuanKontainerSewa $masterPricelistTujuanKontainerSewa)
+    public function update(Request $request, MasterPricelistTujuanKontainerSewa $pricelist)
     {
         $user = Auth::user();
         if (!$user->can('master-pricelist-tujuan-kontainer-sewa-update')) {
@@ -85,20 +85,20 @@ class MasterPricelistTujuanKontainerSewaController extends Controller
             'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        $masterPricelistTujuanKontainerSewa->update($validated);
+        $pricelist->update($validated);
 
         return redirect()->route('master-pricelist-tujuan-kontainer-sewa.index')
             ->with('success', 'Pricelist tujuan berhasil diperbarui');
     }
 
-    public function destroy(MasterPricelistTujuanKontainerSewa $masterPricelistTujuanKontainerSewa)
+    public function destroy(MasterPricelistTujuanKontainerSewa $pricelist)
     {
         $user = Auth::user();
         if (!$user->can('master-pricelist-tujuan-kontainer-sewa-delete')) {
             abort(403, 'Unauthorized');
         }
 
-        $masterPricelistTujuanKontainerSewa->delete();
+        $pricelist->delete();
 
         return redirect()->route('master-pricelist-tujuan-kontainer-sewa.index')
             ->with('success', 'Pricelist tujuan berhasil dihapus');
