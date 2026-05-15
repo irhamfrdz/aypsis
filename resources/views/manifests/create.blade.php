@@ -74,11 +74,9 @@
                         <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
                         <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                             <option value="">- Pilih Tipe -</option>
-                            <option value="Dry Container" {{ old('tipe_kontainer') == 'Dry Container' ? 'selected' : '' }}>Dry Container</option>
-                            <option value="High Cube" {{ old('tipe_kontainer') == 'High Cube' ? 'selected' : '' }}>High Cube</option>
-                            <option value="Reefer" {{ old('tipe_kontainer') == 'Reefer' ? 'selected' : '' }}>Reefer</option>
-                            <option value="Open Top" {{ old('tipe_kontainer') == 'Open Top' ? 'selected' : '' }}>Open Top</option>
-                            <option value="Flat Rack" {{ old('tipe_kontainer') == 'Flat Rack' ? 'selected' : '' }}>Flat Rack</option>
+                            @foreach(['Dry Container', 'High Cube', 'Reefer', 'Open Top', 'Flat Rack', 'LCL', 'FCL', 'Cargo', 'SOC', '40 FT', '20 FT'] as $option)
+                                <option value="{{ $option }}" {{ old('tipe_kontainer') == $option ? 'selected' : '' }}>{{ $option }}</option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -86,8 +84,9 @@
                         <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Size Kontainer</label>
                         <select name="size_kontainer" id="size_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                             <option value="">- Pilih Size -</option>
-                            <option value="20" {{ old('size_kontainer') == '20' ? 'selected' : '' }}>20'</option>
-                            <option value="40" {{ old('size_kontainer') == '40' ? 'selected' : '' }}>40'</option>
+                            @foreach(['20', '40', '20ft', '40ft', '45ft', '10', '20 FT', '40 FT'] as $option)
+                                <option value="{{ $option }}" {{ old('size_kontainer') == $option ? 'selected' : '' }}>{{ $option }}{{ in_array($option, ['20', '40']) ? "'" : "" }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>
