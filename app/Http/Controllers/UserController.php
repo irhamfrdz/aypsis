@@ -1218,6 +1218,13 @@ class UserController extends Controller
                             $action = str_replace('pricelist-meratus-', '', $action);
                             $module = 'master-pricelist-meratus';
                         }
+                        }
+                        // Special handling for master-pricelist-tujuan-kontainer-sewa permissions
+                        elseif (strpos($action, 'pricelist-tujuan-kontainer-sewa-') === 0) {
+                            // For master-pricelist-tujuan-kontainer-sewa-view, extract the action
+                            $action = str_replace('pricelist-tujuan-kontainer-sewa-', '', $action);
+                            $module = 'master-pricelist-tujuan-kontainer-sewa';
+                        }
                         // Special handling for master-pricelist-temas permissions
                         elseif (strpos($action, 'pricelist-temas-') === 0) {
                             // For master-pricelist-temas-view, extract the action
@@ -2893,6 +2900,27 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-tujuan-kontainer-sewa permissions explicitly
+                    if ($module === 'master-pricelist-tujuan-kontainer-sewa' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-tujuan-kontainer-sewa-view',
+                            'create' => 'master-pricelist-tujuan-kontainer-sewa-create',
+                            'update' => 'master-pricelist-tujuan-kontainer-sewa-update',
+                            'delete' => 'master-pricelist-tujuan-kontainer-sewa-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                                continue;
                             }
                         }
                     }

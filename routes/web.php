@@ -5921,6 +5921,26 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                  ->name('master.pricelist-lembur.destroy')
                  ->middleware('can:master-pricelist-lembur-delete');
 
+            // 🚛 MASTER PRICELIST TUJUAN KONTAINER SEWA
+            Route::get('master-pricelist-tujuan-kontainer-sewa', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'index'])
+                 ->name('master-pricelist-tujuan-kontainer-sewa.index')
+                 ->middleware('can:master-pricelist-tujuan-kontainer-sewa-view');
+            Route::get('master-pricelist-tujuan-kontainer-sewa/create', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'create'])
+                 ->name('master-pricelist-tujuan-kontainer-sewa.create')
+                 ->middleware('can:master-pricelist-tujuan-kontainer-sewa-create');
+            Route::post('master-pricelist-tujuan-kontainer-sewa', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'store'])
+                 ->name('master-pricelist-tujuan-kontainer-sewa.store')
+                 ->middleware('can:master-pricelist-tujuan-kontainer-sewa-create');
+            Route::get('master-pricelist-tujuan-kontainer-sewa/{masterPricelistTujuanKontainerSewa}/edit', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'edit'])
+                 ->name('master-pricelist-tujuan-kontainer-sewa.edit')
+                 ->middleware('can:master-pricelist-tujuan-kontainer-sewa-update');
+            Route::put('master-pricelist-tujuan-kontainer-sewa/{masterPricelistTujuanKontainerSewa}', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'update'])
+                 ->name('master-pricelist-tujuan-kontainer-sewa.update')
+                 ->middleware('can:master-pricelist-tujuan-kontainer-sewa-update');
+            Route::delete('master-pricelist-tujuan-kontainer-sewa/{masterPricelistTujuanKontainerSewa}', [\App\Http\Controllers\MasterPricelistTujuanKontainerSewaController::class, 'destroy'])
+                 ->name('master-pricelist-tujuan-kontainer-sewa.destroy')
+                 ->middleware('can:master-pricelist-tujuan-kontainer-sewa-delete');
+
 
            // ═══════════════════════════════════════════════════════════════════════
            // 📜 MASTER SERTIFIKAT KAPAL
