@@ -26,19 +26,19 @@
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-6">
                 <!-- Kolom 1 -->
-                <div class="space-y-4">
-                    <div>
+                <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pelanggan</label>
                         <div class="flex gap-2">
                             <input type="text" name="pelanggan_kode" value="{{ $manifest ? $manifest->prospek_id : '' }}" class="w-1/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode">
                             <input type="text" name="pelanggan_nama" value="{{ $manifest ? $manifest->penerima : '' }}" class="w-2/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10" placeholder="Nama Pelanggan">
                         </div>
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Terima Dari</label>
                         <textarea name="terima_dari" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">{{ $manifest ? $manifest->pengirim : '' }}</textarea>
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kirim Ke</label>
                         <textarea name="kirim_ke" rows="4" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">@if($manifest){{ $manifest->penerima }}
 {{ $manifest->alamat_pengiriman }}
@@ -47,40 +47,40 @@
                 </div>
 
                 <!-- Kolom 2 -->
-                <div class="space-y-4">
-                    <div>
+                <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kwt No.</label>
                         <input type="text" name="kwt_no" value="{{ $kwtNo }}" readonly class="w-full bg-gray-100 border-gray-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10 cursor-not-allowed">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tgl. Inv.</label>
                         <input type="date" name="tgl_inv" value="{{ date('Y-m-d') }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">No. PO</label>
                         <input type="text" name="no_po" value="{{ $manifest ? $manifest->nomor_bl : '' }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tgl. Kirim</label>
                         <input type="date" name="tgl_kirim" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                 </div>
 
                 <!-- Kolom 3 -->
-                <div class="space-y-4">
-                    <div>
+                <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">FOB</label>
                         <input type="text" name="fob" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Syarat Pembayaran</label>
                         <input type="text" name="syarat_pembayaran" value="COD" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
                         <input type="text" name="pengirim" value="{{ $manifest ? $manifest->pengirim : '' }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Penjual</label>
                         <input type="text" name="penjual" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>

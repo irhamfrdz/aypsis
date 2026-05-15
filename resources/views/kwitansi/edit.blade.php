@@ -27,59 +27,59 @@
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Kolom 1 -->
-                <div class="space-y-4">
-                    <div>
+                <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pelanggan</label>
                         <div class="flex gap-2">
                             <input type="text" name="pelanggan_kode" value="{{ $kwitansi->pelanggan_kode }}" class="w-1/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode">
                             <input type="text" name="pelanggan_nama" value="{{ $kwitansi->pelanggan_nama }}" class="w-2/3 bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10" placeholder="Nama Pelanggan">
                         </div>
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Terima Dari</label>
                         <textarea name="terima_dari" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">{{ $kwitansi->terima_dari }}</textarea>
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kirim Ke</label>
                         <textarea name="kirim_ke" rows="2" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">{{ $kwitansi->kirim_ke }}</textarea>
                     </div>
                 </div>
 
                 <!-- Kolom 2 -->
-                <div class="space-y-4">
-                    <div>
+                <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kwt No.</label>
                         <input type="text" name="kwt_no" value="{{ $kwitansi->kwt_no }}" readonly class="w-full bg-gray-100 rounded-md border-gray-300 shadow-sm text-sm cursor-not-allowed">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tgl. Inv.</label>
                         <input type="date" name="tgl_inv" value="{{ $kwitansi->tgl_inv ? \Carbon\Carbon::parse($kwitansi->tgl_inv)->format('Y-m-d') : '' }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">No. PO</label>
                         <input type="text" name="no_po" value="{{ $kwitansi->no_po }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tgl. Kirim</label>
                         <input type="date" name="tgl_kirim" value="{{ $kwitansi->tgl_kirim ? \Carbon\Carbon::parse($kwitansi->tgl_kirim)->format('Y-m-d') : '' }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
                 </div>
 
                 <!-- Kolom 3 -->
-                <div class="space-y-4">
-                    <div>
+                <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">FOB</label>
                         <input type="text" name="fob" value="{{ $kwitansi->fob }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Syarat Pembayaran</label>
                         <input type="text" name="syarat_pembayaran" value="{{ $kwitansi->syarat_pembayaran }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
                         <input type="text" name="pengirim" value="{{ $kwitansi->pengirim }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>
-                    <div>
+                    <div class="mb-5">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Penjual</label>
                         <input type="text" name="penjual" value="{{ $kwitansi->penjual }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
                     </div>

@@ -2773,6 +2773,33 @@ class ObController extends Controller
                         $manifestData['alamat_penerima'] = $prospek->alamat_penerima ?? null;
                         $manifestData['pelabuhan_muat'] = $prospek->port_muat ?? $bl->pelabuhan_asal ?? null;
                         $manifestData['pelabuhan_bongkar'] = $prospek->port_bongkar ?? $bl->pelabuhan_tujuan ?? null;
+
+                        // Extract actual item name from Tanda Terima if available
+                        if ($prospek->tandaTerima) {
+                            $tt = $prospek->tandaTerima;
+                            $manifestData['nomor_tanda_terima'] = $tt->nomor_tanda_terima ?? $tt->no_surat_jalan;
+                            
+                            $itemNames = [];
+                            if (!empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
+                                foreach ($tt->dimensi_items as $item) {
+                                    if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                }
+                            } elseif (!empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
+                                foreach ($tt->dimensi_details as $item) {
+                                    if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                }
+                            } elseif (!empty($tt->nama_barang)) {
+                                if (is_array($tt->nama_barang)) {
+                                    $itemNames = $tt->nama_barang;
+                                } elseif (is_string($tt->nama_barang) && $tt->nama_barang !== 'null') {
+                                    $itemNames[] = $tt->nama_barang;
+                                }
+                            }
+                            
+                            if (!empty($itemNames)) {
+                                $manifestData['nama_barang'] = implode(', ', $itemNames);
+                            }
+                        }
                     }
                 }
 
@@ -3030,6 +3057,33 @@ class ObController extends Controller
                                 $manifestData['alamat_penerima'] = $prospek->alamat_penerima ?? null;
                                 $manifestData['pelabuhan_muat'] = $prospek->port_muat ?? $naikKapal->pelabuhan_asal ?? null;
                                 $manifestData['pelabuhan_bongkar'] = $prospek->port_bongkar ?? $naikKapal->pelabuhan_tujuan ?? null;
+
+                                // Extract actual item name from Tanda Terima if available
+                                if ($prospek->tandaTerima) {
+                                    $tt = $prospek->tandaTerima;
+                                    $manifestData['nomor_tanda_terima'] = $tt->nomor_tanda_terima ?? $tt->no_surat_jalan;
+                                    
+                                    $itemNames = [];
+                                    if (!empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
+                                        foreach ($tt->dimensi_items as $item) {
+                                            if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                        }
+                                    } elseif (!empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
+                                        foreach ($tt->dimensi_details as $item) {
+                                            if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                        }
+                                    } elseif (!empty($tt->nama_barang)) {
+                                        if (is_array($tt->nama_barang)) {
+                                            $itemNames = $tt->nama_barang;
+                                        } elseif (is_string($tt->nama_barang) && $tt->nama_barang !== 'null') {
+                                            $itemNames[] = $tt->nama_barang;
+                                        }
+                                    }
+                                    
+                                    if (!empty($itemNames)) {
+                                        $manifestData['nama_barang'] = implode(', ', $itemNames);
+                                    }
+                                }
                             }
                         }
 
@@ -3099,6 +3153,33 @@ class ObController extends Controller
                             $manifestData['alamat_penerima'] = $prospek->alamat_penerima ?? null;
                             $manifestData['pelabuhan_muat'] = $prospek->port_muat ?? $naikKapal->pelabuhan_asal ?? null;
                             $manifestData['pelabuhan_bongkar'] = $prospek->port_bongkar ?? $naikKapal->pelabuhan_tujuan ?? null;
+
+                            // Extract actual item name from Tanda Terima if available
+                            if ($prospek->tandaTerima) {
+                                $tt = $prospek->tandaTerima;
+                                $manifestData['nomor_tanda_terima'] = $tt->nomor_tanda_terima ?? $tt->no_surat_jalan;
+                                
+                                $itemNames = [];
+                                if (!empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
+                                    foreach ($tt->dimensi_items as $item) {
+                                        if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                    }
+                                } elseif (!empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
+                                    foreach ($tt->dimensi_details as $item) {
+                                        if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                    }
+                                } elseif (!empty($tt->nama_barang)) {
+                                    if (is_array($tt->nama_barang)) {
+                                        $itemNames = $tt->nama_barang;
+                                    } elseif (is_string($tt->nama_barang) && $tt->nama_barang !== 'null') {
+                                        $itemNames[] = $tt->nama_barang;
+                                    }
+                                }
+                                
+                                if (!empty($itemNames)) {
+                                    $manifestData['nama_barang'] = implode(', ', $itemNames);
+                                }
+                            }
                         }
                     }
 
