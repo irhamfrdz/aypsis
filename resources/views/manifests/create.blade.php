@@ -45,14 +45,19 @@
 
                     <div>
                         <label for="prospek_id" class="block text-sm font-medium text-gray-700 mb-2">Prospek</label>
-                        <select name="prospek_id" id="prospek_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                            <option value="">- Pilih Prospek -</option>
-                            @foreach($prospeks as $prospek)
-                                <option value="{{ $prospek->id }}" {{ old('prospek_id') == $prospek->id ? 'selected' : '' }}>
-                                    {{ $prospek->pt_pengirim }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <div class="dropdown-container-prospek">
+                                <input type="text" id="search_prospek" placeholder="Cari prospek..." autocomplete="off"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 bg-white text-sm"
+                                       value="">
+                                <select name="prospek_id" id="prospek_id" class="hidden">
+                                    <option value="">- Pilih Prospek -</option>
+                                </select>
+                                <div id="dropdown_options_prospek" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-lg">
+                                    <!-- Options populated by JS -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -195,14 +200,6 @@
                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-purple-500 bg-white text-sm">
                                 <select name="pengirim" id="pengirim_id" class="hidden">
                                     <option value="">- Pilih Shipper -</option>
-                                    @foreach($allShippers as $shipper)
-                                        <option value="{{ $shipper['name'] }}" 
-                                                data-alamat="{{ $shipper['alamat'] }}"
-                                                data-edit-url="{{ $shipper['edit_url'] }}"
-                                                {{ old('pengirim') == $shipper['name'] ? 'selected' : '' }}>
-                                            {{ $shipper['name'] }}
-                                        </option>
-                                    @endforeach
                                 </select>
                                 <div id="dropdown_options_shipper" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
                                     <!-- Options populated by JS -->
@@ -268,64 +265,105 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const selectElement = document.getElementById('pengirim_id');
-    const searchInput = document.getElementById('search_shipper');
-    const dropdownOptions = document.getElementById('dropdown_options_shipper');
-    const editLink = document.getElementById('edit_shipper_link');
-    let originalOptions = Array.from(selectElement.options);
+    function initSearchableDropdown(config) {
+        const {
+            containerSelector,
+            searchInputId,
+            selectElementId,
+            optionsContainerId,
+            apiUrl,
+            onSelect,
+            onPopulate
+        } = config;
 
-    function populateDropdown(options) {
-        dropdownOptions.innerHTML = '';
-        const limit = 100;
-        const toShow = options.slice(0, limit);
+        const container = document.querySelector(containerSelector);
+        const searchInput = document.getElementById(searchInputId);
+        const selectElement = document.getElementById(selectElementId);
+        const optionsContainer = document.getElementById(optionsContainerId);
+        
+        let debounceTimer;
 
-        toShow.forEach(option => {
-            if (option.value === '') return;
-            const div = document.createElement('div');
-            div.className = 'px-3 py-2 hover:bg-purple-50 cursor-pointer border-b border-gray-100 text-sm';
-            div.textContent = option.text;
-            div.setAttribute('data-value', option.value);
-            div.setAttribute('data-alamat', option.getAttribute('data-alamat') || '');
-            div.setAttribute('data-edit-url', option.getAttribute('data-edit-url') || '');
+        function fetchOptions(query) {
+            optionsContainer.innerHTML = '<div class="px-3 py-2 text-gray-500 text-sm italic">Mencari...</div>';
+            optionsContainer.classList.remove('hidden');
 
-            if (option.value === selectElement.value) {
-                div.classList.add('bg-purple-50', 'font-medium', 'text-purple-600');
+            fetch(`${apiUrl}?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    populateDropdown(data);
+                })
+                .catch(err => {
+                    console.error(err);
+                    optionsContainer.innerHTML = '<div class="px-3 py-2 text-red-500 text-sm italic">Gagal mengambil data</div>';
+                });
+        }
+
+        function populateDropdown(options) {
+            optionsContainer.innerHTML = '';
+            
+            if (options.length === 0) {
+                optionsContainer.innerHTML = '<div class="px-3 py-4 text-center text-gray-500 text-sm italic">Tidak ada hasil ditemukan</div>';
+                return;
             }
 
-            div.addEventListener('click', function() {
-                const value = this.getAttribute('data-value');
-                const text = this.textContent;
-                const alamat = this.getAttribute('data-alamat');
-
-                selectElement.value = value;
-                searchInput.value = text;
-                dropdownOptions.classList.add('hidden');
+            options.forEach(option => {
+                const div = document.createElement('div');
+                div.className = 'px-3 py-2 hover:bg-purple-50 cursor-pointer border-b border-gray-100 text-sm';
+                div.textContent = option.text;
                 
-                // Update address if exists
-                const alamatTextarea = document.getElementById('alamat_pengirim');
-                if (alamatTextarea && alamat) {
-                    alamatTextarea.value = alamat;
-                }
-
-                updateEditLink();
+                div.addEventListener('click', () => {
+                    // Update select element (add option if not exists)
+                    let opt = Array.from(selectElement.options).find(o => o.value == option.id);
+                    if (!opt) {
+                        opt = new Option(option.text, option.id);
+                        if (option.alamat) opt.setAttribute('data-alamat', option.alamat);
+                        if (option.edit_url) opt.setAttribute('data-edit-url', option.edit_url);
+                        selectElement.add(opt);
+                    }
+                    selectElement.value = option.id;
+                    searchInput.value = option.text;
+                    optionsContainer.classList.add('hidden');
+                    
+                    if (onSelect) onSelect(option, opt);
+                });
+                optionsContainer.appendChild(div);
             });
-            dropdownOptions.appendChild(div);
+            if (onPopulate) onPopulate(options);
+        }
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value;
+            if (query.length < 2) {
+                optionsContainer.classList.add('hidden');
+                return;
+            }
+            debounceTimer = setTimeout(() => fetchOptions(query), 300);
         });
 
-        if (options.length === 0 || (options.length === 1 && options[0].value === '')) {
-            const noResult = document.createElement('div');
-            noResult.className = 'px-3 py-4 text-center text-gray-500 text-sm italic';
-            noResult.textContent = 'Tidak ada hasil ditemukan';
-            dropdownOptions.appendChild(noResult);
-        } else if (options.length > limit) {
-            const more = document.createElement('div');
-            more.className = 'px-3 py-2 text-center text-gray-400 text-xs bg-gray-50 italic';
-            more.textContent = `Menampilkan ${limit} dari ${options.length} hasil. Ketik lebih spesifik...`;
-            dropdownOptions.appendChild(more);
-        }
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.length >= 2) {
+                fetchOptions(searchInput.value);
+            }
+        });
+
+        searchInput.addEventListener('click', () => {
+            if (searchInput.value.length >= 2) {
+                optionsContainer.classList.remove('hidden');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!container || !container.contains(e.target)) {
+                optionsContainer.classList.add('hidden');
+            }
+        });
     }
 
+    // Initialize Shipper Dropdown
+    const editLink = document.getElementById('edit_shipper_link');
     function updateEditLink() {
+        const selectElement = document.getElementById('pengirim_id');
         const selectedOption = selectElement.options[selectElement.selectedIndex];
         const editUrl = selectedOption ? selectedOption.getAttribute('data-edit-url') : '';
         if (editUrl) {
@@ -336,30 +374,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    searchInput.addEventListener('focus', () => dropdownOptions.classList.remove('hidden'));
-    searchInput.addEventListener('click', () => dropdownOptions.classList.remove('hidden'));
-    
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        const filtered = originalOptions.filter(opt => 
-            opt.value !== '' && opt.text.toLowerCase().includes(searchTerm)
-        );
-        populateDropdown(filtered);
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.dropdown-container-shipper')) {
-            dropdownOptions.classList.add('hidden');
+    initSearchableDropdown({
+        containerSelector: '.dropdown-container-shipper',
+        searchInputId: 'search_shipper',
+        selectElementId: 'pengirim_id',
+        optionsContainerId: 'dropdown_options_shipper',
+        apiUrl: '/api/manifests/search-shippers',
+        onSelect: (option, optElement) => {
+            const alamatTextarea = document.getElementById('alamat_pengirim');
+            if (alamatTextarea && option.alamat) {
+                alamatTextarea.value = option.alamat;
+            }
+            updateEditLink();
         }
     });
 
-    // Initial state
-    if (selectElement.value) {
-        const selectedOption = Array.from(selectElement.options).find(opt => opt.value === selectElement.value);
-        if (selectedOption) searchInput.value = selectedOption.text;
-        updateEditLink();
-    }
-    populateDropdown(originalOptions);
+    // Initialize Prospek Dropdown
+    initSearchableDropdown({
+        containerSelector: '.dropdown-container-prospek',
+        searchInputId: 'search_prospek',
+        selectElementId: 'prospek_id',
+        optionsContainerId: 'dropdown_options_prospek',
+        apiUrl: '/api/manifests/search-prospeks'
+    });
+
+    // Initial state for edit link
+    updateEditLink();
 });
 </script>
 @endpush

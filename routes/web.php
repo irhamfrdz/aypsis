@@ -5460,6 +5460,8 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
 });
 
 // API Routes for AJAX calls (no middleware needed for these specific routes)
+Route::get('/api/manifests/search-shippers', [App\Http\Controllers\ManifestController::class, 'searchShippers']);
+Route::get('/api/manifests/search-prospeks', [App\Http\Controllers\ManifestController::class, 'searchProspeks']);
 Route::get('/api/manifests/voyages/{namaKapal}', [App\Http\Controllers\ManifestController::class, 'getVoyagesByShip']);
 Route::get('/api/kwitansi/voyages/{namaKapal}', [App\Http\Controllers\KwitansiController::class, 'getVoyagesByShip']);
 

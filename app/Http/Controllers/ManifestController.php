@@ -175,9 +175,9 @@ class ManifestController extends Controller
      */
     public function create()
     {
-        $prospeks = \App\Models\Prospek::orderBy('pt_pengirim')->get();
-        $allShippers = $this->getAllShippers();
-        return view('manifests.create', compact('prospeks', 'allShippers'));
+        // Only load a few initial records, the rest will be handled by AJAX
+        $prospeks = \App\Models\Prospek::orderBy('pt_pengirim')->limit(20)->get();
+        return view('manifests.create', compact('prospeks'));
     }
 
     /**
@@ -240,43 +240,12 @@ class ManifestController extends Controller
     public function edit(string $id)
     {
         $manifest = Manifest::findOrFail($id);
-        $prospeks = \App\Models\Prospek::orderBy('pt_pengirim')->get();
-        $allShippers = $this->getAllShippers();
-        return view('manifests.edit', compact('manifest', 'prospeks', 'allShippers'));
-    }
-
-    /**
-     * Get all unique names from pengirims, penerimas, and master_pengirim_penerima tables.
-     */
-    private function getAllShippers()
-    {
-        $pengirims = \App\Models\Pengirim::select('id', 'nama_pengirim as name', 'alamat')->get()->map(function($item) {
-            return [
-                'name' => $item->name,
-                'alamat' => $item->alamat,
-                'edit_url' => route('pengirim.edit', $item->id)
-            ];
-        });
-        $penerimas = \App\Models\Penerima::select('id', 'nama_penerima as name', 'alamat')->get()->map(function($item) {
-            return [
-                'name' => $item->name,
-                'alamat' => $item->alamat,
-                'edit_url' => route('penerima.edit', $item->id)
-            ];
-        });
-        $masters = \App\Models\MasterPengirimPenerima::select('id', 'nama as name', 'alamat')->get()->map(function($item) {
-            return [
-                'name' => $item->name,
-                'alamat' => $item->alamat,
-                'edit_url' => route('master-pengirim-penerima.edit', $item->id)
-            ];
-        });
-        
-        return $pengirims->concat($penerimas)->concat($masters)
-            ->filter(fn($item) => !empty($item['name']))
-            ->sortBy('name')
-            ->unique('name')
-            ->values();
+        // Load current prospek plus a few others
+        $prospeks = \App\Models\Prospek::where('id', $manifest->prospek_id)
+            ->union(\App\Models\Prospek::orderBy('pt_pengirim')->limit(20))
+            ->get();
+            
+        return view('manifests.edit', compact('manifest', 'prospeks'));
     }
 
     /**
@@ -1086,6 +1055,71 @@ class ManifestController extends Controller
             'message' => 'Kuantitas berhasil diperbarui',
             'kuantitas' => $manifest->kuantitas
         ]);
+    }
+
+    /**
+     * Search shippers via AJAX from multiple tables
+     */
+    public function searchShippers(Request $request)
+    {
+        $q = $request->get('q');
+        
+        $pengirims = \App\Models\Pengirim::select('id', 'nama_pengirim as name', 'alamat')
+            ->where('nama_pengirim', 'LIKE', "%$q%")
+            ->limit(50)
+            ->get()->map(function($item) {
+                return [
+                    'id' => $item->name,
+                    'text' => $item->name,
+                    'alamat' => $item->alamat,
+                    'edit_url' => route('pengirim.edit', $item->id)
+                ];
+            });
+
+        $penerimas = \App\Models\Penerima::select('id', 'nama_penerima as name', 'alamat')
+            ->where('nama_penerima', 'LIKE', "%$q%")
+            ->limit(50)
+            ->get()->map(function($item) {
+                return [
+                    'id' => $item->name,
+                    'text' => $item->name,
+                    'alamat' => $item->alamat,
+                    'edit_url' => route('penerima.edit', $item->id)
+                ];
+            });
+
+        $masters = \App\Models\MasterPengirimPenerima::select('id', 'nama as name', 'alamat')
+            ->where('nama', 'LIKE', "%$q%")
+            ->limit(50)
+            ->get()->map(function($item) {
+                return [
+                    'id' => $item->name,
+                    'text' => $item->name,
+                    'alamat' => $item->alamat,
+                    'edit_url' => route('master-pengirim-penerima.edit', $item->id)
+                ];
+            });
+
+        $results = $pengirims->concat($penerimas)->concat($masters)
+            ->unique('text')
+            ->values()
+            ->take(50);
+
+        return response()->json($results);
+    }
+
+    /**
+     * Search prospeks via AJAX
+     */
+    public function searchProspeks(Request $request)
+    {
+        $q = $request->get('q');
+        $results = \App\Models\Prospek::select('id', 'pt_pengirim as text')
+            ->where('pt_pengirim', 'LIKE', "%$q%")
+            ->limit(50)
+            ->get();
+            
+        return response()->json($results);
     }
 }
 
