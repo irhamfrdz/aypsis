@@ -96,6 +96,7 @@ class ManifestImport
             'size_kontainer' => $sizeKontainer,
             'nama_barang' => $namaBarang,
             'pengirim' => $pengirim,
+            'alamat_pengirim' => $alamat_pengirim,
             'penerima' => $penerima,
             'term' => $term,
         ], [

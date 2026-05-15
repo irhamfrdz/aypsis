@@ -189,6 +189,12 @@
                     </div>
 
                     <div>
+                        <label for="alamat_pengirim" class="block text-sm font-medium text-gray-700 mb-2">Alamat Pengirim</label>
+                        <textarea name="alamat_pengirim" id="alamat_pengirim" rows="1"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('alamat_pengirim', $manifest->alamat_pengirim) }}</textarea>
+                    </div>
+
+                    <div>
                         <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">CONSIGNEE</label>
                         <input type="text" name="penerima" id="penerima" value="{{ old('penerima', $manifest->penerima) }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">

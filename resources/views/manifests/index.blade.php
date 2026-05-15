@@ -197,6 +197,7 @@
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">Kuantitas</th>
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider w-32">SHIPPER</th>
+                            <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider w-32">ALAMAT PENGIRIM</th>
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider w-32">CONSIGNEE</th>
                             <th class="px-2 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -301,10 +302,14 @@
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
                                 <div class="font-bold">{{ $manifest->pengirim }}</div>
+                            </td>
+                            <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
                                 @if($manifest->alamat_pengirim)
-                                    <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-1" title="{{ $manifest->alamat_pengirim }}">
+                                    <div class="text-[10px] text-gray-500 mt-0.5 line-clamp-2" title="{{ $manifest->alamat_pengirim }}">
                                         {{ $manifest->alamat_pengirim }}
                                     </div>
+                                @else
+                                    <span class="text-gray-400">-</span>
                                 @endif
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
