@@ -38,7 +38,7 @@
         }
         .penerima-cp {
             position: absolute;
-            top: 10.3cm; /* Adjusted from 9.3cm to match new penerima position */
+            top: 9.55cm; /* Raised by 0.75cm from 10.3cm */
             left: 4.5cm;
             font-size: 14px; /* Same as consignee */
             font-weight: bold; /* Same as consignee */
