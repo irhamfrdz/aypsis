@@ -355,7 +355,7 @@
             const sectionGrandTotalHidden = section.querySelector('.tkbm-grand-total-value');
             
             // Calculate PPH and Grand Total
-            const adjustment = parseFloat(adjustmentInput.value) || 0;
+            const adjustment = (adjustmentInput ? parseFloat(adjustmentInput.value) : 0) || 0;
             const adjustedTotal = sectionTotal + adjustment;
             const pph = Math.round(adjustedTotal * 0.02);
             const grandTotalSection = adjustedTotal - pph;

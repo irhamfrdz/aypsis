@@ -493,9 +493,13 @@
                     }
 
                     // Pre-populate hidden fields to avoid validation errors if submitted before calculation
-                    if (data.total_nominal !== undefined) sec.querySelector('.tkbm-section-total-hidden').value = data.total_nominal;
-                    if (data.pph !== undefined) sec.querySelector('.tkbm-section-pph-hidden').value = data.pph;
-                    if (data.grand_total !== undefined) sec.querySelector('.tkbm-section-grand-total-hidden').value = data.grand_total;
+                    const totalHidden = sec.querySelector('.tkbm-section-total-hidden');
+                    const pphHidden = sec.querySelector('.tkbm-section-pph-hidden');
+                    const grandTotalHidden = sec.querySelector('.tkbm-grand-total-value');
+                    
+                    if (totalHidden && data.total_nominal !== undefined) totalHidden.value = data.total_nominal;
+                    if (pphHidden && data.pph !== undefined) pphHidden.value = data.pph;
+                    if (grandTotalHidden && data.grand_total !== undefined) grandTotalHidden.value = data.grand_total;
                     
                     sec.querySelector('.tkbm-barang-container').innerHTML = '';
                     data.barang.forEach(b => {
