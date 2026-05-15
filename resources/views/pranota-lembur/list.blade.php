@@ -114,6 +114,12 @@
                                     <i class="fas fa-print"></i>
                                 </a>
                                 @endcan
+
+                                @can('pranota-lembur-view')
+                                <a href="{{ route('pranota-lembur.export', $pranota->id) }}" class="text-emerald-600 hover:text-emerald-800" title="Download Excel">
+                                    <i class="fas fa-file-excel"></i>
+                                </a>
+                                @endcan
                                 
                                 @can('pranota-lembur-delete')
                                 @if($pranota->status !== 'paid')

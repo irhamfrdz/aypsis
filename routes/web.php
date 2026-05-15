@@ -3036,6 +3036,9 @@ Route::middleware(['auth'])->group(function () {
      Route::get('pranota-lembur/{pranotaLembur}/print', [\App\Http\Controllers\PranotaLemburController::class, 'print'])
           ->name('pranota-lembur.print')
           ->middleware('can:pranota-lembur-print');
+     Route::get('pranota-lembur/{pranotaLembur}/export', [\App\Http\Controllers\PranotaLemburController::class, 'export'])
+          ->name('pranota-lembur.export')
+          ->middleware('can:pranota-lembur-view');
      
      // Pranota Lembur - submit
      Route::post('pranota-lembur/{pranotaLembur}/submit', [\App\Http\Controllers\PranotaLemburController::class, 'submit'])

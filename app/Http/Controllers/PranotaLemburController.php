@@ -462,4 +462,25 @@ class PranotaLemburController extends Controller
             return back()->with('error', 'Gagal menghapus Pranota Lembur: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Export single pranota lembur to Excel
+     */
+    public function export(PranotaLembur $pranotaLembur)
+    {
+        $user = Auth::user();
+
+        if (!$user->can('pranota-lembur-view')) {
+            abort(403, 'Unauthorized');
+        }
+
+        $pranotaLembur->load(['suratJalans.tandaTerima', 'suratJalanBongkarans.tandaTerima']);
+
+        $fileName = 'Pranota_Lembur_' . $pranotaLembur->nomor_pranota . '.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\PranotaLemburSingleExport($pranotaLembur),
+            $fileName
+        );
+    }
 }
