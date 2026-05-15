@@ -8,7 +8,12 @@
         </div>
         
         <div id="area-outstanding">
-            <input type="text" id="src-audit" onkeyup="renderAudit()" placeholder="🔍 Cari Unit untuk di Audit..." style="width:100%; padding:14px; border:2px solid var(--primary); border-radius:10px; margin-bottom:20px; box-sizing: border-box;">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <input type="text" id="src-audit" onkeyup="renderAudit()" placeholder="🔍 Cari Unit untuk di Audit..." style="flex: 1; padding:14px; border:2px solid var(--primary); border-radius:10px; box-sizing: border-box;">
+                <button class="btn btn-green" onclick="exportRekonExcel()" style="padding: 0 20px; border-radius: 10px; font-size: 14px;">
+                    <i class="fas fa-file-excel" style="margin-right: 8px;"></i> Export Excel
+                </button>
+            </div>
             <div style="overflow-x: auto;">
                 <table id="tbl-audit">
                     <thead><tr style="background: var(--primary); color:white;"><th>ID TRX Induk</th><th>Unit</th><th>Ambil</th><th>Kembali</th><th>St Unit</th><th>Aksi</th></tr></thead>

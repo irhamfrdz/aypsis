@@ -618,6 +618,73 @@ function renderAudit() {
 }
 
 function toggleAudit(id) { expAudit = (expAudit === id) ? null : id; renderAudit(); }
+
+function exportRekonExcel() {
+    const s = (document.getElementById('src-audit')?.value || "").toUpperCase();
+    const filtered = db.x.filter(x => {
+        const idTrx = x.no + toExcelSerial(x.s);
+        return x.no.includes(s) && hasPeriods(x, idTrx);
+    });
+
+    if (filtered.length === 0) {
+        alert("Tidak ada data untuk di-export.");
+        return;
+    }
+
+    // Using semicolon for Indonesian Excel compatibility
+    let csv = "ID TRX Induk;Unit;Ambil;Kembali;Status Unit;Status Pranota\n";
+    
+    filtered.forEach(x => {
+        const idTrx = x.no + toExcelSerial(x.s);
+        const stUnit = x.e ? "SUDAH DIKEMBALIKAN" : "BELUM DIKEMBALIKAN";
+        const stPranota = getPranotaStatus(x);
+        
+        csv += `${idTrx};${x.no};${x.s};${x.e || '-'};${stUnit};${stPranota}\n`;
+    });
+
+    const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' }); // Adding BOM for Excel
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Rekon_Audit_${new Date().getTime()}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function getPranotaStatus(x) {
+    const idInduk = x.no + toExcelSerial(x.s);
+    const dAmbil = parseD(x.s);
+    const dAkhir = x.e ? parseD(x.e) : new Date();
+    
+    let totalPeriods = 0;
+    let auditedPeriods = 0;
+    
+    let curr = new Date(dAmbil);
+    while (true) {
+        let sP = new Date(curr);
+        let eP = new Date(curr.getFullYear(), curr.getMonth() + 1, curr.getDate() - 1);
+        
+        if (sP > dAkhir) break;
+        if (x.e && eP > dAkhir) eP = dAkhir;
+
+        totalPeriods++;
+        const masa_p = `${fmtTglDB(sP)} - ${fmtTglDB(eP)}`;
+        const pInfo = db.audits_map.find(a => a.unit === x.no && a.period === masa_p);
+        const inCart = db.cart.find(c => c.idp === `${idInduk}-${masa_p}`);
+        
+        if (pInfo || inCart) auditedPeriods++;
+
+        if (x.e && eP >= dAkhir) break;
+        curr.setMonth(curr.getMonth() + 1);
+    }
+    
+    if (auditedPeriods === 0) return "BELUM MASUK PRANOTA";
+    if (auditedPeriods === totalPeriods) return "SUDAH MASUK PRANOTA";
+    return "MASUK SEBAGIAN";
+}
+
 function parseD(s) { if(!s) return new Date(); const [d,m,y] = s.split('/').map(Number); return new Date(y, m-1, d); }
 function toExcelSerial(d) { if(!d||!d.includes('/')) return "0"; const [dd,mm,yy]=d.split('/').map(Number); return Math.floor((new Date(yy,mm-1,dd)-new Date(1899,11,30))/86400000); }
 
