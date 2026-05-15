@@ -156,6 +156,8 @@
 
         // Add change listener for auto-fill when voyage changes
         voyageSelect.addEventListener('change', function() {
+            // Skip auto-fill during edit initialization to prevent clearing saved barang
+            if (section.getAttribute('data-initializing') === 'true') return;
             loadBlDataForTkbmSection(sectionIndex, this.value);
         });
         

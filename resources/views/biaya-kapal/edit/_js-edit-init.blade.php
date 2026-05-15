@@ -460,6 +460,9 @@
                     const sec = addTkbmSection();
                     const sectionIndex = sec.getAttribute('data-tkbm-section-index');
                     
+                    // Set initializing flag to prevent voyage change listener from clearing saved barang
+                    sec.setAttribute('data-initializing', 'true');
+                    
                     const kapalSel = sec.querySelector('.tkbm-kapal-select');
                     if (kapalSel && data.kapal) {
                         kapalSel.value = data.kapal;
@@ -476,12 +479,24 @@
                                 vData.voyages.forEach(v => opt += `<option value="${v}">${v}</option>`);
                             }
                             voySel.innerHTML = opt;
-                            if (data.voyage) voySel.value = data.voyage;
+                            
+                            // Always ensure the saved voyage is available as an option
+                            if (data.voyage) {
+                                let found = Array.from(voySel.options).some(o => o.value === data.voyage);
+                                if (!found) {
+                                    voySel.innerHTML += `<option value="${data.voyage}">${data.voyage}</option>`;
+                                }
+                                voySel.value = data.voyage;
+                            }
                         } catch(e) {
                             voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
                             voySel.value = data.voyage;
                             voySel.disabled = false;
                         }
+                    } else if (data.voyage) {
+                        // No kapal but has voyage - add it directly
+                        voySel.innerHTML = `<option value="">-- Pilih Voyage --</option><option value="${data.voyage}" selected>${data.voyage}</option>`;
+                        voySel.disabled = false;
                     }
                     
                     const noRefInput = sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][no_referensi]"]');
@@ -512,6 +527,9 @@
                         });
                     }
                     calculateTotalFromAllTkbmSections();
+                    
+                    // Remove initializing flag - now voyage change listener can work normally
+                    sec.removeAttribute('data-initializing');
                 })();
             });
         }
