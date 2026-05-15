@@ -1682,8 +1682,8 @@
             <div id="aktivitas-aktivitas-kontainer-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasKontainerRoute) style="display: block;" @endif>
                 {{-- Sewa Sub-Dropdown --}}
                 @php
-                    $isSewaRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('daftar-tagihan-kontainer-sewa-2.*') || Request::routeIs('kontainer-sewa-billing.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*');
-                    $hasSewaPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('kontainer-sewa-final-view') || $user->can('pranota-kontainer-sewa-view'));
+                    $isSewaRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('daftar-tagihan-kontainer-sewa-2.*') || Request::routeIs('kontainer-sewa-billing.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('surat-jalan-kontainer-sewa.*');
+                    $hasSewaPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('kontainer-sewa-final-view') || $user->can('pranota-kontainer-sewa-view') || $user->can('surat-jalan-kontainer-sewa-view'));
                 @endphp
 
                 @if($hasSewaPermissions)
@@ -1718,6 +1718,13 @@
                         @if($user && $user->can('kontainer-sewa-final-view'))
                             <a href="{{ route('kontainer-sewa-final.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('kontainer-sewa-final.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs font-bold text-blue-600">Kontainer Sewa Final</span>
+                            </a>
+                        @endif
+
+                        {{-- Surat Jalan Pengambilan/Pengembalian Kontainer Sewa --}}
+                        @if($user && ($user->can('surat-jalan-kontainer-sewa-view') || $user->can('kontainer-sewa-final-view') || $user->can('tagihan-kontainer-sewa-index')))
+                            <a href="{{ route('surat-jalan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">SJ Pengambilan/Pengembalian</span>
                             </a>
                         @endif
 

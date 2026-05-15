@@ -1384,6 +1384,23 @@
                                 <td class="empty-cell text-center text-gray-400">-</td>
                                 <td class="empty-cell text-center text-gray-400">-</td>
                             </tr>
+
+                            {{-- Surat Jalan Kontainer Sewa --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center text-blue-600 font-bold">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Surat Jalan Kontainer Sewa</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-kontainer-sewa][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-kontainer-sewa][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-kontainer-sewa][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-kontainer-sewa][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-kontainer-sewa][print]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
                             
                             {{-- Monitoring Cek Kendaraan --}}
                             <tr class="submodule-row" data-parent="operational">

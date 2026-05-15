@@ -191,7 +191,17 @@ Route::middleware([
           Route::post('/kontainer-sewa-final/pay-transfer/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'payTransfer'])->name('kontainer-sewa-final.pay-transfer');
           Route::get('/kontainer-sewa-final/print-payment/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPayment'])->name('kontainer-sewa-final.print-payment');
           Route::get('/kontainer-sewa-final/print-permohonan/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPermohonan'])->name('kontainer-sewa-final.print-permohonan');
-          
+
+          // 📦 Surat Jalan Pengambilan/Pengembalian Kontainer Sewa
+          Route::get('/surat-jalan-kontainer-sewa', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'index'])->name('surat-jalan-kontainer-sewa.index');
+          Route::get('/surat-jalan-kontainer-sewa/create', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'create'])->name('surat-jalan-kontainer-sewa.create');
+          Route::get('/surat-jalan-kontainer-sewa/api/kontainer-by-vendor', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'getKontainerByVendor'])->name('surat-jalan-kontainer-sewa.kontainer-by-vendor');
+          Route::post('/surat-jalan-kontainer-sewa', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'store'])->name('surat-jalan-kontainer-sewa.store');
+          Route::get('/surat-jalan-kontainer-sewa/{id}', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'show'])->name('surat-jalan-kontainer-sewa.show');
+          Route::get('/surat-jalan-kontainer-sewa/{id}/print', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'print'])->name('surat-jalan-kontainer-sewa.print');
+          Route::patch('/surat-jalan-kontainer-sewa/{id}/status', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'updateStatus'])->name('surat-jalan-kontainer-sewa.update-status');
+          Route::delete('/surat-jalan-kontainer-sewa/{id}', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'destroy'])->name('surat-jalan-kontainer-sewa.destroy');
+
           Route::get('daftar-tagihan-kontainer-sewa-2/get-pricelist', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'getPricelistForDpp'])->name('daftar-tagihan-kontainer-sewa-2.get_pricelist');
           Route::get('daftar-tagihan-kontainer-sewa-2/create-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'createGroup'])->name('daftar-tagihan-kontainer-sewa-2.create-group');
           Route::post('daftar-tagihan-kontainer-sewa-2/store-group', [\App\Http\Controllers\DaftarTagihanKontainerSewaDuaController::class, 'storeGroup'])->name('daftar-tagihan-kontainer-sewa-2.store-group');

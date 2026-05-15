@@ -721,6 +721,7 @@ class UserController extends Controller
                 'tagihan-perbaikan-kontainer' => 'tagihan-perbaikan-kontainer',
                 'vendor-kontainer-sewa' => 'vendor-kontainer-sewa',
                 'kontainer-sewa-final' => 'kontainer-sewa-final',
+                'surat-jalan-kontainer-sewa' => 'surat-jalan-kontainer-sewa',
                 'kwitansi' => 'kwitansi',
                 'master-buruh' => 'master-buruh',
                 'biaya-bensin' => 'biaya-bensin'
