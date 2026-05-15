@@ -632,6 +632,7 @@ class UserController extends Controller
             // e.g. 'tanda-terima-batam' before 'tanda-terima', otherwise strpos will
             // match the short prefix first and mis-parse the permission name.
             $operationalModules = [
+                'surat-jalan-kontainer-sewa' => 'surat-jalan-kontainer-sewa',
                 'surat-jalan-tarik-kosong-batam' => 'surat-jalan-tarik-kosong-batam',
                 'surat-jalan-bongkaran-batam' => 'surat-jalan-bongkaran-batam',
                 'surat-jalan-bongkaran' => 'surat-jalan-bongkaran',
@@ -721,7 +722,6 @@ class UserController extends Controller
                 'tagihan-perbaikan-kontainer' => 'tagihan-perbaikan-kontainer',
                 'vendor-kontainer-sewa' => 'vendor-kontainer-sewa',
                 'kontainer-sewa-final' => 'kontainer-sewa-final',
-                'surat-jalan-kontainer-sewa' => 'surat-jalan-kontainer-sewa',
                 'kwitansi' => 'kwitansi',
                 'master-buruh' => 'master-buruh',
                 'biaya-bensin' => 'biaya-bensin'
@@ -4206,6 +4206,26 @@ class UserController extends Controller
                             'delete' => 'uang-jalan-bongkaran-delete',
                             'print' => 'uang-jalan-bongkaran-print',
                             'export' => 'uang-jalan-bongkaran-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+                    // Handle surat-jalan-kontainer-sewa permissions explicitly
+                    if ($module === 'surat-jalan-kontainer-sewa' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'surat-jalan-kontainer-sewa-view',
+                            'create' => 'surat-jalan-kontainer-sewa-create',
+                            'update' => 'surat-jalan-kontainer-sewa-update',
+                            'delete' => 'surat-jalan-kontainer-sewa-delete',
+                            'print' => 'surat-jalan-kontainer-sewa-print',
+                            'export' => 'surat-jalan-kontainer-sewa-export'
                         ];
 
                         if (isset($actionMap[$action])) {
