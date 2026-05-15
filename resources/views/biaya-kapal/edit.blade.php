@@ -64,6 +64,7 @@
 @endpush
 
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 @include('biaya-kapal.edit._js-init')
 @include('biaya-kapal.edit._js-jenis-biaya')

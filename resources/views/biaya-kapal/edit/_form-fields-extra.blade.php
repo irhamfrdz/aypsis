@@ -137,6 +137,13 @@
                                 {{ $karyawan->nama_lengkap }}
                             </option>
                         @endforeach
+                        
+                        {{-- Support for custom manual recipient names that are not in Karyawan list --}}
+                        @if($biayaKapal->penerima && !$karyawans->contains('nama_lengkap', $biayaKapal->penerima))
+                            <option value="{{ $biayaKapal->penerima }}" selected>
+                                {{ $biayaKapal->penerima }}
+                            </option>
+                        @endif
                     </select>
                     @error('penerima')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
