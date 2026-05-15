@@ -1218,7 +1218,6 @@ class UserController extends Controller
                             $action = str_replace('pricelist-meratus-', '', $action);
                             $module = 'master-pricelist-meratus';
                         }
-                        }
                         // Special handling for master-pricelist-tujuan-kontainer-sewa permissions
                         elseif (strpos($action, 'pricelist-tujuan-kontainer-sewa-') === 0) {
                             // For master-pricelist-tujuan-kontainer-sewa-view, extract the action
