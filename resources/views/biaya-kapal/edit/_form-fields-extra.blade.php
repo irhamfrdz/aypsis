@@ -1,4 +1,4 @@
-﻿                <!-- Nominal -->
+                <!-- Nominal -->
                 <div id="nominal_wrapper" class="hidden">
                     <label for="nominal" class="block text-sm font-medium text-gray-700 mb-2">
                         Nominal <span class="text-red-500">*</span>
@@ -8,7 +8,7 @@
                         <input type="text" 
                                id="nominal" 
                                name="nominal" 
-                               value="{{ old('nominal') }}"
+                               value="{{ old('nominal', number_format($biayaKapal->nominal, 0, ',', '.')) }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nominal') border-red-500 @enderror"
                                placeholder="0"  
                                required>
@@ -29,7 +29,7 @@
                         <input type="text" 
                                id="pph_dokumen" 
                                name="pph_dokumen" 
-                               value="{{ old('pph_dokumen', '0') }}"
+                               value="{{ old('pph_dokumen', number_format($biayaKapal->pph_dokumen ?? 0, 0, ',', '.')) }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pph_dokumen') border-red-500 @enderror"
                                placeholder="0"
                                readonly>
@@ -50,7 +50,7 @@
                         <input type="text" 
                                id="grand_total_dokumen" 
                                name="grand_total_dokumen" 
-                               value="{{ old('grand_total_dokumen', '') }}"
+                               value="{{ old('grand_total_dokumen', number_format($biayaKapal->grand_total_dokumen ?? 0, 0, ',', '.')) }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-green-50 font-semibold cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('grand_total_dokumen') border-red-500 @enderror"
                                placeholder="0"
                                readonly>
@@ -71,7 +71,7 @@
                         <input type="text" 
                                id="biaya_materai" 
                                name="biaya_materai" 
-                               value="{{ old('biaya_materai', '0') }}"
+                               value="{{ old('biaya_materai', number_format($biayaKapal->biaya_materai ?? 0, 0, ',', '.')) }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('biaya_materai') border-red-500 @enderror"
                                placeholder="0">
                     </div>
@@ -91,7 +91,7 @@
                         <input type="text" 
                                id="dp" 
                                name="dp" 
-                               value="{{ old('dp', '0') }}"
+                               value="{{ old('dp', number_format($biayaKapal->dp ?? 0, 0, ',', '.')) }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('dp') border-red-500 @enderror"
                                placeholder="0">
                     </div>
@@ -111,7 +111,7 @@
                         <input type="text" 
                                id="sisa_pembayaran" 
                                name="sisa_pembayaran" 
-                               value="{{ old('sisa_pembayaran', '0') }}"
+                               value="{{ old('sisa_pembayaran', number_format($biayaKapal->sisa_pembayaran ?? 0, 0, ',', '.')) }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed @error('sisa_pembayaran') border-red-500 @enderror"
                                placeholder="0" 
                                readonly>
@@ -133,7 +133,7 @@
                             required>
                         <option value="">-- Pilih atau ketik nama penerima --</option>
                         @foreach($karyawans as $karyawan)
-                            <option value="{{ $karyawan->nama_lengkap }}" {{ old('penerima') == $karyawan->nama_lengkap ? 'selected' : '' }}>
+                            <option value="{{ $karyawan->nama_lengkap }}" {{ old('penerima', $biayaKapal->penerima) == $karyawan->nama_lengkap ? 'selected' : '' }}>
                                 {{ $karyawan->nama_lengkap }}
                             </option>
                         @endforeach
@@ -153,7 +153,7 @@
                         <input type="text" 
                                id="ppn" 
                                name="ppn" 
-                               value="{{ old('ppn', '0') }}"
+                               value="{{ old('ppn', number_format($biayaKapal->ppn ?? 0, 0, ',', '.')) }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('ppn') border-red-500 @enderror"
                                placeholder="0">
                     </div>
@@ -172,7 +172,7 @@
                         <input type="text" 
                                id="pph" 
                                name="pph" 
-                               value="{{ old('pph', '0') }}"
+                               value="{{ old('pph', number_format($biayaKapal->pph ?? 0, 0, ',', '.')) }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pph') border-red-500 @enderror"
                                placeholder="0">
                     </div>
@@ -191,7 +191,7 @@
                         <input type="text" 
                                id="total_biaya" 
                                name="total_biaya" 
-                               value="{{ old('total_biaya') }}"
+                               value="{{ old('total_biaya', number_format($biayaKapal->total_biaya ?? 0, 0, ',', '.')) }}"
                                class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('total_biaya') border-red-500 @enderror"
                                placeholder="0"
                                readonly>
@@ -210,7 +210,7 @@
                     <input type="text" 
                            id="nama_vendor" 
                            name="nama_vendor" 
-                           value="{{ old('nama_vendor') }}"
+                           value="{{ old('nama_vendor', $biayaKapal->nama_vendor) }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_vendor') border-red-500 @enderror"
                            placeholder="Masukkan nama vendor">
                     <p class="mt-1 text-xs text-gray-500">Nama perusahaan atau individu penerima pembayaran</p>
@@ -227,7 +227,7 @@
                     <input type="text" 
                            id="nomor_rekening" 
                            name="nomor_rekening" 
-                           value="{{ old('nomor_rekening') }}"
+                           value="{{ old('nomor_rekening', $biayaKapal->nomor_rekening) }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_rekening') border-red-500 @enderror"
                            placeholder="Contoh: 1234567890">
                     <p class="mt-1 text-xs text-gray-500">Nomor rekening bank penerima</p>
@@ -245,7 +245,7 @@
                               name="keterangan" 
                               rows="4"
                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('keterangan') border-red-500 @enderror"
-                              placeholder="Masukkan keterangan atau catatan tambahan (opsional)">{{ old('keterangan') }}</textarea>
+                              placeholder="Masukkan keterangan atau catatan tambahan (opsional)">{{ old('keterangan', $biayaKapal->keterangan) }}</textarea>
                     @error('keterangan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
