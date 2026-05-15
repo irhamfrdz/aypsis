@@ -294,7 +294,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function populateDropdown(options) {
         dropdownOptions.innerHTML = '';
-        options.forEach(option => {
+        const limit = 100;
+        const toShow = options.slice(0, limit);
+
+        toShow.forEach(option => {
             if (option.value === '') return;
             const div = document.createElement('div');
             div.className = 'px-3 py-2 hover:bg-purple-50 cursor-pointer border-b border-gray-100 text-sm';
@@ -332,6 +335,11 @@ document.addEventListener('DOMContentLoaded', function() {
             noResult.className = 'px-3 py-4 text-center text-gray-500 text-sm italic';
             noResult.textContent = 'Tidak ada hasil ditemukan';
             dropdownOptions.appendChild(noResult);
+        } else if (options.length > limit) {
+            const more = document.createElement('div');
+            more.className = 'px-3 py-2 text-center text-gray-400 text-xs bg-gray-50 italic';
+            more.textContent = `Menampilkan ${limit} dari ${options.length} hasil. Ketik lebih spesifik...`;
+            dropdownOptions.appendChild(more);
         }
     }
 
