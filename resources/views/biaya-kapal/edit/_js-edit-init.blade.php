@@ -484,8 +484,11 @@
                         }
                     }
                     
-                    sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][no_referensi]"]').value = data.no_referensi || '';
-                    sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor || '';
+                    const noRefInput = sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][no_referensi]"]');
+                    if (noRefInput) noRefInput.value = data.no_referensi || '';
+                    
+                    const tglInput = sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][tanggal_invoice_vendor]"]');
+                    if (tglInput) tglInput.value = data.tanggal_invoice_vendor || '';
                     
                     const adjInput = sec.querySelector('.tkbm-adjustment-input');
                     if(adjInput) {
@@ -501,10 +504,13 @@
                     if (pphHidden && data.pph !== undefined) pphHidden.value = data.pph;
                     if (grandTotalHidden && data.grand_total !== undefined) grandTotalHidden.value = data.grand_total;
                     
-                    sec.querySelector('.tkbm-barang-container').innerHTML = '';
-                    data.barang.forEach(b => {
-                        addBarangToTkbmSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
-                    });
+                    const barangContainer = sec.querySelector('.tkbm-barang-container');
+                    if (barangContainer) {
+                        barangContainer.innerHTML = '';
+                        data.barang.forEach(b => {
+                            addBarangToTkbmSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
+                        });
+                    }
                     calculateTotalFromAllTkbmSections();
                 })();
             });
