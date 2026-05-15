@@ -5415,6 +5415,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     // Report Lembur/Nginap
     Route::get('/lembur', [\App\Http\Controllers\ReportLemburController::class, 'index'])->name('lembur.index');
     Route::get('/lembur/view', [\App\Http\Controllers\ReportLemburController::class, 'view'])->name('lembur.view');
+    Route::get('/lembur/export', [\App\Http\Controllers\ReportLemburController::class, 'export'])->name('lembur.export');
 
     // Report Uang Jalan
     Route::get('/uang-jalan', [App\Http\Controllers\ReportUangJalanController::class, 'index'])->name('uang-jalan.index');

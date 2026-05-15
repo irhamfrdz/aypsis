@@ -78,7 +78,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 class="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b"><i class="fas fa-info-circle text-cyan-600 mr-1"></i> Informasi Utama</h2>
             <table class="w-full text-sm">
-                <tr><td class="py-1.5 text-gray-500 w-[140px]">Tanggal</td><td class="py-1.5 font-medium">{{ $suratJalan->tanggal->format('d/m/Y') }}</td></tr>
+                <tr><td class="py-1.5 text-gray-500 w-[140px]">Tanggal Surat Jalan</td><td class="py-1.5 font-medium">{{ $suratJalan->tanggal->format('d/m/Y') }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Vendor</td><td class="py-1.5 font-medium">{{ $suratJalan->vendor ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Supir</td><td class="py-1.5 font-medium">{{ $suratJalan->supir ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">No. Plat</td><td class="py-1.5 font-medium">{{ $suratJalan->no_plat ?? '-' }}</td></tr>

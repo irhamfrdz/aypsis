@@ -51,11 +51,11 @@
                 </select>
             </div>
             <div class="min-w-[140px]">
-                <label class="block text-xs font-medium text-gray-600 mb-1">Dari Tanggal</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Dari Tanggal SJ</label>
                 <input type="date" name="start_date" value="{{ request('start_date') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500">
             </div>
             <div class="min-w-[140px]">
-                <label class="block text-xs font-medium text-gray-600 mb-1">Sampai Tanggal</label>
+                <label class="block text-xs font-medium text-gray-600 mb-1">Sampai Tanggal SJ</label>
                 <input type="date" name="end_date" value="{{ request('end_date') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500">
             </div>
             <div class="flex gap-2">
@@ -90,7 +90,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor SJ</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jml Kontainer</th>

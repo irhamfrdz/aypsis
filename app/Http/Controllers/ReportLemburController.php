@@ -39,6 +39,42 @@ class ReportLemburController extends Controller
                 ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi');
         }
 
+        $data = $this->getReportData($request);
+        
+        // Prepare data for Modal Pranota
+        $pricelistLemburs = MasterPricelistLembur::where('status', 'aktif')->get();
+        
+        $nomorTerakhir = NomorTerakhir::where('modul', 'PML')->first();
+        $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
+        $tahun = now()->format('y');
+        $bulan = now()->format('m');
+        $nomorCetakan = 1; // Default
+        $nomorPranotaDisplay = "PML{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+        return view('report-lembur.view', [
+            'suratJalans' => $data['suratJalans'],
+            'startDate' => $data['startDate'],
+            'endDate' => $data['endDate'],
+            'pricelistLemburs' => $pricelistLemburs,
+            'nomorPranotaDisplay' => $nomorPranotaDisplay,
+            'nextNumber' => $nextNumber,
+            'statusPranota' => $data['statusPranota']
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $data = $this->getReportData($request);
+        $fileName = 'Report_Lembur_' . $data['startDate']->format('d_m_Y') . '_to_' . $data['endDate']->format('d_m_Y') . '.xlsx';
+        
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ReportLemburExport($data['suratJalans']), 
+            $fileName
+        );
+    }
+
+    private function getReportData(Request $request)
+    {
         $startDate = Carbon::parse($request->start_date)->startOfDay();
         $endDate = Carbon::parse($request->end_date)->endOfDay();
         $search = $request->input('search');
@@ -106,40 +142,25 @@ class ReportLemburController extends Controller
         $suratJalans->each(function($item) {
             $item->type_surat = 'Muat';
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal : null;
-            // Check if has pranota lembur
             $item->sudah_pranota = $item->hasPranotaLembur();
         });
 
         $bongkarans->each(function($item) {
             $item->type_surat = 'Bongkaran';
-            // Alias for view consistency
             $item->no_surat_jalan = $item->nomor_surat_jalan;
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal_tanda_terima : null;
-            // Check if has pranota lembur
             $item->sudah_pranota = $item->hasPranotaLembur();
         });
 
         // Merge collections
         $allSuratJalans = $suratJalans->concat($bongkarans)->sortByDesc('report_date')->values();
 
-        // Prepare data for Modal Pranota
-        $pricelistLemburs = MasterPricelistLembur::where('status', 'aktif')->get();
-        
-        $nomorTerakhir = NomorTerakhir::where('modul', 'PML')->first();
-        $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
-        $tahun = now()->format('y');
-        $bulan = now()->format('m');
-        $nomorCetakan = 1; // Default
-        $nomorPranotaDisplay = "PML{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
-
-        return view('report-lembur.view', [
+        return [
             'suratJalans' => $allSuratJalans,
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'pricelistLemburs' => $pricelistLemburs,
-            'nomorPranotaDisplay' => $nomorPranotaDisplay,
-            'nextNumber' => $nextNumber,
             'statusPranota' => $statusPranota
-        ]);
+        ];
     }
 }
+

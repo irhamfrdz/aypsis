@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SuratJalanKontainerSewa;
 use App\Models\SuratJalanKontainerSewaItem;
 use App\Models\Kontainer;
+use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -95,10 +96,15 @@ class SuratJalanKontainerSewaController extends Controller
             ->sort()
             ->values();
 
-        // Generate next nomor
-        $nomorSuratJalan = SuratJalanKontainerSewa::generateNomor($tipe);
+        // Get supir list from karyawan table
+        $supirs = Karyawan::where('divisi', 'supir')
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'plat']);
 
-        return view('surat-jalan-kontainer-sewa.create', compact('tipe', 'kontainers', 'vendors', 'nomorSuratJalan'));
+        // Default empty for manual entry
+        $nomorSuratJalan = '';
+
+        return view('surat-jalan-kontainer-sewa.create', compact('tipe', 'kontainers', 'vendors', 'nomorSuratJalan', 'supirs'));
     }
 
     /**
@@ -107,6 +113,7 @@ class SuratJalanKontainerSewaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'nomor_surat_jalan' => 'required|string|max:100|unique:surat_jalan_kontainer_sewas,nomor_surat_jalan',
             'tipe' => 'required|in:pengambilan,pengembalian',
             'tanggal' => 'required|date',
             'vendor' => 'nullable|string|max:255',
@@ -125,7 +132,7 @@ class SuratJalanKontainerSewaController extends Controller
 
         DB::beginTransaction();
         try {
-            $nomorSuratJalan = SuratJalanKontainerSewa::generateNomor($request->tipe);
+            $nomorSuratJalan = $request->nomor_surat_jalan;
 
             $suratJalan = SuratJalanKontainerSewa::create([
                 'nomor_surat_jalan' => $nomorSuratJalan,

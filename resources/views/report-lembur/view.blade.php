@@ -20,6 +20,10 @@
                         <i class="fas fa-plus-circle mr-2"></i>
                         Masukan ke Pranota
                     </button>
+                    <a href="{{ route('report.lembur.export', request()->all()) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center shadow-md shadow-green-100">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </a>
                     <a href="{{ route('report.lembur.index') }}" class="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-50 transition-all duration-200 inline-flex items-center shadow-sm">
                         <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
                         Ganti Periode
