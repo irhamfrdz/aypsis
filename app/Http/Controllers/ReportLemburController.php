@@ -143,6 +143,7 @@ class ReportLemburController extends Controller
             $item->type_surat = 'Muat';
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal : null;
             $item->sudah_pranota = $item->hasPranotaLembur();
+            $item->no_pranota = $item->pranotaLemburs->first()?->nomor_pranota;
         });
 
         $bongkarans->each(function($item) {
@@ -150,6 +151,7 @@ class ReportLemburController extends Controller
             $item->no_surat_jalan = $item->nomor_surat_jalan;
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal_tanda_terima : null;
             $item->sudah_pranota = $item->hasPranotaLembur();
+            $item->no_pranota = $item->pranotaLemburs->first()?->nomor_pranota;
         });
 
         // Merge collections

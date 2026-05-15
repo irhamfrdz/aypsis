@@ -78,6 +78,7 @@
                             </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Tanggal Tanda Terima</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">No Pranota</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No SJ</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
@@ -106,6 +107,13 @@
                         </td>
                         <td class="px-4 py-3">{{ $loop->iteration }}</td>
                         <td class="px-4 py-3">{{ $sj->report_date ? \Carbon\Carbon::parse($sj->report_date)->format('d/M/Y') : '-' }}</td>
+                        <td class="px-4 py-3">
+                            @if($sj->no_pranota)
+                                <span class="font-bold text-blue-600">{{ $sj->no_pranota }}</span>
+                            @else
+                                <span class="text-gray-400 italic">Belum Ada</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $sj->type_surat == 'Muat' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800' }}">
                                 {{ $sj->type_surat }}

@@ -30,6 +30,7 @@ class ReportLemburExport implements FromCollection, WithHeadings, WithMapping, S
         return [
             'No',
             'Tanggal Tanda Terima',
+            'No Pranota',
             'Tipe',
             'No SJ',
             'Pengirim',
@@ -49,6 +50,7 @@ class ReportLemburExport implements FromCollection, WithHeadings, WithMapping, S
         return [
             $this->no++,
             $sj->report_date ? Carbon::parse($sj->report_date)->format('d/M/Y') : '-',
+            $sj->no_pranota ?: '-',
             $sj->type_surat,
             $sj->no_surat_jalan,
             $sj->pengirim ?: '-',
