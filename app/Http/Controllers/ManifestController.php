@@ -250,15 +250,32 @@ class ManifestController extends Controller
      */
     private function getAllShippers()
     {
-        $pengirims = \App\Models\Pengirim::select('nama_pengirim as name')->get();
-        $penerimas = \App\Models\Penerima::select('nama_penerima as name')->get();
-        $masters = \App\Models\MasterPengirimPenerima::select('nama as name')->get();
+        $pengirims = \App\Models\Pengirim::select('id', 'nama_pengirim as name', 'alamat')->get()->map(function($item) {
+            return [
+                'name' => $item->name,
+                'alamat' => $item->alamat,
+                'edit_url' => route('pengirim.edit', $item->id)
+            ];
+        });
+        $penerimas = \App\Models\Penerima::select('id', 'nama_penerima as name', 'alamat')->get()->map(function($item) {
+            return [
+                'name' => $item->name,
+                'alamat' => $item->alamat,
+                'edit_url' => route('penerima.edit', $item->id)
+            ];
+        });
+        $masters = \App\Models\MasterPengirimPenerima::select('id', 'nama as name', 'alamat')->get()->map(function($item) {
+            return [
+                'name' => $item->name,
+                'alamat' => $item->alamat,
+                'edit_url' => route('master-pengirim-penerima.edit', $item->id)
+            ];
+        });
         
         return $pengirims->concat($penerimas)->concat($masters)
-            ->pluck('name')
-            ->filter()
-            ->unique()
-            ->sort()
+            ->filter(fn($item) => !empty($item['name']))
+            ->sortBy('name')
+            ->unique('name')
             ->values();
     }
 

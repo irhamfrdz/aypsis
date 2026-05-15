@@ -182,13 +182,34 @@
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Informasi Pengirim & Penerima</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-2">SHIPPER</label>
-                        <select name="pengirim" id="pengirim" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                            <option value="">- Pilih Shipper -</option>
-                            @foreach($allShippers as $shipper)
-                                <option value="{{ $shipper }}" {{ old('pengirim') == $shipper ? 'selected' : '' }}>{{ $shipper }}</option>
-                            @endforeach
-                        </select>
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="pengirim" class="text-sm font-medium text-gray-700">SHIPPER</label>
+                            <a href="#" id="edit_shipper_link"
+                               class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
+                               title="Edit" target="_blank">
+                                Edit
+                            </a>
+                        </div>
+                        <div class="relative">
+                            <div class="dropdown-container-shipper">
+                                <input type="text" id="search_shipper" placeholder="Search shipper..." autocomplete="off"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-purple-500 bg-white text-sm">
+                                <select name="pengirim" id="pengirim_id" class="hidden">
+                                    <option value="">- Pilih Shipper -</option>
+                                    @foreach($allShippers as $shipper)
+                                        <option value="{{ $shipper['name'] }}" 
+                                                data-alamat="{{ $shipper['alamat'] }}"
+                                                data-edit-url="{{ $shipper['edit_url'] }}"
+                                                {{ old('pengirim') == $shipper['name'] ? 'selected' : '' }}>
+                                            {{ $shipper['name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div id="dropdown_options_shipper" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                    <!-- Options populated by JS -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -244,3 +265,94 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectElement = document.getElementById('pengirim_id');
+    const searchInput = document.getElementById('search_shipper');
+    const dropdownOptions = document.getElementById('dropdown_options_shipper');
+    const editLink = document.getElementById('edit_shipper_link');
+    let originalOptions = Array.from(selectElement.options);
+
+    function populateDropdown(options) {
+        dropdownOptions.innerHTML = '';
+        options.forEach(option => {
+            if (option.value === '') return;
+            const div = document.createElement('div');
+            div.className = 'px-3 py-2 hover:bg-purple-50 cursor-pointer border-b border-gray-100 text-sm';
+            div.textContent = option.text;
+            div.setAttribute('data-value', option.value);
+            div.setAttribute('data-alamat', option.getAttribute('data-alamat') || '');
+            div.setAttribute('data-edit-url', option.getAttribute('data-edit-url') || '');
+
+            if (option.value === selectElement.value) {
+                div.classList.add('bg-purple-50', 'font-medium', 'text-purple-600');
+            }
+
+            div.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.textContent;
+                const alamat = this.getAttribute('data-alamat');
+
+                selectElement.value = value;
+                searchInput.value = text;
+                dropdownOptions.classList.add('hidden');
+                
+                // Update address if exists
+                const alamatTextarea = document.getElementById('alamat_pengirim');
+                if (alamatTextarea && alamat) {
+                    alamatTextarea.value = alamat;
+                }
+
+                updateEditLink();
+            });
+            dropdownOptions.appendChild(div);
+        });
+
+        if (options.length === 0 || (options.length === 1 && options[0].value === '')) {
+            const noResult = document.createElement('div');
+            noResult.className = 'px-3 py-4 text-center text-gray-500 text-sm italic';
+            noResult.textContent = 'Tidak ada hasil ditemukan';
+            dropdownOptions.appendChild(noResult);
+        }
+    }
+
+    function updateEditLink() {
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const editUrl = selectedOption ? selectedOption.getAttribute('data-edit-url') : '';
+        if (editUrl) {
+            editLink.href = editUrl;
+            editLink.classList.remove('hidden');
+        } else {
+            editLink.classList.add('hidden');
+        }
+    }
+
+    searchInput.addEventListener('focus', () => dropdownOptions.classList.remove('hidden'));
+    searchInput.addEventListener('click', () => dropdownOptions.classList.remove('hidden'));
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const filtered = originalOptions.filter(opt => 
+            opt.value !== '' && opt.text.toLowerCase().includes(searchTerm)
+        );
+        populateDropdown(filtered);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown-container-shipper')) {
+            dropdownOptions.classList.add('hidden');
+        }
+    });
+
+    // Initial state
+    if (selectElement.value) {
+        const selectedOption = Array.from(selectElement.options).find(opt => opt.value === selectElement.value);
+        if (selectedOption) searchInput.value = selectedOption.text;
+        updateEditLink();
+    }
+    populateDropdown(originalOptions);
+});
+</script>
+@endpush
