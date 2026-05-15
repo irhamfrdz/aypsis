@@ -372,12 +372,12 @@
             grandTotal += grandTotalSection;
         });
         
-        if (grandTotal > 0) {
+        if (grandTotal >= 0) {
             nominalInput.value = Math.round(grandTotal).toLocaleString('id-ID');
             // Recalculate sisa pembayaran after nominal changes
             calculateSisaPembayaran();
         } else {
-            nominalInput.value = '';
+            nominalInput.value = '0';
         }
     }
 

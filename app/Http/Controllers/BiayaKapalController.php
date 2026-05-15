@@ -2698,10 +2698,28 @@ class BiayaKapalController extends Controller
         // TKBM Sections Cleaning
         if (isset($data['tkbm_sections']) && is_array($data['tkbm_sections'])) {
             foreach ($data['tkbm_sections'] as &$section) {
-                if (isset($section['total_nominal'])) $section['total_nominal'] = str_replace(',', '.', str_replace('.', '', $section['total_nominal']));
-                if (isset($section['pph'])) $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
-                if (isset($section['adjustment'])) $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
-                if (isset($section['grand_total'])) $section['grand_total'] = str_replace(',', '.', str_replace('.', '', $section['grand_total']));
+                $fieldsToClean = ['total_nominal', 'pph', 'adjustment', 'grand_total'];
+                foreach ($fieldsToClean as $f) {
+                    if (isset($section[$f])) {
+                        $val = (string)$section[$f];
+                        $val = str_replace(['Rp', ' ', '.'], ['', '', ''], $val);
+                        $val = str_replace(',', '.', $val);
+                        $section[$f] = $val !== '' ? $val : 0;
+                    }
+                }
+                
+                // Also clean item-level quantities
+                if (isset($section['barang']) && is_array($section['barang'])) {
+                    foreach ($section['barang'] as &$item) {
+                        if (isset($item['jumlah'])) {
+                            $val = (string)$item['jumlah'];
+                            $val = str_replace([' ', '.'], ['', ''], $val);
+                            $val = str_replace(',', '.', $val);
+                            $item['jumlah'] = $val !== '' ? $val : 0;
+                        }
+                    }
+                    unset($item);
+                }
             }
             unset($section);
         }

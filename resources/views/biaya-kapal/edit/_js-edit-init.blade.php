@@ -70,7 +70,23 @@
         }
 
         // Group TKBM
-        if($biayaKapal->tkbmDetails->count() > 0) {
+        if(old('tkbm_sections')) {
+            foreach(old('tkbm_sections') as $sectionIndex => $section) {
+                $editTkbmSections[] = [
+                    'kapal' => $section['kapal'] ?? '',
+                    'voyage' => $section['voyage'] ?? '',
+                    'no_referensi' => $section['no_referensi'] ?? '',
+                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? '',
+                    'adjustment' => $section['adjustment'] ?? 0,
+                    'total_nominal' => $section['total_nominal'] ?? 0,
+                    'pph' => $section['pph'] ?? 0,
+                    'grand_total' => $section['grand_total'] ?? 0,
+                    'barang' => collect($section['barang'] ?? [])->map(function($i){ 
+                        return ['barang_id' => $i['barang_id'] ?? null, 'jumlah' => $i['jumlah'] ?? 0]; 
+                    })->values()
+                ];
+            }
+        } else if($biayaKapal->tkbmDetails->count() > 0) {
             $grouped = $biayaKapal->tkbmDetails->groupBy(function($item) {
                 $tgl = $item->tanggal_invoice_vendor ? \Carbon\Carbon::parse($item->tanggal_invoice_vendor)->format('Y-m-d') : '';
                 return $item->kapal . '|||' . $item->voyage . '|||' . ($item->no_referensi ?? '') . '|||' . $tgl;
@@ -85,7 +101,10 @@
                          'no_referensi' => $parts[2] ?? '',
                          'tanggal_invoice_vendor' => $parts[3] ?? '',
                          'adjustment' => $firstItem->adjustment ?? 0,
-                         'barang' => $items->map(function($i){ return ['barang_id' => $i->pricelist_tkbm_id, 'jumlah' => $i->jumlah]; })
+                         'total_nominal' => $firstItem->total_nominal ?? 0,
+                         'pph' => $firstItem->pph ?? 0,
+                         'grand_total' => $firstItem->grand_total ?? 0,
+                         'barang' => $items->map(function($i){ return ['barang_id' => $i->pricelist_tkbm_id, 'jumlah' => $i->jumlah]; })->values()
                      ];
                  }
             }
@@ -465,11 +484,18 @@
                         }
                     }
                     
-                    sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][no_referensi]"]').value = data.no_referensi;
-                    sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor;
-                    if(data.adjustment) {
-                        sec.querySelector('.tkbm-adjustment-input').value = data.adjustment;
+                    sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][no_referensi]"]').value = data.no_referensi || '';
+                    sec.querySelector('input[name="tkbm_sections['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor || '';
+                    
+                    const adjInput = sec.querySelector('.tkbm-adjustment-input');
+                    if(adjInput) {
+                        adjInput.value = data.adjustment || 0;
                     }
+
+                    // Pre-populate hidden fields to avoid validation errors if submitted before calculation
+                    if (data.total_nominal !== undefined) sec.querySelector('.tkbm-section-total-hidden').value = data.total_nominal;
+                    if (data.pph !== undefined) sec.querySelector('.tkbm-section-pph-hidden').value = data.pph;
+                    if (data.grand_total !== undefined) sec.querySelector('.tkbm-section-grand-total-hidden').value = data.grand_total;
                     
                     sec.querySelector('.tkbm-barang-container').innerHTML = '';
                     data.barang.forEach(b => {
