@@ -175,8 +175,9 @@ class ManifestController extends Controller
      */
     public function create()
     {
-        $prospeks = Prospek::orderBy('pt_pengirim')->get();
-        return view('manifests.create', compact('prospeks'));
+        $prospeks = \App\Models\Prospek::orderBy('pt_pengirim')->get();
+        $allShippers = $this->getAllShippers();
+        return view('manifests.create', compact('prospeks', 'allShippers'));
     }
 
     /**
@@ -239,8 +240,26 @@ class ManifestController extends Controller
     public function edit(string $id)
     {
         $manifest = Manifest::findOrFail($id);
-        $prospeks = Prospek::orderBy('pt_pengirim')->get();
-        return view('manifests.edit', compact('manifest', 'prospeks'));
+        $prospeks = \App\Models\Prospek::orderBy('pt_pengirim')->get();
+        $allShippers = $this->getAllShippers();
+        return view('manifests.edit', compact('manifest', 'prospeks', 'allShippers'));
+    }
+
+    /**
+     * Get all unique names from pengirims, penerimas, and master_pengirim_penerima tables.
+     */
+    private function getAllShippers()
+    {
+        $pengirims = \App\Models\Pengirim::select('nama_pengirim as name')->get();
+        $penerimas = \App\Models\Penerima::select('nama_penerima as name')->get();
+        $masters = \App\Models\MasterPengirimPenerima::select('nama as name')->get();
+        
+        return $pengirims->concat($penerimas)->concat($masters)
+            ->pluck('name')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
     }
 
     /**

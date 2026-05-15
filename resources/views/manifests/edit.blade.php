@@ -184,8 +184,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-2">SHIPPER</label>
-                        <input type="text" name="pengirim" id="pengirim" value="{{ old('pengirim', $manifest->pengirim) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                        <select name="pengirim" id="pengirim" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                            <option value="">- Pilih Shipper -</option>
+                            @foreach($allShippers as $shipper)
+                                <option value="{{ $shipper }}" {{ old('pengirim', $manifest->pengirim) == $shipper ? 'selected' : '' }}>{{ $shipper }}</option>
+                            @endforeach
+                            @if($manifest->pengirim && !$allShippers->contains($manifest->pengirim))
+                                <option value="{{ $manifest->pengirim }}" selected>{{ $manifest->pengirim }} (Lama)</option>
+                            @endif
+                        </select>
                     </div>
 
                     <div>
