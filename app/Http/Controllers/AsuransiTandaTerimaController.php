@@ -28,8 +28,8 @@ class AsuransiTandaTerimaController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        // Fetch insurance info for these receipts
-        $this->attachInsurance($receipts);
+        // Fetch insurance info and format nama_barang for these receipts
+        $this->attachInsuranceAndFormatData($receipts);
 
         $vendors = VendorAsuransi::orderBy('nama_asuransi')->get();
 
@@ -287,8 +287,8 @@ class AsuransiTandaTerimaController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Fetch insurance info
-        $this->attachInsurance($receipts);
+        // Fetch insurance info and format nama_barang
+        $this->attachInsuranceAndFormatData($receipts);
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\AsuransiTandaTerimaExport($receipts), 
@@ -296,7 +296,7 @@ class AsuransiTandaTerimaController extends Controller
         );
     }
 
-    private function attachInsurance($receipts)
+    private function attachInsuranceAndFormatData($receipts)
     {
         $items = $receipts instanceof \Illuminate\Pagination\LengthAwarePaginator ? $receipts->items() : $receipts;
         
@@ -317,9 +317,26 @@ class AsuransiTandaTerimaController extends Controller
                 if ($item->tanda_terima_lcl_id) return "lcl_{$item->tanda_terima_lcl_id}";
             });
 
-        foreach ($receipts as $receipt) {
+        foreach ($items as $receipt) {
             $key = "{$receipt->type}_{$receipt->id}";
             $receipt->insurance = isset($insurances[$key]) ? $insurances[$key]->first() : null;
+
+            // Format nama_barang for regular tt if it came from jenis_barang but dimensi_details has real data
+            if ($receipt->type == 'tt' && $receipt->raw_dimensi_details) {
+                $decodedDetails = json_decode($receipt->raw_dimensi_details, true);
+                if (is_array($decodedDetails) && !empty($decodedDetails)) {
+                    $names = [];
+                    foreach ($decodedDetails as $detail) {
+                        if (!empty($detail['nama_barang'])) {
+                            $names[] = $detail['nama_barang'];
+                        }
+                    }
+                    if (!empty($names)) {
+                        // Create JSON array string which is expected by the blade view
+                        $receipt->nama_barang = json_encode($names);
+                    }
+                }
+            }
         }
     }
 
@@ -351,6 +368,7 @@ class AsuransiTandaTerimaController extends Controller
                 'tanda_terimas.penerima', 
                 'tanda_terimas.no_kontainer', 
                 DB::raw('COALESCE(tanda_terimas.nama_barang, surat_jalans.jenis_barang) as nama_barang'), 
+                'tanda_terimas.dimensi_details as raw_dimensi_details',
                 DB::raw('COALESCE(tanda_terimas.jumlah, surat_jalans.jumlah_kontainer) as kuantitas'), 
                 'tanda_terimas.satuan', 
                 'tanda_terimas.created_at', 
@@ -391,6 +409,7 @@ class AsuransiTandaTerimaController extends Controller
                 'tanda_terima_tanpa_surat_jalan.penerima', 
                 'tanda_terima_tanpa_surat_jalan.no_kontainer', 
                 DB::raw('COALESCE(tanda_terima_tanpa_surat_jalan.nama_barang, tanda_terima_tanpa_surat_jalan.jenis_barang) as nama_barang'), 
+                DB::raw('NULL as raw_dimensi_details'),
                 'tanda_terima_tanpa_surat_jalan.jumlah_barang as kuantitas', 
                 'tanda_terima_tanpa_surat_jalan.satuan_barang as satuan', 
                 'tanda_terima_tanpa_surat_jalan.created_at', 
@@ -432,6 +451,7 @@ class AsuransiTandaTerimaController extends Controller
                 'tanda_terimas_lcl.nama_penerima as penerima', 
                 DB::raw('GROUP_CONCAT(DISTINCT tanda_terima_lcl_kontainer_pivot.nomor_kontainer SEPARATOR ", ") as no_kontainer'),
                 DB::raw('(SELECT GROUP_CONCAT(nama_barang SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as nama_barang'),
+                DB::raw('NULL as raw_dimensi_details'),
                 DB::raw('(SELECT SUM(jumlah) FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as kuantitas'),
                 DB::raw('(SELECT GROUP_CONCAT(DISTINCT satuan SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as satuan'),
                 'tanda_terimas_lcl.created_at', 
@@ -624,7 +644,30 @@ class AsuransiTandaTerimaController extends Controller
                 }
 
                 // Fallback for nama_barang, jumlah, and satuan from SJ
-                $details['nama_barang'] = is_array($tt->nama_barang) ? implode(', ', $tt->nama_barang) : ($tt->nama_barang ?? ($tt->suratJalan->jenis_barang ?? '-'));
+                $namaBarang = $tt->nama_barang;
+                if (empty($namaBarang)) {
+                    $dimensiItems = $tt->dimensi_items ?? $tt->dimensi_details;
+                    if (is_string($dimensiItems)) {
+                        $dimensiItems = json_decode($dimensiItems, true);
+                    }
+                    if (is_array($dimensiItems) && !empty($dimensiItems)) {
+                        $names = [];
+                        foreach ($dimensiItems as $item) {
+                            if (!empty($item['nama_barang'])) {
+                                $names[] = $item['nama_barang'];
+                            }
+                        }
+                        if (!empty($names)) {
+                            $namaBarang = implode(', ', $names);
+                        }
+                    }
+                }
+                
+                if (is_array($namaBarang)) {
+                    $namaBarang = implode(', ', $namaBarang);
+                }
+
+                $details['nama_barang'] = $namaBarang ?: ($tt->suratJalan->jenis_barang ?? '-');
                 $details['jumlah_barang'] = (string)($tt->jumlah ?? ($tt->suratJalan->jumlah_kontainer ?? '-'));
                 $details['satuan'] = $tt->satuan ?? '-';
                 

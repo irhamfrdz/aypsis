@@ -134,9 +134,26 @@
                         </div>
                         <div>
                             <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Nama Barang</p>
-                            <p class="text-sm font-bold text-gray-800 truncate" id="info_nama_barang" title="{{ $selectedReceipt ? (is_array($selectedReceipt->nama_barang) ? implode(', ', $selectedReceipt->nama_barang) : ($selectedReceipt->nama_barang ?? '-')) : '-' }}">
+                            <p class="text-sm font-bold text-gray-800 truncate" id="info_nama_barang" title="">
                                 @if($selectedReceipt)
-                                    @if($selectedType == 'tt') {{ is_array($selectedReceipt->nama_barang) ? implode(', ', $selectedReceipt->nama_barang) : ($selectedReceipt->nama_barang ?? '-') }}
+                                    @if($selectedType == 'tt')
+                                        @php
+                                            $ttNamaBarang = $selectedReceipt->nama_barang;
+                                            if (empty($ttNamaBarang)) {
+                                                $dimensiItems = $selectedReceipt->dimensi_items ?? $selectedReceipt->dimensi_details;
+                                                if (is_string($dimensiItems)) $dimensiItems = json_decode($dimensiItems, true);
+                                                if (is_array($dimensiItems) && !empty($dimensiItems)) {
+                                                    $names = [];
+                                                    foreach ($dimensiItems as $item) {
+                                                        if (!empty($item['nama_barang'])) $names[] = $item['nama_barang'];
+                                                    }
+                                                    if (!empty($names)) $ttNamaBarang = implode(', ', $names);
+                                                }
+                                            }
+                                            if (is_array($ttNamaBarang)) $ttNamaBarang = implode(', ', $ttNamaBarang);
+                                            if (empty($ttNamaBarang)) $ttNamaBarang = $selectedReceipt->suratJalan->jenis_barang ?? '-';
+                                        @endphp
+                                        {{ $ttNamaBarang }}
                                     @elseif($selectedType == 'tttsj') {{ $selectedReceipt->nama_barang ?? '-' }}
                                     @elseif($selectedType == 'lcl') {{ $selectedReceipt->items->pluck('nama_barang')->filter()->unique()->implode(', ') ?: '-' }}
                                     @endif
