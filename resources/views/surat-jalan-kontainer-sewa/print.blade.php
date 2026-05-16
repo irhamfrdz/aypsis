@@ -78,7 +78,9 @@
         </tr>
         <tr>
             <td style="font-weight: bold;">Antar Lokasi</td>
-            <td colspan="3">: {{ $suratJalan->antar_lokasi ? 'YA' : 'TIDAK' }}</td>
+            <td>: {{ $suratJalan->antar_lokasi ? 'YA' : 'TIDAK' }}</td>
+            <td style="font-weight: bold;">Uang Jalan</td>
+            <td>: Rp {{ number_format($suratJalan->nominal_uang_jalan, 0, ',', '.') }}</td>
         </tr>
         @if($suratJalan->lokasi_pengambilan)
         <tr>

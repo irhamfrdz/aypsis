@@ -20,6 +20,7 @@ class SuratJalanKontainerSewa extends Model
         'supir',
         'no_plat',
         'antar_lokasi',
+        'nominal_uang_jalan',
         'lokasi_pengambilan',
         'lokasi_pengembalian',
         'keterangan',

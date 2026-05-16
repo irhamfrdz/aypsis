@@ -92,6 +92,15 @@
                     </label>
                 </div>
                 <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Nominal Uang Jalan</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 text-sm">Rp</span>
+                        </div>
+                        <input type="number" name="nominal_uang_jalan" value="{{ old('nominal_uang_jalan', 0) }}" step="0.01" class="w-full text-sm border border-gray-300 rounded-md pl-10 pr-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="0.00">
+                    </div>
+                </div>
+                <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Lokasi {{ $tipe === 'pengambilan' ? 'Pengambilan' : 'Pengembalian' }}</label>
                     @if($tipe === 'pengambilan')
                         <input type="text" name="lokasi_pengambilan" value="{{ old('lokasi_pengambilan') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Lokasi pengambilan">
