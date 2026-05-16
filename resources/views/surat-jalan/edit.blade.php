@@ -154,8 +154,9 @@
                                             if(old('pengirim_id')) {
                                                 $isSelected = old('pengirim_id') == $pengirim->id;
                                             } elseif($suratJalan->pengirim) {
-                                                $isSelected = $suratJalan->pengirim == $pengirim->nama_pengirim;
+                                                $isSelected = trim($suratJalan->pengirim) == trim($pengirim->nama_pengirim);
                                             }
+
                                         @endphp
                                         <option value="{{ $pengirim->id }}" {{ $isSelected ? 'selected' : '' }}>
                                             {{ $pengirim->nama_pengirim }}
@@ -1251,12 +1252,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial value for pengirim search input if edit mode has existing data
     const pengirimSelect = document.getElementById('pengirim_id');
     const searchPengirimInput = document.getElementById('search_pengirim');
-    if (pengirimSelect && pengirimSelect.value && searchPengirimInput) {
-        const selectedOption = pengirimSelect.options[pengirimSelect.selectedIndex];
-        if (selectedOption && selectedOption.text) {
-            searchPengirimInput.value = selectedOption.text.trim();
+    
+    if (pengirimSelect && searchPengirimInput) {
+        // Try to find selected option or match with stored value
+        const storedValue = "{{ $suratJalan->pengirim }}";
+        
+        if (pengirimSelect.value && pengirimSelect.selectedIndex > 0) {
+            // Option already selected (PHP match)
+            const selectedOption = pengirimSelect.options[pengirimSelect.selectedIndex];
+            if (selectedOption && selectedOption.text) {
+                searchPengirimInput.value = selectedOption.text.trim();
+            }
+        } else if (storedValue && storedValue !== '') {
+            // No option selected but we have stored value, try to match and select
+            let found = false;
+            for (let i = 0; i < pengirimSelect.options.length; i++) {
+                const option = pengirimSelect.options[i];
+                if (option.text.trim() === storedValue.trim()) {
+                    pengirimSelect.selectedIndex = i;
+                    pengirimSelect.value = option.value;
+                    searchPengirimInput.value = option.text.trim();
+                    found = true;
+                    break;
+                }
+            }
+            
+            // If still no match, just put the stored value in search input
+            if (!found && searchPengirimInput.value === '') {
+                searchPengirimInput.value = storedValue;
+            }
         }
     }
+
 
     // Set initial value for jenis barang search input if edit mode has existing data
     const jenisBarangSelect = document.getElementById('jenis_barang_id');
