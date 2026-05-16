@@ -69,6 +69,9 @@ class ReportUangJalanController extends Controller
 
     public function export(Request $request)
     {
+        ini_set('memory_limit', '1024M');
+        set_time_limit(300); // 5 minutes
+
         $user = Auth::user();
 
         if (!$user->can('surat-jalan-view')) {
