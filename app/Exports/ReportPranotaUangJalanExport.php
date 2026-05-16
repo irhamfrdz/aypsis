@@ -37,6 +37,9 @@ class ReportPranotaUangJalanExport implements FromCollection, WithHeadings, Shou
                 'No',
                 'Tanggal',
                 'Nomor Pranota',
+                'Nomor Accurate',
+                'Nama Supir',
+                'NIK Supir',
                 'Periode Tagihan',
                 'Jumlah Uang Jalan',
                 'Penyesuaian',
@@ -54,10 +57,33 @@ class ReportPranotaUangJalanExport implements FromCollection, WithHeadings, Shou
         static $index = 0;
         $index++;
 
+        // Get accurate numbers
+        $accurateNumbers = $pranota->pembayaranPranotaUangJalans->pluck('nomor_accurate')->filter()->unique()->implode(', ');
+
+        // Get unique supir names and NIKs from associated uang jalans
+        $supirs = collect();
+        $niks = collect();
+        
+        foreach ($pranota->uangJalans as $uj) {
+            $relatedSJ = $uj->suratJalan ?? $uj->suratJalanBongkaran;
+            if ($relatedSJ) {
+                if ($relatedSJ->supir) $supirs->push($relatedSJ->supir);
+                if ($relatedSJ->supirKaryawan && $relatedSJ->supirKaryawan->nik) {
+                    $niks->push($relatedSJ->supirKaryawan->nik);
+                }
+            }
+        }
+        
+        $supirNames = $supirs->unique()->implode(', ');
+        $supirNiks = $niks->unique()->implode(', ');
+
         return [
             $index,
             $pranota->tanggal_pranota->format('d/m/Y'),
             $pranota->nomor_pranota,
+            $accurateNumbers ?: '-',
+            $supirNames ?: '-',
+            $supirNiks ?: '-',
             $pranota->periode_tagihan,
             (float)$pranota->jumlah_uang_jalan,
             (float)$pranota->penyesuaian,
@@ -71,8 +97,8 @@ class ReportPranotaUangJalanExport implements FromCollection, WithHeadings, Shou
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->mergeCells('A1:K1');
-        $sheet->mergeCells('A2:K2');
+        $sheet->mergeCells('A1:N1');
+        $sheet->mergeCells('A2:N2');
         
         $lastRow = $sheet->getHighestRow();
         
@@ -86,7 +112,7 @@ class ReportPranotaUangJalanExport implements FromCollection, WithHeadings, Shou
                     'startColor' => ['rgb' => '2563EB'] // Blue 600
                 ]
             ],
-            'A1:K' . $lastRow => [
+            'A1:N' . $lastRow => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,

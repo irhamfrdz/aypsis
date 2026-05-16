@@ -38,7 +38,12 @@ class ReportPranotaUangJalanController extends Controller
         $search = $request->input('search');
 
         $query = PranotaUangJalan::query()
-            ->with(['uangJalans', 'creator', 'pembayaranPranotaUangJalans'])
+            ->with([
+                'uangJalans.suratJalan.supirKaryawan', 
+                'uangJalans.suratJalanBongkaran.supirKaryawan', 
+                'creator', 
+                'pembayaranPranotaUangJalans'
+            ])
             ->whereBetween('tanggal_pranota', [$startDate, $endDate]);
 
         if ($search) {
@@ -75,7 +80,12 @@ class ReportPranotaUangJalanController extends Controller
         $search = $request->input('search');
 
         $query = PranotaUangJalan::query()
-            ->with(['uangJalans', 'creator', 'pembayaranPranotaUangJalans'])
+            ->with([
+                'uangJalans.suratJalan.supirKaryawan', 
+                'uangJalans.suratJalanBongkaran.supirKaryawan', 
+                'creator', 
+                'pembayaranPranotaUangJalans'
+            ])
             ->whereBetween('tanggal_pranota', [$startDate, $endDate]);
 
         if ($search) {

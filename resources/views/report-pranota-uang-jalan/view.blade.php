@@ -71,6 +71,8 @@
                     <tr class="bg-gray-50">
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">No</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Tanggal / No Pranota</th>
+                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">No. Accurate</th>
+                        <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Supir & NIK</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Periode Tagihan</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest text-blue-600 font-bold">Uang Jalan</th>
                         <th class="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Penyesuaian</th>
@@ -81,11 +83,37 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-50">
                     @forelse($pranotas as $index => $pranota)
+                        @php
+                            $accurateNumbers = $pranota->pembayaranPranotaUangJalans->pluck('nomor_accurate')->filter()->unique();
+                            
+                            $supirInfo = collect();
+                            foreach ($pranota->uangJalans as $uj) {
+                                $relatedSJ = $uj->suratJalan ?? $uj->suratJalanBongkaran;
+                                if ($relatedSJ && $relatedSJ->supir) {
+                                    $nik = $relatedSJ->supirKaryawan->nik ?? null;
+                                    $info = $relatedSJ->supir . ($nik ? " ($nik)" : "");
+                                    $supirInfo->push($info);
+                                }
+                            }
+                            $supirList = $supirInfo->unique();
+                        @endphp
                         <tr class="hover:bg-blue-50/30 transition duration-150">
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{{ $index + 1 }}</td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-gray-800">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</div>
                                 <div class="text-xs text-gray-400 font-medium">{{ $pranota->nomor_pranota }}</div>
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                                @foreach($accurateNumbers as $no)
+                                    <div class="text-xs font-medium bg-gray-100 px-1.5 py-0.5 rounded mb-1 w-fit">{{ $no }}</div>
+                                @endforeach
+                                @if($accurateNumbers->isEmpty()) - @endif
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                                @foreach($supirList as $info)
+                                    <div class="text-xs font-medium">{{ $info }}</div>
+                                @endforeach
+                                @if($supirList->isEmpty()) - @endif
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                                 {{ $pranota->periode_tagihan }}
@@ -130,7 +158,7 @@
                 @if($pranotas->count() > 0)
                 <tfoot class="bg-gray-50 border-t-2 border-gray-100">
                     <tr>
-                        <th colspan="3" class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Summary Total</th>
+                        <th colspan="5" class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Summary Total</th>
                         <th class="px-4 py-4 text-left text-sm font-bold text-gray-700">
                             {{ number_format($pranotas->sum('jumlah_uang_jalan'), 0, ',', '.') }}
                         </th>
