@@ -30,6 +30,7 @@ class TandaTerimaBatamController extends Controller
             'high cube' => 'fcl',
             'hc' => 'fcl',
             'reefer' => 'fcl',
+            'free use' => 'fcl',
         ];
 
         if (isset($map[$v])) {

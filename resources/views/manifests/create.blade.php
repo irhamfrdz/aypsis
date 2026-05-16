@@ -79,7 +79,7 @@
                         <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
                         <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                             <option value="">- Pilih Tipe -</option>
-                            @foreach(['Dry Container', 'High Cube', 'Reefer', 'Open Top', 'Flat Rack', 'LCL', 'FCL', 'Cargo', 'SOC', '40 FT', '20 FT'] as $option)
+                            @foreach(['Dry Container', 'High Cube', 'Reefer', 'Open Top', 'Flat Rack', 'LCL', 'FCL', 'Cargo', 'SOC', '40 FT', '20 FT', 'FREE USE'] as $option)
                                 <option value="{{ $option }}" {{ old('tipe_kontainer') == $option ? 'selected' : '' }}>{{ $option }}</option>
                             @endforeach
                         </select>

@@ -38,6 +38,7 @@ class TandaTerimaController extends Controller
             'hc' => 'fcl',
             'reefer' => 'fcl',
             'fcl' => 'fcl',
+            'free use' => 'fcl',
 
             // LCL
             'lcl' => 'lcl',

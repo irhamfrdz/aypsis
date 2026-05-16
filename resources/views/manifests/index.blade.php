@@ -153,6 +153,7 @@
                             <option value="Dry Container" {{ request('tipe_kontainer') == 'Dry Container' ? 'selected' : '' }}>Dry Container</option>
                             <option value="High Cube" {{ request('tipe_kontainer') == 'High Cube' ? 'selected' : '' }}>High Cube</option>
                             <option value="Reefer" {{ request('tipe_kontainer') == 'Reefer' ? 'selected' : '' }}>Reefer</option>
+                            <option value="FREE USE" {{ request('tipe_kontainer') == 'FREE USE' ? 'selected' : '' }}>FREE USE</option>
                         </select>
                     </div>
 

@@ -70,7 +70,9 @@
                         <option value="High Cube" {{ old('tipe_kontainer', $kontainer->tipe_kontainer) == 'High Cube' ? 'selected' : '' }}>High Cube</option>
                         <option value="Reefer" {{ old('tipe_kontainer', $kontainer->tipe_kontainer) == 'Reefer' ? 'selected' : '' }}>Reefer</option>
                         <option value="Open Top" {{ old('tipe_kontainer', $kontainer->tipe_kontainer) == 'Open Top' ? 'selected' : '' }}>Open Top</option>
+                        <option value="FREE USE" {{ old('tipe_kontainer', $kontainer->tipe_kontainer) == 'FREE USE' ? 'selected' : '' }}>FREE USE</option>
                     </select>
+
                     @error('tipe_kontainer')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror

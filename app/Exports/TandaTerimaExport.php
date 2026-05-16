@@ -62,6 +62,8 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
             return 'FLAT RACK';
         } elseif (str_contains($tipeKontainer, 'OPEN')) {
             return 'OPEN TOP';
+        } elseif (str_contains($tipeKontainer, 'FREE USE')) {
+            return 'FREE USE';
         }
 
         return 'DRY'; // Default fallback

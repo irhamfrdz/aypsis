@@ -84,7 +84,7 @@
                         <select name="tipe_kontainer" id="tipe_kontainer" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                             <option value="">- Pilih Tipe -</option>
                             @php
-                                $tipeOptions = ['Dry Container', 'High Cube', 'Reefer', 'Open Top', 'Flat Rack', 'LCL', 'FCL', 'Cargo', 'SOC', '40 FT', '20 FT'];
+                                $tipeOptions = ['Dry Container', 'High Cube', 'Reefer', 'Open Top', 'Flat Rack', 'LCL', 'FCL', 'Cargo', 'SOC', '40 FT', '20 FT', 'FREE USE'];
                                 $currentTipe = old('tipe_kontainer', $manifest->tipe_kontainer);
                             @endphp
                             @foreach($tipeOptions as $option)
