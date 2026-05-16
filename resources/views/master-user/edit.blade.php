@@ -3043,11 +3043,9 @@
                                                         {{-- Pranota OB --}}
                                                         <tr class="submodule-row" data-parent="aktivitas">
                                                             <td class="submodule">
-                                                                <div class="flex items-center justify-between">
-                                                                    <div>
-                                                                        <span class="module-icon">📄</span>
-                                                                        <span class="font-medium">Pranota OB</span>
-                                                                    </div>
+                                                                <div class="flex items-center">
+                                                                    <span class="text-sm mr-2 ml-4">└─</span>
+                                                                    <span>Pranota OB</span>
                                                                 </div>
                                                             </td>
                                                             <td><input type="checkbox" name="permissions[pranota-ob][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob.view') || (isset($userMatrixPermissions['pranota-ob']['view']) && $userMatrixPermissions['pranota-ob']['view']) || ($user && $user->can('pranota-ob-view'))) checked @endif></td>
@@ -3063,11 +3061,9 @@
                             {{-- OB Antar Gudang --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <span class="module-icon">🏭</span>
-                                            <span class="font-medium">OB Antar Gudang</span>
-                                        </div>
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>OB Antar Gudang</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[ob-antar-gudang][view]" value="1" class="permission-checkbox" @if(old('permissions.ob-antar-gudang.view') || (isset($userMatrixPermissions['ob-antar-gudang']['view']) && $userMatrixPermissions['ob-antar-gudang']['view']) || ($user && $user->can('ob-antar-gudang-view'))) checked @endif></td>
@@ -3082,11 +3078,9 @@
                             {{-- Tagihan OB Antar Gudang --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <span class="module-icon">💰</span>
-                                            <span class="font-medium">Tagihan OB Antar Gudang</span>
-                                        </div>
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Tagihan OB Antar Gudang</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[tagihan-ob-antar-gudang][view]" value="1" class="permission-checkbox" @if(old('permissions.tagihan-ob-antar-gudang.view') || (isset($userMatrixPermissions['tagihan-ob-antar-gudang']['view']) && $userMatrixPermissions['tagihan-ob-antar-gudang']['view']) || ($user && $user->can('tagihan-ob-antar-gudang-view'))) checked @endif></td>
