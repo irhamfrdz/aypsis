@@ -85,6 +85,12 @@
                     <label class="block text-xs font-medium text-gray-600 mb-1">No. Plat</label>
                     <input type="text" name="no_plat" value="{{ old('no_plat') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="B 1234 XYZ">
                 </div>
+                <div class="flex items-center pt-5">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="antar_lokasi" value="1" {{ old('antar_lokasi') ? 'checked' : '' }} class="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500">
+                        <span class="ml-2 text-sm font-medium text-gray-700">Antar Lokasi</span>
+                    </label>
+                </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Lokasi {{ $tipe === 'pengambilan' ? 'Pengambilan' : 'Pengembalian' }}</label>
                     @if($tipe === 'pengambilan')

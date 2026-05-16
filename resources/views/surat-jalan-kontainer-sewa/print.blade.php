@@ -76,6 +76,10 @@
             <td style="font-weight: bold;">No. Plat</td>
             <td>: {{ $suratJalan->no_plat ?? '-' }}</td>
         </tr>
+        <tr>
+            <td style="font-weight: bold;">Antar Lokasi</td>
+            <td colspan="3">: {{ $suratJalan->antar_lokasi ? 'YA' : 'TIDAK' }}</td>
+        </tr>
         @if($suratJalan->lokasi_pengambilan)
         <tr>
             <td>Lokasi Pengambilan</td>

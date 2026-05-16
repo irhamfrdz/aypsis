@@ -141,6 +141,7 @@ class SuratJalanKontainerSewaController extends Controller
                 'vendor' => $request->vendor,
                 'supir' => $request->supir,
                 'no_plat' => $request->no_plat,
+                'antar_lokasi' => $request->boolean('antar_lokasi'),
                 'lokasi_pengambilan' => $request->lokasi_pengambilan,
                 'lokasi_pengembalian' => $request->lokasi_pengembalian,
                 'keterangan' => $request->keterangan,

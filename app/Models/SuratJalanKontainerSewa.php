@@ -19,6 +19,7 @@ class SuratJalanKontainerSewa extends Model
         'vendor',
         'supir',
         'no_plat',
+        'antar_lokasi',
         'lokasi_pengambilan',
         'lokasi_pengembalian',
         'keterangan',

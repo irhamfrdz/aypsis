@@ -112,6 +112,11 @@
                                 <i class="fas {{ $sj->tipe === 'pengambilan' ? 'fa-truck-loading' : 'fa-undo-alt' }} mr-1" style="font-size: 9px;"></i>
                                 {{ $sj->tipe_label }}
                             </span>
+                            @if($sj->antar_lokasi)
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 mt-1">
+                                <i class="fas fa-exchange-alt mr-1"></i> ANTAR LOKASI
+                            </span>
+                            @endif
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ $sj->tanggal->format('d/m/Y') }}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ $sj->vendor ?? '-' }}</td>

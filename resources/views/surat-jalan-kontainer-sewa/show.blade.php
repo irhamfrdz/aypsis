@@ -82,6 +82,7 @@
                 <tr><td class="py-1.5 text-gray-500">Vendor</td><td class="py-1.5 font-medium">{{ $suratJalan->vendor ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Supir</td><td class="py-1.5 font-medium">{{ $suratJalan->supir ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">No. Plat</td><td class="py-1.5 font-medium">{{ $suratJalan->no_plat ?? '-' }}</td></tr>
+                <tr><td class="py-1.5 text-gray-500">Antar Lokasi</td><td class="py-1.5 font-medium">{{ $suratJalan->antar_lokasi ? 'Ya' : 'Tidak' }}</td></tr>
             </table>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
