@@ -536,7 +536,10 @@
         document.getElementById('modal_ukuran').value = ukuran;
         document.getElementById('modal_source').value = source;
         document.getElementById('display_nomor_kontainer').innerText = nomor;
-        document.getElementById('display_ukuran').innerText = ukuran;
+        document.getElementById('display_ukuran').innerText = ukuran.replace('ft', '').trim();
+        
+        // Normalize ukuran for comparison (remove 'ft' and any whitespace)
+        const normalizedUkuran = ukuran.toString().replace('ft', '').trim();
         
         // Filter dropdown Harga OB berdasarkan ukuran kontainer
         const pricelistSelect = document.getElementById('pricelist_id');
@@ -545,7 +548,9 @@
         Array.from(pricelistSelect.options).forEach(option => {
             if(option.value === '') return; // Skip placeholder option
             
-            if (option.getAttribute('data-ukuran') === ukuran) {
+            const optionUkuran = option.getAttribute('data-ukuran').toString().replace('ft', '').trim();
+            
+            if (optionUkuran === normalizedUkuran) {
                 option.style.display = '';    // Tampilkan
                 option.disabled = false;      // Enable option
             } else {

@@ -67,6 +67,8 @@ class PricelistUangJalanBatamController extends Controller
         $data['tarif_20ft_empty_base'] = $data['tarif_20ft_empty'] ?? 0;
         $data['tarif_40ft_full_base'] = $data['tarif_40ft_full'] ?? 0;
         $data['tarif_40ft_empty_base'] = $data['tarif_40ft_empty'] ?? 0;
+        $data['tarif_antarlokasi_20ft_base'] = $data['tarif_antarlokasi_20ft'] ?? 0;
+        $data['tarif_antarlokasi_40ft_base'] = $data['tarif_antarlokasi_40ft'] ?? 0;
 
         PricelistUangJalanBatam::create($data);
 
@@ -112,6 +114,8 @@ class PricelistUangJalanBatamController extends Controller
         $data['tarif_20ft_empty_base'] = $data['tarif_20ft_empty'] ?? 0;
         $data['tarif_40ft_full_base'] = $data['tarif_40ft_full'] ?? 0;
         $data['tarif_40ft_empty_base'] = $data['tarif_40ft_empty'] ?? 0;
+        $data['tarif_antarlokasi_20ft_base'] = $data['tarif_antarlokasi_20ft'] ?? 0;
+        $data['tarif_antarlokasi_40ft_base'] = $data['tarif_antarlokasi_40ft'] ?? 0;
 
         $pricelistUangJalanBatam->update($data);
 

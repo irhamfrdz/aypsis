@@ -96,7 +96,9 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                     'tarif_40ft_empty' => $tarif_40ft_empty,
                     'tarif_40ft_empty_base' => $tarif_40ft_empty,
                     'tarif_antarlokasi_20ft' => $tarif_antarlokasi_20ft,
+                    'tarif_antarlokasi_20ft_base' => $tarif_antarlokasi_20ft,
                     'tarif_antarlokasi_40ft' => $tarif_antarlokasi_40ft,
+                    'tarif_antarlokasi_40ft_base' => $tarif_antarlokasi_40ft,
                     'status' => $status ?? $exists->status,
                 ]);
                 $this->updatedCount++;
@@ -117,7 +119,9 @@ class PricelistUangJalanBatamImport implements ToModel, WithHeadingRow, SkipsEmp
                 'tarif_40ft_empty' => $tarif_40ft_empty,
                 'tarif_40ft_empty_base' => $tarif_40ft_empty,
                 'tarif_antarlokasi_20ft' => $tarif_antarlokasi_20ft,
+                'tarif_antarlokasi_20ft_base' => $tarif_antarlokasi_20ft,
                 'tarif_antarlokasi_40ft' => $tarif_antarlokasi_40ft,
+                'tarif_antarlokasi_40ft_base' => $tarif_antarlokasi_40ft,
                 'status' => $status,
             ]);
 

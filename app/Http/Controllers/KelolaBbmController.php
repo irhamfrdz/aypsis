@@ -102,6 +102,8 @@ class KelolaBbmController extends Controller
             'tarif_20ft_empty' => 'tarif_20ft_empty_base',
             'tarif_40ft_full' => 'tarif_40ft_full_base',
             'tarif_40ft_empty' => 'tarif_40ft_empty_base',
+            'tarif_antarlokasi_20ft' => 'tarif_antarlokasi_20ft_base',
+            'tarif_antarlokasi_40ft' => 'tarif_antarlokasi_40ft_base',
         ];
 
         // Jika persentase di bawah 5%, kembalikan tarif ke nilai base
