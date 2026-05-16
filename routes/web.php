@@ -5429,6 +5429,11 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/uang-jalan/view', [App\Http\Controllers\ReportUangJalanController::class, 'view'])->name('uang-jalan.view');
     Route::get('/uang-jalan/export', [App\Http\Controllers\ReportUangJalanController::class, 'export'])->name('uang-jalan.export');
 
+    // Report Pranota Uang Jalan
+    Route::get('/pranota-uang-jalan', [App\Http\Controllers\ReportPranotaUangJalanController::class, 'index'])->name('pranota-uang-jalan.index');
+    Route::get('/pranota-uang-jalan/view', [App\Http\Controllers\ReportPranotaUangJalanController::class, 'view'])->name('pranota-uang-jalan.view');
+    Route::get('/pranota-uang-jalan/export', [App\Http\Controllers\ReportPranotaUangJalanController::class, 'export'])->name('pranota-uang-jalan.export');
+
     // Report Ongkos Truk
     Route::get('/ongkos-truk', [App\Http\Controllers\ReportOngkosTrukController::class, 'index'])->name('ongkos-truk.index');
     Route::get('/ongkos-truk/view', [App\Http\Controllers\ReportOngkosTrukController::class, 'view'])->name('ongkos-truk.view');
