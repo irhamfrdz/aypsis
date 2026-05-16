@@ -16,6 +16,8 @@ use App\Models\Kontainer;
 use App\Models\StockKontainer;
 use App\Models\MasterTujuanKirim;
 use App\Models\MasterPengirimPenerima;
+use App\Models\Penerima;
+use App\Models\Pengirim;
 use App\Models\Karyawan;
 use App\Models\Prospek;
 use App\Models\Gudang;
@@ -39,7 +41,27 @@ class TandaTerimaLclController extends Controller
     {
         $terms = Term::all();
         $masterTujuanKirims = MasterTujuanKirim::all();
-        $masterPengirimPenerima = MasterPengirimPenerima::active()->get();
+        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama_penerima,
+                'alamat' => $item->alamat
+            ];
+        });
+        $pengirims = Pengirim::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama_pengirim,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masterPengirimPenerima = $penerimas->concat($pengirims)->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
+            return (object)$item;
+        });
         // Ambil karyawan yang memiliki divisi 'supir'
         $supirs = Karyawan::where('divisi', 'supir')
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
@@ -248,7 +270,27 @@ class TandaTerimaLclController extends Controller
         $tandaTerima = TandaTerimaLcl::with('items')->findOrFail($id);
         $terms = Term::all();
         $masterTujuanKirims = MasterTujuanKirim::all();
-        $masterPengirimPenerima = MasterPengirimPenerima::where('status', 'active')->orderBy('nama')->get();
+        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama_penerima,
+                'alamat' => $item->alamat
+            ];
+        });
+        $pengirims = Pengirim::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama_pengirim,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+            return [
+                'nama' => $item->nama,
+                'alamat' => $item->alamat
+            ];
+        });
+        $masterPengirimPenerima = $penerimas->concat($pengirims)->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
+            return (object)$item;
+        });
         // Ambil karyawan yang memiliki divisi 'supir'
         $supirs = Karyawan::where('divisi', 'supir')
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
