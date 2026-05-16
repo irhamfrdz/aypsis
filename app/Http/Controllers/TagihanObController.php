@@ -12,11 +12,31 @@ use Illuminate\Support\Facades\Log;
 class TagihanObController extends Controller
 {
     /**
+     * Display a listing of the resource for Antar Gudang.
+     */
+    public function indexAntarGudang(Request $request)
+    {
+        // Allow access if user has either tagihan-ob-view OR the specific antar-gudang permission
+        if (!Auth::user()->can('tagihan-ob-view') && !Auth::user()->can('tagihan-ob-antar-gudang-view')) {
+            abort(403);
+        }
+        
+        $request->merge([
+            'kapal' => 'ANTAR GUDANG',
+            'voyage' => 'ANTAR GUDANG'
+        ]);
+        
+        return $this->index($request);
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $this->authorize('tagihan-ob-view');
+        if (!Auth::user()->can('tagihan-ob-view') && !Auth::user()->can('tagihan-ob-antar-gudang-view')) {
+            $this->authorize('tagihan-ob-view');
+        }
         
         // Check if kapal and voyage are provided
         if (!$request->has(['kapal', 'voyage'])) {
@@ -39,7 +59,9 @@ class TagihanObController extends Controller
      */
     public function selectKapalVoyage()
     {
-        $this->authorize('tagihan-ob-view');
+        if (!Auth::user()->can('tagihan-ob-view') && !Auth::user()->can('tagihan-ob-antar-gudang-view')) {
+            $this->authorize('tagihan-ob-view');
+        }
         
         // Ambil data kapal dan voyage dari pergerakan kapal
         $pergerakanKapals = \App\Models\PergerakanKapal::whereNotNull('voyage')

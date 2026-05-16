@@ -4931,6 +4931,10 @@ Route::middleware(['auth'])->group(function() {
          ->middleware('can:ob-antar-gudang-create');
 
     // Tagihan OB routes
+    Route::get('tagihan-ob-antar-gudang', [\App\Http\Controllers\TagihanObController::class, 'indexAntarGudang'])
+         ->name('tagihan-ob-antar-gudang.index')
+         ->middleware('auth'); // Permission checked inside controller
+         
     Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])
          ->name('tagihan-ob.index')
          ->middleware('can:tagihan-ob-view');
