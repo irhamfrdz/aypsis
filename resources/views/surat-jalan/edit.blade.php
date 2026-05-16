@@ -144,8 +144,9 @@
                         <div class="dropdown-container-pengirim">
                             <input type="text" id="search_pengirim" placeholder="Cari pengirim..." autocomplete="off"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
-                            <select name="pengirim_id" id="pengirim_id" required
+                            <select name="pengirim_id" id="pengirim_id"
                                     class="hidden w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('pengirim_id') border-red-500 @enderror">
+
                                 <option value="">Pilih pengirim</option>
                                 @if(isset($pengirims))
                                     @foreach($pengirims as $pengirim)
