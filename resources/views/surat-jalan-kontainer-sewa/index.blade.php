@@ -93,6 +93,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal SJ</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Jalan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -122,7 +123,8 @@
                         <td class="px-4 py-3 text-sm text-gray-600">{{ $sj->tanggal->format('d/m/Y') }}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ $sj->vendor ?? '-' }}</td>
                         <td class="px-4 py-3 text-sm text-gray-600">{{ $sj->supir ?? '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 font-medium">{{ $sj->nomor_kontainer }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 truncate max-w-[120px]" title="{{ $sj->tujuan }}">{{ $sj->tujuan ?? '-' }}</td>
+                        <td class="px-4 py-3 text-sm font-medium text-cyan-700">{{ $sj->nomor_kontainer }}</td>
                         <td class="px-4 py-3 text-sm text-right text-gray-600 font-medium">Rp {{ number_format($sj->nominal_uang_jalan, 0, ',', '.') }}</td>
                         <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $sj->status_badge }}">

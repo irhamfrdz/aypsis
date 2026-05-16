@@ -92,12 +92,23 @@
                     </label>
                 </div>
                 <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Tujuan</label>
+                    <select name="tujuan" id="tujuan-select" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500">
+                        <option value="">-- Pilih Tujuan (Opsional) --</option>
+                        @foreach($tujuans as $tj)
+                            <option value="{{ $tj->tujuan }}" data-20ft="{{ $tj->ongkos_truk_20ft }}" data-40ft="{{ $tj->ongkos_truk_40ft }}" {{ old('tujuan') == $tj->tujuan ? 'selected' : '' }}>
+                                {{ $tj->tujuan }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Nominal Uang Jalan</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span class="text-gray-500 text-sm">Rp</span>
                         </div>
-                        <input type="number" name="nominal_uang_jalan" value="{{ old('nominal_uang_jalan', 0) }}" step="0.01" class="w-full text-sm border border-gray-300 rounded-md pl-10 pr-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="0.00">
+                        <input type="number" name="nominal_uang_jalan" id="nominal_uang_jalan" value="{{ old('nominal_uang_jalan', 0) }}" step="0.01" class="w-full text-sm border border-gray-300 rounded-md pl-10 pr-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="0.00">
                     </div>
                 </div>
                 <div>
@@ -113,7 +124,7 @@
                     <select name="nomor_kontainer" id="kontainer-select" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" required>
                         <option value="">-- Pilih Kontainer --</option>
                         @foreach($kontainers as $k)
-                            <option value="{{ $k->nomor_seri_gabungan }}" {{ old('nomor_kontainer') == $k->nomor_seri_gabungan ? 'selected' : '' }}>
+                            <option value="{{ $k->nomor_seri_gabungan }}" data-ukuran="{{ $k->ukuran }}" {{ old('nomor_kontainer') == $k->nomor_seri_gabungan ? 'selected' : '' }}>
                                 {{ $k->nomor_seri_gabungan }} ({{ $k->vendor }} - {{ $k->ukuran }})
                             </option>
                         @endforeach
@@ -147,6 +158,7 @@
         </div>
     </form>
 </div>
+@endsection
 
 @push('styles')
 <style>
@@ -333,11 +345,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const supirSelect = document.getElementById('supir-select');
     const vendorSelect = document.getElementById('vendor-select');
     const kontainerSelect = document.getElementById('kontainer-select');
+    const tujuanSelect = document.getElementById('tujuan-select');
     const noPlatInput = document.querySelector('input[name="no_plat"]');
+    const nominalUangJalanInput = document.getElementById('nominal_uang_jalan');
 
     if (supirSelect) createSearchableSelect(supirSelect, '-- Pilih Supir --');
     if (vendorSelect) createSearchableSelect(vendorSelect, '-- Pilih Vendor --');
     if (kontainerSelect) createSearchableSelect(kontainerSelect, '-- Pilih Kontainer --');
+    if (tujuanSelect) createSearchableSelect(tujuanSelect, '-- Pilih Tujuan --');
+
+    // Handle auto-fill money
+    function updateUangJalan() {
+        if (!tujuanSelect || !kontainerSelect || !nominalUangJalanInput) return;
+        
+        const selectedTujuan = tujuanSelect.options[tujuanSelect.selectedIndex];
+        const selectedKontainer = kontainerSelect.options[kontainerSelect.selectedIndex];
+        
+        if (selectedTujuan && selectedTujuan.value && selectedKontainer && selectedKontainer.value) {
+            const ukuran = selectedKontainer.getAttribute('data-ukuran');
+            let amount = 0;
+            
+            if (ukuran && ukuran.includes('20')) {
+                amount = selectedTujuan.getAttribute('data-20ft');
+            } else if (ukuran && ukuran.includes('40')) {
+                amount = selectedTujuan.getAttribute('data-40ft');
+            }
+            
+            if (amount > 0) {
+                nominalUangJalanInput.value = amount;
+            }
+        }
+    }
+
+    if (tujuanSelect) tujuanSelect.addEventListener('change', updateUangJalan);
+    if (kontainerSelect) kontainerSelect.addEventListener('change', updateUangJalan);
 
     // Handle supir change for auto-fill plat
     if (supirSelect) {
@@ -350,6 +391,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
-@endsection
 
 

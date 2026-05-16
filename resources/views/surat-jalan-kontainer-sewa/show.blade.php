@@ -83,6 +83,7 @@
                 <tr><td class="py-1.5 text-gray-500">Supir</td><td class="py-1.5 font-medium">{{ $suratJalan->supir ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">No. Plat</td><td class="py-1.5 font-medium">{{ $suratJalan->no_plat ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Antar Lokasi</td><td class="py-1.5 font-medium">{{ $suratJalan->antar_lokasi ? 'Ya' : 'Tidak' }}</td></tr>
+                <tr><td class="py-1.5 text-gray-500">Tujuan</td><td class="py-1.5 font-medium">{{ $suratJalan->tujuan ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Nominal Uang Jalan</td><td class="py-1.5 font-medium">Rp {{ number_format($suratJalan->nominal_uang_jalan, 0, ',', '.') }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500 border-t pt-2 mt-2">Nomor Kontainer</td><td class="py-1.5 font-bold text-cyan-700 border-t pt-2 mt-2">{{ $suratJalan->nomor_kontainer }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Ukuran / Tipe</td><td class="py-1.5 font-medium">{{ $suratJalan->ukuran ?? '-' }} / {{ $suratJalan->tipe_kontainer ?? '-' }}</td></tr>

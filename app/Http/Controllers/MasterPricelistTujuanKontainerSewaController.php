@@ -8,99 +8,96 @@ use Illuminate\Support\Facades\Auth;
 
 class MasterPricelistTujuanKontainerSewaController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request)
     {
-        $user = Auth::user();
-        if (!$user->can('master-pricelist-tujuan-kontainer-sewa-view')) {
-            abort(403, 'Unauthorized');
-        }
-
         $query = MasterPricelistTujuanKontainerSewa::query();
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('tujuan', 'like', "%{$search}%");
+            $query->where('tujuan', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%");
         }
 
-        $pricelists = $query->latest()->paginate(15)->appends($request->query());
+        $pricelists = $query->orderBy('tujuan')->paginate(20);
 
         return view('master-pricelist-tujuan-kontainer-sewa.index', compact('pricelists'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        $user = Auth::user();
-        if (!$user->can('master-pricelist-tujuan-kontainer-sewa-create')) {
-            abort(403, 'Unauthorized');
-        }
-
         return view('master-pricelist-tujuan-kontainer-sewa.create');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        $user = Auth::user();
-        if (!$user->can('master-pricelist-tujuan-kontainer-sewa-create')) {
-            abort(403, 'Unauthorized');
-        }
-
-        $validated = $request->validate([
+        $request->validate([
             'tujuan' => 'required|string|max:255',
             'ongkos_truk_20ft' => 'required|numeric|min:0',
             'ongkos_truk_40ft' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        MasterPricelistTujuanKontainerSewa::create($validated);
+        MasterPricelistTujuanKontainerSewa::create($request->all());
 
         return redirect()->route('master-pricelist-tujuan-kontainer-sewa.index')
-            ->with('success', 'Pricelist tujuan berhasil ditambahkan');
+            ->with('success', 'Tujuan Kontainer Sewa berhasil ditambahkan.');
     }
 
-    public function edit(MasterPricelistTujuanKontainerSewa $pricelist)
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
     {
-        $user = Auth::user();
-        if (!$user->can('master-pricelist-tujuan-kontainer-sewa-update')) {
-            abort(403, 'Unauthorized');
-        }
-
-        return view('master-pricelist-tujuan-kontainer-sewa.edit', [
-            'pricelist' => $pricelist
-        ]);
+        $pricelist = MasterPricelistTujuanKontainerSewa::findOrFail($id);
+        return view('master-pricelist-tujuan-kontainer-sewa.show', compact('pricelist'));
     }
 
-    public function update(Request $request, MasterPricelistTujuanKontainerSewa $pricelist)
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
     {
-        $user = Auth::user();
-        if (!$user->can('master-pricelist-tujuan-kontainer-sewa-update')) {
-            abort(403, 'Unauthorized');
-        }
+        $pricelist = MasterPricelistTujuanKontainerSewa::findOrFail($id);
+        return view('master-pricelist-tujuan-kontainer-sewa.edit', compact('pricelist'));
+    }
 
-        $validated = $request->validate([
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
             'tujuan' => 'required|string|max:255',
             'ongkos_truk_20ft' => 'required|numeric|min:0',
             'ongkos_truk_40ft' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        $pricelist->update($validated);
+        $pricelist = MasterPricelistTujuanKontainerSewa::findOrFail($id);
+        $pricelist->update($request->all());
 
         return redirect()->route('master-pricelist-tujuan-kontainer-sewa.index')
-            ->with('success', 'Pricelist tujuan berhasil diperbarui');
+            ->with('success', 'Tujuan Kontainer Sewa berhasil diperbarui.');
     }
 
-    public function destroy(MasterPricelistTujuanKontainerSewa $pricelist)
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
     {
-        $user = Auth::user();
-        if (!$user->can('master-pricelist-tujuan-kontainer-sewa-delete')) {
-            abort(403, 'Unauthorized');
-        }
-
+        $pricelist = MasterPricelistTujuanKontainerSewa::findOrFail($id);
         $pricelist->delete();
 
         return redirect()->route('master-pricelist-tujuan-kontainer-sewa.index')
-            ->with('success', 'Pricelist tujuan berhasil dihapus');
+            ->with('success', 'Tujuan Kontainer Sewa berhasil dihapus.');
     }
 }

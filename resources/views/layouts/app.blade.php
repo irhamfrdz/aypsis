@@ -814,7 +814,7 @@
                                 @endif
                                 @if($user && $user->can('master-pricelist-tujuan-kontainer-sewa-view'))
                                     <a href="{{ route('master-pricelist-tujuan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master-pricelist-tujuan-kontainer-sewa.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Pricelist Tujuan KS</span>
+                                        <span class="text-xs">Tujuan Kontainer Sewa</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pricelist-lembur-view'))
@@ -1731,6 +1731,13 @@
                         @if($user && ($user->can('surat-jalan-kontainer-sewa-view') || $user->can('kontainer-sewa-final-view') || $user->can('tagihan-kontainer-sewa-index')))
                             <a href="{{ route('surat-jalan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Surat Jalan Kontainer Sewa</span>
+                            </a>
+                        @endif
+
+                        {{-- Tujuan Kontainer Sewa --}}
+                        @if($user && $user->can('master-pricelist-tujuan-kontainer-sewa-view'))
+                            <a href="{{ route('master-pricelist-tujuan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('master-pricelist-tujuan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Tujuan Kontainer Sewa</span>
                             </a>
                         @endif
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalanKontainerSewa;
 use App\Models\SuratJalanKontainerSewaItem;
+use App\Models\MasterPricelistTujuanKontainerSewa;
 use App\Models\Kontainer;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
@@ -99,10 +100,15 @@ class SuratJalanKontainerSewaController extends Controller
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'plat']);
 
+        // Get tujuan list
+        $tujuans = MasterPricelistTujuanKontainerSewa::where('status', 'aktif')
+            ->orderBy('tujuan')
+            ->get();
+
         // Default empty for manual entry
         $nomorSuratJalan = '';
 
-        return view('surat-jalan-kontainer-sewa.create', compact('tipe', 'kontainers', 'vendors', 'nomorSuratJalan', 'supirs'));
+        return view('surat-jalan-kontainer-sewa.create', compact('tipe', 'kontainers', 'vendors', 'nomorSuratJalan', 'supirs', 'tujuans'));
     }
 
     /**
@@ -149,6 +155,7 @@ class SuratJalanKontainerSewaController extends Controller
                 'catatan_kondisi' => $request->catatan_kondisi,
                 'lokasi_pengambilan' => $request->lokasi_pengambilan,
                 'lokasi_pengembalian' => $request->lokasi_pengembalian,
+                'tujuan' => $request->tujuan,
                 'keterangan' => $request->keterangan,
                 'status' => 'aktif',
                 'created_by' => Auth::id(),
@@ -171,6 +178,95 @@ class SuratJalanKontainerSewaController extends Controller
             DB::rollBack();
             Log::error('Error creating SJ Kontainer Sewa: ' . $e->getMessage());
             return back()->withInput()->with('error', 'Gagal membuat surat jalan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Show the form for editing the specified surat jalan.
+     */
+    public function edit($id)
+    {
+        $suratJalan = SuratJalanKontainerSewa::findOrFail($id);
+        $tipe = $suratJalan->tipe;
+
+        // Get available kontainers
+        $kontainers = Kontainer::whereNotNull('vendor')
+            ->where('vendor', '!=', '')
+            ->orderBy('vendor')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+
+        // Get vendor list
+        $vendors = Kontainer::distinct()
+            ->whereNotNull('vendor')
+            ->where('vendor', '!=', '')
+            ->pluck('vendor')
+            ->sort()
+            ->values();
+
+        // Get supir list from karyawan table
+        $supirs = Karyawan::where('divisi', 'supir')
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'plat']);
+
+        // Get tujuan list
+        $tujuans = MasterPricelistTujuanKontainerSewa::where('status', 'aktif')
+            ->orderBy('tujuan')
+            ->get();
+
+        return view('surat-jalan-kontainer-sewa.edit', compact('suratJalan', 'tipe', 'kontainers', 'vendors', 'supirs', 'tujuans'));
+    }
+
+    /**
+     * Update the specified surat jalan in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'tipe' => 'required|in:pengambilan,pengembalian',
+            'tanggal' => 'required|date',
+            'vendor' => 'required|string',
+            'supir' => 'required|string',
+            'no_plat' => 'nullable|string',
+            'nomor_kontainer' => 'required|string',
+            'nominal_uang_jalan' => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $suratJalan = SuratJalanKontainerSewa::findOrFail($id);
+            $kontainer = Kontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)->first();
+
+            $suratJalan->update([
+                'tipe' => $request->tipe,
+                'tanggal' => $request->tanggal,
+                'vendor' => $request->vendor,
+                'supir' => $request->supir,
+                'no_plat' => $request->no_plat,
+                'antar_lokasi' => $request->has('antar_lokasi') ? 1 : 0,
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'ukuran' => $kontainer->ukuran ?? $suratJalan->ukuran,
+                'tipe_kontainer' => $kontainer->tipe_kontainer ?? $suratJalan->tipe_kontainer,
+                'vendor_item' => $kontainer->vendor ?? $suratJalan->vendor_item,
+                'kondisi' => $request->kondisi,
+                'catatan_kondisi' => $request->catatan_kondisi,
+                'lokasi_pengambilan' => $request->lokasi_pengambilan,
+                'lokasi_pengembalian' => $request->lokasi_pengembalian,
+                'tujuan' => $request->tujuan,
+                'nominal_uang_jalan' => $request->nominal_uang_jalan,
+                'keterangan' => $request->keterangan,
+                'updated_by' => Auth::id(),
+            ]);
+
+            DB::commit();
+            return redirect()->route('surat-jalan-kontainer-sewa.show', $suratJalan->id)
+                             ->with('success', "Surat Jalan {$suratJalan->nomor_surat_jalan} berhasil diperbarui.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating SJ Kontainer Sewa: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal memperbarui surat jalan: ' . $e->getMessage());
         }
     }
 
