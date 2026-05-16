@@ -67,8 +67,8 @@
         <tr>
             <td>Vendor</td>
             <td>: {{ $suratJalan->vendor ?? '-' }}</td>
-            <td style="font-weight: bold;">Jumlah</td>
-            <td>: {{ $suratJalan->items->count() }} unit</td>
+            <td style="font-weight: bold;">Kontainer</td>
+            <td>: {{ $suratJalan->nomor_kontainer }}</td>
         </tr>
         <tr>
             <td>Supir</td>
@@ -109,7 +109,7 @@
             <tr>
                 <th style="width: 35px;">No</th>
                 <th>Nomor Kontainer</th>
-                <th>Vendor</th>
+                <th>Vendor Kontainer</th>
                 <th>Ukuran</th>
                 <th>Tipe</th>
                 <th>Kondisi</th>
@@ -117,17 +117,15 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($suratJalan->items as $i => $item)
             <tr>
-                <td class="center">{{ $i + 1 }}</td>
-                <td>{{ $item->nomor_kontainer }}</td>
-                <td>{{ $item->vendor ?? '-' }}</td>
-                <td class="center">{{ $item->ukuran ?? '-' }}</td>
-                <td class="center">{{ $item->tipe_kontainer ?? '-' }}</td>
-                <td class="center">{{ $item->kondisi_label }}</td>
-                <td>{{ $item->catatan_kondisi ?? '-' }}</td>
+                <td class="center">1</td>
+                <td>{{ $suratJalan->nomor_kontainer }}</td>
+                <td>{{ $suratJalan->vendor_item ?? '-' }}</td>
+                <td class="center">{{ $suratJalan->ukuran ?? '-' }}</td>
+                <td class="center">{{ $suratJalan->tipe_kontainer ?? '-' }}</td>
+                <td class="center">{{ match($suratJalan->kondisi) { 'baik' => 'BAIK', 'rusak_ringan' => 'RUSAK RINGAN', 'rusak_berat' => 'RUSAK BERAT', default => strtoupper($suratJalan->kondisi) } }}</td>
+                <td>{{ $suratJalan->catatan_kondisi ?? '-' }}</td>
             </tr>
-            @endforeach
         </tbody>
     </table>
 

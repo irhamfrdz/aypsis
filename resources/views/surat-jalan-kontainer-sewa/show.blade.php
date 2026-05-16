@@ -84,6 +84,14 @@
                 <tr><td class="py-1.5 text-gray-500">No. Plat</td><td class="py-1.5 font-medium">{{ $suratJalan->no_plat ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Antar Lokasi</td><td class="py-1.5 font-medium">{{ $suratJalan->antar_lokasi ? 'Ya' : 'Tidak' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Nominal Uang Jalan</td><td class="py-1.5 font-medium">Rp {{ number_format($suratJalan->nominal_uang_jalan, 0, ',', '.') }}</td></tr>
+                <tr><td class="py-1.5 text-gray-500 border-t pt-2 mt-2">Nomor Kontainer</td><td class="py-1.5 font-bold text-cyan-700 border-t pt-2 mt-2">{{ $suratJalan->nomor_kontainer }}</td></tr>
+                <tr><td class="py-1.5 text-gray-500">Ukuran / Tipe</td><td class="py-1.5 font-medium">{{ $suratJalan->ukuran ?? '-' }} / {{ $suratJalan->tipe_kontainer ?? '-' }}</td></tr>
+                <tr><td class="py-1.5 text-gray-500">Kondisi</td><td class="py-1.5 font-medium">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $suratJalan->kondisi === 'baik' ? 'bg-green-100 text-green-700' : ($suratJalan->kondisi === 'rusak_ringan' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
+                        {{ match($suratJalan->kondisi) { 'baik' => 'Baik', 'rusak_ringan' => 'Rusak Ringan', 'rusak_berat' => 'Rusak Berat', default => ucfirst($suratJalan->kondisi) } }}
+                    </span>
+                </td></tr>
+                <tr><td class="py-1.5 text-gray-500">Catatan Kondisi</td><td class="py-1.5 font-medium">{{ $suratJalan->catatan_kondisi ?? '-' }}</td></tr>
             </table>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -92,46 +100,8 @@
                 <tr><td class="py-1.5 text-gray-500 w-[140px]">Lokasi Ambil</td><td class="py-1.5 font-medium">{{ $suratJalan->lokasi_pengambilan ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Lokasi Kembali</td><td class="py-1.5 font-medium">{{ $suratJalan->lokasi_pengembalian ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Keterangan</td><td class="py-1.5 font-medium">{{ $suratJalan->keterangan ?? '-' }}</td></tr>
+                <tr><td class="py-1.5 text-gray-500">Vendor Item</td><td class="py-1.5 font-medium">{{ $suratJalan->vendor_item ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Dibuat oleh</td><td class="py-1.5 font-medium">{{ $suratJalan->createdByUser->name ?? '-' }}</td></tr>
-            </table>
-        </div>
-    </div>
-
-    {{-- Kontainer List --}}
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-4 border-b border-gray-200">
-            <h2 class="text-sm font-semibold text-gray-700"><i class="fas fa-boxes text-cyan-600 mr-1"></i> Daftar Kontainer ({{ $suratJalan->items->count() }} unit)</h2>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor Kontainer</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ukuran</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kondisi</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @foreach($suratJalan->items as $i => $item)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ $i + 1 }}</td>
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $item->nomor_kontainer }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ $item->ukuran ?? '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ $item->tipe_kontainer ?? '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ $item->vendor ?? '-' }}</td>
-                        <td class="px-4 py-3">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $item->kondisi_badge }}">
-                                {{ $item->kondisi_label }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-gray-600">{{ $item->catatan_kondisi ?? '-' }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
             </table>
         </div>
     </div>

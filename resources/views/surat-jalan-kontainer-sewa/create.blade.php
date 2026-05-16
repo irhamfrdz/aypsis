@@ -108,54 +108,33 @@
                         <input type="text" name="lokasi_pengembalian" value="{{ old('lokasi_pengembalian') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Lokasi pengembalian">
                     @endif
                 </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Kontainer <span class="text-red-500">*</span></label>
+                    <select name="nomor_kontainer" id="kontainer-select" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" required>
+                        <option value="">-- Pilih Kontainer --</option>
+                        @foreach($kontainers as $k)
+                            <option value="{{ $k->nomor_seri_gabungan }}" {{ old('nomor_kontainer') == $k->nomor_seri_gabungan ? 'selected' : '' }}>
+                                {{ $k->nomor_seri_gabungan }} ({{ $k->vendor }} - {{ $k->ukuran }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Kondisi Kontainer</label>
+                    <select name="kondisi" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500">
+                        <option value="baik" {{ old('kondisi') == 'baik' ? 'selected' : '' }}>Baik</option>
+                        <option value="rusak_ringan" {{ old('kondisi') == 'rusak_ringan' ? 'selected' : '' }}>Rusak Ringan</option>
+                        <option value="rusak_berat" {{ old('kondisi') == 'rusak_berat' ? 'selected' : '' }}>Rusak Berat</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2 lg:col-span-1">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Catatan Kondisi</label>
+                    <input type="text" name="catatan_kondisi" value="{{ old('catatan_kondisi') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Catatan kondisi kontainer...">
+                </div>
             </div>
             <div class="mt-4">
                 <label class="block text-xs font-medium text-gray-600 mb-1">Keterangan</label>
                 <textarea name="keterangan" rows="2" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Keterangan tambahan...">{{ old('keterangan') }}</textarea>
-            </div>
-        </div>
-
-        {{-- Pilih Kontainer --}}
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="flex items-center justify-between mb-4 pb-2 border-b">
-                <h2 class="text-sm font-semibold text-gray-700"><i class="fas fa-boxes text-cyan-600 mr-1"></i> Pilih Kontainer</h2>
-                <button type="button" id="btn-add-row" class="px-3 py-1.5 bg-cyan-600 text-white text-xs rounded-md hover:bg-cyan-700 transition">
-                    <i class="fas fa-plus mr-1"></i> Tambah Baris
-                </button>
-            </div>
-
-            <div id="kontainer-rows" class="space-y-3">
-                {{-- Template row will be cloned here via JS --}}
-                <div class="kontainer-row flex flex-wrap items-start gap-3 p-3 bg-gray-50 rounded-md border border-gray-200">
-                    <div class="flex-1 min-w-[200px]">
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Kontainer <span class="text-red-500">*</span></label>
-                        <select name="kontainer_ids[]" class="kontainer-select w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" required>
-                            <option value="">-- Pilih --</option>
-                            @foreach($kontainers as $k)
-                                <option value="{{ $k->nomor_seri_gabungan }}" data-ukuran="{{ $k->ukuran }}" data-tipe="{{ $k->tipe_kontainer }}" data-vendor="{{ $k->vendor }}">
-                                    {{ $k->nomor_seri_gabungan }} ({{ $k->vendor }} - {{ $k->ukuran }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="w-[120px]">
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Kondisi</label>
-                        <select name="kondisi[]" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500">
-                            <option value="baik">Baik</option>
-                            <option value="rusak_ringan">Rusak Ringan</option>
-                            <option value="rusak_berat">Rusak Berat</option>
-                        </select>
-                    </div>
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Catatan Kondisi</label>
-                        <input type="text" name="catatan_kondisi[]" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Opsional...">
-                    </div>
-                    <div class="flex items-end">
-                        <button type="button" class="btn-remove-row px-2 py-2 text-red-500 hover:bg-red-50 rounded transition mt-5" title="Hapus baris" style="display:none;">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -353,10 +332,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize dropdowns
     const supirSelect = document.getElementById('supir-select');
     const vendorSelect = document.getElementById('vendor-select');
+    const kontainerSelect = document.getElementById('kontainer-select');
     const noPlatInput = document.querySelector('input[name="no_plat"]');
 
     if (supirSelect) createSearchableSelect(supirSelect, '-- Pilih Supir --');
     if (vendorSelect) createSearchableSelect(vendorSelect, '-- Pilih Vendor --');
+    if (kontainerSelect) createSearchableSelect(kontainerSelect, '-- Pilih Kontainer --');
 
     // Handle supir change for auto-fill plat
     if (supirSelect) {
@@ -366,72 +347,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (noPlatInput) noPlatInput.value = plat || '';
         });
     }
-
-    // Container Rows Logic
-    const rowsContainer = document.getElementById('kontainer-rows');
-    const btnAdd = document.getElementById('btn-add-row');
-
-    function initKontainerSearch(row) {
-        const select = row.querySelector('.kontainer-select');
-        if (select) createSearchableSelect(select, '-- Pilih Kontainer --');
-    }
-
-    // Init existing
-    rowsContainer.querySelectorAll('.kontainer-row').forEach(initKontainerSearch);
-
-    function updateRemoveButtons() {
-        const rows = rowsContainer.querySelectorAll('.kontainer-row');
-        rows.forEach((row) => {
-            const btn = row.querySelector('.btn-remove-row');
-            if (btn) btn.style.display = rows.length > 1 ? '' : 'none';
-        });
-    }
-
-    btnAdd.addEventListener('click', function() {
-        // We need a clean clone. Since we've modified the DOM with wrappers, 
-        // cloning the first row might clone the wrappers too.
-        // It's safer to clone the select element and rebuild or find the original row template.
-        
-        const firstRow = rowsContainer.querySelector('.kontainer-row');
-        const newRow = firstRow.cloneNode(true);
-        
-        // Remove the custom wrappers in the clone and restore original select
-        newRow.querySelectorAll('.vanilla-search-wrapper').forEach(wrapper => {
-            const select = wrapper.querySelector('select');
-            if (select) {
-                select.style.display = '';
-                wrapper.parentNode.insertBefore(select, wrapper);
-            }
-            wrapper.remove();
-        });
-
-        // Reset values
-        newRow.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
-        newRow.querySelectorAll('input').forEach(i => i.value = '');
-        
-        rowsContainer.appendChild(newRow);
-        
-        // Init the new searchable select
-        initKontainerSearch(newRow);
-
-        // Attach remove handler
-        newRow.querySelector('.btn-remove-row').addEventListener('click', function() {
-            newRow.remove();
-            updateRemoveButtons();
-        });
-
-        updateRemoveButtons();
-    });
-
-    // Attach remove handlers to existing rows
-    rowsContainer.querySelectorAll('.btn-remove-row').forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.closest('.kontainer-row').remove();
-            updateRemoveButtons();
-        });
-    });
-
-    updateRemoveButtons();
 });
 </script>
 @endpush

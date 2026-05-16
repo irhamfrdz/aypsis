@@ -19,7 +19,7 @@ class SuratJalanKontainerSewaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SuratJalanKontainerSewa::with('items')->withCount('items');
+        $query = SuratJalanKontainerSewa::query();
 
         // Search
         if ($request->filled('search')) {
@@ -29,9 +29,7 @@ class SuratJalanKontainerSewaController extends Controller
                   ->orWhere('vendor', 'like', "%{$search}%")
                   ->orWhere('supir', 'like', "%{$search}%")
                   ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhereHas('items', function ($q2) use ($search) {
-                      $q2->where('nomor_kontainer', 'like', "%{$search}%");
-                  });
+                  ->orWhere('nomor_kontainer', 'like', "%{$search}%");
             });
         }
 
@@ -122,17 +120,17 @@ class SuratJalanKontainerSewaController extends Controller
             'lokasi_pengambilan' => 'nullable|string|max:255',
             'lokasi_pengembalian' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string|max:1000',
-            'kontainer_ids' => 'required|array|min:1',
-            'kontainer_ids.*' => 'required|string',
-            'kondisi' => 'nullable|array',
-            'kondisi.*' => 'nullable|in:baik,rusak_ringan,rusak_berat',
-            'catatan_kondisi' => 'nullable|array',
-            'catatan_kondisi.*' => 'nullable|string|max:500',
+            'nomor_kontainer' => 'required|string|max:100',
+            'kondisi' => 'nullable|in:baik,rusak_ringan,rusak_berat',
+            'catatan_kondisi' => 'nullable|string|max:500',
         ]);
 
         DB::beginTransaction();
         try {
             $nomorSuratJalan = $request->nomor_surat_jalan;
+            
+            // Lookup kontainer info
+            $kontainer = Kontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)->first();
 
             $suratJalan = SuratJalanKontainerSewa::create([
                 'nomor_surat_jalan' => $nomorSuratJalan,
@@ -143,6 +141,12 @@ class SuratJalanKontainerSewaController extends Controller
                 'no_plat' => $request->no_plat,
                 'antar_lokasi' => $request->boolean('antar_lokasi'),
                 'nominal_uang_jalan' => $request->nominal_uang_jalan ?? 0,
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'ukuran' => $kontainer->ukuran ?? null,
+                'tipe_kontainer' => $kontainer->tipe_kontainer ?? null,
+                'vendor_item' => $kontainer->vendor ?? null,
+                'kondisi' => $request->kondisi,
+                'catatan_kondisi' => $request->catatan_kondisi,
                 'lokasi_pengambilan' => $request->lokasi_pengambilan,
                 'lokasi_pengembalian' => $request->lokasi_pengembalian,
                 'keterangan' => $request->keterangan,
@@ -151,32 +155,12 @@ class SuratJalanKontainerSewaController extends Controller
                 'updated_by' => Auth::id(),
             ]);
 
-            // Create items
-            foreach ($request->kontainer_ids as $index => $nomorKontainer) {
-                $nomorKontainer = trim($nomorKontainer);
-                if (empty($nomorKontainer)) continue;
-
-                // Lookup kontainer info
-                $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-
-                SuratJalanKontainerSewaItem::create([
-                    'surat_jalan_kontainer_sewa_id' => $suratJalan->id,
-                    'nomor_kontainer' => $nomorKontainer,
-                    'ukuran' => $kontainer->ukuran ?? null,
-                    'tipe_kontainer' => $kontainer->tipe_kontainer ?? null,
-                    'vendor' => $kontainer->vendor ?? $request->vendor,
-                    'kondisi' => $request->kondisi[$index] ?? 'baik',
-                    'catatan_kondisi' => $request->catatan_kondisi[$index] ?? null,
-                ]);
-            }
-
             DB::commit();
-
             Log::info('Surat Jalan Kontainer Sewa created', [
                 'id' => $suratJalan->id,
                 'nomor' => $nomorSuratJalan,
                 'tipe' => $request->tipe,
-                'jumlah_kontainer' => count($request->kontainer_ids),
+                'kontainer' => $request->nomor_kontainer,
                 'created_by' => Auth::id(),
             ]);
 
@@ -195,7 +179,7 @@ class SuratJalanKontainerSewaController extends Controller
      */
     public function show($id)
     {
-        $suratJalan = SuratJalanKontainerSewa::with('items', 'createdByUser')->findOrFail($id);
+        $suratJalan = SuratJalanKontainerSewa::with('createdByUser')->findOrFail($id);
         return view('surat-jalan-kontainer-sewa.show', compact('suratJalan'));
     }
 
@@ -204,7 +188,7 @@ class SuratJalanKontainerSewaController extends Controller
      */
     public function print($id)
     {
-        $suratJalan = SuratJalanKontainerSewa::with('items')->findOrFail($id);
+        $suratJalan = SuratJalanKontainerSewa::findOrFail($id);
         return view('surat-jalan-kontainer-sewa.print', compact('suratJalan'));
     }
 
