@@ -267,5 +267,42 @@ class MasterPengirimPenerimaController extends Controller
         return redirect()->route('master-pengirim-penerima.index')
             ->with('success', 'Penerima berhasil ditambahkan!');
     }
+
+    /**
+     * Show the form for creating from Tanda Terima form (popup mode)
+     */
+    public function createForTandaTerima(Request $request)
+    {
+        $kodeOtomatis = MasterPengirimPenerima::generateKode();
+        return view('master-pengirim-penerima.create-for-tanda-terima', compact('kodeOtomatis'));
+    }
+
+    /**
+     * Store for Tanda Terima form (popup mode)
+     */
+    public function storeForTandaTerima(Request $request)
+    {
+        $validated = $request->validate([
+            'kode' => 'required|string|max:50|unique:master_pengirim_penerima,kode',
+            'nama' => 'required|string|max:255',
+            'alamat' => 'nullable|string',
+            'npwp' => 'nullable|string|max:20',
+        ]);
+
+        $validated['status'] = 'active';
+        $validated['created_by'] = Auth::id();
+        
+        $penerima = MasterPengirimPenerima::create($validated);
+
+        if ($request->has('popup')) {
+            return redirect()->back()
+                           ->with('success', 'Penerima berhasil ditambahkan')
+                           ->with('popup', true)
+                           ->with('penerima_nama', $penerima->nama)
+                           ->with('penerima_alamat', $penerima->alamat);
+        }
+
+        return redirect()->back()->with('success', 'Penerima berhasil ditambahkan');
+    }
 }
 
