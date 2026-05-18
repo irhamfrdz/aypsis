@@ -2886,6 +2886,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Tanda Terima Surat Jalan Kontainer Sewa --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="font-bold text-cyan-600">Tanda Terima SJ Kontainer Sewa</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-kontainer-sewa][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['view']) && $userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-kontainer-sewa][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['create']) && $userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-kontainer-sewa][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['update']) && $userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-kontainer-sewa][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['delete']) && $userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Tagihan Supir Vendor --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
