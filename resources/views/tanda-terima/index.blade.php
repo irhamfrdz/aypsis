@@ -452,6 +452,12 @@
                         @endforelse
                         @elseif(($mode ?? request('mode')) === 'with_tanda_terima')
                         @forelse($suratJalansWithTandaTerima as $item)
+                        @php
+                            $existsInProspek = \App\Models\Prospek::where(function($q) use ($item) {
+                                $q->where('no_surat_jalan', $item->no_surat_jalan)
+                                  ->orWhere('no_surat_jalan', 'like', $item->no_surat_jalan . '-%');
+                            })->exists();
+                        @endphp
                         <tr class="hover:bg-gray-50 transition duration-150">
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <input type="checkbox"
@@ -505,7 +511,7 @@
                             </td>
                             @if(auth()->user()->username === 'kiky')
                             <td class="px-3 py-2 whitespace-nowrap text-center">
-                                @if(\App\Models\Prospek::where('tanda_terima_id', $item->tanda_terima_id)->exists())
+                                @if($existsInProspek)
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         Ada di Prospek
                                     </span>
@@ -550,6 +556,12 @@
                         @endforelse
                         @else
                         @forelse($tandaTerimas as $tandaTerima)
+                        @php
+                            $existsInProspek = \App\Models\Prospek::where(function($q) use ($tandaTerima) {
+                                $q->where('no_surat_jalan', $tandaTerima->no_surat_jalan)
+                                  ->orWhere('no_surat_jalan', 'like', $tandaTerima->no_surat_jalan . '-%');
+                            })->exists();
+                        @endphp
                         <tr class="hover:bg-gray-50 transition duration-150">
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <input type="checkbox"
@@ -690,7 +702,7 @@
                             </td>
                             @if(auth()->user()->username === 'kiky')
                             <td class="px-3 py-2 whitespace-nowrap text-center">
-                                @if(\App\Models\Prospek::where('tanda_terima_id', $tandaTerima->id)->exists())
+                                @if($existsInProspek)
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         Ada di Prospek
                                     </span>
@@ -713,12 +725,21 @@
                                        title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </a>
+                                    @if($existsInProspek)
+                                    <button type="button"
+                                            class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed"
+                                            title="Sudah ada di Prospek"
+                                            disabled>
+                                        <i class="fas fa-ship text-xs"></i>
+                                    </button>
+                                    @else
                                     <button type="button"
                                             onclick="addToProspek('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}', '{{ $tandaTerima->no_kontainer }}')"
                                             class="inline-flex items-center px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded transition duration-150"
                                             title="Masukan ke Prospek">
                                         <i class="fas fa-ship text-xs"></i>
                                     </button>
+                                    @endif
                                     
                                     <!-- Dropdown for additional actions -->
                                     <div class="relative inline-block text-left">
@@ -731,11 +752,19 @@
                                         <div id="dropdown-{{ $tandaTerima->id }}" 
                                              class="hidden absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                             <div class="py-1">
+                                                @if($existsInProspek)
+                                                <button type="button"
+                                                        class="block w-full px-4 py-2 text-left text-xs text-gray-400 cursor-not-allowed w-full"
+                                                        disabled>
+                                                    <i class="fas fa-ship mr-2"></i>Ke Prospek (Sudah Ada)
+                                                </button>
+                                                @else
                                                 <button type="button"
                                                         onclick="addToProspek('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}', '{{ $tandaTerima->no_kontainer }}')"
-                                                        class="block w-full px-4 py-2 text-left text-xs text-emerald-600 hover:bg-emerald-50">
+                                                        class="block w-full px-4 py-2 text-left text-xs text-emerald-600 hover:bg-emerald-50 w-full">
                                                     <i class="fas fa-ship mr-2"></i>Ke Prospek
                                                 </button>
+                                                @endif
                                                 <button type="button"
                                                         onclick="openChangeContainerModal('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}', '{{ $tandaTerima->no_kontainer }}', '{{ $tandaTerima->no_seal }}')"
                                                         class="block w-full px-4 py-2 text-left text-xs text-blue-600 hover:bg-blue-50">
