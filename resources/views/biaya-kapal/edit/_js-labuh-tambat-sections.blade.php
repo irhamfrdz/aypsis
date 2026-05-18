@@ -377,7 +377,6 @@
                     updateLabuhTambatPriceFromSelect(select);
                 }
             });
-            addTypeBtn.disabled = false;
         } else {
             options = '<option value="">Tidak ada type tersedia</option>';
             typeContainers.forEach(container => {
@@ -385,8 +384,8 @@
                 select.disabled = true;
                 select.innerHTML = options;
             });
-            addTypeBtn.disabled = true;
         }
+        addTypeBtn.disabled = false; // Always allow adding manual types once a vendor is selected
         typesList.dataset.options = options;
     }
 
