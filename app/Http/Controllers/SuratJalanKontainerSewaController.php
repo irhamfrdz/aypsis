@@ -129,6 +129,7 @@ class SuratJalanKontainerSewaController extends Controller
             'nomor_kontainer' => 'required|string|max:100',
             'kondisi' => 'nullable|in:baik,rusak_ringan,rusak_berat',
             'catatan_kondisi' => 'nullable|string|max:500',
+            'menggunakan_rit' => 'nullable|boolean',
         ]);
 
         DB::beginTransaction();
@@ -151,6 +152,7 @@ class SuratJalanKontainerSewaController extends Controller
                 'ukuran' => $kontainer->ukuran ?? null,
                 'tipe_kontainer' => $kontainer->tipe_kontainer ?? null,
                 'vendor_item' => $kontainer->vendor ?? null,
+                'menggunakan_rit' => $request->boolean('menggunakan_rit'),
                 'kondisi' => $request->kondisi,
                 'catatan_kondisi' => $request->catatan_kondisi,
                 'lokasi_pengambilan' => $request->lokasi_pengambilan,
@@ -230,6 +232,7 @@ class SuratJalanKontainerSewaController extends Controller
             'no_plat' => 'nullable|string',
             'nomor_kontainer' => 'required|string',
             'nominal_uang_jalan' => 'nullable|numeric|min:0',
+            'menggunakan_rit' => 'nullable|boolean',
         ]);
 
         try {
@@ -249,6 +252,7 @@ class SuratJalanKontainerSewaController extends Controller
                 'ukuran' => $kontainer->ukuran ?? $suratJalan->ukuran,
                 'tipe_kontainer' => $kontainer->tipe_kontainer ?? $suratJalan->tipe_kontainer,
                 'vendor_item' => $kontainer->vendor ?? $suratJalan->vendor_item,
+                'menggunakan_rit' => $request->boolean('menggunakan_rit'),
                 'kondisi' => $request->kondisi,
                 'catatan_kondisi' => $request->catatan_kondisi,
                 'lokasi_pengambilan' => $request->lokasi_pengambilan,

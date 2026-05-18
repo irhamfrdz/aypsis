@@ -86,6 +86,10 @@
             <td style="font-weight: bold;">Uang Jalan</td>
             <td colspan="3">: Rp {{ number_format($suratJalan->nominal_uang_jalan, 0, ',', '.') }}</td>
         </tr>
+        <tr>
+            <td style="font-weight: bold;">Status Rit</td>
+            <td colspan="3">: {{ $suratJalan->menggunakan_rit ? 'MENGGUNAKAN RIT' : 'TIDAK MENGGUNAKAN RIT' }}</td>
+        </tr>
         @if($suratJalan->lokasi_pengambilan)
         <tr>
             <td>Lokasi Pengambilan</td>

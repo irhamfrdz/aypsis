@@ -121,13 +121,20 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Kontainer <span class="text-red-500">*</span></label>
-                    <select name="nomor_kontainer" id="kontainer-select" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" required>
-                        <option value="">-- Pilih Kontainer --</option>
+                    <input type="text" name="nomor_kontainer" id="kontainer-input" list="kontainer-list" value="{{ old('nomor_kontainer') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Ketik atau pilih kontainer..." required autocomplete="off">
+                    <datalist id="kontainer-list">
                         @foreach($kontainers as $k)
-                            <option value="{{ $k->nomor_seri_gabungan }}" data-ukuran="{{ $k->ukuran }}" {{ old('nomor_kontainer') == $k->nomor_seri_gabungan ? 'selected' : '' }}>
-                                {{ $k->nomor_seri_gabungan }} ({{ $k->vendor }} - {{ $k->ukuran }})
+                            <option value="{{ $k->nomor_seri_gabungan }}" data-ukuran="{{ $k->ukuran }}">
+                                {{ $k->vendor }} - {{ $k->ukuran }}
                             </option>
                         @endforeach
+                    </datalist>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Status Rit</label>
+                    <select name="menggunakan_rit" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500">
+                        <option value="1" {{ old('menggunakan_rit', '1') == '1' ? 'selected' : '' }}>Menggunakan Rit</option>
+                        <option value="0" {{ old('menggunakan_rit') == '0' ? 'selected' : '' }}>Tidak Menggunakan Rit</option>
                     </select>
                 </div>
                 <div>
@@ -344,25 +351,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize dropdowns
     const supirSelect = document.getElementById('supir-select');
     const vendorSelect = document.getElementById('vendor-select');
-    const kontainerSelect = document.getElementById('kontainer-select');
+    const kontainerInput = document.getElementById('kontainer-input');
     const tujuanSelect = document.getElementById('tujuan-select');
     const noPlatInput = document.querySelector('input[name="no_plat"]');
     const nominalUangJalanInput = document.getElementById('nominal_uang_jalan');
 
     if (supirSelect) createSearchableSelect(supirSelect, '-- Pilih Supir --');
     if (vendorSelect) createSearchableSelect(vendorSelect, '-- Pilih Vendor --');
-    if (kontainerSelect) createSearchableSelect(kontainerSelect, '-- Pilih Kontainer --');
     if (tujuanSelect) createSearchableSelect(tujuanSelect, '-- Pilih Tujuan --');
 
     // Handle auto-fill money
     function updateUangJalan() {
-        if (!tujuanSelect || !kontainerSelect || !nominalUangJalanInput) return;
+        if (!tujuanSelect || !kontainerInput || !nominalUangJalanInput) return;
         
         const selectedTujuan = tujuanSelect.options[tujuanSelect.selectedIndex];
-        const selectedKontainer = kontainerSelect.options[kontainerSelect.selectedIndex];
+        const val = kontainerInput.value;
+        const list = document.getElementById('kontainer-list');
+        let ukuran = '';
         
-        if (selectedTujuan && selectedTujuan.value && selectedKontainer && selectedKontainer.value) {
-            const ukuran = selectedKontainer.getAttribute('data-ukuran');
+        if (list && val) {
+            for(let option of list.options) {
+                if(option.value === val) {
+                    ukuran = option.getAttribute('data-ukuran');
+                    break;
+                }
+            }
+        }
+        
+        if (selectedTujuan && selectedTujuan.value && val) {
             let amount = 0;
             
             if (ukuran && ukuran.includes('20')) {
@@ -378,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (tujuanSelect) tujuanSelect.addEventListener('change', updateUangJalan);
-    if (kontainerSelect) kontainerSelect.addEventListener('change', updateUangJalan);
+    if (kontainerInput) kontainerInput.addEventListener('input', updateUangJalan);
 
     // Handle supir change for auto-fill plat
     if (supirSelect) {

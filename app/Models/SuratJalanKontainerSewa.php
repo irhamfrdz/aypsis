@@ -21,6 +21,7 @@ class SuratJalanKontainerSewa extends Model
         'no_plat',
         'antar_lokasi',
         'tujuan',
+        'menggunakan_rit',
         'nominal_uang_jalan',
         'nomor_kontainer',
         'ukuran',
