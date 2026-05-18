@@ -34,6 +34,12 @@ class ProspekController extends Controller
                 abort(403, "Tidak memiliki akses ke halaman prospek");
             }
 
+            // Default to 'aktif' status if status parameter is not present in URL/request at all
+            if (!$request->has('status')) {
+                $request->merge(['status' => 'aktif']);
+                $request->query->add(['status' => 'aktif']);
+            }
+
             $query = Prospek::with(['createdBy', 'updatedBy', 'bls', 'suratJalan'])->orderBy('created_at', 'desc');
 
             // Filter berdasarkan status
@@ -150,6 +156,11 @@ class ProspekController extends Controller
     public function exportExcel(Request $request)
     {
         try {
+            // Default to 'aktif' status if status parameter is not present in URL/request at all
+            if (!$request->has('status')) {
+                $request->merge(['status' => 'aktif']);
+                $request->query->add(['status' => 'aktif']);
+            }
             $filters = $request->query();
             $prospekIds = $request->input('prospek_ids', []);
             $fileName = 'prospek_export_' . date('Ymd_His') . '.xlsx';
