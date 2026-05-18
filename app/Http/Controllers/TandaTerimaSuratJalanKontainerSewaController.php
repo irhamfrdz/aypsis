@@ -1,0 +1,368 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\TandaTerimaSuratJalanKontainerSewa;
+use App\Models\SuratJalanKontainerSewa;
+use App\Models\Karyawan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
+class TandaTerimaSuratJalanKontainerSewaController extends Controller
+{
+    /**
+     * Get next number for tanda terima kontainer sewa
+     */
+    public function getNextNumber()
+    {
+        try {
+            $now = now();
+            $bulan = $now->format('m');
+            $tahun = $now->format('y');
+            
+            // Get last tanda terima for current month/year
+            $lastTandaTerima = TandaTerimaSuratJalanKontainerSewa::whereYear('created_at', $now->year)
+                ->whereMonth('created_at', $now->month)
+                ->orderBy('id', 'desc')
+                ->first();
+            
+            $nextNumber = 1;
+            
+            if ($lastTandaTerima && $lastTandaTerima->nomor_tanda_terima) {
+                // Extract running number from format TTKSMMYYXXXXXX (14 characters)
+                $nomorTerima = $lastTandaTerima->nomor_tanda_terima;
+                if (strlen($nomorTerima) >= 14) {
+                    $lastRunningNumber = (int) substr($nomorTerima, -6);
+                    $nextNumber = $lastRunningNumber + 1;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'next_number' => $nextNumber,
+                'bulan' => $bulan,
+                'tahun' => $tahun
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'next_number' => 1
+            ], 500);
+        }
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $tipe = $request->get('tipe', 'surat_jalan'); // default: surat_jalan
+        
+        if ($tipe === 'tanda_terima') {
+            $query = TandaTerimaSuratJalanKontainerSewa::with(['suratJalanKontainerSewa']);
+
+            // Search filter
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_tanda_terima', 'LIKE', "%{$search}%")
+                      ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
+                      ->orWhere('nomor_surat_jalan', 'LIKE', "%{$search}%")
+                      ->orWhere('supir', 'LIKE', "%{$search}%");
+                });
+            }
+
+            // Filter Lembur/Nginap
+            if ($request->boolean('f_lembur')) {
+                $query->where('lembur', true);
+            }
+            if ($request->boolean('f_nginap')) {
+                $query->where('nginap', true);
+            }
+            if ($request->boolean('f_tidak_lembur_nginap')) {
+                $query->where('tidak_lembur_nginap', true);
+            }
+
+            $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
+            
+            // Get supirs for dropdown modal
+            $supirs = Karyawan::select('id', 'nama_panggilan', 'plat')
+                ->where('divisi', 'supir')
+                ->orderBy('nama_panggilan')
+                ->get();
+            
+            return view('tanda-terima-surat-jalan-kontainer-sewa.index', compact('tandaTerimas', 'supirs'));
+        } else {
+            // Pending Surat Jalan
+            $query = SuratJalanKontainerSewa::query();
+
+            // Search filter
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%")
+                      ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
+                      ->orWhere('supir', 'LIKE', "%{$search}%")
+                      ->orWhere('vendor', 'LIKE', "%{$search}%");
+                });
+            }
+
+            // Status filter
+            if ($request->filled('status')) {
+                if ($request->status === 'sudah') {
+                    $query->whereHas('items'); // wait, SuratJalanKontainerSewa has one-to-one or one-to-many? Let's check relation
+                }
+            }
+            
+            // For pending tab, show those status = 'aktif'
+            $query->where('status', 'aktif');
+
+            $suratJalans = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+            // Get supirs for dropdown modal
+            $supirs = Karyawan::select('id', 'nama_panggilan', 'plat')
+                ->where('divisi', 'supir')
+                ->orderBy('nama_panggilan')
+                ->get();
+
+            return view('tanda-terima-surat-jalan-kontainer-sewa.index', compact('suratJalans', 'supirs'));
+        }
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(Request $request)
+    {
+        $surat_jalan_id = $request->get('surat_jalan_id');
+        $selectedSj = null;
+
+        if ($surat_jalan_id) {
+            $selectedSj = SuratJalanKontainerSewa::findOrFail($surat_jalan_id);
+        }
+
+        // Get all active Surat Jalan Kontainer Sewa that don't have a Tanda Terima yet
+        $suratJalans = SuratJalanKontainerSewa::where('status', 'aktif')
+            ->orderBy('nomor_surat_jalan', 'desc')
+            ->get();
+
+        // Get supir list
+        $supirs = Karyawan::where('divisi', 'supir')
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'plat']);
+
+        return view('tanda-terima-surat-jalan-kontainer-sewa.create', compact('suratJalans', 'selectedSj', 'supirs'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_surat_jalan_kontainer_sewas,nomor_tanda_terima',
+            'tanggal_tanda_terima' => 'required|date',
+            'surat_jalan_kontainer_sewa_id' => 'required|exists:surat_jalan_kontainer_sewas,id',
+            'no_seal' => 'nullable|string|max:255',
+            'supir' => 'nullable|string|max:255',
+            'no_plat' => 'nullable|string|max:255',
+            'keterangan' => 'nullable|string',
+            'lembur' => 'nullable|boolean',
+            'nginap' => 'nullable|boolean',
+            'tidak_lembur_nginap' => 'nullable|boolean',
+        ]);
+
+        // Ensure at least one checkbox is selected
+        if (!$request->boolean('lembur') && !$request->boolean('nginap') && !$request->boolean('tidak_lembur_nginap')) {
+            return redirect()->back()->withInput()->withErrors([
+                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).'
+            ]);
+        }
+
+        DB::beginTransaction();
+        try {
+            $suratJalan = SuratJalanKontainerSewa::findOrFail($validated['surat_jalan_kontainer_sewa_id']);
+            
+            $validated['nomor_surat_jalan'] = $suratJalan->nomor_surat_jalan;
+            $validated['nomor_kontainer'] = $suratJalan->nomor_kontainer;
+            $validated['tipe_kontainer'] = $suratJalan->tipe_kontainer;
+            $validated['ukuran'] = $suratJalan->ukuran;
+            $validated['kegiatan'] = $suratJalan->tipe; // 'pengambilan' or 'pengembalian'
+            $validated['status'] = 'completed';
+            
+            $validated['lembur'] = $request->boolean('lembur');
+            $validated['nginap'] = $request->boolean('nginap');
+            $validated['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
+            $validated['created_by'] = Auth::id();
+            $validated['updated_by'] = Auth::id();
+
+            if (empty($validated['supir'])) {
+                $validated['supir'] = $suratJalan->supir;
+            }
+            if (empty($validated['no_plat'])) {
+                $validated['no_plat'] = $suratJalan->no_plat;
+            }
+
+            $tandaTerima = TandaTerimaSuratJalanKontainerSewa::create($validated);
+
+            // Update status of Surat Jalan Kontainer Sewa to selesai
+            $suratJalan->update([
+                'status' => 'selesai',
+                'supir' => $validated['supir'],
+                'no_plat' => $validated['no_plat'],
+                'updated_by' => Auth::id()
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('tanda-terima-surat-jalan-kontainer-sewa.index', ['tipe' => 'tanda_terima'])
+                ->with('success', "Tanda terima kontainer sewa {$tandaTerima->nomor_tanda_terima} berhasil dibuat!");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error storing Tanda Terima Surat Jalan Kontainer Sewa: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        $tandaTerima = TandaTerimaSuratJalanKontainerSewa::with(['suratJalanKontainerSewa'])->findOrFail($id);
+
+        return view('tanda-terima-surat-jalan-kontainer-sewa.show', compact('tandaTerima'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        $tandaTerima = TandaTerimaSuratJalanKontainerSewa::findOrFail($id);
+        
+        $suratJalans = SuratJalanKontainerSewa::orderBy('nomor_surat_jalan', 'desc')->get();
+            
+        $supirs = Karyawan::where('divisi', 'supir')
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'plat']);
+
+        return view('tanda-terima-surat-jalan-kontainer-sewa.edit', compact('tandaTerima', 'suratJalans', 'supirs'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_surat_jalan_kontainer_sewas,nomor_tanda_terima,' . $id,
+            'tanggal_tanda_terima' => 'required|date',
+            'no_seal' => 'nullable|string|max:255',
+            'supir' => 'nullable|string|max:255',
+            'no_plat' => 'nullable|string|max:255',
+            'keterangan' => 'nullable|string',
+            'lembur' => 'nullable|boolean',
+            'nginap' => 'nullable|boolean',
+            'tidak_lembur_nginap' => 'nullable|boolean',
+        ]);
+
+        // Ensure at least one checkbox is selected
+        if (!$request->boolean('lembur') && !$request->boolean('nginap') && !$request->boolean('tidak_lembur_nginap')) {
+            return redirect()->back()->withInput()->withErrors([
+                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).'
+            ]);
+        }
+
+        DB::beginTransaction();
+        try {
+            $tandaTerima = TandaTerimaSuratJalanKontainerSewa::findOrFail($id);
+            
+            $validated['lembur'] = $request->boolean('lembur');
+            $validated['nginap'] = $request->boolean('nginap');
+            $validated['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
+            $validated['updated_by'] = Auth::id();
+
+            $tandaTerima->update($validated);
+
+            // Sync with related Surat Jalan Kontainer Sewa
+            if ($tandaTerima->surat_jalan_kontainer_sewa_id) {
+                $suratJalan = SuratJalanKontainerSewa::find($tandaTerima->surat_jalan_kontainer_sewa_id);
+                if ($suratJalan) {
+                    $suratJalan->update([
+                        'supir' => $validated['supir'] ?: $suratJalan->supir,
+                        'no_plat' => $validated['no_plat'] ?: $suratJalan->no_plat,
+                        'updated_by' => Auth::id()
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('tanda-terima-surat-jalan-kontainer-sewa.index', ['tipe' => 'tanda_terima'])
+                ->with('success', 'Tanda terima kontainer sewa berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating Tanda Terima Surat Jalan Kontainer Sewa: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+        try {
+            $tandaTerima = TandaTerimaSuratJalanKontainerSewa::findOrFail($id);
+            
+            // Revert related Surat Jalan Kontainer Sewa status to 'aktif'
+            if ($tandaTerima->surat_jalan_kontainer_sewa_id) {
+                $suratJalan = SuratJalanKontainerSewa::find($tandaTerima->surat_jalan_kontainer_sewa_id);
+                if ($suratJalan) {
+                    $suratJalan->update([
+                        'status' => 'aktif',
+                        'updated_by' => Auth::id()
+                    ]);
+                }
+            }
+
+            $tandaTerima->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('tanda-terima-surat-jalan-kontainer-sewa.index', ['tipe' => 'tanda_terima'])
+                ->with('success', 'Tanda terima kontainer sewa berhasil dihapus dan status surat jalan dikembalikan ke Aktif!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error destroying Tanda Terima Surat Jalan Kontainer Sewa: ' . $e->getMessage());
+            return back()
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Print tanda terima
+     */
+    public function print($id)
+    {
+        $tandaTerima = TandaTerimaSuratJalanKontainerSewa::with(['suratJalanKontainerSewa'])->findOrFail($id);
+
+        return view('tanda-terima-surat-jalan-kontainer-sewa.print', compact('tandaTerima'));
+    }
+}
