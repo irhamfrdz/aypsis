@@ -147,7 +147,9 @@ class Prospek extends Model
 
         // Jika tidak ditemukan, cari berdasarkan no_surat_jalan
         if (!$tandaTerima && $this->no_surat_jalan) {
-            $tandaTerima = \App\Models\TandaTerima::where('no_surat_jalan', $this->no_surat_jalan)->first();
+            // Strip suffix if present (e.g. -1, -2) to find the base TandaTerima
+            $baseNoSuratJalan = preg_replace('/-\d+$/', '', $this->no_surat_jalan);
+            $tandaTerima = \App\Models\TandaTerima::where('no_surat_jalan', $baseNoSuratJalan)->first();
         }
 
         // Update jika ditemukan

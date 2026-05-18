@@ -1814,7 +1814,7 @@ class TandaTerimaController extends Controller
                     'tipe' => strtoupper($tandaTerima->tipe_kontainer ?: 'CARGO'),
                     'nomor_kontainer' => $noKontainer,
                     'no_seal' => $currentSeal,
-                    'no_surat_jalan' => $tandaTerima->no_surat_jalan,
+                    'no_surat_jalan' => $tandaTerima->no_surat_jalan ? (count($nomorKontainers) > 1 ? $tandaTerima->no_surat_jalan . '-' . ($index + 1) : $tandaTerima->no_surat_jalan) : null,
                     'surat_jalan_id' => $tandaTerima->surat_jalan_id,
                     'tanda_terima_id' => $tandaTerima->id,
                     'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan',
@@ -1885,7 +1885,7 @@ class TandaTerimaController extends Controller
                             'tipe' => strtoupper($tandaTerima->tipe_kontainer ?: 'CARGO'),
                             'nomor_kontainer' => $noKontainer,
                             'no_seal' => $currentSeal,
-                            'no_surat_jalan' => $tandaTerima->no_surat_jalan,
+                            'no_surat_jalan' => $tandaTerima->no_surat_jalan ? (count($nomorKontainers) > 1 ? $tandaTerima->no_surat_jalan . '-' . ($index + 1) : $tandaTerima->no_surat_jalan) : null,
                             'surat_jalan_id' => $tandaTerima->surat_jalan_id,
                             'tanda_terima_id' => $tandaTerima->id,
                             'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan',
@@ -2003,7 +2003,10 @@ class TandaTerimaController extends Controller
             
             // Method 2: Find by no_surat_jalan if surat_jalan_id didn't yield results
             if ($prospeksToUpdate->isEmpty() && $tandaTerima->no_surat_jalan) {
-                $prospeksByNoSuratJalan = \App\Models\Prospek::where('no_surat_jalan', $tandaTerima->no_surat_jalan)->get();
+                $prospeksByNoSuratJalan = \App\Models\Prospek::where(function($q) use ($tandaTerima) {
+                    $q->where('no_surat_jalan', $tandaTerima->no_surat_jalan)
+                      ->orWhere('no_surat_jalan', 'like', $tandaTerima->no_surat_jalan . '-%');
+                })->get();
                 $prospeksToUpdate = $prospeksToUpdate->merge($prospeksByNoSuratJalan);
             }
             

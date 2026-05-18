@@ -177,7 +177,10 @@ class TandaTerima extends Model
 
         // Alternatif: cari berdasarkan no_surat_jalan jika surat_jalan_id tidak ada
         if ($this->no_surat_jalan && !$this->surat_jalan_id) {
-            \App\Models\Prospek::where('no_surat_jalan', $this->no_surat_jalan)
+            \App\Models\Prospek::where(function($q) {
+                    $q->where('no_surat_jalan', $this->no_surat_jalan)
+                      ->orWhere('no_surat_jalan', 'like', $this->no_surat_jalan . '-%');
+                })
                 ->whereNull('tanda_terima_id')
                 ->update(['tanda_terima_id' => $this->id]);
         }

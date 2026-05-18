@@ -591,7 +591,7 @@ class PembayaranPranotaUangJalanController extends Controller
                         'pt_pengirim' => $suratJalan->pengirim ?? null,
                         'ukuran' => $suratJalan->size ?? null,
                         'tipe' => $suratJalan->tipe_kontainer ?? null, // FCL, LCL, dll
-                        'no_surat_jalan' => $suratJalan->no_surat_jalan ?? null,
+                        'no_surat_jalan' => $suratJalan->no_surat_jalan ? ($jumlahKontainer > 1 ? $suratJalan->no_surat_jalan . '-' . $i : $suratJalan->no_surat_jalan) : null,
                         'surat_jalan_id' => $suratJalan->id,
                         'nomor_kontainer' => $nomorKontainerIni ?: null,
                         'no_seal' => $noSealIni,

@@ -555,7 +555,7 @@ class PembayaranPranotaSuratJalanController extends Controller
                         'pt_pengirim' => $suratJalan->pengirim ?? null,
                         'ukuran' => $suratJalan->size ?? null,
                         'tipe' => $suratJalan->tipe_kontainer ?? null, // FCL, LCL, dll
-                        'no_surat_jalan' => $suratJalan->no_surat_jalan ?? null, // Field baru untuk tracking
+                        'no_surat_jalan' => $suratJalan->no_surat_jalan ? ($jumlahKontainer > 1 ? $suratJalan->no_surat_jalan . '-' . $i : $suratJalan->no_surat_jalan) : null, // Field baru untuk tracking
                         'surat_jalan_id' => $suratJalan->id, // Field baru untuk tracking yang lebih akurat
                         'nomor_kontainer' => $nomorKontainerIni ?: null, // Set null jika belum ada, akan diisi saat checkpoint
                         'no_seal' => $noSealIni, // Nomor seal spesifik untuk kontainer ke-i
