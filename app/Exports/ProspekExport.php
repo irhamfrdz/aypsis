@@ -65,6 +65,17 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
                       ->orWhere('no_voyage', 'like', "%{$search}%");
                 });
             }
+
+            if (!empty($this->filters['show_duplicates']) && $this->filters['show_duplicates'] == '1') {
+                $duplicateNos = Prospek::select('no_surat_jalan')
+                    ->whereNotNull('no_surat_jalan')
+                    ->where('no_surat_jalan', '!=', '')
+                    ->groupBy('no_surat_jalan')
+                    ->havingRaw('COUNT(no_surat_jalan) > 1')
+                    ->pluck('no_surat_jalan');
+                
+                $query->whereIn('no_surat_jalan', $duplicateNos);
+            }
         }
 
         $prospeks = $query->get();
