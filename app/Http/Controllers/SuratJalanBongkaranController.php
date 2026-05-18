@@ -735,8 +735,8 @@ class SuratJalanBongkaranController extends Controller
         $validatedData['input_by'] = Auth::id();
 
         // Ensure uang_jalan_nominal has a default value if not provided
-        if (!isset($validatedData['uang_jalan_nominal'])) {
-            $validatedData['uang_jalan_nominal'] = null;
+        if (!isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
+            $validatedData['uang_jalan_nominal'] = ($request->lokasi === 'batam') ? 0 : null;
         }
 
         try {

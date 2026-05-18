@@ -609,6 +609,10 @@ class SuratJalanBongkaranBatamController extends Controller
         $validatedData['lokasi'] = 'batam';
         $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
 
+        if (!isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
+            $validatedData['uang_jalan_nominal'] = 0;
+        }
+
         try {
             DB::beginTransaction();
 
@@ -730,6 +734,11 @@ class SuratJalanBongkaranBatamController extends Controller
 
         try {
             $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
+            
+            if (!isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
+                $validatedData['uang_jalan_nominal'] = 0;
+            }
+
             DB::beginTransaction();
 
             $suratJalanBongkaran->update($validatedData);
