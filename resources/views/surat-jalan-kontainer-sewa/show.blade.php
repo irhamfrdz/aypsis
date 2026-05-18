@@ -88,12 +88,6 @@
                 <tr><td class="py-1.5 text-gray-500">Nominal Uang Jalan</td><td class="py-1.5 font-medium">Rp {{ number_format($suratJalan->nominal_uang_jalan, 0, ',', '.') }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500 border-t pt-2 mt-2">Nomor Kontainer</td><td class="py-1.5 font-bold text-cyan-700 border-t pt-2 mt-2">{{ $suratJalan->nomor_kontainer }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Ukuran / Tipe</td><td class="py-1.5 font-medium">{{ $suratJalan->ukuran ?? '-' }} / {{ $suratJalan->tipe_kontainer ?? '-' }}</td></tr>
-                <tr><td class="py-1.5 text-gray-500">Kondisi</td><td class="py-1.5 font-medium">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $suratJalan->kondisi === 'baik' ? 'bg-green-100 text-green-700' : ($suratJalan->kondisi === 'rusak_ringan' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
-                        {{ match($suratJalan->kondisi) { 'baik' => 'Baik', 'rusak_ringan' => 'Rusak Ringan', 'rusak_berat' => 'Rusak Berat', default => ucfirst($suratJalan->kondisi) } }}
-                    </span>
-                </td></tr>
-                <tr><td class="py-1.5 text-gray-500">Catatan Kondisi</td><td class="py-1.5 font-medium">{{ $suratJalan->catatan_kondisi ?? '-' }}</td></tr>
             </table>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

@@ -120,8 +120,6 @@
                 <th>Vendor Kontainer</th>
                 <th>Ukuran</th>
                 <th>Tipe</th>
-                <th>Kondisi</th>
-                <th>Catatan</th>
             </tr>
         </thead>
         <tbody>
@@ -131,8 +129,6 @@
                 <td>{{ $suratJalan->vendor_item ?? '-' }}</td>
                 <td class="center">{{ $suratJalan->ukuran ?? '-' }}</td>
                 <td class="center">{{ $suratJalan->tipe_kontainer ?? '-' }}</td>
-                <td class="center">{{ match($suratJalan->kondisi) { 'baik' => 'BAIK', 'rusak_ringan' => 'RUSAK RINGAN', 'rusak_berat' => 'RUSAK BERAT', default => strtoupper($suratJalan->kondisi) } }}</td>
-                <td>{{ $suratJalan->catatan_kondisi ?? '-' }}</td>
             </tr>
         </tbody>
     </table>

@@ -127,8 +127,6 @@ class SuratJalanKontainerSewaController extends Controller
             'lokasi_pengembalian' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string|max:1000',
             'nomor_kontainer' => 'required|string|max:100',
-            'kondisi' => 'nullable|in:baik,rusak_ringan,rusak_berat',
-            'catatan_kondisi' => 'nullable|string|max:500',
             'menggunakan_rit' => 'nullable|boolean',
         ]);
 
@@ -153,8 +151,6 @@ class SuratJalanKontainerSewaController extends Controller
                 'tipe_kontainer' => $kontainer->tipe_kontainer ?? null,
                 'vendor_item' => $kontainer->vendor ?? null,
                 'menggunakan_rit' => $request->boolean('menggunakan_rit'),
-                'kondisi' => $request->kondisi,
-                'catatan_kondisi' => $request->catatan_kondisi,
                 'lokasi_pengambilan' => $request->lokasi_pengambilan,
                 'lokasi_pengembalian' => $request->lokasi_pengembalian,
                 'tujuan' => $request->tujuan,
@@ -253,8 +249,6 @@ class SuratJalanKontainerSewaController extends Controller
                 'tipe_kontainer' => $kontainer->tipe_kontainer ?? $suratJalan->tipe_kontainer,
                 'vendor_item' => $kontainer->vendor ?? $suratJalan->vendor_item,
                 'menggunakan_rit' => $request->boolean('menggunakan_rit'),
-                'kondisi' => $request->kondisi,
-                'catatan_kondisi' => $request->catatan_kondisi,
                 'lokasi_pengambilan' => $request->lokasi_pengambilan,
                 'lokasi_pengembalian' => $request->lokasi_pengembalian,
                 'tujuan' => $request->tujuan,

@@ -137,18 +137,6 @@
                         <option value="0" {{ old('menggunakan_rit') == '0' ? 'selected' : '' }}>Tidak Menggunakan Rit</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Kondisi Kontainer</label>
-                    <select name="kondisi" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500">
-                        <option value="baik" {{ old('kondisi') == 'baik' ? 'selected' : '' }}>Baik</option>
-                        <option value="rusak_ringan" {{ old('kondisi') == 'rusak_ringan' ? 'selected' : '' }}>Rusak Ringan</option>
-                        <option value="rusak_berat" {{ old('kondisi') == 'rusak_berat' ? 'selected' : '' }}>Rusak Berat</option>
-                    </select>
-                </div>
-                <div class="md:col-span-2 lg:col-span-1">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Catatan Kondisi</label>
-                    <input type="text" name="catatan_kondisi" value="{{ old('catatan_kondisi') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Catatan kondisi kontainer...">
-                </div>
             </div>
             <div class="mt-4">
                 <label class="block text-xs font-medium text-gray-600 mb-1">Keterangan</label>

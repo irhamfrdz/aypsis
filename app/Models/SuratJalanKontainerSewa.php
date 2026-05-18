@@ -27,8 +27,6 @@ class SuratJalanKontainerSewa extends Model
         'ukuran',
         'tipe_kontainer',
         'vendor_item',
-        'kondisi',
-        'catatan_kondisi',
         'lokasi_pengambilan',
         'lokasi_pengembalian',
         'keterangan',
