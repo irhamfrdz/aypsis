@@ -284,6 +284,16 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($tandaTerimas as $tandaTerima)
+                                @php
+                                    $noTandaTerima = (isset($isLclData) && $isLclData) 
+                                        ? $tandaTerima->nomor_tanda_terima 
+                                        : ($tandaTerima->no_tanda_terima ?: $tandaTerima->nomor_tanda_terima);
+                                        
+                                    $existsInProspek = \App\Models\Prospek::where(function($q) use ($noTandaTerima) {
+                                        $q->where('no_surat_jalan', $noTandaTerima)
+                                          ->orWhere('no_surat_jalan', 'like', $noTandaTerima . '-%');
+                                    })->exists();
+                                @endphp
                                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                                     @if(request('tipe') == 'lcl' && isset($isLclData) && $isLclData)
                                         <td class="px-2 py-2 whitespace-nowrap">
@@ -371,7 +381,11 @@
                                                 <a href="{{ route('tanda-terima-lcl.show', $tandaTerima) }}" class="text-indigo-600 hover:text-indigo-900 transition-colors" title="Detail"><i class="fas fa-eye text-xs"></i></a>
                                                 @can('tanda-terima-tanpa-surat-jalan-update')
                                                     <a href="{{ route('tanda-terima-lcl.edit', $tandaTerima) }}" class="text-amber-600 hover:text-amber-900 transition-colors" title="Edit"><i class="fas fa-edit text-xs"></i></a>
-                                                    <form action="{{ route('tanda-terima-lcl.add-to-prospek', $tandaTerima) }}" method="POST" class="inline">@csrf<button type="submit" class="text-purple-600 hover:text-purple-900" title="Prospek"><i class="fas fa-clipboard-list text-xs"></i></button></form>
+                                                    @if($existsInProspek)
+                                                        <button type="button" class="text-gray-400 cursor-not-allowed" title="Sudah ada di Prospek" disabled><i class="fas fa-clipboard-list text-xs"></i></button>
+                                                    @else
+                                                        <form action="{{ route('tanda-terima-lcl.add-to-prospek', $tandaTerima) }}" method="POST" class="inline">@csrf<button type="submit" class="text-purple-600 hover:text-purple-900" title="Prospek"><i class="fas fa-clipboard-list text-xs"></i></button></form>
+                                                    @endif
                                                 @endcan
                                                 @can('tanda-terima-tanpa-surat-jalan-delete')
                                                     <form action="{{ route('tanda-terima-lcl.destroy', $tandaTerima) }}" method="POST" class="inline" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button type="submit" class="text-red-600 hover:text-red-900" title="Hapus"><i class="fas fa-trash text-xs"></i></button></form>
@@ -380,7 +394,11 @@
                                                 <a href="{{ route('tanda-terima-tanpa-surat-jalan.show', $tandaTerima) }}" class="text-indigo-600 hover:text-indigo-900 transition-colors" title="Detail"><i class="fas fa-eye text-xs"></i></a>
                                                 @can('tanda-terima-tanpa-surat-jalan-update')
                                                     <a href="{{ route('tanda-terima-tanpa-surat-jalan.edit', $tandaTerima) }}" class="text-amber-600 hover:text-amber-900 transition-colors" title="Edit"><i class="fas fa-edit text-xs"></i></a>
-                                                    <form action="{{ route('tanda-terima-tanpa-surat-jalan.add-to-prospek', $tandaTerima) }}" method="POST" class="inline">@csrf<button type="submit" class="text-purple-600 hover:text-purple-900" title="Prospek"><i class="fas fa-clipboard-list text-xs"></i></button></form>
+                                                    @if($existsInProspek)
+                                                        <button type="button" class="text-gray-400 cursor-not-allowed" title="Sudah ada di Prospek" disabled><i class="fas fa-clipboard-list text-xs"></i></button>
+                                                    @else
+                                                        <form action="{{ route('tanda-terima-tanpa-surat-jalan.add-to-prospek', $tandaTerima) }}" method="POST" class="inline">@csrf<button type="submit" class="text-purple-600 hover:text-purple-900" title="Prospek"><i class="fas fa-clipboard-list text-xs"></i></button></form>
+                                                    @endif
                                                 @endcan
                                                 @can('tanda-terima-tanpa-surat-jalan-delete')
                                                     <form action="{{ route('tanda-terima-tanpa-surat-jalan.destroy', $tandaTerima) }}" method="POST" class="inline" onsubmit="return confirm('Hapus?')">@csrf @method('DELETE')<button type="submit" class="text-red-600 hover:text-red-900" title="Hapus"><i class="fas fa-trash text-xs"></i></button></form>
