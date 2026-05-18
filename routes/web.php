@@ -1977,6 +1977,9 @@ Route::middleware([
     Route::put('stock-ban/{stock_ban}/jual', [\App\Http\Controllers\StockBanController::class, 'jual'])
          ->name('stock-ban.jual')
          ->middleware('can:stock-ban-update');
+    Route::put('stock-ban/{stock_ban}/hilang', [\App\Http\Controllers\StockBanController::class, 'hilang'])
+         ->name('stock-ban.hilang')
+         ->middleware('can:stock-ban-update');
     Route::put('stock-ban/{stock_ban}/return', [\App\Http\Controllers\StockBanController::class, 'returnToWarehouse'])
          ->name('stock-ban.return')
          ->middleware('can:stock-ban-update');
@@ -2003,6 +2006,9 @@ Route::middleware([
     Route::get('stock-ban-luar-batam/{id}', [\App\Http\Controllers\StockBanLuarBatamController::class, 'show'])
          ->name('stock-ban-luar-batam.show')
          ->middleware('can:stock-ban-view');
+    Route::put('stock-ban-luar-batam/{id}/hilang', [\App\Http\Controllers\StockBanLuarBatamController::class, 'hilang'])
+         ->name('stock-ban-luar-batam.hilang')
+         ->middleware('can:stock-ban-update');
 
     // 💰 Pricelist Uang Jalan Batam Management with permissions
     // Download Template & Import (must be before resource routes)
@@ -5772,6 +5778,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::put('stock-ban/{stock_ban}/return-to-shop', [\App\Http\Controllers\StockBanController::class, 'returnToShop'])
                ->name('stock-ban.return-to-shop')
                ->middleware('can:stock-ban-update');
+           Route::put('stock-ban/{stock_ban}/hilang', [\App\Http\Controllers\StockBanController::class, 'hilang'])
+                ->name('stock-ban.hilang')
+                ->middleware('can:stock-ban-update');
            Route::put('stock-ban/{stock_ban}/restore-to-stock', [\App\Http\Controllers\StockBanController::class, 'restoreToStock'])
                 ->name('stock-ban.restore-to-stock')
                 ->middleware('can:stock-ban-update');

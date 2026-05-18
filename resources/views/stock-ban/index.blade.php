@@ -432,6 +432,19 @@
                         <div class="text-2xl font-bold text-orange-900">{{ $rusakTerjual }}</div>
                         <p class="text-xs text-orange-600 mt-1">Laku</p>
                     </div>
+
+                    <!-- Ban Hilang -->
+                    @php
+                        $banHilang = $stockBans->where('status', 'Hilang')->count();
+                    @endphp
+                    <div id="card-hilang" onclick="setCardFilter('hilang', false)" class="cursor-pointer bg-gradient-to-br from-gray-50 to-gray-200 border border-gray-300 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-gray-600 uppercase">Ban Hilang</span>
+                            <i class="fas fa-question-circle text-gray-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900">{{ $banHilang }}</div>
+                        <p class="text-xs text-gray-600 mt-1">Hilang</p>
+                    </div>
                 </div>
             </div>
 
@@ -509,7 +522,7 @@
                                            ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
                                            (($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') ? 'bg-cyan-100 text-cyan-800' : 
                                            ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
-                                           ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
+                                           ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : ($ban->status == 'Hilang' ? 'bg-red-200 text-red-900 border border-red-300' : 'bg-gray-100 text-gray-800')))))) }}">
                                         {{ $ban->status }}
                                     </span>
                                 </td>
@@ -657,6 +670,16 @@
                                                 <i class="fas fa-undo"></i>
                                             </button>
                                         @endif
+                                        @if($ban->status !== 'Dijual' && $ban->status !== 'Dikembalikan' && $ban->status !== 'Hilang')
+                                            <button type="button" 
+                                                class="btn-lost-modal text-red-600 hover:text-red-900 mr-2" 
+                                                data-id="{{ $ban->id }}" 
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                data-type="jakarta"
+                                                title="Tandai Sebagai Hilang">
+                                                <i class="fas fa-question-circle"></i>
+                                            </button>
+                                        @endif
 
                                         <a href="{{ route('stock-ban.show', $ban->id) }}" class="text-purple-600 hover:text-purple-900" title="Lihat Detail">
                                             <i class="fas fa-eye"></i>
@@ -713,7 +736,7 @@
                                    ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
                                    (($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') ? 'bg-cyan-100 text-cyan-800' : 
                                    ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
-                                   ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
+                                   ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : ($ban->status == 'Hilang' ? 'bg-red-200 text-red-900 border border-red-300' : 'bg-gray-100 text-gray-800')))))) }}">
                                 {{ $ban->status }}
                             </span>
                         </div>
@@ -773,6 +796,9 @@
                                     <button type="button" class="btn-return-masak-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Selesai Masak"><i class="fas fa-check-circle text-xs"></i></button>
                                 @elseif($ban->status == 'Dikembalikan')
                                     <button type="button" class="btn-restore-stock-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jadikan Stok Kembali"><i class="fas fa-undo text-xs"></i></button>
+                                @endif
+                                @if($ban->status !== 'Dijual' && $ban->status !== 'Dikembalikan' && $ban->status !== 'Hilang')
+                                    <button type="button" class="btn-lost-modal w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-type="jakarta" title="Tandai Hilang"><i class="fas fa-question-circle text-xs"></i></button>
                                 @endif
 
                                 <a href="{{ route('stock-ban.show', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600" title="Detail"><i class="fas fa-eye text-xs"></i></a>
@@ -977,6 +1003,19 @@
                         <div class="text-2xl font-bold text-orange-900">{{ $rusakTerjualBtm }}</div>
                         <p class="text-xs text-orange-600 mt-1">Laku</p>
                     </div>
+
+                    <!-- Ban Hilang Batam -->
+                    @php
+                        $banHilangBtm = $banBatamList->where('status', 'Hilang')->count();
+                    @endphp
+                    <div id="card-batam-hilang" onclick="setCardFilter('hilang', true)" class="cursor-pointer bg-gradient-to-br from-gray-50 to-gray-200 border border-gray-300 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-gray-600 uppercase">Ban Hilang</span>
+                            <i class="fas fa-question-circle text-gray-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-900">{{ $banHilangBtm }}</div>
+                        <p class="text-xs text-gray-600 mt-1">Hilang</p>
+                    </div>
                 </div>
             </div>
                 <div class="hidden md:block overflow-x-auto">
@@ -1045,7 +1084,7 @@
                                            ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
                                            (($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') ? 'bg-cyan-100 text-cyan-800' : 
                                            ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
-                                           ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
+                                           ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : ($ban->status == 'Hilang' ? 'bg-red-200 text-red-900 border border-red-300' : 'bg-gray-100 text-gray-800')))))) }}">
                                         {{ $ban->status }}
                                     </span>
                                 </td>
@@ -1193,6 +1232,16 @@
                                                 <i class="fas fa-undo"></i>
                                             </button>
                                         @endif
+                                        @if($ban->status !== 'Dijual' && $ban->status !== 'Dikembalikan' && $ban->status !== 'Hilang')
+                                            <button type="button" 
+                                                class="btn-lost-modal text-red-600 hover:text-red-900 mr-2" 
+                                                data-id="{{ $ban->id }}" 
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                data-type="batam"
+                                                title="Tandai Sebagai Hilang">
+                                                <i class="fas fa-question-circle"></i>
+                                            </button>
+                                        @endif
 
                                         <a href="{{ route('stock-ban-luar-batam.show', $ban->id) }}" class="text-purple-600 hover:text-purple-900" title="Lihat Detail">
                                             <i class="fas fa-eye"></i>
@@ -1249,7 +1298,7 @@
                                    ($ban->status == 'Sedang Dimasak' ? 'bg-orange-100 text-orange-800' : 
                                    (($ban->status == 'Dikirim Ke Batam' || $ban->status == 'Dikirim Ke Tanjung Pinang') ? 'bg-cyan-100 text-cyan-800' : 
                                    ($ban->status == 'Dikembalikan' ? 'bg-red-100 text-red-800' : 
-                                   ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'))))) }}">
+                                   ($ban->status == 'Dijual' ? 'bg-amber-100 text-amber-800' : ($ban->status == 'Hilang' ? 'bg-red-200 text-red-900 border border-red-300' : 'bg-gray-100 text-gray-800')))))) }}">
                                 {{ $ban->status }}
                             </span>
                         </div>
@@ -1309,6 +1358,9 @@
                                     <button type="button" class="btn-return-masak-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Selesai Masak"><i class="fas fa-check-circle text-xs"></i></button>
                                 @elseif($ban->status == 'Dikembalikan')
                                     <button type="button" class="btn-restore-stock-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jadikan Stok Kembali"><i class="fas fa-undo text-xs"></i></button>
+                                @endif
+                                @if($ban->status !== 'Dijual' && $ban->status !== 'Dikembalikan' && $ban->status !== 'Hilang')
+                                    <button type="button" class="btn-lost-modal w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-type="batam" title="Tandai Hilang"><i class="fas fa-question-circle text-xs"></i></button>
                                 @endif
 
                                 <a href="{{ route('stock-ban-luar-batam.show', $ban->id) }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600" title="Detail"><i class="fas fa-eye text-xs"></i></a>
@@ -2626,7 +2678,8 @@
                 'gudang-batam': 'ring-indigo-400',
                 'dikirim-tp': 'ring-teal-400',
                 'rusak-stok': 'ring-red-400',
-                'rusak-terjual': 'ring-orange-400'
+                'rusak-terjual': 'ring-orange-400',
+                'hilang': 'ring-gray-400'
             };
             activeCard.classList.add(colorMap[filterType]);
         }
@@ -2804,6 +2857,18 @@
             }
 
             // Check if clicked element or its parent is btn-jual-modal
+                        const lostBtn = e.target.closest('.btn-lost-modal');
+            if (lostBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = lostBtn.getAttribute('data-id');
+                const seri = lostBtn.getAttribute('data-seri');
+                const type = lostBtn.getAttribute('data-type') || 'jakarta';
+                console.log('Opening lost modal:', id, seri, type);
+                openLostBanModal(id, seri, type);
+                return;
+            }
+
             const jualBtn = e.target.closest('.btn-jual-modal');
             if (jualBtn) {
                 e.preventDefault();
@@ -2859,6 +2924,14 @@
             }
 
             // Check if clicking on modal backdrop or close button for Jual Ban
+                        const lostBanModal = document.getElementById('lostBanModal');
+            if (lostBanModal && !lostBanModal.classList.contains('hidden')) {
+                if (e.target.classList.contains('bg-gray-500') && e.target.classList.contains('bg-opacity-75')) {
+                    closeLostBanModal();
+                    return;
+                }
+            }
+
             const jualBanModal = document.getElementById('jualBanModal');
             if (jualBanModal && !jualBanModal.classList.contains('hidden')) {
                 if (e.target.classList.contains('bg-gray-500') && e.target.classList.contains('bg-opacity-75')) {
@@ -2946,6 +3019,7 @@
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
                     else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'rusak-terjual') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'dijual';
+                    else if (currentCardFilter === 'hilang') filterMatch = status === 'hilang';
                 }
 
                 if ((textMatch || searchTerm === '') && filterMatch) {
@@ -2997,6 +3071,7 @@
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
                     else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'rusak-terjual') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'dijual';
+                    else if (currentCardFilter === 'hilang') filterMatch = status === 'hilang';
                 }
 
                 if ((textMatch || searchTerm === '') && filterMatch) {
@@ -3294,7 +3369,58 @@
         modal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
     }
 
-    function closeJualBanModal() {
+        // Lost Ban Functions
+    function openLostBanModal(id, seri, type = 'jakarta') {
+        const modal = document.getElementById('lostBanModal');
+        const modalBanId = document.getElementById('lost_ban_id');
+        const modalBanType = document.getElementById('lost_ban_type');
+        const modalNomorSeri = document.getElementById('lost_nomor_seri');
+        const modalTanggal = document.getElementById('lost_tanggal');
+        const modalKeterangan = document.getElementById('lost_keterangan');
+
+        if (!modal) return;
+
+        modalBanId.value = id;
+        modalBanType.value = type;
+        modalNomorSeri.textContent = seri || '-';
+        modalTanggal.value = new Date().toISOString().split('T')[0];
+        modalKeterangan.value = '';
+
+        modal.classList.remove('hidden');
+        
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        
+        modal.setAttribute('style', 'display: block !important; visibility: visible !important; opacity: 1 !important; z-index: 999999 !important;');
+    }
+
+    function closeLostBanModal() {
+        const modal = document.getElementById('lostBanModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.removeAttribute('style');
+        }
+    }
+
+    function submitLostBanForm() {
+        const banId = document.getElementById('lost_ban_id').value;
+        const type = document.getElementById('lost_ban_type').value;
+        const form = document.getElementById('lostBanForm');
+        
+        if (type === 'batam') {
+            form.action = `{{ url('stock-ban-luar-batam') }}/${banId}/hilang`;
+        } else {
+            form.action = `{{ url('stock-ban') }}/${banId}/hilang`;
+        }
+        form.submit();
+    }
+
+    window.openLostBanModal = openLostBanModal;
+    window.closeLostBanModal = closeLostBanModal;
+    window.submitLostBanForm = submitLostBanForm;
+
+function closeJualBanModal() {
         const modal = document.getElementById('jualBanModal');
         if (modal) {
             modal.classList.add('hidden');
@@ -3594,6 +3720,54 @@
     </div>
 </div>
 
+<!-- Modal Tandai Ban Hilang -->
+<div id="lostBanModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeLostBanModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="lostBanForm" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="ban_id" id="lost_ban_id">
+                <input type="hidden" name="ban_type" id="lost_ban_type">
+                
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-question-circle text-red-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Tandai Ban Sebagai Hilang: <span id="lost_nomor_seri" class="font-bold text-red-600"></span>
+                            </h3>
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label for="lost_tanggal" class="form-label-premium">Tanggal Kehilangan <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_hilang" id="lost_tanggal" class="form-input-premium" value="{{ date('Y-m-d') }}" required>
+                                </div>
+
+                                <div>
+                                    <label for="lost_keterangan" class="form-label-premium">Keterangan / Alasan (Opsional)</label>
+                                    <textarea name="keterangan_hilang" id="lost_keterangan" class="form-input-premium" rows="3" placeholder="Catatan detail kehilangan..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                    <button type="button" onclick="submitLostBanForm()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm" style="background-color: #dc2626 !important; color: white !important;">
+                        Tandai Hilang
+                    </button>
+                    <button type="button" onclick="closeLostBanModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <!-- Modal Gunakan Stock (Generic untuk barang lainnya) -->
 <div id="stockUsageModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">

@@ -144,4 +144,42 @@ class StockBanLuarBatamController extends Controller
         $stockBan = StockBanLuarBatam::with(['namaStockBan', 'mobil', 'penerima', 'createdBy', 'updatedBy'])->findOrFail($id);
         return view('stock-ban-luar-batam.show', compact('stockBan'));
     }
+
+    /**
+     * Mark Batam ban as lost.
+     */
+    public function hilang(Request $request, $id)
+    {
+        $stockBan = StockBanLuarBatam::findOrFail($id);
+
+        if ($stockBan->status === 'Dijual' || $stockBan->status === 'Dikembalikan' || $stockBan->status === 'Hilang') {
+            return redirect()->route('stock-ban.index')->with('error', 'Ban ini tidak bisa ditandai sebagai hilang.')->with('active_tab', 'tab-ban-luar-batam');
+        }
+
+        $request->validate([
+            'tanggal_hilang' => 'required|date',
+            'keterangan_hilang' => 'nullable|string',
+        ]);
+
+        $tanggalHilang = \Carbon\Carbon::parse($request->tanggal_hilang)->format('d-m-Y');
+
+        $lostNote = "[Hilang] Tgl: " . $tanggalHilang;
+        if ($request->filled('keterangan_hilang')) {
+            $lostNote .= ", Ket: " . $request->keterangan_hilang;
+        }
+
+        $stockBan->update([
+            'status' => 'Hilang',
+            'lokasi' => 'Hilang',
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $lostNote) : $lostNote,
+            'mobil_id' => null,
+            'alat_berat_id' => null,
+            'penerima_id' => null,
+            'kapal_id' => null,
+            'tanggal_keluar' => null,
+            'tanggal_kirim' => null,
+        ]);
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban Batam berhasil ditandai sebagai hilang.')->with('active_tab', 'tab-ban-luar-batam');
+    }
 }

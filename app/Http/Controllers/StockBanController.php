@@ -856,6 +856,44 @@ class StockBanController extends Controller
     }
 
     /**
+     * Mark ban as lost.
+     */
+    public function hilang(Request $request, $id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        if ($stockBan->status === 'Dijual' || $stockBan->status === 'Dikembalikan' || $stockBan->status === 'Hilang') {
+            return redirect()->route('stock-ban.index')->with('error', 'Ban ini tidak bisa ditandai sebagai hilang.');
+        }
+
+        $request->validate([
+            'tanggal_hilang' => 'required|date',
+            'keterangan_hilang' => 'nullable|string',
+        ]);
+
+        $tanggalHilang = \Carbon\Carbon::parse($request->tanggal_hilang)->format('d-m-Y');
+
+        $lostNote = "[Hilang] Tgl: " . $tanggalHilang;
+        if ($request->filled('keterangan_hilang')) {
+            $lostNote .= ", Ket: " . $request->keterangan_hilang;
+        }
+
+        $stockBan->update([
+            'status' => 'Hilang',
+            'lokasi' => 'Hilang',
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $lostNote) : $lostNote,
+            'mobil_id' => null,
+            'alat_berat_id' => null,
+            'penerima_id' => null,
+            'kapal_id' => null,
+            'tanggal_keluar' => null,
+            'tanggal_kirim' => null,
+        ]);
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil ditandai sebagai hilang.');
+    }
+
+    /**
      * Restore returned ban to stock.
      */
     public function restoreToStock(Request $request, $id)
