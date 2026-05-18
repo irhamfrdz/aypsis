@@ -1674,7 +1674,7 @@
         {{-- Aktivitas Kontainer Sub-Dropdown --}}
         @php
             $isAktivitasKontainerRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('daftar-tagihan-kontainer-sewa-2.*') || Request::routeIs('kontainer-sewa-billing.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('surat-jalan-kontainer-sewa.*') || Request::routeIs('tanda-terima-surat-jalan-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*');
-            $hasAktivitasKontainerPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('kontainer-sewa-final-view') || $user->can('pranota-kontainer-sewa-view') || $user->can('surat-jalan-kontainer-sewa-view') || $user->can('pranota.view') || $user->can('perbaikan-kontainer-view') || $user->can('pranota-perbaikan-kontainer-view') || $user->can('pembayaran-pranota-perbaikan-kontainer-view') || $user->can('tagihan-cat-view') || $user->can('pranota-cat-view') || $user->can('pembayaran-pranota-cat-view'));
+            $hasAktivitasKontainerPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('kontainer-sewa-final-view') || $user->can('pranota-kontainer-sewa-view') || $user->can('surat-jalan-kontainer-sewa-view') || $user->can('tanda-terima-surat-jalan-kontainer-sewa-view') || $user->can('pranota.view') || $user->can('perbaikan-kontainer-view') || $user->can('pranota-perbaikan-kontainer-view') || $user->can('pembayaran-pranota-perbaikan-kontainer-view') || $user->can('tagihan-cat-view') || $user->can('pranota-cat-view') || $user->can('pembayaran-pranota-cat-view'));
         @endphp
 
         @if($hasAktivitasKontainerPermissions)
@@ -1689,7 +1689,7 @@
                 {{-- Sewa Sub-Dropdown --}}
                 @php
                     $isSewaRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('daftar-tagihan-kontainer-sewa-2.*') || Request::routeIs('kontainer-sewa-billing.*') || Request::routeIs('kontainer-sewa-final.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('surat-jalan-kontainer-sewa.*') || Request::routeIs('tanda-terima-surat-jalan-kontainer-sewa.*');
-                    $hasSewaPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('kontainer-sewa-final-view') || $user->can('pranota-kontainer-sewa-view') || $user->can('surat-jalan-kontainer-sewa-view'));
+                    $hasSewaPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('kontainer-sewa-final-view') || $user->can('pranota-kontainer-sewa-view') || $user->can('surat-jalan-kontainer-sewa-view') || $user->can('tanda-terima-surat-jalan-kontainer-sewa-view'));
                 @endphp
 
                 @if($hasSewaPermissions)
@@ -1735,7 +1735,7 @@
                         @endif
 
                         {{-- Tanda Terima Surat Jalan Kontainer Sewa --}}
-                        @if($user && ($user->can('surat-jalan-kontainer-sewa-view') || $user->can('kontainer-sewa-final-view') || $user->can('tagihan-kontainer-sewa-index')))
+                        @if($user && ($user->can('tanda-terima-surat-jalan-kontainer-sewa-view') || $user->can('surat-jalan-kontainer-sewa-view') || $user->can('kontainer-sewa-final-view') || $user->can('tagihan-kontainer-sewa-index')))
                             <a href="{{ route('tanda-terima-surat-jalan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-surat-jalan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Tanda Terima SJ Kontainer Sewa</span>
                             </a>
