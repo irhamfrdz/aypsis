@@ -624,12 +624,17 @@ class SuratJalanBongkaranBatamController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Surat Jalan Bongkaran Batam berhasil dibuat.',
-                    'redirect' => route('surat-jalan-bongkaran-batam.list')
+                    'redirect' => route('surat-jalan-bongkaran-batam.list', [
+                        'nama_kapal' => $request->nama_kapal,
+                        'no_voyage' => $request->no_voyage
+                    ])
                 ]);
             }
 
-            return redirect()->route('surat-jalan-bongkaran-batam.list')
-                           ->with('success', 'Surat Jalan Bongkaran Batam berhasil dibuat.');
+            return redirect()->route('surat-jalan-bongkaran-batam.list', [
+                'nama_kapal' => $request->nama_kapal,
+                'no_voyage' => $request->no_voyage
+            ])->with('success', 'Surat Jalan Bongkaran Batam berhasil dibuat.');
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -745,8 +750,10 @@ class SuratJalanBongkaranBatamController extends Controller
 
             DB::commit();
 
-            return redirect()->route('surat-jalan-bongkaran-batam.list')
-                           ->with('success', 'Surat Jalan Bongkaran Batam berhasil diperbarui.');
+            return redirect()->route('surat-jalan-bongkaran-batam.list', [
+                'nama_kapal' => $request->nama_kapal,
+                'no_voyage' => $request->no_voyage
+            ])->with('success', 'Surat Jalan Bongkaran Batam berhasil diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollback();

@@ -753,8 +753,14 @@ class SuratJalanBongkaranController extends Controller
             // Check if request is AJAX (from modal)
             if ($request->ajax() || $request->wantsJson()) {
                 $redirectRoute = $request->lokasi === 'batam' 
-                    ? route('tanda-terima-bongkaran-batam.index') // Default Batam bongkaran view for now
-                    : route('surat-jalan-bongkaran.list');
+                    ? route('surat-jalan-bongkaran-batam.list', [
+                        'nama_kapal' => $request->nama_kapal,
+                        'no_voyage' => $request->no_voyage
+                    ])
+                    : route('surat-jalan-bongkaran.list', [
+                        'nama_kapal' => $request->nama_kapal,
+                        'no_voyage' => $request->no_voyage
+                    ]);
 
                 return response()->json([
                     'success' => true,
@@ -763,7 +769,17 @@ class SuratJalanBongkaranController extends Controller
                 ]);
             }
 
-            return redirect()->route('surat-jalan-bongkaran.list')
+            $redirectRoute = $request->lokasi === 'batam' 
+                ? route('surat-jalan-bongkaran-batam.list', [
+                    'nama_kapal' => $request->nama_kapal,
+                    'no_voyage' => $request->no_voyage
+                ])
+                : route('surat-jalan-bongkaran.list', [
+                    'nama_kapal' => $request->nama_kapal,
+                    'no_voyage' => $request->no_voyage
+                ]);
+
+            return redirect()->to($redirectRoute)
                            ->with('success', 'Surat Jalan Bongkaran berhasil dibuat.');
 
         } catch (\Exception $e) {
