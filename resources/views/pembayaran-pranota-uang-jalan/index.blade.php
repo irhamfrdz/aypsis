@@ -122,6 +122,15 @@
                                             Update Tanggal
                                         </button>
                                         @endcan
+                                        @can('pembayaran-pranota-uang-jalan-delete')
+                                        <form action="{{ route('pembayaran-pranota-uang-jalan.destroy', $pembayaran->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus/mengoreksi pembayaran ini? Semua status (Pranota, Uang Jalan, Surat Jalan) akan dikembalikan ke Belum Dibayar, dan Prospek otomatis serta Jurnal Akuntansi terkait akan dihapus.')" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-800 text-xs bg-red-50 hover:bg-red-100 px-2 py-1 rounded">
+                                                Hapus/Koreksi
+                                            </button>
+                                        </form>
+                                        @endcan
                                     @endforeach
                                 @endif
                             </div>

@@ -448,18 +448,38 @@ class PembayaranPranotaUangJalanController extends Controller
      */
     public function destroy(PembayaranPranotaUangJalan $pembayaranPranotaUangJalan)
     {
-        if ($pembayaranPranotaUangJalan->isPaid()) {
-            return redirect()->route('pembayaran-pranota-uang-jalan.index')
-                ->with('error', 'Pembayaran yang sudah lunas tidak dapat dihapus.');
-        }
-
         DB::beginTransaction();
 
         try {
-            // Update pranota status back to unpaid
-            $pembayaranPranotaUangJalan->pranotaUangJalan->update([
-                'status_pembayaran' => 'unpaid'
-            ]);
+            // Revert all associated pranota, uang jalan, and surat jalan
+            foreach ($pembayaranPranotaUangJalan->pranotaUangJalans as $pranota) {
+                // Revert pranota status to unpaid
+                $pranota->update([
+                    'status_pembayaran' => 'unpaid',
+                    'updated_by' => Auth::id()
+                ]);
+
+                // Revert each uang jalan in this pranota
+                foreach ($pranota->uangJalans as $uangJalan) {
+                    $uangJalan->update([
+                        'status' => 'sudah_masuk_pranota', // go back to inside pranota status
+                        'updated_by' => Auth::id()
+                    ]);
+
+                    // Revert related surat jalan status
+                    if ($uangJalan->suratJalan) {
+                        $uangJalan->suratJalan->update([
+                            'status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan', // go back to in pranota status
+                            'updated_by' => Auth::id()
+                        ]);
+                    }
+                }
+
+                // Delete auto-generated Prospeks for this pranota
+                Prospek::where('tanda_terima_id', null)
+                    ->where('keterangan', 'like', '%Pranota: ' . $pranota->nomor_pranota . '%')
+                    ->delete();
+            }
 
             // Delete associated COA transactions by reference
             $this->coaTransactionService->deleteTransactionByReference($pembayaranPranotaUangJalan->nomor_pembayaran);
@@ -474,7 +494,7 @@ class PembayaranPranotaUangJalanController extends Controller
             DB::commit();
 
             return redirect()->route('pembayaran-pranota-uang-jalan.index')
-                ->with('success', 'Pembayaran pranota uang jalan berhasil dihapus.');
+                ->with('success', 'Pembayaran pranota uang jalan berhasil dihapus dan semua status telah dikembalikan.');
 
         } catch (\Exception $e) {
             DB::rollBack();
