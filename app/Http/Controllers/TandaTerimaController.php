@@ -2036,29 +2036,49 @@ class TandaTerimaController extends Controller
             $prospeksToUpdate = $prospeksToUpdate->unique('id');
 
             // Determine nomor_kontainer and no_seal values to set on Prospek (prefer request values)
-            $noKontainerToSet = null;
-            $noSealToSet = null;
+            $nomorKontainers = [];
             if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
-                $nomorKontainers = array_filter($request->nomor_kontainer, function($value) {
-                    return !empty(trim($value));
-                });
-                $noKontainerToSet = !empty($nomorKontainers) ? implode(',', $nomorKontainers) : null;
+                $nomorKontainers = array_values(array_filter(array_map('trim', $request->nomor_kontainer)));
             } elseif (!empty($tandaTerima->no_kontainer)) {
-                $noKontainerToSet = $tandaTerima->no_kontainer;
+                $nomorKontainers = array_values(array_filter(array_map('trim', explode(',', $tandaTerima->no_kontainer))));
             }
 
+            $noSeals = [];
             if ($request->has('no_seal') && is_array($request->no_seal)) {
-                $noSeals = array_filter($request->no_seal, function($value) {
-                    return !empty(trim($value));
-                });
-                $noSealToSet = !empty($noSeals) ? implode(',', $noSeals) : null;
+                $noSeals = array_values(array_filter(array_map('trim', $request->no_seal)));
             } elseif (!empty($tandaTerima->no_seal)) {
-                $noSealToSet = $tandaTerima->no_seal;
+                $noSeals = array_values(array_filter(array_map('trim', explode(',', $tandaTerima->no_seal))));
             }
 
             // Update each related prospek
             $updatedCount = 0;
             foreach ($prospeksToUpdate as $prospek) {
+                // Determine container and seal for this specific Prospek record
+                $containerForThisProspek = null;
+                $sealForThisProspek = null;
+
+                // Attempt to parse container index from suffix (e.g., -1, -2) in no_surat_jalan
+                $parsedIndex = null;
+                if ($prospek->no_surat_jalan && preg_match('/-(\d+)$/', $prospek->no_surat_jalan, $matches)) {
+                    $parsedIndex = (int) $matches[1];
+                }
+
+                if ($parsedIndex !== null) {
+                    // Suffix exists (1-based index)
+                    $arrayIndex = $parsedIndex - 1;
+                    $containerForThisProspek = isset($nomorKontainers[$arrayIndex]) ? $nomorKontainers[$arrayIndex] : null;
+                    $sealForThisProspek = isset($noSeals[$arrayIndex]) ? $noSeals[$arrayIndex] : null;
+                } else {
+                    // No suffix, fall back to first item or join all if there is no suffix at all
+                    if (count($nomorKontainers) > 1) {
+                        $containerForThisProspek = implode(',', $nomorKontainers);
+                        $sealForThisProspek = implode(',', $noSeals);
+                    } else {
+                        $containerForThisProspek = isset($nomorKontainers[0]) ? $nomorKontainers[0] : null;
+                        $sealForThisProspek = isset($noSeals[0]) ? $noSeals[0] : null;
+                    }
+                }
+
                 $updateFields = [
                     'tanda_terima_id' => $tandaTerima->id,
                     'updated_by' => Auth::id(),
@@ -2076,12 +2096,8 @@ class TandaTerimaController extends Controller
                 }
 
                 // Update nomor_kontainer and no_seal (allow null/empty)
-                if (array_key_exists('nomor_kontainer', $updateFields) || $noKontainerToSet !== $prospek->nomor_kontainer) {
-                    $updateFields['nomor_kontainer'] = $noKontainerToSet;
-                }
-                if (array_key_exists('no_seal', $updateFields) || $noSealToSet !== $prospek->no_seal) {
-                    $updateFields['no_seal'] = $noSealToSet;
-                }
+                $updateFields['nomor_kontainer'] = $containerForThisProspek;
+                $updateFields['no_seal'] = $sealForThisProspek;
 
                 // Update tujuan_pengiriman if available from request or tanda terima
                 $tujuanPengiriman = $request->filled('tujuan_pengiriman') 
@@ -2099,7 +2115,7 @@ class TandaTerimaController extends Controller
                     'prospek_id' => $prospek->id,
                     'tanda_terima_id' => $tandaTerima->id,
                     'nomor_kontainer' => $prospek->nomor_kontainer,
-                    'nomor_kontainer_set' => $noKontainerToSet ?? null,
+                    'no_seal' => $prospek->no_seal,
                     'tujuan_pengiriman' => $prospek->tujuan_pengiriman,
                     'surat_jalan_id' => $prospek->surat_jalan_id,
                     'no_surat_jalan' => $prospek->no_surat_jalan,
