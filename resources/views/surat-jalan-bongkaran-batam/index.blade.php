@@ -1888,13 +1888,13 @@ document.addEventListener('click', function(event) {
 // Print SJ function - Print directly from BL data
 function printSJ(blId) {
     // Open print page in new window/tab
-    window.open('/surat-jalan-bongkaran/print-from-bl/' + blId, '_blank');
+    window.open('/surat-jalan-bongkaran-batam/print-from-bl/' + blId, '_blank');
 }
 
 // Print BA function - Print Berita Acara directly from BL data
 function printBA(blId) {
     // Open print BA page in new window/tab
-    window.open('/surat-jalan-bongkaran/print-ba/' + blId, '_blank');
+    window.open('/surat-jalan-bongkaran-batam/print-ba/' + blId, '_blank');
 }
 
 // Functions for Surat Jalan Bongkaran mode

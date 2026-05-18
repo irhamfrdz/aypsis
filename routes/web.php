@@ -3213,6 +3213,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/surat-jalan-bongkaran-batam/{suratJalanBongkaran}/download', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'downloadPdf'])
          ->name('surat-jalan-bongkaran-batam.download')
          ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam/print-from-bl/{bl}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'printFromBl'])
+         ->name('surat-jalan-bongkaran-batam.print-from-bl')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
+    Route::get('/surat-jalan-bongkaran-batam/print-ba/{bl}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'printBa'])
+         ->name('surat-jalan-bongkaran-batam.print-ba')
+         ->middleware('can:surat-jalan-bongkaran-batam-view');
 
     Route::get('surat-jalan-bongkaran/create', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'create'])
          ->name('surat-jalan-bongkaran.create')
