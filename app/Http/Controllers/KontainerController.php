@@ -94,11 +94,17 @@ class KontainerController extends Controller
     public function store(Request $request)
     {
         // Convert date format from dd/mmm/yyyy to yyyy-mm-dd for date fields
-        $dateFields = ['tanggal_masuk_sewa', 'tanggal_selesai_sewa'];
+        $dateFields = ['tanggal_mulai_sewa', 'tanggal_selesai_sewa'];
         foreach ($dateFields as $field) {
             if ($request->filled($field)) {
                 try {
-                    $date = \DateTime::createFromFormat('d/M/Y', $request->input($field));
+                    $rawDate = $request->input($field);
+                    // Translate Indonesian short month names to English
+                    $indonesianMonths = ['Mei', 'Agu', 'Okt', 'Des'];
+                    $englishMonths = ['May', 'Aug', 'Oct', 'Dec'];
+                    $translatedDate = str_ireplace($indonesianMonths, $englishMonths, $rawDate);
+                    
+                    $date = \DateTime::createFromFormat('d/M/Y', $translatedDate);
                     if ($date) {
                         $request->merge([$field => $date->format('Y-m-d')]);
                     }
@@ -244,7 +250,13 @@ class KontainerController extends Controller
         foreach ($dateFields as $field) {
             if ($request->filled($field)) {
                 try {
-                    $date = \DateTime::createFromFormat('d/M/Y', $request->input($field));
+                    $rawDate = $request->input($field);
+                    // Translate Indonesian short month names to English
+                    $indonesianMonths = ['Mei', 'Agu', 'Okt', 'Des'];
+                    $englishMonths = ['May', 'Aug', 'Oct', 'Dec'];
+                    $translatedDate = str_ireplace($indonesianMonths, $englishMonths, $rawDate);
+                    
+                    $date = \DateTime::createFromFormat('d/M/Y', $translatedDate);
                     if ($date) {
                         $request->merge([$field => $date->format('Y-m-d')]);
                     }

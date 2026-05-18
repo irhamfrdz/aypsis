@@ -161,7 +161,7 @@ class PranotaOngkosTrukController extends Controller
                     'surat_jalan_id' => $item['type'] === 'SuratJalan' ? $item['id'] : null,
                     'surat_jalan_bongkaran_id' => $item['type'] === 'SuratJalanBongkaran' ? $item['id'] : null,
                     'no_surat_jalan' => $item['no_surat_jalan'] ?? '-',
-                    'tanggal' => isset($item['tanggal']) && $item['tanggal'] !== '-' ? \Carbon\Carbon::createFromFormat('d/M/Y', $item['tanggal'])->format('Y-m-d') : null,
+                    'tanggal' => isset($item['tanggal']) && $item['tanggal'] !== '-' ? \Carbon\Carbon::createFromFormat('d/M/Y', str_ireplace(['Mei', 'Agu', 'Okt', 'Des'], ['May', 'Aug', 'Oct', 'Dec'], $item['tanggal']))->format('Y-m-d') : null,
                     'nominal' => $item['nominal'] ?? 0,
                     'type' => $item['type'],
                 ]);

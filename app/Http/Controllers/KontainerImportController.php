@@ -610,11 +610,12 @@ class KontainerImportController extends Controller
         }
     }
 
-    /**
-     * Helper function untuk parse berbagai format tanggal
-     */
     private function parseDate($dateString)
     {
+        $indonesianMonths = ['Mei', 'Agu', 'Okt', 'Des'];
+        $englishMonths = ['May', 'Aug', 'Oct', 'Dec'];
+        $dateString = str_ireplace($indonesianMonths, $englishMonths, $dateString);
+
         $formats = [
             'd/M/Y',   // 01/Jan/2025
             'd/M/y',   // 01/Jan/25
@@ -812,7 +813,11 @@ class KontainerImportController extends Controller
                     
                     if (!empty($tanggalMulaiSewa)) {
                         try {
-                            $date = \DateTime::createFromFormat('d/M/Y', $tanggalMulaiSewa);
+                            $indonesianMonths = ['Mei', 'Agu', 'Okt', 'Des'];
+                            $englishMonths = ['May', 'Aug', 'Oct', 'Dec'];
+                            $translatedMulai = str_ireplace($indonesianMonths, $englishMonths, $tanggalMulaiSewa);
+                            
+                            $date = \DateTime::createFromFormat('d/M/Y', $translatedMulai);
                             if ($date) {
                                 $tanggalMulaiSewaConverted = $date->format('Y-m-d');
                             } else {
@@ -829,7 +834,11 @@ class KontainerImportController extends Controller
                     
                     if (!empty($tanggalSelesaiSewa)) {
                         try {
-                            $date = \DateTime::createFromFormat('d/M/Y', $tanggalSelesaiSewa);
+                            $indonesianMonths = ['Mei', 'Agu', 'Okt', 'Des'];
+                            $englishMonths = ['May', 'Aug', 'Oct', 'Dec'];
+                            $translatedSelesai = str_ireplace($indonesianMonths, $englishMonths, $tanggalSelesaiSewa);
+                            
+                            $date = \DateTime::createFromFormat('d/M/Y', $translatedSelesai);
                             if ($date) {
                                 $tanggalSelesaiSewaConverted = $date->format('Y-m-d');
                             } else {
