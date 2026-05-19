@@ -222,9 +222,9 @@ class SuratJalanBatamController extends Controller
             'no_seal' => 'nullable|string',
             'f_e' => 'nullable|string',
             'rit' => 'nullable|string',
-            'karton' => 'nullable|string',
-            'plastik' => 'nullable|string',
-            'terpal' => 'nullable|string',
+            'karton' => 'nullable|integer',
+            'plastik' => 'nullable|integer',
+            'terpal' => 'nullable|integer',
             'status' => 'required|in:draft,active,completed,cancelled',
         ]);
 
@@ -367,9 +367,9 @@ class SuratJalanBatamController extends Controller
             'no_seal' => 'nullable|string',
             'f_e' => 'nullable|string',
             'rit' => 'nullable|string',
-            'karton' => 'nullable|string',
-            'plastik' => 'nullable|string',
-            'terpal' => 'nullable|string',
+            'karton' => 'nullable|integer',
+            'plastik' => 'nullable|integer',
+            'terpal' => 'nullable|integer',
             'status' => 'required|in:draft,active,completed,cancelled',
         ]);
 

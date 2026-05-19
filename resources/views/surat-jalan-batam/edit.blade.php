@@ -355,11 +355,11 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Karton</label>
                     <div class="flex space-x-4 mt-2">
                         <label class="inline-flex items-center">
-                            <input type="radio" name="karton" value="ya" class="form-radio text-indigo-600" {{ $suratJalan->karton == 'ya' ? 'checked' : '' }}>
+                            <input type="radio" name="karton" value="1" class="form-radio text-indigo-600" {{ $suratJalan->karton == 1 ? 'checked' : '' }}>
                             <span class="ml-2 text-sm text-gray-700">Ya</span>
                         </label>
                         <label class="inline-flex items-center">
-                            <input type="radio" name="karton" value="tidak" class="form-radio text-indigo-600" {{ $suratJalan->karton != 'ya' ? 'checked' : '' }}>
+                            <input type="radio" name="karton" value="0" class="form-radio text-indigo-600" {{ $suratJalan->karton != 1 ? 'checked' : '' }}>
                             <span class="ml-2 text-sm text-gray-700">Tidak</span>
                         </label>
                     </div>
@@ -369,11 +369,11 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Plastik</label>
                     <div class="flex space-x-4 mt-2">
                         <label class="inline-flex items-center">
-                            <input type="radio" name="plastik" value="ya" class="form-radio text-indigo-600" {{ $suratJalan->plastik == 'ya' ? 'checked' : '' }}>
+                            <input type="radio" name="plastik" value="1" class="form-radio text-indigo-600" {{ $suratJalan->plastik == 1 ? 'checked' : '' }}>
                             <span class="ml-2 text-sm text-gray-700">Ya</span>
                         </label>
                         <label class="inline-flex items-center">
-                            <input type="radio" name="plastik" value="tidak" class="form-radio text-indigo-600" {{ $suratJalan->plastik != 'ya' ? 'checked' : '' }}>
+                            <input type="radio" name="plastik" value="0" class="form-radio text-indigo-600" {{ $suratJalan->plastik != 1 ? 'checked' : '' }}>
                             <span class="ml-2 text-sm text-gray-700">Tidak</span>
                         </label>
                     </div>
@@ -383,11 +383,11 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Terpal</label>
                     <div class="flex space-x-4 mt-2">
                         <label class="inline-flex items-center">
-                            <input type="radio" name="terpal" value="ya" class="form-radio text-indigo-600" {{ $suratJalan->terpal == 'ya' ? 'checked' : '' }}>
+                            <input type="radio" name="terpal" value="1" class="form-radio text-indigo-600" {{ $suratJalan->terpal == 1 ? 'checked' : '' }}>
                             <span class="ml-2 text-sm text-gray-700">Ya</span>
                         </label>
                         <label class="inline-flex items-center">
-                            <input type="radio" name="terpal" value="tidak" class="form-radio text-indigo-600" {{ $suratJalan->terpal != 'ya' ? 'checked' : '' }}>
+                            <input type="radio" name="terpal" value="0" class="form-radio text-indigo-600" {{ $suratJalan->terpal != 1 ? 'checked' : '' }}>
                             <span class="ml-2 text-sm text-gray-700">Tidak</span>
                         </label>
                     </div>
