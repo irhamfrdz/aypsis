@@ -1404,9 +1404,14 @@
                 $thinnerQty = $stockLainLains->filter(function($item) {
                     return $item->namaStockBan && stripos($item->namaStockBan->nama, 'thinner') !== false;
                 })->sum('qty');
-            @endphp
 
-            @if($paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0)
+                $banDalamQty = $stockBanDalams->sum('qty');
+                $banPerutQty = $stockBanPeruts->sum('qty');
+                $ringVelgQty = $stockRingVelgs->sum('qty');
+                $velgQty = $stockVelgs->sum('qty');
+            @endphp
+ 
+            @if($paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $ringVelgQty > 0 || $velgQty > 0)
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Summary</h3>
                 <div class="flex items-center gap-2">
@@ -1436,6 +1441,78 @@
                     </div>
                 </div>
                 @endforeach
+ 
+                @if($banDalamQty > 0)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-blue-500 hover:bg-blue-50/30"
+                     onclick="filterBarangLainnya('BAN DALAM', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                            <i class="fas fa-dot-circle text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">BAN DALAM</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-xl font-black text-gray-800">{{ $banDalamQty }}</span>
+                                <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+ 
+                @if($banPerutQty > 0)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-purple-500 hover:bg-purple-50/30"
+                     onclick="filterBarangLainnya('BAN PERUT', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                            <i class="fas fa-circle-notch text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">BAN PERUT</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-xl font-black text-gray-800">{{ $banPerutQty }}</span>
+                                <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if($ringVelgQty > 0)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-yellow-500 hover:bg-yellow-50/30"
+                     onclick="filterBarangLainnya('RING VELG', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-yellow-50 text-yellow-600">
+                            <i class="fas fa-ring text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">RING VELG</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-xl font-black text-gray-800">{{ $ringVelgQty }}</span>
+                                <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if($velgQty > 0)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-indigo-500 hover:bg-indigo-50/30"
+                     onclick="filterBarangLainnya('VELG', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                            <i class="fas fa-dharmachakra text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">VELG</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-xl font-black text-gray-800">{{ $velgQty }}</span>
+                                <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 @if($majunQty > 0)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-orange-400 hover:bg-orange-50/30"
@@ -1617,7 +1694,7 @@
                         @endphp
                         
                         @forelse($allItems as $item)
-                        <tr class="hover:bg-gray-50 row-barang-lainnya" data-nama="{{ strtoupper($item->nama) }}">
+                        <tr class="hover:bg-gray-50 row-barang-lainnya" data-nama="{{ strtoupper($item->nama) }}" data-jenis="{{ strtoupper($item->jenis) }}">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold
                                     {{ $item->jenis == 'Ban Dalam' ? 'bg-blue-100 text-blue-800' : '' }}
@@ -1692,7 +1769,7 @@
             <!-- Mobile View: Barang Lainnya -->
             <div class="md:hidden space-y-3">
                 @forelse($allItems as $item)
-                <div class="mobile-card bg-white rounded-xl border border-gray-100 shadow-sm p-4" data-nama="{{ strtoupper($item->nama) }}">
+                <div class="mobile-card row-barang-lainnya bg-white rounded-xl border border-gray-100 shadow-sm p-4" data-nama="{{ strtoupper($item->nama) }}" data-jenis="{{ strtoupper($item->jenis) }}">
                     <div class="flex justify-between items-start mb-2">
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold
                             {{ $item->jenis == 'Ban Dalam' ? 'bg-blue-100 text-blue-800' : '' }}
@@ -3972,8 +4049,9 @@ function closeJualBanModal() {
         const upperName = name.toUpperCase();
         let found = 0;
         rows.forEach(row => {
-            const rowName = row.getAttribute('data-nama');
-            if (rowName === upperName) {
+            const rowName = row.getAttribute('data-nama') || '';
+            const rowJenis = row.getAttribute('data-jenis') || '';
+            if (rowName === upperName || rowJenis === upperName || rowName.includes(upperName)) {
                 row.classList.remove('hidden');
                 found++;
             } else {

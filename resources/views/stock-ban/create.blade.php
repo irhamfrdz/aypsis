@@ -1050,8 +1050,8 @@
                     nomorSeriContainer.classList.add('hidden');
                     mobilContainer.classList.add('hidden');
                     
-                    // Specific logic for Ban Dalam, Cat, Majun and Thinner: User requested no brand label
-                    if (isBanDalam || isCat || isMajun || isThinner) {
+                    // Specific logic for Ban Dalam, Ban Perut, Cat, Majun, Thinner, Ring Velg, and Velg: User requested no brand label
+                    if (isBanDalam || isBanPerut || isCat || isMajun || isThinner || isRingVelg || isVelg) {
                         merkContainer.classList.add('hidden');
                     } else {
                         merkContainer.classList.remove('hidden');
@@ -1091,15 +1091,15 @@
                         }
                     }
 
-                    if (isBanDalam) {
-                        // Ban Dalam: Force Pcs
+                    if (isBanDalam || isBanPerut) {
+                        // Ban Dalam & Ban Perut: Force Pcs
                         const opt = document.createElement('option');
                         opt.value = 'pcs';
                         opt.text = 'Pcs';
                         opt.selected = true;
                         typeSelect.appendChild(opt);
-                    } else if (isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun || isThinner) {
-                         // Ban Perut, Lock Kontainer, Velg, Cat, Majun or Thinner: Allow selection (Pcs, Set, Liter, etc)
+                    } else if (isLockKontainer || isRingVelg || isVelg || isCat || isMajun || isThinner) {
+                         // Lock Kontainer, Velg, Cat, Majun or Thinner: Allow selection (Pcs, Set, Liter, etc)
                          // Show all original options
                         originalTypeOptions.forEach(opt => {
                             const option = document.createElement('option');
