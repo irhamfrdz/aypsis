@@ -199,6 +199,11 @@
     const temasWrapper = document.getElementById('temas_wrapper');
     const temasSectionsContainer = document.getElementById('temas_sections_container');
     const addTemasSectionBtn = document.getElementById('add_temas_section_btn');
+
+    // Tagihan Tanto multi-section
+    const tantoWrapper = document.getElementById('tanto_wrapper');
+    const tantoSectionsContainer = document.getElementById('tanto_sections_container');
+    const addTantoSectionBtn = document.getElementById('add_tanto_section_btn');
     
     // Standard field wrappers
     const nominalWrapper = document.getElementById('nominal_wrapper');
