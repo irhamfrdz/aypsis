@@ -147,11 +147,18 @@
                                 </button>
                                 
                                 @if(auth()->user()->can('pranota-invoice-vendor-supir-update') && $pranota->pph <= 0)
-                                <button type="button" onclick="confirmAddPph('{{ $pranota->id }}')" class="text-emerald-500 hover:text-emerald-700 transition-colors" title="Tambahkan PPH 2%">
+                                <button type="button" onclick="confirmAddPph('{{ $pranota->id }}', '0.005', '0,5%')" class="text-orange-500 hover:text-orange-700 transition-colors" title="Tambahkan PPH 0,5%">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
+                                </button>
+                                <button type="button" onclick="confirmAddPph('{{ $pranota->id }}', '0.02', '2%')" class="text-emerald-500 hover:text-emerald-700 transition-colors" title="Tambahkan PPH 2%">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
+                                </button>
+                                <button type="button" onclick="confirmAddPph('{{ $pranota->id }}', '0.05', '5%')" class="text-rose-500 hover:text-rose-700 transition-colors" title="Tambahkan PPH 5%">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"></path></svg>
                                 </button>
                                 <form id="add-pph-form-{{ $pranota->id }}" action="{{ route('pranota-invoice-vendor-supir.add-pph', $pranota->id) }}" method="POST" class="hidden">
                                     @csrf
+                                    <input type="hidden" name="rate" id="pph-rate-input-{{ $pranota->id }}" value="0.02">
                                 </form>
                                 @endif
 
@@ -208,8 +215,12 @@
         }
     }
 
-    function confirmAddPph(id) {
-        if(confirm('Apakah Anda yakin ingin menambahkan PPH 2% pada pranota ini? Total nominal akan dikurangi 2% dan disimpan sebagai PPH.')) {
+    function confirmAddPph(id, rate = '0.02', label = '2%') {
+        if(confirm('Apakah Anda yakin ingin menambahkan PPH ' + label + ' pada pranota ini? Total nominal akan dikurangi ' + label + ' dan disimpan sebagai PPH.')) {
+            const input = document.getElementById('pph-rate-input-' + id);
+            if (input) {
+                input.value = rate;
+            }
             document.getElementById('add-pph-form-' + id).submit();
         }
     }

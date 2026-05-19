@@ -177,7 +177,7 @@ class PranotaInvoiceVendorSupirController extends Controller
         return view('pranota-invoice-vendor-supir.print', compact('pranota'));
     }
 
-    public function addPph($id)
+    public function addPph(Request $request, $id)
     {
         try {
             DB::beginTransaction();
@@ -191,7 +191,13 @@ class PranotaInvoiceVendorSupirController extends Controller
                 $baseForPph += $pranota->total_uang_muat;
             }
             
-            $pph = $baseForPph * 0.02;
+            $rate = $request->input('rate', 0.02);
+            $ratePercentLabel = ($rate * 100) . '%';
+            if ($rate == 0.005) {
+                $ratePercentLabel = '0,5%';
+            }
+            
+            $pph = $baseForPph * $rate;
             $netNominal = $pranota->total_nominal - $pph;
             $grandTotal = $netNominal + $pranota->total_uang_muat;
             
@@ -203,7 +209,7 @@ class PranotaInvoiceVendorSupirController extends Controller
             ]);
             
             DB::commit();
-            return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'PPH 2% berhasil ditambahkan ke Pranota' . ($isMAS ? ' (termasuk Uang Muat)' : '') . '.');
+            return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', "PPH {$ratePercentLabel} berhasil ditambahkan ke Pranota" . ($isMAS ? ' (termasuk Uang Muat)' : '') . '.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
