@@ -398,10 +398,16 @@
                 <input type="hidden" name="status" value="{{ $suratJalan->status }}">
                 
                 <div class="md:col-span-2 mt-4 pt-4 border-t">
-                    <label class="block text-sm font-bold text-gray-800 mb-1">Nominal Uang Jalan</label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-sm font-bold text-gray-800">Nominal Uang Jalan</label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="tanpa_uang_jalan" class="form-checkbox text-indigo-600 rounded" {{ $suratJalan->uang_jalan == 0 ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm font-medium text-gray-700">Tidak Menggunakan Uang Jalan</span>
+                        </label>
+                    </div>
                     <input type="text" name="uang_jalan" id="uang_jalan" 
                            value="{{ old('uang_jalan', number_format($suratJalan->uang_jalan, 0, ',', '.')) }}"
-                           class="w-full px-4 py-3 border border-indigo-300 bg-indigo-50 rounded-lg text-lg font-bold text-indigo-900 focus:ring-indigo-500 money-format shadow-inner">
+                           class="w-full px-4 py-3 border border-indigo-300 bg-indigo-50 rounded-lg text-lg font-bold text-indigo-900 focus:ring-indigo-500 money-format shadow-inner {{ $suratJalan->uang_jalan == 0 ? 'bg-gray-100 text-gray-500' : '' }}" {{ $suratJalan->uang_jalan == 0 ? 'readonly' : '' }}>
                 </div>
             </div>
 
@@ -583,9 +589,28 @@
     const sizeSelect = document.getElementById('size_select');
     const feSelect = document.getElementById('f_e_select');
     const uangJalanInput = document.getElementById('uang_jalan');
+    const tanpaUangJalanCheckbox = document.getElementById('tanpa_uang_jalan');
+
+    if (tanpaUangJalanCheckbox && uangJalanInput) {
+        tanpaUangJalanCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                uangJalanInput.value = '0';
+                uangJalanInput.readOnly = true;
+                uangJalanInput.classList.add('bg-gray-100', 'text-gray-500');
+                uangJalanInput.classList.remove('bg-indigo-50', 'text-indigo-900');
+            } else {
+                uangJalanInput.readOnly = false;
+                uangJalanInput.classList.remove('bg-gray-100', 'text-gray-500');
+                uangJalanInput.classList.add('bg-indigo-50', 'text-indigo-900');
+                calculateUangJalan();
+            }
+        });
+    }
 
     function calculateUangJalan() {
         if (!tujuanSelect || !sizeSelect || !feSelect || !uangJalanInput) return;
+        
+        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
 
         const selectedOption = tujuanSelect.options[tujuanSelect.selectedIndex];
         if (!selectedOption) return;
