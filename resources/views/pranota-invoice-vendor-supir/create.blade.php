@@ -115,6 +115,7 @@
                             <label for="potong_pph" class="block text-sm font-medium text-gray-700 mb-1.5">Potongan PPh</label>
                             <select name="potong_pph" id="potong_pph" class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm transition-shadow">
                                 <option value="">Tanpa PPh</option>
+                                <option value="0.005" {{ old('potong_pph') == '0.005' ? 'selected' : '' }}>Potong PPh 0,5% dari Total Invoice</option>
                                 <option value="0.02" {{ old('potong_pph') == '0.02' ? 'selected' : '' }}>Potong PPh 2% dari Total Invoice</option>
                                 <option value="0.05" {{ old('potong_pph') == '0.05' ? 'selected' : '' }}>Potong PPh 5% dari Total Invoice</option>
                             </select>
@@ -239,7 +240,7 @@
                 pph = subtotal * pphRate;
                 const pphPercentDisplay = document.getElementById('pph_percent_display');
                 if (pphPercentDisplay) {
-                    pphPercentDisplay.textContent = (pphRate * 100).toString();
+                    pphPercentDisplay.textContent = (pphRate * 100).toString().replace('.', ',');
                 }
                 if(pphContainer) pphContainer.classList.remove('hidden');
             } else {

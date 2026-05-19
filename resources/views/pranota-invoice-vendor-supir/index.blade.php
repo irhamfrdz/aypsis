@@ -104,7 +104,8 @@
                             <div class="text-[10px] text-gray-500 mt-0.5">Subtotal: Rp {{ number_format($originalSubtotal, 0, ',', '.') }}</div>
                             @if($pranota->pph > 0)
                                 @php
-                                    $pphRate = $originalSubtotal > 0 ? round(($pranota->pph / $originalSubtotal) * 100) : 2;
+                                    $rawRate = $originalSubtotal > 0 ? ($pranota->pph / $originalSubtotal) * 100 : 2;
+                                    $pphRate = $rawRate == round($rawRate) ? round($rawRate) : number_format($rawRate, 1, ',', '');
                                 @endphp
                                 <div class="text-[10px] text-red-500 mt-0.5 italic">- PPH {{ $pphRate }}%: Rp {{ number_format($pranota->pph, 0, ',', '.') }}</div>
                             @endif

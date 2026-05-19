@@ -161,7 +161,8 @@
                     @if($pranota->pph > 0)
                     @php
                         $originalSubtotal = $pranota->total_nominal + $pranota->pph;
-                        $pphRate = $originalSubtotal > 0 ? round(($pranota->pph / $originalSubtotal) * 100) : 2;
+                        $rawRate = $originalSubtotal > 0 ? ($pranota->pph / $originalSubtotal) * 100 : 2;
+                        $pphRate = $rawRate == round($rawRate) ? round($rawRate) : number_format($rawRate, 1, ',', '');
                     @endphp
                     <tr>
                         <td colspan="3" class="px-6 py-4 text-right font-bold text-gray-700">PPH {{ $pphRate }}%</td>
