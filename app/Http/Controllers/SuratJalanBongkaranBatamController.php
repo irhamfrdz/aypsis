@@ -613,6 +613,8 @@ class SuratJalanBongkaranBatamController extends Controller
             $validatedData['uang_jalan_nominal'] = 0;
         }
 
+        $validatedData['tanpa_uang_jalan'] = $request->has('tanpa_uang_jalan') ? 1 : 0;
+
         try {
             DB::beginTransaction();
 
@@ -743,6 +745,8 @@ class SuratJalanBongkaranBatamController extends Controller
             if (!isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
                 $validatedData['uang_jalan_nominal'] = 0;
             }
+
+            $validatedData['tanpa_uang_jalan'] = $request->has('tanpa_uang_jalan') ? 1 : 0;
 
             DB::beginTransaction();
 
@@ -920,6 +924,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'rit' => $suratJalan->rit ?? 'menggunakan_rit',
                 'uang_jalan_type' => $suratJalan->uang_jalan_type ?? 'full',
                 'uang_jalan_nominal' => $suratJalan->uang_jalan_nominal ?? 0,
+                'tanpa_uang_jalan' => $suratJalan->tanpa_uang_jalan ?? 0,
                 'lokasi' => $suratJalan->lokasi ?? '',
                 'f_e' => $suratJalan->f_e ?? 'Full',
             ]);

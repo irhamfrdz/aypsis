@@ -51,6 +51,7 @@ class SuratJalanBongkaranBatam extends Model
         'uang_jalan',
         'uang_jalan_type',
         'uang_jalan_nominal',
+        'tanpa_uang_jalan',
         'tagihan_ayp',
         'tagihan_atb',
         'tagihan_pb',

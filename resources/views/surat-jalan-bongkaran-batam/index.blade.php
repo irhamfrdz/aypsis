@@ -812,7 +812,13 @@
 
                         <!-- Uang Jalan Nominal -->
                         <div class="md:col-span-2">
-                            <label for="modal_uang_jalan_nominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal Uang Jalan</label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="modal_uang_jalan_nominal" class="block text-sm font-medium text-gray-700">Nominal Uang Jalan</label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="tanpa_uang_jalan" id="modal_tanpa_uang_jalan" value="1" class="form-checkbox text-blue-600 rounded">
+                                    <span class="ml-2 text-sm font-medium text-gray-700">Tidak Menggunakan Uang Jalan</span>
+                                </label>
+                            </div>
                             <input type="number" name="uang_jalan_nominal" id="modal_uang_jalan_nominal"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Masukkan nominal uang jalan" min="0" step="1">
@@ -1206,7 +1212,13 @@
 
                         <!-- Uang Jalan Nominal -->
                         <div class="md:col-span-2">
-                            <label for="edit_modal_uang_jalan_nominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal Uang Jalan</label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="edit_modal_uang_jalan_nominal" class="block text-sm font-medium text-gray-700">Nominal Uang Jalan</label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="tanpa_uang_jalan" id="edit_modal_tanpa_uang_jalan" value="1" class="form-checkbox text-blue-600 rounded">
+                                    <span class="ml-2 text-sm font-medium text-gray-700">Tidak Menggunakan Uang Jalan</span>
+                                </label>
+                            </div>
                             <input type="number" name="uang_jalan_nominal" id="edit_modal_uang_jalan_nominal"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                    placeholder="Masukkan nominal uang jalan" min="0" step="1">
@@ -1547,8 +1559,24 @@ function setupModalUangJalanCalculation(containerSize) {
     const uangJalanNominalInput = document.getElementById('modal_uang_jalan_nominal');
     const uangJalanTypeRadios = document.querySelectorAll('input[name="uang_jalan_type"]');
     const sizeSelect = document.getElementById('modal_size');
+    const tanpaUangJalanCheckbox = document.getElementById('modal_tanpa_uang_jalan');
     
+    if (tanpaUangJalanCheckbox && uangJalanNominalInput) {
+        tanpaUangJalanCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                uangJalanNominalInput.value = '0';
+                uangJalanNominalInput.readOnly = true;
+                uangJalanNominalInput.classList.add('bg-gray-100', 'text-gray-500');
+            } else {
+                uangJalanNominalInput.readOnly = false;
+                uangJalanNominalInput.classList.remove('bg-gray-100', 'text-gray-500');
+                calculateModalUangJalan();
+            }
+        });
+    }
+
     function calculateModalUangJalan() {
+        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
@@ -2020,6 +2048,19 @@ function openEditModal(suratJalanId) {
             const nominalValue = data.uang_jalan_nominal ? Math.round(parseFloat(data.uang_jalan_nominal)) : '';
             document.getElementById('edit_modal_uang_jalan_nominal').value = nominalValue;
             
+            const editTanpaUangJalanCheckbox = document.getElementById('edit_modal_tanpa_uang_jalan');
+            if (editTanpaUangJalanCheckbox) {
+                editTanpaUangJalanCheckbox.checked = (data.tanpa_uang_jalan == 1);
+                const uangJalanInput = document.getElementById('edit_modal_uang_jalan_nominal');
+                if (editTanpaUangJalanCheckbox.checked) {
+                    uangJalanInput.readOnly = true;
+                    uangJalanInput.classList.add('bg-gray-100', 'text-gray-500');
+                } else {
+                    uangJalanInput.readOnly = false;
+                    uangJalanInput.classList.remove('bg-gray-100', 'text-gray-500');
+                }
+            }
+            
             // Update destinations based on fetched lokasi
             updateDestinationOptions('edit');
             // Restore selection after update because updateDestinationOptions clears it
@@ -2088,8 +2129,24 @@ function setupEditModalUangJalanCalculation(containerSize) {
     const uangJalanNominalInput = document.getElementById('edit_modal_uang_jalan_nominal');
     const uangJalanTypeRadios = document.querySelectorAll('#modalEditSuratJalan input[name="uang_jalan_type"]');
     const sizeSelect = document.getElementById('edit_modal_size');
+    const tanpaUangJalanCheckbox = document.getElementById('edit_modal_tanpa_uang_jalan');
+    
+    if (tanpaUangJalanCheckbox && uangJalanNominalInput) {
+        tanpaUangJalanCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                uangJalanNominalInput.value = '0';
+                uangJalanNominalInput.readOnly = true;
+                uangJalanNominalInput.classList.add('bg-gray-100', 'text-gray-500');
+            } else {
+                uangJalanNominalInput.readOnly = false;
+                uangJalanNominalInput.classList.remove('bg-gray-100', 'text-gray-500');
+                calculateEditModalUangJalan();
+            }
+        });
+    }
     
     function calculateEditModalUangJalan() {
+        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
