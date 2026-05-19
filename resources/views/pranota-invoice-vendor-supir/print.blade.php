@@ -235,8 +235,10 @@
             @endif
             @if($pranota->pph > 0)
             @php
+                $isMAS = strpos($pranota->vendor->nama_vendor ?? '', 'Menara Anugrah Semesta') !== false;
                 $originalSubtotal = $pranota->total_nominal + $pranota->pph;
-                $rawRate = $originalSubtotal > 0 ? ($pranota->pph / $originalSubtotal) * 100 : 2;
+                $dividingBase = $isMAS ? ($originalSubtotal + $pranota->total_uang_muat) : $originalSubtotal;
+                $rawRate = $dividingBase > 0 ? ($pranota->pph / $dividingBase) * 100 : 2;
                 $pphRate = $rawRate == round($rawRate) ? round($rawRate) : number_format($rawRate, 1, ',', '');
             @endphp
             <tr>
