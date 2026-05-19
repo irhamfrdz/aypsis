@@ -232,6 +232,8 @@ class SuratJalanBatamController extends Controller
             $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
         }
 
+        $validated['tanpa_uang_jalan'] = $request->has('tanpa_uang_jalan') ? 1 : 0;
+
         $validated['input_by'] = Auth::id();
         $validated['input_date'] = now();
 
@@ -372,6 +374,12 @@ class SuratJalanBatamController extends Controller
             'terpal' => 'nullable|integer',
             'status' => 'required|in:draft,active,completed,cancelled',
         ]);
+
+        if ($request->filled('uang_jalan')) {
+            $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
+        }
+
+        $validated['tanpa_uang_jalan'] = $request->has('tanpa_uang_jalan') ? 1 : 0;
 
         $suratJalan->update($validated);
 

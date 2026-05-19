@@ -423,7 +423,7 @@
                     <div class="flex items-center justify-between mb-1">
                         <label class="block text-sm font-bold text-gray-800">Nominal Uang Jalan</label>
                         <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="tanpa_uang_jalan" class="form-checkbox text-indigo-600 rounded">
+                            <input type="checkbox" name="tanpa_uang_jalan" value="1" id="tanpa_uang_jalan" class="form-checkbox text-indigo-600 rounded">
                             <span class="ml-2 text-sm font-medium text-gray-700">Tidak Menggunakan Uang Jalan</span>
                         </label>
                     </div>

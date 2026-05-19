@@ -401,13 +401,13 @@
                     <div class="flex items-center justify-between mb-1">
                         <label class="block text-sm font-bold text-gray-800">Nominal Uang Jalan</label>
                         <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="tanpa_uang_jalan" class="form-checkbox text-indigo-600 rounded" {{ $suratJalan->uang_jalan == 0 ? 'checked' : '' }}>
+                            <input type="checkbox" name="tanpa_uang_jalan" value="1" id="tanpa_uang_jalan" class="form-checkbox text-indigo-600 rounded" {{ $suratJalan->tanpa_uang_jalan ? 'checked' : '' }}>
                             <span class="ml-2 text-sm font-medium text-gray-700">Tidak Menggunakan Uang Jalan</span>
                         </label>
                     </div>
                     <input type="text" name="uang_jalan" id="uang_jalan" 
                            value="{{ old('uang_jalan', number_format($suratJalan->uang_jalan, 0, ',', '.')) }}"
-                           class="w-full px-4 py-3 border border-indigo-300 bg-indigo-50 rounded-lg text-lg font-bold text-indigo-900 focus:ring-indigo-500 money-format shadow-inner {{ $suratJalan->uang_jalan == 0 ? 'bg-gray-100 text-gray-500' : '' }}" {{ $suratJalan->uang_jalan == 0 ? 'readonly' : '' }}>
+                           class="w-full px-4 py-3 border border-indigo-300 bg-indigo-50 rounded-lg text-lg font-bold text-indigo-900 focus:ring-indigo-500 money-format shadow-inner {{ $suratJalan->tanpa_uang_jalan ? 'bg-gray-100 text-gray-500' : '' }}" {{ $suratJalan->tanpa_uang_jalan ? 'readonly' : '' }}>
                 </div>
             </div>
 

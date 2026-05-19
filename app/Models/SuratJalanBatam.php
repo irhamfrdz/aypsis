@@ -49,6 +49,7 @@ class SuratJalanBatam extends Model
         'aktifitas',
         'rit',
         'uang_jalan',
+        'tanpa_uang_jalan',
         'tarif',
         'no_pemesanan',
         'gambar',
