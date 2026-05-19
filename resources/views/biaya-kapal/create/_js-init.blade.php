@@ -28,3 +28,6 @@
 
     // Store pricelist temas data
     const pricelistTemasData = {!! json_encode($pricelistTemas ?? []) !!};
+
+    // Store pricelist tanto data
+    const pricelistTantoData = {!! json_encode($pricelistTanto ?? []) !!};

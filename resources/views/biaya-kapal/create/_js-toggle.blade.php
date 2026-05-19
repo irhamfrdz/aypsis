@@ -15,6 +15,7 @@
         if(freightWrapper) freightWrapper.classList.add('hidden');
         if(meratusWrapper) meratusWrapper.classList.add('hidden');
         if(temasWrapper) temasWrapper.classList.add('hidden');
+        if(tantoWrapper) tantoWrapper.classList.add('hidden');
         
         // Reset nominal input properties
         if(nominalInput) {
@@ -1265,6 +1266,79 @@
             clearAllFreightSections();
             if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
             clearAllPerlengkapanSections();
+        }
+        // Show TANTO fields if "Tagihan Tanto" is selected
+        else if (selectedText.toLowerCase().includes('tanto')) {
+            // Show Tanto multi kapal wrapper
+            if (tantoWrapper) tantoWrapper.classList.remove('hidden');
+            initializeTantoSections();
+
+            // Hide standard kapal/voyage/bl fields
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Hide other standard fields
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(namaVendorWrapper) {
+                namaVendorWrapper.classList.add('hidden');
+                const vendorInput = document.getElementById('nama_vendor');
+                if (vendorInput) vendorInput.value = '';
+            }
+            if(nomorRekeningWrapper) {
+                nomorRekeningWrapper.classList.add('hidden');
+                const rekInput = document.getElementById('nomor_rekening');
+                if (rekInput) rekInput.value = '';
+            }
+
+            // Remove required attributes
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaInput) {
+                penerimaInput.removeAttribute('required');
+                penerimaInput.value = '';
+                if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            }
+
+            // Hide PPN/PPH fields (handled per section)
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+
+            // Reset values
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            dpInput.value = '0';
+            sisaPembayaranInput.value = '0';
+
+            // Hide other wrappers
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+            if (loloWrapper) loloWrapper.classList.add('hidden');
+            clearAllLoloSections();
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
+            if (demurrageWrapper) demurrageWrapper.classList.add('hidden');
+            clearAllDemurrageSections();
+            if (freightWrapper) freightWrapper.classList.add('hidden');
+            clearAllFreightSections();
+            if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
+            clearAllPerlengkapanSections();
+            if (meratusWrapper) meratusWrapper.classList.add('hidden');
+            clearAllMeratusSections();
+            if (temasWrapper) temasWrapper.classList.add('hidden');
+            clearAllTemasSections();
         } else {
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
@@ -1345,5 +1419,9 @@
             clearAllPerlengkapanSections();
             if (meratusWrapper) meratusWrapper.classList.add('hidden');
             clearAllMeratusSections();
+            if (temasWrapper) temasWrapper.classList.add('hidden');
+            clearAllTemasSections();
+            if (tantoWrapper) tantoWrapper.classList.add('hidden');
+            clearAllTantoSections();
         }
     });

@@ -231,6 +231,7 @@
     // Meratus & Temas wrappers
     const meratusWrapper = document.getElementById('meratus_wrapper');
     const temasWrapper = document.getElementById('temas_wrapper');
+    const tantoWrapper = document.getElementById('tanto_wrapper');
 
     // Pricelist Perijinan data
     var pricelistPerijinansData = {!! json_encode($pricelistPerijinans) !!};
@@ -240,5 +241,8 @@
 
     // Pricelist Temas data
     var pricelistTemasData = {!! json_encode($pricelistTemas ?? []) !!};
+
+    // Pricelist Tanto data
+    var pricelistTantoData = {!! json_encode($pricelistTanto ?? []) !!};
 
     // Format nominal input with thousand separator

@@ -62,6 +62,7 @@
 @include('biaya-kapal.create._section-freight')
 @include('biaya-kapal.create._section-meratus')
 @include('biaya-kapal.create._section-temas')
+@include('biaya-kapal.create._section-tanto')
 
 {{-- ===== FORM FIELDS EXTRA ===== --}}
 @include('biaya-kapal.create._form-fields-extra')
@@ -100,6 +101,7 @@
 @include('biaya-kapal.create._js-freight')
 @include('biaya-kapal.create._js-meratus')
 @include('biaya-kapal.create._js-temas')
+@include('biaya-kapal.create._js-tanto')
 </script>
 @endpush
 
