@@ -1464,7 +1464,7 @@
                     input.value = '';
                     return;
                 }
-                const prevNew = previewGrid.querySelectorAll('[data-is-existing!="1"]');
+                const prevNew = previewGrid.querySelectorAll('.image-preview-item:not([data-is-existing="1"])');
                 prevNew.forEach(el => el.remove());
 
                 const filesToProcess = Math.min(input.files.length, maxAllowed);
