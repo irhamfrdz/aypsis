@@ -79,8 +79,11 @@ class PranotaInvoiceVendorSupirController extends Controller
             $totalInvoices = $invoices->sum('total_nominal');
             $pph = 0;
             
-            if ($request->has('potong_pph')) {
-                $pph = $totalInvoices * 0.02;
+            if ($request->filled('potong_pph')) {
+                $pphRate = floatval($request->potong_pph);
+                if ($pphRate > 0) {
+                    $pph = $totalInvoices * $pphRate;
+                }
             }
             
             $grandTotal = $totalInvoices - $pph;

@@ -112,12 +112,12 @@
                         </div>
 
                         <div class="form-group md:col-span-2 mt-2">
-                            <div class="flex items-center">
-                                <input type="checkbox" name="potong_pph" id="potong_pph" value="1" class="h-4 w-4 text-rose-600 focus:ring-rose-500 border-gray-300 rounded cursor-pointer">
-                                <label for="potong_pph" class="ml-2 block text-sm font-medium text-gray-700 cursor-pointer">
-                                    Potong PPh 2% dari Total Invoice
-                                </label>
-                            </div>
+                            <label for="potong_pph" class="block text-sm font-medium text-gray-700 mb-1.5">Potongan PPh</label>
+                            <select name="potong_pph" id="potong_pph" class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm transition-shadow">
+                                <option value="">Tanpa PPh</option>
+                                <option value="0.02" {{ old('potong_pph') == '0.02' ? 'selected' : '' }}>Potong PPh 2% dari Total Invoice</option>
+                                <option value="0.05" {{ old('potong_pph') == '0.05' ? 'selected' : '' }}>Potong PPh 5% dari Total Invoice</option>
+                            </select>
                         </div>
                     </div>
 
@@ -129,7 +129,7 @@
                                     Subtotal: <span id="subtotal_display" class="font-bold">Rp 0</span>
                                 </div>
                                 <div id="pph_container" class="hidden bg-orange-50 text-orange-800 px-4 py-2 rounded-lg font-medium shadow-sm border border-orange-200">
-                                    PPh 2%: <span id="total_pph_display" class="font-bold">- Rp 0</span>
+                                    PPh <span id="pph_percent_display">2</span>%: <span id="total_pph_display" class="font-bold">- Rp 0</span>
                                 </div>
                                 <div class="bg-rose-50 text-rose-800 px-4 py-2 rounded-lg font-medium shadow-sm border border-rose-100">
                                     Grand Total: <span id="total_nominal_display" class="font-bold text-lg">Rp 0</span>
@@ -214,7 +214,7 @@
         const submitBtn = document.getElementById('submitBtn');
         const form = document.getElementById('pranotaForm');
 
-        const potongPphCheckbox = document.getElementById('potong_pph');
+        const potongPphSelect = document.getElementById('potong_pph');
         const pphContainer = document.getElementById('pph_container');
         const subtotalDisplay = document.getElementById('subtotal_display');
         const totalPphDisplay = document.getElementById('total_pph_display');
@@ -230,8 +230,17 @@
             });
             
             let pph = 0;
-            if (potongPphCheckbox && potongPphCheckbox.checked) {
-                pph = subtotal * 0.02;
+            let pphRate = 0;
+            if (potongPphSelect && potongPphSelect.value) {
+                pphRate = parseFloat(potongPphSelect.value) || 0;
+            }
+
+            if (pphRate > 0) {
+                pph = subtotal * pphRate;
+                const pphPercentDisplay = document.getElementById('pph_percent_display');
+                if (pphPercentDisplay) {
+                    pphPercentDisplay.textContent = (pphRate * 100).toString();
+                }
                 if(pphContainer) pphContainer.classList.remove('hidden');
             } else {
                 if(pphContainer) pphContainer.classList.add('hidden');
@@ -257,8 +266,8 @@
             }
         }
 
-        if(potongPphCheckbox) {
-            potongPphCheckbox.addEventListener('change', calculateTotal);
+        if(potongPphSelect) {
+            potongPphSelect.addEventListener('change', calculateTotal);
         }
 
         if(selectAll) {

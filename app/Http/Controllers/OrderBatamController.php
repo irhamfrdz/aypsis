@@ -69,10 +69,12 @@ class OrderBatamController extends Controller
 
         $rutes = [];
 
+        $pricelistUangJalanBatams = PricelistUangJalanBatam::orderBy('ring')->orderBy('expedisi')->get();
+
         // Generate next order number
         $nextOrderNumber = $this->generateNextOrderNumber();
 
-        return view('orders-batam.create', compact('terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'nextOrderNumber', 'rutes'));
+        return view('orders-batam.create', compact('terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'nextOrderNumber', 'rutes', 'pricelistUangJalanBatams'));
     }
 
     /**
@@ -298,7 +300,9 @@ class OrderBatamController extends Controller
 
         $rutes = [];
 
-        return view('orders-batam.edit', compact('orderBatam', 'terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'rutes'));
+        $pricelistUangJalanBatams = PricelistUangJalanBatam::orderBy('ring')->orderBy('expedisi')->get();
+
+        return view('orders-batam.edit', compact('orderBatam', 'terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'rutes', 'pricelistUangJalanBatams'));
     }
 
     /**

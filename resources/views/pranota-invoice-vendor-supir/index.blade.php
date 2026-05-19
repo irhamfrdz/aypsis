@@ -103,7 +103,10 @@
                             @endphp
                             <div class="text-[10px] text-gray-500 mt-0.5">Subtotal: Rp {{ number_format($originalSubtotal, 0, ',', '.') }}</div>
                             @if($pranota->pph > 0)
-                                <div class="text-[10px] text-red-500 mt-0.5 italic">- PPH 2%: Rp {{ number_format($pranota->pph, 0, ',', '.') }}</div>
+                                @php
+                                    $pphRate = $originalSubtotal > 0 ? round(($pranota->pph / $originalSubtotal) * 100) : 2;
+                                @endphp
+                                <div class="text-[10px] text-red-500 mt-0.5 italic">- PPH {{ $pphRate }}%: Rp {{ number_format($pranota->pph, 0, ',', '.') }}</div>
                             @endif
                             @if($pranota->total_uang_muat > 0)
                                 <div class="text-[10px] text-indigo-600 mt-0.5 italic">+ Uang Muat: Rp {{ number_format($pranota->total_uang_muat, 0, ',', '.') }}</div>
