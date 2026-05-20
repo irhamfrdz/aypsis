@@ -390,9 +390,32 @@
                             <label for="notify_party" class="block text-sm font-medium text-gray-700 mb-1">
                                 Notify Party
                             </label>
-                            <input type="text" name="notify_party" id="notify_party" value="{{ old('notify_party') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('notify_party') border-red-500 @enderror"
-                                   placeholder="Masukkan Notify Party">
+                            <select name="notify_party" id="notify_party"
+                                    class="select2-notify w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('notify_party') border-red-500 @enderror">
+                                <option value="">-- Pilih Notify Party --</option>
+                                @php
+                                    $notifyInMaster = false;
+                                    $currentNotify = old('notify_party');
+                                    if ($currentNotify) {
+                                        foreach($masterPengirimPenerima as $item) {
+                                            if ($item->nama === $currentNotify) {
+                                                $notifyInMaster = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                @if($currentNotify && !$notifyInMaster)
+                                    <option value="{{ $currentNotify }}" selected>{{ $currentNotify }}</option>
+                                @endif
+                                @foreach($masterPengirimPenerima as $item)
+                                    <option value="{{ $item->nama }}" 
+                                            data-alamat="{{ $item->alamat }}"
+                                            {{ $currentNotify == $item->nama ? 'selected' : '' }}>
+                                        {{ $item->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
                             @error('notify_party')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -1139,6 +1162,23 @@
                 }
             });
 
+            // Initialize Select2 for notify party dropdown
+            $('.select2-notify').select2({
+                placeholder: '-- Pilih Notify Party --',
+                allowClear: true,
+                width: '100%',
+                dropdownAutoWidth: false,
+                tags: true,
+                language: {
+                    noResults: function() {
+                        return "Tidak ada hasil ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
             // Auto-fill alamat penerima when penerima is selected
             $('#penerima').on('select2:select', function(e) {
                 var selectedOption = e.params.data.element;
@@ -1167,6 +1207,22 @@
             // Clear alamat when pengirim is cleared
             $('#pengirim').on('select2:clear', function(e) {
                 $('#alamat_pengirim').val('');
+            });
+
+            // Auto-fill alamat notify party when notify party is selected
+            $('#notify_party').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                if (selectedOption) {
+                    var alamat = $(selectedOption).data('alamat');
+                    if (alamat) {
+                        $('#alamat_notify_party').val(alamat);
+                    }
+                }
+            });
+
+            // Clear alamat when notify party is cleared
+            $('#notify_party').on('select2:clear', function(e) {
+                $('#alamat_notify_party').val('');
             });
         } else {
             console.error('Select2 is not loaded!');
@@ -3364,9 +3420,10 @@
         if (event.data.type === 'penerimaAdded') {
             const newData = event.data.penerima;
             
-            // Add to both penerima and pengirim select (same data source)
+            // Add to penerima, pengirim, and notify select (same data source)
             const penerimaSelect = $('#penerima');
             const pengirimSelect = $('#pengirim');
+            const notifySelect = $('#notify_party');
             
             // Determine which one should be selected
             const selectAsPenerima = lastPopupOpened === 'penerima';
@@ -3381,6 +3438,11 @@
             const pengirimOption = new Option(newData.nama, newData.nama, selectAsPengirim, selectAsPengirim);
             $(pengirimOption).attr('data-alamat', newData.alamat || '');
             pengirimSelect.append(pengirimOption);
+
+            // Add new option to notify
+            const notifyOption = new Option(newData.nama, newData.nama, false, false);
+            $(notifyOption).attr('data-alamat', newData.alamat || '');
+            notifySelect.append(notifyOption);
             
             // Trigger select2 change and auto-fill alamat for the active one
             if (selectAsPenerima) {
