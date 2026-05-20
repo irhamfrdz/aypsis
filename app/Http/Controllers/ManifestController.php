@@ -1139,7 +1139,7 @@ class ManifestController extends Controller
             $this->extractImagesFromTandaTerima($tandaTerima, $imageUrls);
         }
         
-        // 2. FALLBACK/LOOKUP BY TANDA TERIMA NUMBER & CONTAINER NUMBER
+        // 2. FALLBACK/LOOKUP BY TANDA TERIMA NUMBER
         
         // FCL (TandaTerima & TandaTerimaBatam)
         if ($ttNo) {
@@ -1150,20 +1150,6 @@ class ManifestController extends Controller
             
             if (class_exists(\App\Models\TandaTerimaBatam::class)) {
                 $fclBatams = \App\Models\TandaTerimaBatam::where('no_surat_jalan', $ttNo)->get();
-                foreach ($fclBatams as $fclBatam) {
-                    $this->extractImagesFromTandaTerima($fclBatam, $imageUrls);
-                }
-            }
-        }
-        
-        if ($containerNo && $containerNo !== 'Cargo') {
-            $fcls = \App\Models\TandaTerima::where('no_kontainer', $containerNo)->get();
-            foreach ($fcls as $fcl) {
-                $this->extractImagesFromTandaTerima($fcl, $imageUrls);
-            }
-            
-            if (class_exists(\App\Models\TandaTerimaBatam::class)) {
-                $fclBatams = \App\Models\TandaTerimaBatam::where('no_kontainer', $containerNo)->get();
                 foreach ($fclBatams as $fclBatam) {
                     $this->extractImagesFromTandaTerima($fclBatam, $imageUrls);
                 }
@@ -1189,20 +1175,6 @@ class ManifestController extends Controller
             }
         }
         
-        if ($containerNo && $containerNo !== 'Cargo') {
-            $ttsjs = \App\Models\TandaTerimaTanpaSuratJalan::where('no_kontainer', $containerNo)->get();
-            foreach ($ttsjs as $ttsj) {
-                $this->extractImagesFromArrayField($ttsj->gambar_tanda_terima, $imageUrls);
-            }
-            
-            if (class_exists(\App\Models\TandaTerimaTanpaSuratJalanBatam::class)) {
-                $ttsjBatams = \App\Models\TandaTerimaTanpaSuratJalanBatam::where('no_kontainer', $containerNo)->get();
-                foreach ($ttsjBatams as $ttsjBatam) {
-                    $this->extractImagesFromArrayField($ttsjBatam->gambar_tanda_terima, $imageUrls);
-                }
-            }
-        }
-        
         // LCL (TandaTerimaLcl & TandaTerimaLclBatam)
         if ($ttNo) {
             $lcls = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', $ttNo)->get();
@@ -1212,24 +1184,6 @@ class ManifestController extends Controller
             
             if (class_exists(\App\Models\TandaTerimaLclBatam::class)) {
                 $lclBatams = \App\Models\TandaTerimaLclBatam::where('nomor_tanda_terima', $ttNo)->get();
-                foreach ($lclBatams as $lclBatam) {
-                    $this->extractImagesFromArrayField($lclBatam->gambar_surat_jalan, $imageUrls);
-                }
-            }
-        }
-        
-        if ($containerNo && $containerNo !== 'Cargo') {
-            $lcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($qp) use ($containerNo) {
-                $qp->where('nomor_kontainer', $containerNo);
-            })->get();
-            foreach ($lcls as $lcl) {
-                $this->extractImagesFromArrayField($lcl->gambar_surat_jalan, $imageUrls);
-            }
-            
-            if (class_exists(\App\Models\TandaTerimaLclBatam::class)) {
-                $lclBatams = \App\Models\TandaTerimaLclBatam::whereHas('kontainerPivot', function($qp) use ($containerNo) {
-                    $qp->where('nomor_kontainer', $containerNo);
-                })->get();
                 foreach ($lclBatams as $lclBatam) {
                     $this->extractImagesFromArrayField($lclBatam->gambar_surat_jalan, $imageUrls);
                 }
