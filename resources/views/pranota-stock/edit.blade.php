@@ -43,9 +43,22 @@
                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Nama Vendor">
                 </div>
                 <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Bank</label>
+                    <select id="bank_pranota"
+                            class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-700">
+                        <option value="">-- Pilih Bank --</option>
+                        @if($pranota->bank && !in_array($pranota->bank, $banks))
+                            <option value="{{ $pranota->bank }}" selected>{{ $pranota->bank }}</option>
+                        @endif
+                        @foreach($banks as $b)
+                            <option value="{{ $b }}" {{ $pranota->bank === $b ? 'selected' : '' }}>{{ $b }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor Rekening</label>
                     <input type="text" id="rekening_pranota" value="{{ $pranota->rekening }}" 
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Bank - Nomor Rekening">
+                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Nomor Rekening">
                 </div>
                 <div class="relative" id="pranota_penerima_dropdown_container">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Penerima Dana (Opsional)</label>
@@ -224,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const adj = document.getElementById('adjustment').value;
             const ket = document.getElementById('keterangan_pranota').value;
             const vendor = document.getElementById('vendor_pranota').value;
+            const bank = document.getElementById('bank_pranota').value;
             const rekening = document.getElementById('rekening_pranota').value;
             const penerima = document.getElementById('penerima_pranota').value;
 
@@ -244,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     tanggal_pranota: tanggal,
                     nomor_accurate: accurate,
                     vendor: vendor,
+                    bank: bank,
                     rekening: rekening,
                     penerima: penerima,
                     adjustment: adj,

@@ -252,9 +252,9 @@
                 <td class="label">Nomor Accurate</td>
                 <td class="separator">:</td>
                 <td>{{ $pranota->nomor_accurate ?? '-' }}</td>
-                <td class="label">Rekening</td>
+                <td class="label">Bank / Rekening</td>
                 <td class="separator">:</td>
-                <td>{{ $pranota->rekening ?? '-' }}</td>
+                <td>{{ $pranota->bank ? $pranota->bank . ' - ' : '' }}{{ $pranota->rekening ?? '-' }}</td>
             </tr>
         </table>
 

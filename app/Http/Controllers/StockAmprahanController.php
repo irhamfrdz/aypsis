@@ -131,7 +131,34 @@ class StockAmprahanController extends Controller
 
         $masterItems = \App\Models\MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'selectedMobil'));
+        $banks = [
+            'BCA (Bank Central Asia)',
+            'Bank Mandiri',
+            'BRI (Bank Rakyat Indonesia)',
+            'BNI (Bank Negara Indonesia)',
+            'BSI (Bank Syariah Indonesia)',
+            'BTN (Bank Tabungan Negara)',
+            'Bank CIMB Niaga',
+            'Bank Danamon',
+            'Maybank Indonesia',
+            'Bank Permata',
+            'OCBC NISP',
+            'Bank Panin',
+            'Bank Mega',
+            'KB Bukopin',
+            'Bank BTPN',
+            'Bank UOB Indonesia',
+            'Bank HSBC Indonesia',
+            'Commonwealth Bank',
+            'Bank DKI',
+            'Bank BJB',
+            'Bank Jatim',
+            'Bank Jateng',
+            'Bank Sumut',
+        ];
+        sort($banks);
+
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'selectedMobil', 'banks'));
     }
 
     public function exportExcel(Request $request)
@@ -964,6 +991,7 @@ class StockAmprahanController extends Controller
                 'tanggal_pranota' => 'required|date',
                 'nomor_accurate' => 'nullable|string',
                 'vendor' => 'nullable|string',
+                'bank' => 'nullable|string',
                 'rekening' => 'nullable|string',
                 'penerima' => 'nullable|string',
                 'adjustment' => 'nullable|numeric',
@@ -976,6 +1004,7 @@ class StockAmprahanController extends Controller
                 'tanggal_pranota' => $data['tanggal_pranota'],
                 'nomor_accurate' => $data['nomor_accurate'],
                 'vendor' => $data['vendor'],
+                'bank' => $data['bank'],
                 'rekening' => $data['rekening'],
                 'penerima' => $data['penerima'],
                 'adjustment' => $data['adjustment'] ?? 0,
@@ -1152,7 +1181,34 @@ class StockAmprahanController extends Controller
 
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
 
-        return view('pranota-stock.edit', compact('pranota', 'karyawans'));
+        $banks = [
+            'BCA (Bank Central Asia)',
+            'Bank Mandiri',
+            'BRI (Bank Rakyat Indonesia)',
+            'BNI (Bank Negara Indonesia)',
+            'BSI (Bank Syariah Indonesia)',
+            'BTN (Bank Tabungan Negara)',
+            'Bank CIMB Niaga',
+            'Bank Danamon',
+            'Maybank Indonesia',
+            'Bank Permata',
+            'OCBC NISP',
+            'Bank Panin',
+            'Bank Mega',
+            'KB Bukopin',
+            'Bank BTPN',
+            'Bank UOB Indonesia',
+            'Bank HSBC Indonesia',
+            'Commonwealth Bank',
+            'Bank DKI',
+            'Bank BJB',
+            'Bank Jatim',
+            'Bank Jateng',
+            'Bank Sumut',
+        ];
+        sort($banks);
+
+        return view('pranota-stock.edit', compact('pranota', 'karyawans', 'banks'));
     }
 
     public function pranotaUpdate(Request $request, $id)
@@ -1165,6 +1221,7 @@ class StockAmprahanController extends Controller
                 'tanggal_pranota' => 'required|date',
                 'nomor_accurate' => 'nullable|string',
                 'vendor' => 'nullable|string',
+                'bank' => 'nullable|string',
                 'rekening' => 'nullable|string',
                 'penerima' => 'nullable|string',
                 'adjustment' => 'nullable|numeric',
@@ -1185,6 +1242,7 @@ class StockAmprahanController extends Controller
                 'tanggal_pranota' => $data['tanggal_pranota'],
                 'nomor_accurate' => $data['nomor_accurate'],
                 'vendor' => $data['vendor'],
+                'bank' => $data['bank'],
                 'rekening' => $data['rekening'],
                 'penerima' => $data['penerima'],
                 'adjustment' => $data['adjustment'] ?? 0,

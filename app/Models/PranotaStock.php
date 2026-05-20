@@ -14,6 +14,7 @@ class PranotaStock extends Model
         'tanggal_pranota',
         'nomor_accurate',
         'vendor',
+        'bank',
         'rekening',
         'penerima',
         'adjustment',

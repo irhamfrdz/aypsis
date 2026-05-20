@@ -785,7 +785,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
                         <label for="vendor_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
                             Vendor
@@ -793,14 +793,6 @@
                         <input type="text" id="vendor_pranota" name="vendor"
                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
                                placeholder="Nama vendor...">
-                    </div>
-                    <div>
-                        <label for="rekening_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
-                            Rekening
-                        </label>
-                        <input type="text" id="rekening_pranota" name="rekening"
-                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
-                               placeholder="Nomor rekening...">
                     </div>
                     <div class="relative" id="pranota_penerima_dropdown_container">
                         <label for="penerima_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -826,6 +818,29 @@
                             @endforeach
                             <div id="pranota_penerima_no_results" class="hidden px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada nama yang cocok</div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="bank_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Nama Bank
+                        </label>
+                        <select id="bank_pranota" name="bank"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700 bg-white">
+                            <option value="">-- Pilih Bank --</option>
+                            @foreach($banks as $b)
+                                <option value="{{ $b }}">{{ $b }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="rekening_pranota" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Rekening
+                        </label>
+                        <input type="text" id="rekening_pranota" name="rekening"
+                               class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-700"
+                               placeholder="Nomor rekening...">
                     </div>
                 </div>
                 
@@ -1936,6 +1951,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
 
             const vendor = document.getElementById('vendor_pranota').value;
+            const bank = document.getElementById('bank_pranota').value;
             const rekening = document.getElementById('rekening_pranota').value;
             const penerima = document.getElementById('penerima_pranota').value;
 
@@ -1951,6 +1967,7 @@
                     tanggal_pranota: tanggal,
                     nomor_accurate: accurate,
                     vendor: vendor,
+                    bank: bank,
                     rekening: rekening,
                     penerima: penerima,
                     adjustment: adj,
