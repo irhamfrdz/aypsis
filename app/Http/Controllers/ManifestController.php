@@ -1143,17 +1143,13 @@ class ManifestController extends Controller
         
         // FCL (TandaTerima & TandaTerimaBatam)
         if ($ttNo) {
-            $fcls = \App\Models\TandaTerima::where('no_surat_jalan', $ttNo)
-                ->orWhere('no_tanda_terima', $ttNo)
-                ->get();
+            $fcls = \App\Models\TandaTerima::where('no_surat_jalan', $ttNo)->get();
             foreach ($fcls as $fcl) {
                 $this->extractImagesFromTandaTerima($fcl, $imageUrls);
             }
             
             if (class_exists(\App\Models\TandaTerimaBatam::class)) {
-                $fclBatams = \App\Models\TandaTerimaBatam::where('no_surat_jalan', $ttNo)
-                    ->orWhere('no_tanda_terima', $ttNo)
-                    ->get();
+                $fclBatams = \App\Models\TandaTerimaBatam::where('no_surat_jalan', $ttNo)->get();
                 foreach ($fclBatams as $fclBatam) {
                     $this->extractImagesFromTandaTerima($fclBatam, $imageUrls);
                 }
