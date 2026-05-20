@@ -30,7 +30,7 @@
                         'voyage' => $voyage,
                         'adjustment' => $barangItems->first()->adjustment ?? 0,
                         'notes_adjustment' => $barangItems->first()->notes_adjustment ?? '',
-                        'barang' => $barangItems->whereNotNull('pricelist_buruh_id')->map(function($i){ return ['barang_id' => $i->pricelist_buruh_id, 'jumlah' => $i->jumlah]; })->values(),
+                        'barang' => $barangItems->whereNotNull('pricelist_buruh_id')->map(function($i){ return ['barang_id' => $i->pricelist_buruh_id, 'jumlah' => (float)$i->jumlah]; })->values(),
                         'tenaga_kerja' => $tenagaKerjaItems->map(function($i){ return ['buruh_id' => $i->buruh_id, 'nominal' => $i->nominal]; })->values()
                     ];
                 }
@@ -83,7 +83,7 @@
                     'pph' => $section['pph'] ?? 0,
                     'grand_total' => $section['grand_total'] ?? 0,
                     'barang' => collect($section['barang'] ?? [])->map(function($i){ 
-                        return ['barang_id' => $i['barang_id'] ?? null, 'jumlah' => $i['jumlah'] ?? 0]; 
+                        return ['barang_id' => $i['barang_id'] ?? null, 'jumlah' => (float)($i['jumlah'] ?? 0)]; 
                     })->values()
                 ];
             }
@@ -105,7 +105,7 @@
                          'total_nominal' => $firstItem->total_nominal ?? 0,
                          'pph' => $firstItem->pph ?? 0,
                          'grand_total' => $firstItem->grand_total ?? 0,
-                         'barang' => $items->map(function($i){ return ['barang_id' => $i->pricelist_tkbm_id, 'jumlah' => $i->jumlah]; })->values()
+                         'barang' => $items->map(function($i){ return ['barang_id' => $i->pricelist_tkbm_id, 'jumlah' => (float)$i->jumlah]; })->values()
                      ];
                  }
             }
