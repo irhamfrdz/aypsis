@@ -60,7 +60,6 @@
 
         html, body {
             width: {{ $currentPaper['width'] }};
-            height: {{ $currentPaper['height'] }};
             font-family: Arial, sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
             font-weight: bold; /* Added bold */
@@ -225,15 +224,6 @@
 
         @media print {
             .permohonan-transfer-half-folio {
-                @if($paperSize === 'Folio')
-                    height: 155.1mm !important;
-                @elseif($paperSize === 'A4')
-                    height: 138.5mm !important;
-                @else
-                    height: calc({{ $currentPaper['height'] }} - 10mm) !important;
-                @endif
-                position: relative !important;
-                box-sizing: border-box !important;
                 page-break-after: always !important;
                 page-break-inside: avoid !important;
                 width: 100% !important;
@@ -256,19 +246,6 @@
 
             .permohonan-transfer-half-folio strong {
                 font-size: 8px !important;
-            }
-
-            .permohonan-transfer-half-folio .footer {
-                position: absolute !important;
-                bottom: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                margin-top: 0 !important;
-                padding-top: 0 !important;
-            }
-
-            .permohonan-transfer-half-folio .signature-line {
-                margin-top: 45px !important;
             }
         }
     </style>
@@ -608,30 +585,24 @@
         </div>
 
         <!-- Signature Section -->
-        <div class="footer">
-            <div class="signatures">
-                <div class="signature-box">
-                    <div>Dibuat Oleh</div>
-                    <div class="signature-line">
-                        {{ $biayaKapal->creator->name ?? '-' }}
-                    </div>
-                </div>
-                
-                <div class="signature-box">
-                    <div>Diperiksa Oleh</div>
-                    <div class="signature-line">
-                        &nbsp;
-                    </div>
-                </div>
-                
-                <div class="signature-box">
-                    <div>Disetujui Oleh</div>
-                    <div class="signature-line">
-                        {{ $biayaKapal->approver->name ?? '-' }}
-                    </div>
-                </div>
-            </div>
-            
+        <div class="footer" style="margin-top: 40px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                <tr>
+                    <td style="width: 33.33%;"><strong>Dibuat Oleh:</strong></td>
+                    <td style="width: 33.33%;"><strong>Diperiksa Oleh:</strong></td>
+                    <td style="width: 33.33%;"><strong>Disetujui Oleh:</strong></td>
+                </tr>
+                <tr>
+                    <td style="height: 85px;"></td>
+                    <td style="height: 85px;"></td>
+                    <td style="height: 85px;"></td>
+                </tr>
+                <tr>
+                    <td>( {{ $biayaKapal->creator->name ?? '__________' }} )</td>
+                    <td>( __________ )</td>
+                    <td>( {{ $biayaKapal->approver->name ?? '__________' }} )</td>
+                </tr>
+            </table>
         </div>
     </div>
 
