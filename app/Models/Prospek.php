@@ -110,6 +110,11 @@ class Prospek extends Model
         return $this->belongsTo(\App\Models\MasterKapal::class, 'kapal_id');
     }
 
+    public function manifests()
+    {
+        return $this->hasMany(\App\Models\Manifest::class, 'prospek_id');
+    }
+
     /**
      * Boot method untuk auto-linking
      */
