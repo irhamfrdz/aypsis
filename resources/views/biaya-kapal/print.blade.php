@@ -585,7 +585,7 @@
         </div>
 
         <!-- Signature Section -->
-        <div class="footer" style="margin-top: 40px;">
+        <div class="footer" style="margin-top: 20px;">
             <table style="width: 100%; border-collapse: collapse; text-align: center;">
                 <tr>
                     <td style="width: 33.33%;"><strong>Dibuat Oleh:</strong></td>
@@ -593,9 +593,9 @@
                     <td style="width: 33.33%;"><strong>Disetujui Oleh:</strong></td>
                 </tr>
                 <tr>
-                    <td style="height: 85px;"></td>
-                    <td style="height: 85px;"></td>
-                    <td style="height: 85px;"></td>
+                    <td style="height: 50px;"></td>
+                    <td style="height: 50px;"></td>
+                    <td style="height: 50px;"></td>
                 </tr>
                 <tr>
                     <td>( {{ $biayaKapal->creator->name ?? '__________' }} )</td>
