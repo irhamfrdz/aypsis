@@ -1217,6 +1217,23 @@
                                 <td>-</td>
                             </tr>
 
+                            {{-- Dokumen Tanda Terima --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Dokumen Tanda Terima</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[dokumen-tanda-terima][view]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Surat Jalan Bongkaran --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

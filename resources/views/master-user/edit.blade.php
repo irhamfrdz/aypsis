@@ -1521,6 +1521,23 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
+
+                            {{-- Dokumen Tanda Terima --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Dokumen Tanda Terima</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[dokumen-tanda-terima][view]" value="1" class="permission-checkbox" @if(old('permissions.dokumen-tanda-terima.view') || (isset($userMatrixPermissions['dokumen-tanda-terima']['view']) && $userMatrixPermissions['dokumen-tanda-terima']['view']) || ($user && $user->can('dokumen-tanda-terima-view'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
                             {{-- Tanda Terima Tanpa Surat Jalan Batam --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

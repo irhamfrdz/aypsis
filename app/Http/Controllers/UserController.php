@@ -649,6 +649,7 @@ class UserController extends Controller
                 'tanda-terima-bongkaran' => 'tanda-terima-bongkaran',
                 'tanda-terima-batam' => 'tanda-terima-batam',
                 'tanda-terima' => 'tanda-terima',
+                'dokumen-tanda-terima' => 'dokumen-tanda-terima',
                 'gate-in' => 'gate-in',
                 'pranota-surat-jalan' => 'pranota-surat-jalan',
                 'pranota-uang-jalan-bongkaran' => 'pranota-uang-jalan-bongkaran',
