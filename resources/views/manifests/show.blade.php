@@ -157,6 +157,13 @@
                     @endif
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">NOTIFY PARTY</label>
+                    <p class="text-base text-gray-900 font-semibold">{{ $manifest->notify_party ?? '-' }}</p>
+                    @if($manifest->alamat_notify_party)
+                        <p class="text-sm text-gray-600 mt-1 whitespace-pre-line">{{ $manifest->alamat_notify_party }}</p>
+                    @endif
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Asal Kontainer</label>
                     <p class="text-base text-gray-900">{{ $manifest->asal_kontainer ?? '-' }}</p>
                 </div>

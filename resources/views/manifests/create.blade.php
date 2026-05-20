@@ -221,6 +221,18 @@
                     </div>
 
                     <div>
+                        <label for="notify_party" class="block text-sm font-medium text-gray-700 mb-2">NOTIFY PARTY</label>
+                        <input type="text" name="notify_party" id="notify_party" value="{{ old('notify_party') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+
+                    <div>
+                        <label for="alamat_notify_party" class="block text-sm font-medium text-gray-700 mb-2">Alamat Notify Party</label>
+                        <textarea name="alamat_notify_party" id="alamat_notify_party" rows="1"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('alamat_notify_party') }}</textarea>
+                    </div>
+
+                    <div>
                         <label for="asal_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Asal Kontainer</label>
                         <input type="text" name="asal_kontainer" id="asal_kontainer" value="{{ old('asal_kontainer') }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">

@@ -1,124 +1,58 @@
 <?php
 
-namespace App\Models;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Manifest extends Model
+class AddNotifyPartyToManifestsTable extends Migration
 {
-    protected $fillable = [
-        'nomor_bl',
-        'nomor_urut',
-        'nomor_manifest',
-        'nomor_tanda_terima',
-        'prospek_id',
-        'nomor_kontainer',
-        'no_seal',
-        'tipe_kontainer',
-        'size_kontainer',
-        'no_voyage',
-        'pelabuhan_asal',
-        'pelabuhan_tujuan',
-        'pelabuhan_muat',
-        'pelabuhan_bongkar',
-        'nama_kapal',
-        'tanggal_berangkat',
-        'nama_barang',
-        'asal_kontainer',
-        'ke',
-        'pengirim',
-        'alamat_pengirim',
-        'penerima',
-        'alamat_penerima',
-        'alamat_pengiriman',
-        'contact_person',
-        'tonnage',
-        'volume',
-        'satuan',
-        'term',
-        'kuantitas',
-        'penerimaan',
-        'notify_party',
-        'alamat_notify_party',
-        'created_by',
-        'updated_by',
-    ];
-
-    protected $casts = [
-        'tanggal_berangkat' => 'date',
-        'penerimaan' => 'date',
-        'tonnage' => 'decimal:3',
-        'volume' => 'decimal:3',
-        'kuantitas' => 'integer',
-    ];
-
-    // Relationships
-    public function prospek()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        return $this->belongsTo(Prospek::class);
-    }
+        Schema::table('manifests', function (Blueprint $table) {
+            $table->string('notify_party')->nullable()->after('alamat_penerima');
+            $table->text('alamat_notify_party')->nullable()->after('notify_party');
+        });
 
-    public function createdBy()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function updatedBy()
-    {
-        return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    public function suratJalanBongkaran()
-    {
-        return $this->hasOne(SuratJalanBongkaran::class, 'manifest_id');
-    }
-
-    public function suratJalanBongkaranBatam()
-    {
-        return $this->hasOne(SuratJalanBongkaranBatam::class, 'manifest_id');
+        // Sync/populate existing manifests data
+        try {
+            $manifests = \App\Models\Manifest::all();
+            foreach ($manifests as $manifest) {
+                $related = $this->getRelatedNotifyParty($manifest);
+                if ($related) {
+                    $manifest->notify_party = $related['notify_party'];
+                    $manifest->alamat_notify_party = $related['alamat_notify_party'];
+                    $manifest->save();
+                }
+            }
+        } catch (\Exception $e) {
+            // Log or ignore if models aren't fully ready yet, but they should be
+            Log::warning("Could not sync notify party for manifests: " . $e->getMessage());
+        }
     }
 
     /**
-     * Get the Tanda Terima number for display, with fallbacks.
+     * Reverse the migrations.
      */
-    public function getNomorTandaTerimaDisplayAttribute()
+    public function down(): void
     {
-        if (!empty($this->nomor_tanda_terima)) {
-            return $this->nomor_tanda_terima;
-        }
-
-        if ($this->prospek) {
-            if ($this->prospek->tandaTerima) {
-                return $this->prospek->tandaTerima->no_tanda_terima;
-            }
-            
-            // Fallback: extract from keterangan if it's a TTTSJ
-            if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $this->prospek->keterangan, $matches)) {
-                return trim($matches[1]);
-            }
-        }
-        
-        return '-';
-    }
-
-    /**
-     * Get the Alamat Pengiriman, fallback to Alamat Penerima if empty.
-     */
-    public function getAlamatPengirimanAttribute($value)
-    {
-        return $value ?: $this->alamat_penerima;
+        Schema::table('manifests', function (Blueprint $table) {
+            $table->dropColumn(['notify_party', 'alamat_notify_party']);
+        });
     }
 
     /**
      * Resolves notify party from related tables.
      */
-    public function getRelatedNotifyParty()
+    private function getRelatedNotifyParty($manifest)
     {
-        $ttNo = $this->nomor_tanda_terima;
+        $ttNo = $manifest->nomor_tanda_terima;
         
         // 1. Check FCL Tanda Terima via prospek
-        if ($this->prospek && $this->prospek->tandaTerima) {
-            $tandaTerima = $this->prospek->tandaTerima;
+        if ($manifest->prospek && $manifest->prospek->tandaTerima) {
+            $tandaTerima = $manifest->prospek->tandaTerima;
             if (!empty($tandaTerima->notify_party)) {
                 return [
                     'notify_party' => $tandaTerima->notify_party,
@@ -196,23 +130,5 @@ class Manifest extends Model
         }
         
         return null;
-    }
-
-    /**
-     * Boot logic for automatically filling values on save.
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::saving(function ($manifest) {
-            if (empty($manifest->notify_party)) {
-                $related = $manifest->getRelatedNotifyParty();
-                if ($related) {
-                    $manifest->notify_party = $related['notify_party'];
-                    $manifest->alamat_notify_party = $related['alamat_notify_party'];
-                }
-            }
-        });
     }
 }
