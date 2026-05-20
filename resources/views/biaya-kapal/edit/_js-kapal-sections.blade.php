@@ -101,9 +101,14 @@
             <div class="mb-3 p-3 bg-gray-100 border border-gray-200 rounded-lg">
                 <label class="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-wider">Tenaga Kerja / Buruh</label>
                 <div class="buruh-container-section" data-section="${sectionIndex}"></div>
-                <button type="button" onclick="addBuruhToSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-lg transition">
-                    <i class="fas fa-user-plus mr-1"></i> Tambah Buruh
-                </button>
+                <div class="flex gap-2 mt-2">
+                    <button type="button" onclick="addBuruhToSection(${sectionIndex})" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-lg transition shadow-sm">
+                        <i class="fas fa-user-plus mr-1"></i> Tambah Buruh
+                    </button>
+                    <button type="button" onclick="randomizeBuruhForSection(${sectionIndex})" class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-lg transition shadow-sm" title="Pilih buruh & nominal secara acak">
+                        <i class="fas fa-dice mr-1"></i> Randomize Buruh
+                    </button>
+                </div>
             </div>
 
             <!-- Nominal Per Kapal Display -->
@@ -509,6 +514,105 @@
             if (val !== '') {
                 this.value = parseInt(val).toLocaleString('id-ID');
             }
+        });
+    };
+
+    window.randomizeBuruhForSection = function(sectionIndex) {
+        if (!allBuruhsData || allBuruhsData.length === 0) {
+            alert('Data buruh tidak tersedia.');
+            return;
+        }
+
+        const section = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+        
+        // 1. Hitung total biaya kapal pada section ini (Barang + Adjustment)
+        let sectionTotal = 0;
+        const barangSelects = section.querySelectorAll('.barang-select-item');
+        const jumlahInputs = section.querySelectorAll('.jumlah-input-item');
+        const adjustmentInput = section.querySelector('.adjustment-input');
+        
+        barangSelects.forEach((select, index) => {
+            const selectedOption = select.options[select.selectedIndex];
+            const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
+            const jumlahRaw = (jumlahInputs[index].value || '0').replace(',', '.');
+            const jumlah = parseFloat(jumlahRaw) || 0;
+            sectionTotal += tarif * jumlah;
+        });
+
+        if (adjustmentInput) {
+            const adjustmentRaw = (adjustmentInput.value || '0').replace(/\./g, '').replace(',', '.');
+            const adjustment = parseFloat(adjustmentRaw) || 0;
+            sectionTotal += adjustment;
+        }
+
+        sectionTotal = Math.round(sectionTotal / 1000) * 1000;
+
+        if (sectionTotal <= 0) {
+            alert('Nominal biaya kapal masih 0 atau negatif. Harap isi data barang terlebih dahulu.');
+            return;
+        }
+
+        const container = section.querySelector('.buruh-container-section');
+        
+        // Clear existing buruh in this section for a clean random set
+        container.innerHTML = '';
+        
+        // 2. Tentukan jumlah buruh acak (Prioritas > 20 orang)
+        // OPTIMASI: Cari jumlah buruh yang bisa membagi rata total nominal tanpa sisa (Perfectly Even)
+        const minBuruhForCap = Math.ceil(sectionTotal / 440000);
+        const searchMin = Math.max(21, minBuruhForCap);
+        const searchMax = Math.max(searchMin + 14, 35);
+        
+        let perfectCounts = [];
+        const limitSearch = Math.min(searchMax, allBuruhsData.length);
+        const startSearch = Math.min(searchMin, allBuruhsData.length);
+        
+        for (let c = startSearch; c <= limitSearch; c++) {
+            if (sectionTotal % (c * 1000) === 0) {
+                perfectCounts.push(c);
+            }
+        }
+        
+        let count;
+        if (perfectCounts.length > 0) {
+            // Gunakan salah satu jumlah buruh yang menghasilkan angka bulat sempurna
+            count = perfectCounts[Math.floor(Math.random() * perfectCounts.length)];
+        } else {
+            // Fallback: Gunakan random seperti biasa jika tidak ada pembagi sempurna
+            count = Math.floor(Math.random() * (limitSearch - startSearch + 1)) + startSearch;
+        }
+        
+        // Pick random unique buruhs
+        const shuffled = [...allBuruhsData].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+        
+        // 3. Distribusikan sectionTotal ke buruh (Lainnya rata, 1 buruh dapat sisa lebih besar)
+        let baseNominal = Math.floor((sectionTotal / selected.length) / 1000) * 1000;
+        
+        // Joki: Ada kemungkinan 50% untuk sengaja mengurangi baseNominal agar sisa (diff) terkumpul di 1 buruh
+        // Ini memastikan ada variasi "1 buruh lebih besar" meskipun angkanya bisa dibagi rata sempurna
+        if (Math.random() < 0.5 && baseNominal > 10000) {
+            const reduction = 1000; 
+            const testLucky = sectionTotal - ((baseNominal - reduction) * (selected.length - 1));
+            if (testLucky <= 440000) {
+                baseNominal -= reduction;
+            }
+        }
+
+        let luckyNominal = sectionTotal - (baseNominal * (selected.length - 1));
+        
+        // Penyesuaian agar tidak melebihi cap 440rb
+        while (luckyNominal > 440000 && baseNominal < 440000) {
+            baseNominal += 1000;
+            luckyNominal = sectionTotal - (baseNominal * (selected.length - 1));
+        }
+
+        // Pilih 1 buruh secara acak untuk menjadi si "Lucky"
+        const luckyIndex = Math.floor(Math.random() * selected.length);
+
+        selected.forEach((buruh, index) => {
+            let nominal = (index === luckyIndex) ? luckyNominal : baseNominal;
+            addBuruhToSectionWithValue(sectionIndex, buruh.id, nominal);
         });
     };
     
