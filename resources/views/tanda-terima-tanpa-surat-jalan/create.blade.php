@@ -387,9 +387,17 @@
                     <!-- Baris 4: Notify Party -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div>
-                            <label for="notify_party" class="block text-sm font-medium text-gray-700 mb-1">
-                                Notify Party
-                            </label>
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="notify_party" class="block text-sm font-medium text-gray-700">
+                                    Notify Party
+                                </label>
+                                <button type="button" 
+                                        onclick="openNotifyPopup()"
+                                        class="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                    <i class="fas fa-plus-circle"></i>
+                                    Tambah Notify Party Baru
+                                </button>
+                            </div>
                             <select name="notify_party" id="notify_party"
                                     class="select2-notify w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('notify_party') border-red-500 @enderror">
                                 <option value="">-- Pilih Notify Party --</option>
@@ -3412,7 +3420,28 @@
         }
     }
 
-    // Listen for message from popup when new penerima/pengirim is added
+    // Function to open notify party popup window
+    function openNotifyPopup() {
+        lastPopupOpened = 'notify';
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("tanda-terima.penerima.create", [], false) }}',
+            'TambahNotifyParty',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
+    }
+
+    // Listen for message from popup when new penerima/pengirim/notify is added
     window.addEventListener('message', function(event) {
         // Verify origin for security
         if (event.origin !== window.location.origin) return;
@@ -3428,6 +3457,7 @@
             // Determine which one should be selected
             const selectAsPenerima = lastPopupOpened === 'penerima';
             const selectAsPengirim = lastPopupOpened === 'pengirim';
+            const selectAsNotify = lastPopupOpened === 'notify';
             
             // Add new option to penerima
             const penerimaOption = new Option(newData.nama, newData.nama, selectAsPenerima, selectAsPenerima);
@@ -3440,7 +3470,7 @@
             pengirimSelect.append(pengirimOption);
 
             // Add new option to notify
-            const notifyOption = new Option(newData.nama, newData.nama, false, false);
+            const notifyOption = new Option(newData.nama, newData.nama, selectAsNotify, selectAsNotify);
             $(notifyOption).attr('data-alamat', newData.alamat || '');
             notifySelect.append(notifyOption);
             
@@ -3451,6 +3481,9 @@
             } else if (selectAsPengirim) {
                 pengirimSelect.trigger('change');
                 $('#alamat_pengirim').val(newData.alamat || '');
+            } else if (selectAsNotify) {
+                notifySelect.trigger('change');
+                $('#alamat_notify_party').val(newData.alamat || '');
             }
             
             console.log('✓ New ' + lastPopupOpened + ' added:', newData.nama);

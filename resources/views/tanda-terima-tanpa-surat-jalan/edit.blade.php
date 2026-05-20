@@ -377,32 +377,38 @@
                             <label for="notify_party" class="block text-sm font-medium text-gray-700 mb-1">
                                 Notify Party
                             </label>
-                            <select name="notify_party" id="notify_party"
-                                    class="select2-notify w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('notify_party') border-red-500 @enderror">
-                                <option value="">-- Pilih Notify Party --</option>
-                                @php
-                                    $notifyInMaster = false;
-                                    $currentNotify = old('notify_party', $tandaTerimaTanpaSuratJalan->notify_party);
-                                    if ($currentNotify) {
-                                        foreach($masterPengirimPenerima as $item) {
-                                            if ($item->nama === $currentNotify) {
-                                                $notifyInMaster = true;
-                                                break;
+                            <div class="flex gap-2">
+                                <select name="notify_party" id="notify_party"
+                                        class="select2-notify flex-1">
+                                    <option value="">-- Pilih Notify Party --</option>
+                                    @php
+                                        $notifyInMaster = false;
+                                        $currentNotify = old('notify_party', $tandaTerimaTanpaSuratJalan->notify_party);
+                                        if ($currentNotify) {
+                                            foreach($masterPengirimPenerima as $item) {
+                                                if ($item->nama === $currentNotify) {
+                                                    $notifyInMaster = true;
+                                                    break;
+                                                }
                                             }
                                         }
-                                    }
-                                @endphp
-                                @if($currentNotify && !$notifyInMaster)
-                                    <option value="{{ $currentNotify }}" selected>{{ $currentNotify }}</option>
-                                @endif
-                                @foreach($masterPengirimPenerima as $item)
-                                    <option value="{{ $item->nama }}" 
-                                            data-alamat="{{ $item->alamat }}"
-                                            {{ $currentNotify == $item->nama ? 'selected' : '' }}>
-                                        {{ $item->nama }}
-                                    </option>
-                                @endforeach
-                            </select>
+                                    @endphp
+                                    @if($currentNotify && !$notifyInMaster)
+                                        <option value="{{ $currentNotify }}" selected>{{ $currentNotify }}</option>
+                                    @endif
+                                    @foreach($masterPengirimPenerima as $item)
+                                        <option value="{{ $item->nama }}" 
+                                                data-alamat="{{ $item->alamat }}"
+                                                {{ $currentNotify == $item->nama ? 'selected' : '' }}>
+                                            {{ $item->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <button type="button" onclick="openNotifyPopup()" 
+                                        class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                             @error('notify_party')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -1556,7 +1562,28 @@
         }
     }
 
-    // Listen for message from popup when new penerima/pengirim is added
+    // Function to open notify party popup window
+    function openNotifyPopup() {
+        lastPopupOpened = 'notify';
+        const width = 600;
+        const height = 500;
+        const left = (screen.width - width) / 2;
+        const top = (screen.height - height) / 2;
+        
+        const popup = window.open(
+            '{{ route("tanda-terima.penerima.create", [], false) }}',
+            'TambahNotifyParty',
+            `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+        
+        if (popup) {
+            popup.focus();
+        } else {
+            alert('Pop-up diblokir! Silakan izinkan pop-up untuk situs ini.');
+        }
+    }
+
+    // Listen for message from popup when new penerima/pengirim/notify is added
     window.addEventListener('message', function(event) {
         // Verify origin for security
         if (event.origin !== window.location.origin) return;
@@ -1572,6 +1599,7 @@
             // Determine which one should be selected
             const selectAsPenerima = lastPopupOpened === 'penerima';
             const selectAsPengirim = lastPopupOpened === 'pengirim';
+            const selectAsNotify = lastPopupOpened === 'notify';
             
             // Add new option to penerima
             const penerimaOption = new Option(newData.nama, newData.nama, selectAsPenerima, selectAsPenerima);
@@ -1584,7 +1612,7 @@
             pengirimSelect.append(pengirimOption);
 
             // Add new option to notify
-            const notifyOption = new Option(newData.nama, newData.nama, false, false);
+            const notifyOption = new Option(newData.nama, newData.nama, selectAsNotify, selectAsNotify);
             jQuery(notifyOption).attr('data-alamat', newData.alamat || '');
             notifySelect.append(notifyOption);
             
@@ -1595,6 +1623,9 @@
             } else if (selectAsPengirim) {
                 pengirimSelect.trigger('change');
                 jQuery('#alamat_pengirim').val(newData.alamat || '');
+            } else if (selectAsNotify) {
+                notifySelect.trigger('change');
+                jQuery('#alamat_notify_party').val(newData.alamat || '');
             }
             
             console.log('✓ New ' + lastPopupOpened + ' added:', newData.nama);
