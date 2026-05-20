@@ -134,7 +134,15 @@
                             <td class="px-4 py-3 text-sm font-medium text-gray-600" colspan="5">Saldo Sebelum Periode (Mulai)</td>
                             <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">Rp {{ number_format($saldoAwal, 0, ',', '.') }}</td>
                             @if(Auth::user()->username == 'kiky')
-                            <td class="px-4 py-3"></td>
+                            <td class="px-4 py-3 text-center">
+                                @if(request('start_date'))
+                                <button type="button" onclick="openEditSaldoModal({{ $saldoAwal }})" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-50 transition-colors duration-200" title="Ubah Saldo Sebelum Periode">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                    </svg>
+                                </button>
+                                @endif
+                            </td>
                             @endif
                         </tr>
 
@@ -258,6 +266,58 @@
     </div>
 </div>
 
+<!-- EDIT SALDO MODAL -->
+<div id="editSaldoModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeEditSaldoModal()"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+            <form action="{{ route('report.kas-truck.update-starting-balance') }}" method="POST">
+                @csrf
+                <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+                <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+                <input type="hidden" name="search" value="{{ request('search') }}">
+                
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Ubah Saldo Sebelum Periode (Mulai)
+                            </h3>
+                            <div class="mt-2 text-sm text-gray-500 mb-4">
+                                Menyesuaikan saldo sebelum tanggal <strong class="text-gray-700">{{ request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->format('d/M/Y') : '' }}</strong>.
+                            </div>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Saldo Mulai Baru (Rp) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="input_saldo_awal" name="saldo_awal" step="any" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                        Simpan Perubahan
+                    </button>
+                    <button type="button" onclick="closeEditSaldoModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function openTopupModal() {
     document.getElementById('topupModal').classList.remove('hidden');
@@ -265,6 +325,15 @@ function openTopupModal() {
 
 function closeTopupModal() {
     document.getElementById('topupModal').classList.add('hidden');
+}
+
+function openEditSaldoModal(currentSaldo) {
+    document.getElementById('input_saldo_awal').value = currentSaldo;
+    document.getElementById('editSaldoModal').classList.remove('hidden');
+}
+
+function closeEditSaldoModal() {
+    document.getElementById('editSaldoModal').classList.add('hidden');
 }
 </script>
 @endsection

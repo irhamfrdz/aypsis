@@ -267,4 +267,76 @@ class KasTruckController extends Controller
         
         return redirect()->back()->with('success', 'Berhasil menukar posisi Pemasukan/Pengeluaran!');
     }
+
+    public function updateStartingBalance(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'saldo_awal' => 'required|numeric',
+        ]);
+
+        $accountName = 'Bank BCA Trucking  - 168 2889 955';
+        $akunCoa = Coa::where('nama_akun', $accountName)->first();
+
+        if (!$akunCoa) {
+            return redirect()->back()->with('error', 'Gagal, Akun COA master tidak ditemukan di sistem.');
+        }
+
+        $startDate = $request->input('start_date');
+        $newSaldoAwal = $request->input('saldo_awal');
+
+        // Calculate current initial balance (before start date)
+        $currentSaldoAwal = 0;
+        $pastTransactions = CoaTransaction::where('coa_id', $akunCoa->id)
+            ->whereDate('tanggal_transaksi', '<', $startDate)
+            ->get();
+            
+        foreach ($pastTransactions as $pt) {
+            $currentSaldoAwal += $pt->debit;
+            $currentSaldoAwal -= $pt->kredit;
+        }
+
+        $difference = $newSaldoAwal - $currentSaldoAwal;
+        $adjustmentDate = \Carbon\Carbon::parse($startDate)->subDay()->format('Y-m-d');
+
+        // Find existing adjustment transaction on the day before start date
+        $adjustmentTrx = CoaTransaction::where('coa_id', $akunCoa->id)
+            ->whereDate('tanggal_transaksi', $adjustmentDate)
+            ->where('keterangan', 'Penyesuaian Saldo Sebelum Periode')
+            ->first();
+
+        if ($adjustmentTrx) {
+            $netTrx = $adjustmentTrx->debit - $adjustmentTrx->kredit;
+            $newNet = $netTrx + $difference;
+
+            if ($newNet == 0) {
+                $adjustmentTrx->delete();
+            } else {
+                $adjustmentTrx->update([
+                    'debit' => $newNet > 0 ? $newNet : 0,
+                    'kredit' => $newNet < 0 ? abs($newNet) : 0,
+                    'jenis_transaksi' => $newNet > 0 ? 'Debit' : 'Kredit',
+                ]);
+            }
+        } else {
+            if ($difference != 0) {
+                CoaTransaction::create([
+                    'coa_id' => $akunCoa->id,
+                    'tanggal_transaksi' => $adjustmentDate,
+                    'nomor_referensi' => '-',
+                    'jenis_transaksi' => $difference > 0 ? 'Debit' : 'Kredit',
+                    'keterangan' => 'Penyesuaian Saldo Sebelum Periode',
+                    'debit' => $difference > 0 ? $difference : 0,
+                    'kredit' => $difference < 0 ? abs($difference) : 0,
+                    'created_by' => auth()->id() ?? 1,
+                ]);
+            }
+        }
+
+        return redirect()->route('report.kas-truck.view', [
+            'start_date' => $request->input('start_date'),
+            'end_date' => $request->input('end_date'),
+            'search' => $request->input('search'),
+        ])->with('success', 'Saldo Sebelum Periode (Mulai) berhasil disesuaikan!');
+    }
 }

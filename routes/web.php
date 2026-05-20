@@ -5446,6 +5446,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/kas-truck/view', [App\Http\Controllers\Report\KasTruckController::class, 'view'])->name('kas-truck.view');
     Route::post('/kas-truck/topup', [App\Http\Controllers\Report\KasTruckController::class, 'topup'])->name('kas-truck.topup');
     Route::post('/kas-truck/swap/{id}', [App\Http\Controllers\Report\KasTruckController::class, 'swap'])->name('kas-truck.swap');
+    Route::post('/kas-truck/update-starting-balance', [App\Http\Controllers\Report\KasTruckController::class, 'updateStartingBalance'])->name('kas-truck.update-starting-balance')->middleware('only.kiky');
 
     // Report Pranota (to be implemented)
     // Route::get('/pranota', [App\Http\Controllers\ReportPranotaController::class, 'index'])->name('pranota.index');
