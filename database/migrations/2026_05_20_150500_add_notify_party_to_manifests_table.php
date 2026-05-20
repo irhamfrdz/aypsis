@@ -12,8 +12,13 @@ class AddNotifyPartyToManifestsTable extends Migration
     public function up(): void
     {
         Schema::table('manifests', function (Blueprint $table) {
-            $table->string('notify_party')->nullable()->after('alamat_penerima');
-            $table->text('alamat_notify_party')->nullable()->after('notify_party');
+            if (!Schema::hasColumn('manifests', 'notify_party')) {
+                $table->string('notify_party')->nullable()->after('alamat_penerima');
+            }
+            if (!Schema::hasColumn('manifests', 'alamat_notify_party')) {
+                $afterCol = Schema::hasColumn('manifests', 'notify_party') ? 'notify_party' : 'alamat_penerima';
+                $table->text('alamat_notify_party')->nullable()->after($afterCol);
+            }
         });
 
         // Sync/populate existing manifests data
@@ -39,7 +44,12 @@ class AddNotifyPartyToManifestsTable extends Migration
     public function down(): void
     {
         Schema::table('manifests', function (Blueprint $table) {
-            $table->dropColumn(['notify_party', 'alamat_notify_party']);
+            if (Schema::hasColumn('manifests', 'notify_party')) {
+                $table->dropColumn('notify_party');
+            }
+            if (Schema::hasColumn('manifests', 'alamat_notify_party')) {
+                $table->dropColumn('alamat_notify_party');
+            }
         });
     }
 
