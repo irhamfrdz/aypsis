@@ -223,16 +223,21 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        @page half_folio_page {
-            size: 165.1mm 215.9mm;
-            margin: 5mm;
-        }
-
         @media print {
             .permohonan-transfer-half-folio {
-                page: half_folio_page;
+                @if($paperSize === 'Folio')
+                    height: 155.1mm !important;
+                @elseif($paperSize === 'A4')
+                    height: 138.5mm !important;
+                @else
+                    height: calc({{ $currentPaper['height'] }} - 10mm) !important;
+                @endif
+                position: relative !important;
+                box-sizing: border-box !important;
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
                 width: 100% !important;
-                max-width: calc(165.1mm - 10mm) !important;
+                max-width: none !important;
                 font-size: 9px !important;
             }
 
@@ -254,11 +259,16 @@
             }
 
             .permohonan-transfer-half-folio .footer {
-                margin-top: 15px !important;
+                position: absolute !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                margin-top: 0 !important;
+                padding-top: 0 !important;
             }
 
             .permohonan-transfer-half-folio .signature-line {
-                margin-top: 50px !important;
+                margin-top: 45px !important;
             }
         }
     </style>
