@@ -38,6 +38,8 @@ class TandaTerimaTanpaSuratJalan extends Model
         'nama_barang',
         'alamat_pengirim',
         'alamat_penerima',
+        'notify_party',
+        'alamat_notify_party',
         'jenis_barang',
         'jumlah_barang',
         'satuan_barang',

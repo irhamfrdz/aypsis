@@ -118,6 +118,17 @@
                                 @endif
                             </div>
                         @endif
+                        @if($tandaTerimaTanpaSuratJalan->notify_party)
+                            <div class="grid grid-cols-1 gap-6 mt-6 pt-6 border-t border-gray-100">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-500 mb-2">Notify Party</label>
+                                    <p class="text-base font-semibold text-gray-900">{{ $tandaTerimaTanpaSuratJalan->notify_party }}</p>
+                                    @if($tandaTerimaTanpaSuratJalan->alamat_notify_party)
+                                        <p class="text-sm text-gray-600 mt-1">{{ $tandaTerimaTanpaSuratJalan->alamat_notify_party }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 

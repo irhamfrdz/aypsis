@@ -482,6 +482,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'telepon' => 'nullable|string|max:50',
             'alamat_penerima' => 'nullable|string',
             'alamat_pengirim' => 'nullable|string',
+            'notify_party' => 'nullable|string|max:255',
+            'alamat_notify_party' => 'nullable|string',
             // Legacy fields for backward compatibility (if needed)
             'nama_penerima' => 'nullable|string|max:255',
             'nama_pengirim' => 'nullable|string|max:255',
@@ -927,6 +929,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'pic_penerima' => 'nullable|string|max:255',
             'telepon_penerima' => 'nullable|string|max:50',
             'alamat_penerima' => 'nullable|string',
+            'notify_party' => 'nullable|string|max:255',
+            'alamat_notify_party' => 'nullable|string',
             'telepon' => 'nullable|string|max:50',
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'estimasi_naik_kapal' => 'nullable|string|max:255',
