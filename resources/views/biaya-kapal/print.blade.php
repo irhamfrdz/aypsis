@@ -222,6 +222,45 @@
             z-index: 1000;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
+
+        @page half_folio_page {
+            size: 165.1mm 215.9mm;
+            margin: 5mm;
+        }
+
+        @media print {
+            .permohonan-transfer-half-folio {
+                page: half_folio_page;
+                width: 100% !important;
+                max-width: calc(165.1mm - 10mm) !important;
+                font-size: 9px !important;
+            }
+
+            .permohonan-transfer-half-folio h1 {
+                font-size: 14px !important;
+            }
+
+            .permohonan-transfer-half-folio .info-table td {
+                font-size: 8px !important;
+            }
+
+            .permohonan-transfer-half-folio .table th,
+            .permohonan-transfer-half-folio .table td {
+                font-size: 8px !important;
+            }
+
+            .permohonan-transfer-half-folio strong {
+                font-size: 8px !important;
+            }
+
+            .permohonan-transfer-half-folio .footer {
+                margin-top: 15px !important;
+            }
+
+            .permohonan-transfer-half-folio .signature-line {
+                margin-top: 50px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -237,7 +276,7 @@
         </div>
     </div>
 
-    <div class="container">
+    <div class="container {{ $biayaKapal->jenis_biaya === 'KB024' ? 'permohonan-transfer-half-folio' : '' }}">
         <!-- Header -->
         <div class="header">
             <h1>PERMOHONAN TRANSFER</h1>
