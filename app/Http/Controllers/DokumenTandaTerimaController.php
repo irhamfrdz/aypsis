@@ -9,6 +9,7 @@ use App\Models\TandaTerimaTanpaSuratJalan;
 use App\Models\TandaTerimaLcl;
 use App\Models\Prospek;
 use App\Models\MasterKapal;
+use App\Models\Bl;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,25 +20,16 @@ class DokumenTandaTerimaController extends Controller
      */
     public function select()
     {
-        // Get unique vessel names from prospek and naik_kapal tables
-        $shipsFromProspek = DB::table('prospek')
+        // Get unique vessel names from bls table
+        $shipsFromBls = DB::table('bls')
             ->whereNotNull('nama_kapal')
             ->where('nama_kapal', '!=', '')
             ->select('nama_kapal')
             ->distinct()
             ->pluck('nama_kapal');
-
-        $shipsFromNaikKapal = DB::table('naik_kapal')
-            ->whereNotNull('nama_kapal')
-            ->where('nama_kapal', '!=', '')
-            ->select('nama_kapal')
-            ->distinct()
-            ->pluck('nama_kapal');
-
-        $shipsWithData = $shipsFromProspek->merge($shipsFromNaikKapal)->unique()->filter();
 
         // Query MasterKapal matching those ship names
-        $kapals = MasterKapal::whereIn('nama_kapal', $shipsWithData)
+        $kapals = MasterKapal::whereIn('nama_kapal', $shipsFromBls)
             ->orderBy('nama_kapal')
             ->get();
 
@@ -60,26 +52,14 @@ class DokumenTandaTerimaController extends Controller
 
         $namaKapal = $kapal->nama_kapal;
 
-        // Get distinct voyages from prospek and naik_kapal
-        $voyagesFromProspek = DB::table('prospek')
+        // Get distinct voyages from bls
+        $voyages = DB::table('bls')
             ->where('nama_kapal', $namaKapal)
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
             ->select('no_voyage')
             ->distinct()
-            ->pluck('no_voyage');
-
-        $voyagesFromNaikKapal = DB::table('naik_kapal')
-            ->where('nama_kapal', $namaKapal)
-            ->whereNotNull('no_voyage')
-            ->where('no_voyage', '!=', '')
-            ->select('no_voyage')
-            ->distinct()
-            ->pluck('no_voyage');
-
-        $voyages = $voyagesFromProspek->merge($voyagesFromNaikKapal)
-            ->unique()
-            ->filter()
+            ->pluck('no_voyage')
             ->sortDesc()
             ->values()
             ->toArray();
@@ -111,9 +91,9 @@ class DokumenTandaTerimaController extends Controller
         $noVoyage = $request->no_voyage;
         $search = $request->search;
 
-        // 1. Fetch TandaTerima (FCL) associated with Prospeks on this voyage
+        // 1. Fetch TandaTerima (FCL) associated with Prospeks that have BLs on this vessel/voyage
         $tandaTerimasQuery = TandaTerima::with(['suratJalan', 'creator'])
-            ->whereHas('prospeks', function($q) use ($namaKapal, $noVoyage) {
+            ->whereHas('prospeks.bls', function($q) use ($namaKapal, $noVoyage) {
                 $q->where('nama_kapal', $namaKapal)
                   ->where('no_voyage', $noVoyage);
             });
@@ -128,21 +108,23 @@ class DokumenTandaTerimaController extends Controller
         }
         $tandaTerimas = $tandaTerimasQuery->get();
 
-        // 2. Fetch TandaTerimaTanpaSuratJalan (Cargo) matched by no_tanda_terima / nomor_tanda_terima
+        // 2. Fetch TandaTerimaTanpaSuratJalan (Cargo) matched by no_tanda_terima / nomor_tanda_terima in Prospek that has a BL on this vessel/voyage
         $tanpaSjQuery = TandaTerimaTanpaSuratJalan::where(function($q) use ($namaKapal, $noVoyage) {
             $q->whereIn('no_tanda_terima', function($sub) use ($namaKapal, $noVoyage) {
-                $sub->select('no_surat_jalan')
+                $sub->select('prospek.no_surat_jalan')
                     ->from('prospek')
-                    ->where('nama_kapal', $namaKapal)
-                    ->where('no_voyage', $noVoyage)
-                    ->whereNotNull('no_surat_jalan');
+                    ->join('bls', 'bls.prospek_id', '=', 'prospek.id')
+                    ->where('bls.nama_kapal', $namaKapal)
+                    ->where('bls.no_voyage', $noVoyage)
+                    ->whereNotNull('prospek.no_surat_jalan');
             })
             ->orWhereIn('nomor_tanda_terima', function($sub) use ($namaKapal, $noVoyage) {
-                $sub->select('no_surat_jalan')
+                $sub->select('prospek.no_surat_jalan')
                     ->from('prospek')
-                    ->where('nama_kapal', $namaKapal)
-                    ->where('no_voyage', $noVoyage)
-                    ->whereNotNull('no_surat_jalan');
+                    ->join('bls', 'bls.prospek_id', '=', 'prospek.id')
+                    ->where('bls.nama_kapal', $namaKapal)
+                    ->where('bls.no_voyage', $noVoyage)
+                    ->whereNotNull('prospek.no_surat_jalan');
             });
         });
 
@@ -157,27 +139,28 @@ class DokumenTandaTerimaController extends Controller
         }
         $tandaTerimaTanpaSuratJalans = $tanpaSjQuery->get();
 
-        // 3. Fetch TandaTerimaLcl (LCL) matched by Container Pivot or no_surat_jalan in Prospek
+        // 3. Fetch TandaTerimaLcl (LCL) matched by Container Pivot (matching bls table) or no_surat_jalan in Prospek that has a BL
         $lclQuery = TandaTerimaLcl::with(['items', 'kontainerPivot', 'tujuanPengiriman'])
             ->where(function($q) use ($namaKapal, $noVoyage) {
-                // Match via kontainer pivot (nomor_kontainer and nomor_seal) belonging to any prospek in this voyage
+                // Match via kontainer pivot (nomor_kontainer and nomor_seal) belonging to any BL in this voyage/vessel
                 $q->whereHas('kontainerPivot', function($pivotQ) use ($namaKapal, $noVoyage) {
                     $pivotQ->whereIn(DB::raw("CONCAT(nomor_kontainer, '---', COALESCE(nomor_seal, ''))"), function($sub) use ($namaKapal, $noVoyage) {
                         $sub->select(DB::raw("CONCAT(nomor_kontainer, '---', COALESCE(no_seal, ''))"))
-                            ->from('prospek')
+                            ->from('bls')
                             ->where('nama_kapal', $namaKapal)
                             ->where('no_voyage', $noVoyage)
                             ->whereNotNull('nomor_kontainer');
                     });
                 })
-                // Or match where nomor_tanda_terima is in the comma-separated or direct no_surat_jalan of a prospek in this voyage
+                // Or match where nomor_tanda_terima is in the no_surat_jalan of a prospek that has a BL on this voyage/vessel
                 ->orWhere(function($subQ) use ($namaKapal, $noVoyage) {
                     $subQ->whereIn('nomor_tanda_terima', function($sub) use ($namaKapal, $noVoyage) {
-                        $sub->select('no_surat_jalan')
+                        $sub->select('prospek.no_surat_jalan')
                             ->from('prospek')
-                            ->where('nama_kapal', $namaKapal)
-                            ->where('no_voyage', $noVoyage)
-                            ->whereNotNull('no_surat_jalan');
+                            ->join('bls', 'bls.prospek_id', '=', 'prospek.id')
+                            ->where('bls.nama_kapal', $namaKapal)
+                            ->where('bls.no_voyage', $noVoyage)
+                            ->whereNotNull('prospek.no_surat_jalan');
                     });
                 });
             });
@@ -218,3 +201,4 @@ class DokumenTandaTerimaController extends Controller
         ));
     }
 }
+
