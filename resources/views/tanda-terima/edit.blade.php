@@ -1034,6 +1034,141 @@
         </form>
     </div>
 </div>
+
+        <!-- CamScanner Modal -->
+        <div id="camscanner-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity bg-slate-950 bg-opacity-75 backdrop-blur-sm" aria-hidden="true" onclick="closeScannerModal()"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-bottom bg-slate-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full border border-slate-800">
+                    <div class="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fas fa-magic text-indigo-400"></i>
+                            <span>CamScanner Document Enhancer</span>
+                        </h3>
+                        <button type="button" onclick="closeScannerModal()" class="text-slate-400 hover:text-white transition-colors cursor-pointer">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
+                        <div class="lg:col-span-2 p-6 bg-slate-950 flex flex-col items-center justify-center min-h-[400px] lg:min-h-[500px] relative overflow-hidden">
+                            <div id="scanner-loader" class="absolute inset-0 bg-slate-950/80 z-10 flex flex-col items-center justify-center gap-3 hidden">
+                                <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                                <span class="text-xs text-slate-400 font-medium">Memproses gambar...</span>
+                            </div>
+                            <div id="scanner-canvas-wrapper" class="relative max-w-full max-h-[450px] overflow-hidden flex items-center justify-center bg-slate-900 rounded-xl border border-slate-800 p-2 shadow-inner">
+                                <canvas id="scanner-canvas" class="max-w-full max-h-[400px] object-contain rounded"></canvas>
+                                <div id="crop-overlay" class="absolute inset-0 hidden select-none pointer-events-none">
+                                    <div id="crop-box" class="absolute border-2 border-dashed border-indigo-400 bg-indigo-500/10 pointer-events-auto cursor-move">
+                                        <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-nwse-resize shadow-md" data-handle="nw"></div>
+                                        <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-nesw-resize shadow-md" data-handle="ne"></div>
+                                        <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-nesw-resize shadow-md" data-handle="sw"></div>
+                                        <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-nwse-resize shadow-md" data-handle="se"></div>
+                                        <div class="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-ew-resize shadow-md" data-handle="w"></div>
+                                        <div class="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-ew-resize shadow-md" data-handle="e"></div>
+                                        <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-ns-resize shadow-md" data-handle="n"></div>
+                                        <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-ns-resize shadow-md" data-handle="s"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-3 flex items-center gap-1.5">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Gunakan panel kanan untuk meningkatkan kontras dokumen atau merotasi.</span>
+                            </p>
+                        </div>
+                        <div class="p-6 bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col justify-between">
+                            <div class="space-y-6">
+                                <div>
+                                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Mode Scan (Preset)</span>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" onclick="setScannerFilter('original')" id="filter-original"
+                                                class="scanner-filter-btn flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition duration-150 cursor-pointer">
+                                            <i class="fas fa-image text-lg mb-1 text-slate-400"></i>
+                                            <span class="text-xs font-medium">Asli</span>
+                                        </button>
+                                        <button type="button" onclick="setScannerFilter('magic')" id="filter-magic"
+                                                class="scanner-filter-btn flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition duration-150 cursor-pointer">
+                                            <i class="fas fa-magic text-lg mb-1 text-indigo-400"></i>
+                                            <span class="text-xs font-medium">Magic Color</span>
+                                        </button>
+                                        <button type="button" onclick="setScannerFilter('bw')" id="filter-bw"
+                                                class="scanner-filter-btn flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition duration-150 cursor-pointer">
+                                            <i class="fas fa-adjust text-lg mb-1 text-teal-400"></i>
+                                            <span class="text-xs font-medium">Hitam Putih</span>
+                                        </button>
+                                        <button type="button" onclick="setScannerFilter('grayscale')" id="filter-grayscale"
+                                                class="scanner-filter-btn flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition duration-150 cursor-pointer">
+                                            <i class="fas fa-palette text-lg mb-1 text-amber-400"></i>
+                                            <span class="text-xs font-medium">Grayscale</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="space-y-4 pt-4 border-t border-slate-800/60">
+                                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Penyesuaian Manual</span>
+                                    <div>
+                                        <div class="flex justify-between text-xs font-medium text-slate-400 mb-1">
+                                            <span>Kecerahan (Brightness)</span>
+                                            <span id="val-brightness">0%</span>
+                                        </div>
+                                        <input type="range" id="adjust-brightness" min="-100" max="100" value="0" step="5"
+                                               oninput="adjustScannerManual('brightness', this.value)"
+                                               class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-xs font-medium text-slate-400 mb-1">
+                                            <span>Kontras (Contrast)</span>
+                                            <span id="val-contrast">0%</span>
+                                        </div>
+                                        <input type="range" id="adjust-contrast" min="-100" max="100" value="0" step="5"
+                                               oninput="adjustScannerManual('contrast', this.value)"
+                                               class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                                    </div>
+                                    <div id="threshold-slider-group" class="hidden">
+                                        <div class="flex justify-between text-xs font-medium text-slate-400 mb-1">
+                                            <span>Ambang Batas (Threshold)</span>
+                                            <span id="val-threshold">120</span>
+                                        </div>
+                                        <input type="range" id="adjust-threshold" min="0" max="255" value="120" step="5"
+                                               oninput="adjustScannerManual('threshold', this.value)"
+                                               class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                                    </div>
+                                </div>
+                                <div class="space-y-3 pt-4 border-t border-slate-800/60">
+                                    <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Rotasi & Pangkas</span>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" onclick="rotateScanner(-90)"
+                                                class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-white transition duration-150 cursor-pointer">
+                                            <i class="fas fa-undo"></i>
+                                            <span>Putar Kiri</span>
+                                        </button>
+                                        <button type="button" onclick="rotateScanner(90)"
+                                                class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-white transition duration-150 cursor-pointer">
+                                            <i class="fas fa-redo"></i>
+                                            <span>Putar Kanan</span>
+                                        </button>
+                                    </div>
+                                    <button type="button" onclick="toggleCropper()" id="cropper-toggle-btn"
+                                            class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-slate-950 hover:bg-slate-850 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-indigo-400 transition duration-150 cursor-pointer">
+                                        <i class="fas fa-crop-alt"></i>
+                                        <span id="cropper-btn-text">Aktifkan Pangkas (Crop)</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 pt-6 border-t border-slate-800 mt-6">
+                                <button type="button" onclick="closeScannerModal()"
+                                        class="flex-1 px-4 py-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-855 text-slate-300 text-xs font-bold rounded-xl transition duration-150 cursor-pointer">
+                                    Batal
+                                </button>
+                                <button type="button" onclick="saveScannerResult()"
+                                        class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition duration-150 shadow-lg shadow-indigo-600/20 cursor-pointer">
+                                    Simpan Scan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 @endsection
 
 @push('styles')
@@ -1065,6 +1200,29 @@
     }
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
         background-color: #3b82f6;
+    }
+    
+    /* CamScanner Editor Styling */
+    #camscanner-modal {
+        background-color: rgba(15, 23, 42, 0.7);
+    }
+    #scanner-canvas-wrapper {
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+    }
+    .scanner-filter-btn.active {
+        background-color: rgb(79, 70, 229);
+        border-color: rgb(129, 140, 248);
+        color: white !important;
+    }
+    #crop-box [data-handle] {
+        position: absolute;
+        transition: transform 0.1s ease;
+    }
+    #crop-box [data-handle]:hover {
+        transform: scale(1.3);
+    }
+    #crop-overlay {
+        background-color: rgba(0, 0, 0, 0.5);
     }
 </style>
 @endpush
@@ -1356,139 +1514,634 @@
         });
     });
 
+    let processedImages = [];
+    let originalImgElement = null;
+    let activeImageIndex = null;
+
+    // Current settings for active edit session
+    let currentSettings = {
+        filter: 'original',
+        rotation: 0,
+        brightness: 0,
+        contrast: 0,
+        threshold: 120
+    };
+
+    let cropBoxPercent = { x: 10, y: 10, w: 80, h: 80 };
+    let isCropperActive = false;
+    let isDraggingBox = false;
+    let isResizingBox = false;
+    let activeHandle = null;
+    let dragStartCoords = { x: 0, y: 0 };
+    let cropBoxStartCoords = { x: 0, y: 0, w: 0, h: 0 };
+
     // Preview uploaded images
     function previewImages(input) {
         const previewContainer = document.getElementById('image-preview-container');
         const previewGrid = document.getElementById('image-preview-grid');
         
         if (input.files && input.files.length > 0) {
-            // Show preview container
             previewContainer.classList.remove('hidden');
             
-            // Clear previous previews
-            previewGrid.innerHTML = '';
-            
             // Limit to 5 files maximum
-            const filesToProcess = Math.min(input.files.length, 5);
-            let validFileCount = 0;
+            const filesToProcess = Array.from(input.files).slice(0, 5);
+            processedImages = new Array(filesToProcess.length);
+            let loadedCount = 0;
             
-            for (let i = 0; i < filesToProcess; i++) {
-                const file = input.files[i];
+            filesToProcess.forEach((file, index) => {
                 const isPdf = file.type === 'application/pdf';
                 
-                // Validate file type
-                if (!file.type.startsWith('image/') && !isPdf) {
-                    console.warn(`File ${file.name} is not an image or PDF`);
-                    continue;
+                if (isPdf) {
+                    processedImages[index] = {
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        isPdf: true
+                    };
+                    loadedCount++;
+                    checkFinish();
+                } else if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        processedImages[index] = {
+                            file: file,
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            isPdf: false,
+                            originalDataUrl: e.target.result,
+                            dataUrl: e.target.result,
+                            isProcessed: false,
+                            settings: {
+                                filter: 'original',
+                                rotation: 0,
+                                brightness: 0,
+                                contrast: 0,
+                                threshold: 120
+                            },
+                            crop: null
+                        };
+                        loadedCount++;
+                        checkFinish();
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    loadedCount++;
+                    checkFinish();
                 }
-                
-                // Validate file size (max 10MB)
-                if (file.size > 10 * 1024 * 1024) {
-                    alert(`File ${file.name} terlalu besar. Maksimal 10MB per file.`);
-                    continue;
+            });
+            
+            function checkFinish() {
+                if (loadedCount === filesToProcess.length) {
+                    processedImages = processedImages.filter(item => item !== undefined);
+                    renderImagePreviews();
+                    syncFileInput();
                 }
-                
-                validFileCount++;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewDiv = document.createElement('div');
-                    previewDiv.className = 'relative bg-gray-50 rounded-lg border border-gray-200 p-2 hover:shadow-md transition-shadow image-preview-item';
-                    previewDiv.dataset.fileIndex = i;
-                    
-                    let mediaHtml = '';
-                    if (isPdf) {
-                        mediaHtml = `
-                            <div class="w-full h-20 flex flex-col items-center justify-center bg-red-50 rounded border border-red-100">
-                                <i class="fas fa-file-pdf text-red-500 text-2xl mb-1"></i>
-                                <span class="text-[8px] font-bold text-red-600 uppercase">PDF DOCUMENT</span>
-                            </div>
-                        `;
-                    } else {
-                        mediaHtml = `
-                            <img src="${e.target.result}" 
-                                 alt="Preview ${validFileCount}" 
-                                 class="w-full h-20 object-cover rounded hover:opacity-90 transition-opacity">
-                        `;
-                    }
-                    
-                    previewDiv.innerHTML = `
-                        <div class="relative">
-                            ${mediaHtml}
-                            <button type="button" 
-                                    onclick="removePreview(this, ${i})"
-                                    class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-sm remove-preview-btn"
-                                    title="Hapus file">
-                                ×
-                            </button>
-                            <div class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[8px] px-1 rounded">
-                                FILE ${validFileCount}
-                            </div>
-                        </div>
-                        <p class="text-[10px] text-gray-600 mt-1 truncate" title="${file.name}">${file.name}</p>
-                        <p class="text-[9px] text-gray-400">${formatFileSize(file.size)}</p>
-                    `;
-                    
-                    previewGrid.appendChild(previewDiv);
-                };
-                reader.readAsDataURL(file);
             }
             
-            // Show warning if more than 5 files selected
             if (input.files.length > 5) {
                 alert('Maksimal 5 gambar yang dapat diupload. Hanya 5 gambar pertama yang akan diproses.');
             }
-            
-            // Show summary
-            if (validFileCount > 0) {
-                const summaryText = document.createElement('p');
-                summaryText.className = 'text-xs text-green-600 mt-2 font-medium';
-                summaryText.innerHTML = `<i class="fas fa-check-circle mr-1"></i>${validFileCount} gambar siap diupload`;
-                previewContainer.appendChild(summaryText);
-            }
-        } else {
-            // Hide preview container if no files
-            previewContainer.classList.add('hidden');
         }
     }
-    
-    // Remove preview image
-    function removePreview(button, index) {
-        const input = document.getElementById('gambar_checkpoint');
+
+    function renderImagePreviews() {
         const previewContainer = document.getElementById('image-preview-container');
         const previewGrid = document.getElementById('image-preview-grid');
         
-        // Remove the preview div
-        button.closest('.relative').parentNode.remove();
-        
-        // Hide preview container if no more images
-        if (previewGrid.children.length === 0) {
+        if (processedImages.length > 0) {
+            previewContainer.classList.remove('hidden');
+            previewGrid.innerHTML = '';
+            
+            processedImages.forEach((item, index) => {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'relative bg-slate-900 border border-slate-800 rounded-xl p-3 hover:shadow-lg hover:border-slate-700 transition duration-200 image-preview-item';
+                
+                let mediaHtml = '';
+                let actionHtml = '';
+                
+                if (item.isPdf) {
+                    mediaHtml = `
+                        <div class="w-full h-24 flex flex-col items-center justify-center bg-red-950/40 rounded-lg border border-red-900/50">
+                            <i class="fas fa-file-pdf text-red-500 text-3xl mb-1.5 animate-pulse"></i>
+                            <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider">PDF DOCUMENT</span>
+                        </div>
+                    `;
+                } else {
+                    mediaHtml = `
+                        <div class="relative group overflow-hidden rounded-lg border border-slate-800 bg-slate-950 h-24 flex items-center justify-center">
+                            <img src="${item.dataUrl}" 
+                                 alt="Preview ${index + 1}" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <div class="absolute inset-0 bg-slate-950/45 group-hover:bg-slate-950/70 transition-all flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100">
+                                <button type="button" onclick="openScannerModal(${index})"
+                                        class="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-[11px] font-medium flex items-center gap-1 cursor-pointer">
+                                    <i class="fas fa-magic"></i> Scan
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    actionHtml = `
+                        <button type="button" onclick="openScannerModal(${index})"
+                                class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg bg-indigo-950/60 border border-indigo-900/50 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/40 text-[10px] font-semibold transition mt-2 cursor-pointer">
+                            <i class="fas fa-magic"></i> Scan Dokumen
+                        </button>
+                    `;
+                }
+                
+                previewDiv.innerHTML = `
+                    <div class="relative">
+                        ${mediaHtml}
+                        <button type="button" 
+                                onclick="removeImageItem(${index})"
+                                class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs transition shadow-md remove-preview-btn border border-red-500 z-10 cursor-pointer font-bold"
+                                title="Hapus file">
+                            ×
+                        </button>
+                    </div>
+                    <p class="text-[11px] font-medium text-slate-200 mt-2 truncate" title="${item.name}">${item.name}</p>
+                    <p class="text-[10px] text-slate-500">${formatFileSize(item.size)}</p>
+                    <div class="flex gap-1.5">
+                        ${actionHtml}
+                    </div>
+                `;
+                
+                previewGrid.appendChild(previewDiv);
+            });
+        } else {
             previewContainer.classList.add('hidden');
-            input.value = ''; // Clear file input
         }
     }
-    
-    // Format file size for display
+
+    function removeImageItem(index) {
+        processedImages.splice(index, 1);
+        renderImagePreviews();
+        syncFileInput();
+    }
+
     function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
+        if (bytes === 0 || !bytes) return '0 Bytes';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
-    
+
+    function syncFileInput() {
+        const fileInput = document.getElementById('gambar_checkpoint');
+        const dataTransfer = new DataTransfer();
+        processedImages.forEach(item => {
+            if (item.isPdf) {
+                dataTransfer.items.add(item.file);
+            } else if (item.isProcessed) {
+                try {
+                    const file = dataURLtoFile(item.dataUrl, item.name);
+                    dataTransfer.items.add(file);
+                } catch (err) {
+                    console.error("Gagal convert gambar: ", err);
+                    dataTransfer.items.add(item.file);
+                }
+            } else {
+                dataTransfer.items.add(item.file);
+            }
+        });
+        fileInput.files = dataTransfer.files;
+    }
+
+    function dataURLtoFile(dataurl, filename) {
+        var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        while(n--){
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename.replace(/\.[^/.]+$/, "") + ".jpg", {type: 'image/jpeg'});
+    }
+
+    // Modal CamScanner Functions
+    function openScannerModal(index) {
+        activeImageIndex = index;
+        const item = processedImages[index];
+        if (!item || item.isPdf) return;
+        
+        const modal = document.getElementById('camscanner-modal');
+        modal.classList.remove('hidden');
+        
+        loadScannerImage(item.originalDataUrl);
+        
+        if (item.isProcessed && item.settings) {
+            currentSettings = { ...item.settings };
+            
+            document.getElementById('adjust-brightness').value = currentSettings.brightness;
+            document.getElementById('val-brightness').innerText = (currentSettings.brightness > 0 ? '+' : '') + currentSettings.brightness + '%';
+            document.getElementById('adjust-contrast').value = currentSettings.contrast;
+            document.getElementById('val-contrast').innerText = (currentSettings.contrast > 0 ? '+' : '') + currentSettings.contrast + '%';
+            document.getElementById('adjust-threshold').value = currentSettings.threshold;
+            document.getElementById('val-threshold').innerText = currentSettings.threshold;
+            
+            if (item.crop) {
+                cropBoxPercent = { ...item.crop };
+                const cropBox = document.getElementById('crop-box');
+                cropBox.style.left = cropBoxPercent.x + '%';
+                cropBox.style.top = cropBoxPercent.y + '%';
+                cropBox.style.width = cropBoxPercent.w + '%';
+                cropBox.style.height = cropBoxPercent.h + '%';
+                
+                isCropperActive = false;
+                toggleCropper();
+            }
+            
+            updateFilterUI();
+            applyFilters();
+        }
+    }
+
+    function closeScannerModal() {
+        const modal = document.getElementById('camscanner-modal');
+        modal.classList.add('hidden');
+        activeImageIndex = null;
+        originalImgElement = null;
+    }
+
+    function setScannerFilter(filterName) {
+        currentSettings.filter = filterName;
+        updateFilterUI();
+        applyFilters();
+    }
+
+    function updateFilterUI() {
+        document.querySelectorAll('.scanner-filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const activeBtn = document.getElementById('filter-' + currentSettings.filter);
+        if (activeBtn) activeBtn.classList.add('active');
+        
+        const thresholdGroup = document.getElementById('threshold-slider-group');
+        if (currentSettings.filter === 'bw') {
+            thresholdGroup.classList.remove('hidden');
+        } else {
+            thresholdGroup.classList.add('hidden');
+        }
+    }
+
+    // Adjust scanner manual settings
+    function adjustScannerManual(type, value) {
+        currentSettings[type] = value;
+        if (type === 'brightness') {
+            document.getElementById('val-brightness').innerText = (value > 0 ? '+' : '') + value + '%';
+        } else if (type === 'contrast') {
+            document.getElementById('val-contrast').innerText = (value > 0 ? '+' : '') + value + '%';
+        } else if (type === 'threshold') {
+            document.getElementById('val-threshold').innerText = value;
+        }
+        applyFilters();
+    }
+
+    function rotateScanner(degrees) {
+        currentSettings.rotation = (currentSettings.rotation + degrees) % 360;
+        if (currentSettings.rotation < 0) currentSettings.rotation += 360;
+        applyFilters();
+    }
+
+    function toggleCropper() {
+        isCropperActive = !isCropperActive;
+        const btn = document.getElementById('cropper-toggle-btn');
+        const text = document.getElementById('cropper-btn-text');
+        const overlay = document.getElementById('crop-overlay');
+        
+        if (isCropperActive) {
+            overlay.classList.remove('hidden');
+            alignOverlayWithCanvas();
+            text.innerText = 'Matikan Pangkas (Batal)';
+            btn.classList.add('bg-indigo-950', 'border-indigo-500', 'text-indigo-400');
+        } else {
+            overlay.classList.add('hidden');
+            text.innerText = 'Aktifkan Pangkas (Crop)';
+            btn.classList.remove('bg-indigo-950', 'border-indigo-500', 'text-indigo-400');
+        }
+    }
+
+    function alignOverlayWithCanvas() {
+        const canvas = document.getElementById('scanner-canvas');
+        const overlay = document.getElementById('crop-overlay');
+        if (!canvas || !overlay) return;
+        
+        overlay.style.width = canvas.offsetWidth + 'px';
+        overlay.style.height = canvas.offsetHeight + 'px';
+        overlay.style.top = canvas.offsetTop + 'px';
+        overlay.style.left = canvas.offsetLeft + 'px';
+    }
+
+    function loadScannerImage(dataUrl) {
+        document.getElementById('scanner-loader').classList.remove('hidden');
+        originalImgElement = new Image();
+        originalImgElement.onload = function() {
+            document.getElementById('scanner-loader').classList.add('hidden');
+            
+            currentSettings = {
+                filter: 'original',
+                rotation: 0,
+                brightness: 0,
+                contrast: 0,
+                threshold: 120
+            };
+            
+            document.getElementById('adjust-brightness').value = 0;
+            document.getElementById('val-brightness').innerText = '0%';
+            document.getElementById('adjust-contrast').value = 0;
+            document.getElementById('val-contrast').innerText = '0%';
+            document.getElementById('adjust-threshold').value = 120;
+            document.getElementById('val-threshold').innerText = '120';
+            
+            cropBoxPercent = { x: 10, y: 10, w: 80, h: 80 };
+            const cropBox = document.getElementById('crop-box');
+            cropBox.style.left = '10%';
+            cropBox.style.top = '10%';
+            cropBox.style.width = '80%';
+            cropBox.style.height = '80%';
+            
+            if (isCropperActive) toggleCropper();
+            updateFilterUI();
+            applyFilters();
+        };
+        originalImgElement.src = dataUrl;
+    }
+
+    function applyFilters() {
+        if (!originalImgElement) return;
+        const canvas = document.getElementById('scanner-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const rotation = currentSettings.rotation;
+        const isSwapped = (rotation / 90) % 2 !== 0;
+        const targetWidth = isSwapped ? originalImgElement.height : originalImgElement.width;
+        const targetHeight = isSwapped ? originalImgElement.width : originalImgElement.height;
+        
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.drawImage(originalImgElement, -originalImgElement.width / 2, -originalImgElement.height / 2);
+        ctx.restore();
+        
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        
+        const filter = currentSettings.filter;
+        const brightness = parseInt(currentSettings.brightness);
+        const contrast = parseInt(currentSettings.contrast);
+        const threshold = parseInt(currentSettings.threshold);
+        const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+        
+        for (let i = 0; i < data.length; i += 4) {
+            let r = data[i];
+            let g = data[i+1];
+            let b = data[i+2];
+            
+            if (filter === 'grayscale') {
+                const gray = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                r = g = b = gray;
+            } else if (filter === 'magic') {
+                let gray = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                if (gray > 130) {
+                    gray = Math.min(255, gray + (255 - gray) * 0.55);
+                } else {
+                    gray = Math.max(0, gray - (gray * 0.25));
+                }
+                gray = (gray - 35) * (255 / 185);
+                r = g = b = Math.min(255, Math.max(0, gray));
+            } else if (filter === 'bw') {
+                const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+                const val = gray > threshold ? 255 : 0;
+                r = g = b = val;
+            }
+            
+            if (filter !== 'bw') {
+                r = contrastFactor * (r - 128) + 128 + brightness;
+                g = contrastFactor * (g - 128) + 128 + brightness;
+                b = contrastFactor * (b - 128) + 128 + brightness;
+            } else {
+                r = Math.min(255, Math.max(0, r + brightness));
+                g = Math.min(255, Math.max(0, g + brightness));
+                b = Math.min(255, Math.max(0, b + brightness));
+            }
+            
+            data[i]   = Math.min(255, Math.max(0, r));
+            data[i+1] = Math.min(255, Math.max(0, g));
+            data[i+2] = Math.min(255, Math.max(0, b));
+        }
+        
+        ctx.putImageData(imgData, 0, 0);
+        setTimeout(alignOverlayWithCanvas, 50);
+    }
+
+    function saveScannerResult() {
+        if (activeImageIndex === null || !originalImgElement) return;
+        const canvas = document.getElementById('scanner-canvas');
+        let finalDataUrl = '';
+        
+        processedImages[activeImageIndex].settings = { ...currentSettings };
+        
+        if (isCropperActive) {
+            const cropX = (cropBoxPercent.x / 100) * canvas.width;
+            const cropY = (cropBoxPercent.y / 100) * canvas.height;
+            const cropW = (cropBoxPercent.w / 100) * canvas.width;
+            const cropH = (cropBoxPercent.h / 100) * canvas.height;
+            
+            processedImages[activeImageIndex].crop = { ...cropBoxPercent };
+            
+            const cropCanvas = document.createElement('canvas');
+            cropCanvas.width = cropW;
+            cropCanvas.height = cropH;
+            
+            const cropCtx = cropCanvas.getContext('2d');
+            cropCtx.drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+            
+            finalDataUrl = cropCanvas.toDataURL('image/jpeg', 0.9);
+        } else {
+            processedImages[activeImageIndex].crop = null;
+            finalDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        }
+        
+        processedImages[activeImageIndex].dataUrl = finalDataUrl;
+        processedImages[activeImageIndex].isProcessed = true;
+        
+        closeScannerModal();
+        renderImagePreviews();
+        syncFileInput();
+    }
+
+    function initCropperDrag() {
+        const cropBox = document.getElementById('crop-box');
+        const overlay = document.getElementById('crop-overlay');
+        if (!cropBox || !overlay) return;
+        
+        cropBox.addEventListener('mousedown', function(e) {
+            if (e.target.dataset.handle) {
+                isResizingBox = true;
+                activeHandle = e.target.dataset.handle;
+            } else {
+                isDraggingBox = true;
+            }
+            dragStartCoords = { x: e.clientX, y: e.clientY };
+            
+            const parentRect = overlay.getBoundingClientRect();
+            const boxRect = cropBox.getBoundingClientRect();
+            cropBoxStartCoords = {
+                x: boxRect.left - parentRect.left,
+                y: boxRect.top - parentRect.top,
+                w: boxRect.width,
+                h: boxRect.height
+            };
+            
+            e.stopPropagation();
+            e.preventDefault();
+        });
+
+        cropBox.addEventListener('touchstart', function(e) {
+            const touch = e.touches[0];
+            if (e.target.dataset.handle) {
+                isResizingBox = true;
+                activeHandle = e.target.dataset.handle;
+            } else {
+                isDraggingBox = true;
+            }
+            dragStartCoords = { x: touch.clientX, y: touch.clientY };
+            
+            const parentRect = overlay.getBoundingClientRect();
+            const boxRect = cropBox.getBoundingClientRect();
+            cropBoxStartCoords = {
+                x: boxRect.left - parentRect.left,
+                y: boxRect.top - parentRect.top,
+                w: boxRect.width,
+                h: boxRect.height
+            };
+            
+            e.stopPropagation();
+        });
+
+        document.addEventListener('mousemove', handleDragMove);
+        document.addEventListener('touchmove', handleDragMove, { passive: false });
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+        
+        function handleDragMove(e) {
+            if (!isDraggingBox && !isResizingBox) return;
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const dx = clientX - dragStartCoords.x;
+            const dy = clientY - dragStartCoords.y;
+            
+            const parentRect = overlay.getBoundingClientRect();
+            const pW = parentRect.width;
+            const pH = parentRect.height;
+            if (pW === 0 || pH === 0) return;
+            
+            let newX = cropBoxStartCoords.x;
+            let newY = cropBoxStartCoords.y;
+            let newW = cropBoxStartCoords.w;
+            let newH = cropBoxStartCoords.h;
+            
+            if (isDraggingBox) {
+                newX = cropBoxStartCoords.x + dx;
+                newY = cropBoxStartCoords.y + dy;
+                
+                newX = Math.max(0, Math.min(newX, pW - newW));
+                newY = Math.max(0, Math.min(newY, pH - newH));
+            } else if (isResizingBox) {
+                const minSize = 25;
+                
+                switch (activeHandle) {
+                    case 'nw':
+                        newX = cropBoxStartCoords.x + dx;
+                        newY = cropBoxStartCoords.y + dy;
+                        newW = cropBoxStartCoords.w - dx;
+                        newH = cropBoxStartCoords.h - dy;
+                        break;
+                    case 'ne':
+                        newY = cropBoxStartCoords.y + dy;
+                        newW = cropBoxStartCoords.w + dx;
+                        newH = cropBoxStartCoords.h - dy;
+                        break;
+                    case 'sw':
+                        newX = cropBoxStartCoords.x + dx;
+                        newW = cropBoxStartCoords.w - dx;
+                        newH = cropBoxStartCoords.h + dy;
+                        break;
+                    case 'se':
+                        newW = cropBoxStartCoords.w + dx;
+                        newH = cropBoxStartCoords.h + dy;
+                        break;
+                    case 'n':
+                        newY = cropBoxStartCoords.y + dy;
+                        newH = cropBoxStartCoords.h - dy;
+                        break;
+                    case 's':
+                        newH = cropBoxStartCoords.h + dy;
+                        break;
+                    case 'w':
+                        newX = cropBoxStartCoords.x + dx;
+                        newW = cropBoxStartCoords.w - dx;
+                        break;
+                    case 'e':
+                        newW = cropBoxStartCoords.w + dx;
+                        break;
+                }
+                
+                if (newW < minSize) {
+                    if (activeHandle.includes('w')) newX = cropBoxStartCoords.x + cropBoxStartCoords.w - minSize;
+                    newW = minSize;
+                }
+                if (newH < minSize) {
+                    if (activeHandle.includes('n')) newY = cropBoxStartCoords.y + cropBoxStartCoords.h - minSize;
+                    newH = minSize;
+                }
+                
+                if (newX < 0) { newW += newX; newX = 0; }
+                if (newY < 0) { newH += newY; newY = 0; }
+                if (newX + newW > pW) newW = pW - newX;
+                if (newY + newH > pH) newH = pH - newY;
+            }
+            
+            cropBoxPercent.x = (newX / pW) * 100;
+            cropBoxPercent.y = (newY / pH) * 100;
+            cropBoxPercent.w = (newW / pW) * 100;
+            cropBoxPercent.h = (newH / pH) * 100;
+            
+            cropBox.style.left = cropBoxPercent.x + '%';
+            cropBox.style.top = cropBoxPercent.y + '%';
+            cropBox.style.width = cropBoxPercent.w + '%';
+            cropBox.style.height = cropBoxPercent.h + '%';
+            
+            if (e.cancelable) e.preventDefault();
+        }
+        
+        function endDrag() {
+            isDraggingBox = false;
+            isResizingBox = false;
+            activeHandle = null;
+        }
+    }
+
     // Drag and drop functionality
     document.addEventListener('DOMContentLoaded', function() {
+        initCropperDrag();
+        
         const dropZone = document.querySelector('.upload-dropzone');
         const fileInput = document.getElementById('gambar_checkpoint');
         
         if (dropZone && fileInput) {
-            // Prevent default drag behaviors
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 dropZone.addEventListener(eventName, preventDefaults, false);
                 document.body.addEventListener(eventName, preventDefaults, false);
             });
             
-            // Highlight drop zone when dragging over it
             ['dragenter', 'dragover'].forEach(eventName => {
                 dropZone.addEventListener(eventName, highlight, false);
             });
@@ -1497,7 +2150,6 @@
                 dropZone.addEventListener(eventName, unhighlight, false);
             });
             
-            // Handle dropped files
             dropZone.addEventListener('drop', handleDrop, false);
             
             function preventDefaults(e) {
@@ -1518,44 +2170,28 @@
             function handleDrop(e) {
                 const dt = e.dataTransfer;
                 const files = dt.files;
-                
-                // Validate files before setting to input
                 const validFiles = [];
-                const maxSize = 10 * 1024 * 1024; // 10MB
+                const maxSize = 10 * 1024 * 1024;
                 const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
                 
                 for (let i = 0; i < Math.min(files.length, 5); i++) {
                     const file = files[i];
-                    
                     if (!allowedTypes.includes(file.type)) {
-                        alert(`File ${file.name} bukan format yang diizinkan. Gunakan: JPG, PNG, GIF, WEBP, atau PDF.`);
+                        alert(`File ${file.name} bukan format yang diizinkan. Gunakan JPG, PNG, GIF, WEBP atau PDF.`);
                         continue;
                     }
-                    
                     if (file.size > maxSize) {
-                        alert(`File ${file.name} terlalu besar (${formatFileSize(file.size)}). Maksimal 10MB per file.`);
+                        alert(`File ${file.name} terlalu besar. Maksimal 10MB per file.`);
                         continue;
                     }
-                    
                     validFiles.push(file);
                 }
                 
                 if (validFiles.length > 0) {
-                    // Create a new FileList-like object with valid files
                     const dataTransfer = new DataTransfer();
                     validFiles.forEach(file => dataTransfer.items.add(file));
-                    
-                    // Set files to input
                     fileInput.files = dataTransfer.files;
-                    
-                    // Trigger preview
                     previewImages(fileInput);
-                    
-                    if (validFiles.length < files.length) {
-                        alert(`${validFiles.length} dari ${files.length} file berhasil dipilih. File lainnya tidak memenuhi kriteria.`);
-                    }
-                } else {
-                    alert('Tidak ada file yang valid untuk diupload.');
                 }
             }
         }
