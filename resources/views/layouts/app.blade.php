@@ -2027,8 +2027,8 @@
 
         {{-- Aktivitas Pelabuhan Sub-Dropdown --}}
         @php
-            $isAktivitasPelabuhanRoute = Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-surat-jalan-tarik-kosong-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan-batam.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('kontainer-perjalanan.*') || Request::routeIs('prospek-batam.*');
-            $hasAktivitasPelabuhanPermissions = $user && (($user->can('tanda-terima-view') || $user->can('tanda-terima-batam-view') || $user->can('tanda-terima-surat-jalan-tarik-kosong-batam-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete') || $user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete') || $user->can('tanda-terima-tanpa-surat-jalan-batam-view') || $user->can('tanda-terima-tanpa-surat-jalan-batam-create') || $user->can('tanda-terima-tanpa-surat-jalan-batam-update') || $user->can('tanda-terima-tanpa-surat-jalan-batam-delete') || $user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete') || $user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete')) || $user->can('prospek-batam-view') || $user->can('prospek-batam-edit'));
+            $isAktivitasPelabuhanRoute = Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-batam.*') || Request::routeIs('tanda-terima-surat-jalan-tarik-kosong-batam.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan-batam.*') || Request::routeIs('approval-tanda-terima.*') || Request::routeIs('gate-in.*') || Request::routeIs('kontainer-perjalanan.*') || Request::routeIs('prospek-batam.*') || Request::routeIs('dokumen-tanda-terima.*');
+            $hasAktivitasPelabuhanPermissions = $user && (($user->can('tanda-terima-view') || $user->can('tanda-terima-batam-view') || $user->can('tanda-terima-surat-jalan-tarik-kosong-batam-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete') || $user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete') || $user->can('tanda-terima-tanpa-surat-jalan-batam-view') || $user->can('tanda-terima-tanpa-surat-jalan-batam-create') || $user->can('tanda-terima-tanpa-surat-jalan-batam-update') || $user->can('tanda-terima-tanpa-surat-jalan-batam-delete') || $user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete') || $user->can('checkpoint-kontainer-keluar-view') || $user->can('checkpoint-kontainer-keluar-create') || $user->can('checkpoint-kontainer-keluar-delete')) || $user->can('prospek-batam-view') || $user->can('prospek-batam-edit') || $user->can('prospek-view'));
         @endphp
 
         @if($hasAktivitasPelabuhanPermissions)
@@ -2094,6 +2094,13 @@
                 @if($user && $user->can('approval-tanda-terima-view'))
                     <a href="{{ route('approval-tanda-terima.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval-tanda-terima.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Approval Tanda Terima</span>
+                    </a>
+                @endif
+
+                {{-- Dokumen Tanda Terima --}}
+                @if($user && $user->can('prospek-view'))
+                    <a href="{{ route('dokumen-tanda-terima.select') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('dokumen-tanda-terima.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Dokumen Tanda Terima</span>
                     </a>
                 @endif
 

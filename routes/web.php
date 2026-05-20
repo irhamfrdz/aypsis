@@ -5671,6 +5671,19 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::delete('prospek/{prospek}', [ProspekController::class, 'destroy'])->name('prospek.destroy')
          ->middleware('can:prospek-delete');
 
+          // 📄 Dokumen Tanda Terima Management
+          Route::get('dokumen-tanda-terima/select', [\App\Http\Controllers\DokumenTandaTerimaController::class, 'select'])
+               ->name('dokumen-tanda-terima.select')
+               ->middleware('can:prospek-view');
+               
+          Route::get('dokumen-tanda-terima/get-voyages', [\App\Http\Controllers\DokumenTandaTerimaController::class, 'getVoyages'])
+               ->name('dokumen-tanda-terima.get-voyages')
+               ->middleware('can:prospek-view');
+               
+          Route::get('dokumen-tanda-terima', [\App\Http\Controllers\DokumenTandaTerimaController::class, 'index'])
+               ->name('dokumen-tanda-terima.index')
+               ->middleware('can:prospek-view');
+
           // 🚢 Naik Kapal Management
           Route::get('naik-kapal/select', [NaikKapalController::class, 'select'])
                ->name('naik-kapal.select')
