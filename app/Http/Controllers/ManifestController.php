@@ -14,7 +14,7 @@ class ManifestController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:manifest-view')->only(['index', 'show', 'export']);
+        $this->middleware('permission:manifest-view')->only(['index', 'show', 'export', 'printDocument']);
         $this->middleware('permission:manifest-create')->only(['create', 'store']);
         $this->middleware('permission:manifest-edit')->only(['edit', 'update']);
         $this->middleware('permission:manifest-delete')->only(['destroy']);
@@ -1120,6 +1120,153 @@ class ManifestController extends Controller
             ->get();
             
         return response()->json($results);
+    }
+
+    /**
+     * Print uploaded document images associated with the manifest.
+     */
+    public function printDocument(string $id)
+    {
+        $manifest = Manifest::findOrFail($id);
+        
+        $imageUrls = [];
+        $ttNo = $manifest->nomor_tanda_terima;
+        $containerNo = $manifest->nomor_kontainer;
+        
+        // 1. DIRECT RELATIONSHIPS
+        if ($manifest->prospek && $manifest->prospek->tandaTerima) {
+            $tandaTerima = $manifest->prospek->tandaTerima;
+            $this->extractImagesFromTandaTerima($tandaTerima, $imageUrls);
+        }
+        
+        // 2. FALLBACK/LOOKUP BY TANDA TERIMA NUMBER & CONTAINER NUMBER
+        
+        // FCL (TandaTerima & TandaTerimaBatam)
+        if ($ttNo) {
+            $fcls = \App\Models\TandaTerima::where('no_surat_jalan', $ttNo)
+                ->orWhere('no_tanda_terima', $ttNo)
+                ->get();
+            foreach ($fcls as $fcl) {
+                $this->extractImagesFromTandaTerima($fcl, $imageUrls);
+            }
+            
+            if (class_exists(\App\Models\TandaTerimaBatam::class)) {
+                $fclBatams = \App\Models\TandaTerimaBatam::where('no_surat_jalan', $ttNo)
+                    ->orWhere('no_tanda_terima', $ttNo)
+                    ->get();
+                foreach ($fclBatams as $fclBatam) {
+                    $this->extractImagesFromTandaTerima($fclBatam, $imageUrls);
+                }
+            }
+        }
+        
+        if ($containerNo && $containerNo !== 'Cargo') {
+            $fcls = \App\Models\TandaTerima::where('no_kontainer', $containerNo)->get();
+            foreach ($fcls as $fcl) {
+                $this->extractImagesFromTandaTerima($fcl, $imageUrls);
+            }
+            
+            if (class_exists(\App\Models\TandaTerimaBatam::class)) {
+                $fclBatams = \App\Models\TandaTerimaBatam::where('no_kontainer', $containerNo)->get();
+                foreach ($fclBatams as $fclBatam) {
+                    $this->extractImagesFromTandaTerima($fclBatam, $imageUrls);
+                }
+            }
+        }
+        
+        // Tanpa Surat Jalan (TandaTerimaTanpaSuratJalan & TandaTerimaTanpaSuratJalanBatam)
+        if ($ttNo) {
+            $ttsjs = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $ttNo)
+                ->orWhere('nomor_tanda_terima', $ttNo)
+                ->get();
+            foreach ($ttsjs as $ttsj) {
+                $this->extractImagesFromArrayField($ttsj->gambar_tanda_terima, $imageUrls);
+            }
+            
+            if (class_exists(\App\Models\TandaTerimaTanpaSuratJalanBatam::class)) {
+                $ttsjBatams = \App\Models\TandaTerimaTanpaSuratJalanBatam::where('no_tanda_terima', $ttNo)
+                    ->orWhere('nomor_tanda_terima', $ttNo)
+                    ->get();
+                foreach ($ttsjBatams as $ttsjBatam) {
+                    $this->extractImagesFromArrayField($ttsjBatam->gambar_tanda_terima, $imageUrls);
+                }
+            }
+        }
+        
+        if ($containerNo && $containerNo !== 'Cargo') {
+            $ttsjs = \App\Models\TandaTerimaTanpaSuratJalan::where('no_kontainer', $containerNo)->get();
+            foreach ($ttsjs as $ttsj) {
+                $this->extractImagesFromArrayField($ttsj->gambar_tanda_terima, $imageUrls);
+            }
+            
+            if (class_exists(\App\Models\TandaTerimaTanpaSuratJalanBatam::class)) {
+                $ttsjBatams = \App\Models\TandaTerimaTanpaSuratJalanBatam::where('no_kontainer', $containerNo)->get();
+                foreach ($ttsjBatams as $ttsjBatam) {
+                    $this->extractImagesFromArrayField($ttsjBatam->gambar_tanda_terima, $imageUrls);
+                }
+            }
+        }
+        
+        // LCL (TandaTerimaLcl & TandaTerimaLclBatam)
+        if ($ttNo) {
+            $lcls = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', $ttNo)->get();
+            foreach ($lcls as $lcl) {
+                $this->extractImagesFromArrayField($lcl->gambar_surat_jalan, $imageUrls);
+            }
+            
+            if (class_exists(\App\Models\TandaTerimaLclBatam::class)) {
+                $lclBatams = \App\Models\TandaTerimaLclBatam::where('nomor_tanda_terima', $ttNo)->get();
+                foreach ($lclBatams as $lclBatam) {
+                    $this->extractImagesFromArrayField($lclBatam->gambar_surat_jalan, $imageUrls);
+                }
+            }
+        }
+        
+        if ($containerNo && $containerNo !== 'Cargo') {
+            $lcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($qp) use ($containerNo) {
+                $qp->where('nomor_kontainer', $containerNo);
+            })->get();
+            foreach ($lcls as $lcl) {
+                $this->extractImagesFromArrayField($lcl->gambar_surat_jalan, $imageUrls);
+            }
+            
+            if (class_exists(\App\Models\TandaTerimaLclBatam::class)) {
+                $lclBatams = \App\Models\TandaTerimaLclBatam::whereHas('kontainerPivot', function($qp) use ($containerNo) {
+                    $qp->where('nomor_kontainer', $containerNo);
+                })->get();
+                foreach ($lclBatams as $lclBatam) {
+                    $this->extractImagesFromArrayField($lclBatam->gambar_surat_jalan, $imageUrls);
+                }
+            }
+        }
+        
+        // Deduplicate
+        $imageUrls = array_unique($imageUrls);
+        
+        return view('manifests.print-document', compact('manifest', 'imageUrls'));
+    }
+    
+    private function extractImagesFromTandaTerima($tandaTerima, &$imageUrls)
+    {
+        $gambar = $tandaTerima->gambar_checkpoint;
+        if (!$gambar && $tandaTerima->suratJalan) {
+            $gambar = $tandaTerima->suratJalan->gambar_checkpoint;
+        }
+        if ($gambar) {
+            $this->extractImagesFromArrayField($gambar, $imageUrls);
+        }
+    }
+    
+    private function extractImagesFromArrayField($field, &$imageUrls)
+    {
+        if (empty($field)) return;
+        
+        $decoded = is_array($field) ? $field : (is_string($field) && (str_starts_with($field, '[') || str_starts_with($field, '{')) ? json_decode($field, true) : [$field]);
+        if (is_array($decoded)) {
+            foreach (array_filter($decoded) as $img) {
+                $imageUrls[] = asset('storage/' . $img);
+            }
+        }
     }
 }
 

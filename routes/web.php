@@ -5508,6 +5508,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::post('manifests/{id}/update-satuan', [App\Http\Controllers\ManifestController::class, 'updateSatuan'])->name('manifests.update-satuan');
     Route::post('manifests/{id}/update-kuantitas', [App\Http\Controllers\ManifestController::class, 'updateKuantitas'])->name('manifests.update-kuantitas');
     Route::get('manifests/export', [App\Http\Controllers\ManifestController::class, 'export'])->name('manifests.export');
+    Route::get('manifests/{id}/print-document', [App\Http\Controllers\ManifestController::class, 'printDocument'])->name('manifests.print-document');
     Route::resource('manifests', App\Http\Controllers\ManifestController::class);
 });
 
