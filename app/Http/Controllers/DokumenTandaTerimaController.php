@@ -91,11 +91,17 @@ class DokumenTandaTerimaController extends Controller
         $search = $request->search;
 
         // 1. Fetch TandaTerima (FCL) associated with Manifests on this voyage
-        $tandaTerimasQuery = TandaTerima::with(['suratJalan', 'creator'])
-            ->whereHas('prospeks.manifests', function($q) use ($namaKapal, $noVoyage) {
+        $tandaTerimasQuery = TandaTerima::with([
+            'suratJalan', 
+            'creator',
+            'prospeks.manifests' => function($q) use ($namaKapal, $noVoyage) {
                 $q->where('nama_kapal', $namaKapal)
                   ->where('no_voyage', $noVoyage);
-            });
+            }
+        ])->whereHas('prospeks.manifests', function($q) use ($namaKapal, $noVoyage) {
+            $q->where('nama_kapal', $namaKapal)
+              ->where('no_voyage', $noVoyage);
+        });
 
         if (!empty($search)) {
             $tandaTerimasQuery->where(function($q) use ($search) {
@@ -196,6 +202,69 @@ class DokumenTandaTerimaController extends Controller
             });
         }
         $tandaTerimaLcls = $lclQuery->get();
+
+        // Populate nomor_bl by querying manifests lookup tables
+        $manifests = DB::table('manifests')
+            ->where('nama_kapal', $namaKapal)
+            ->where('no_voyage', $noVoyage)
+            ->get(['nomor_tanda_terima', 'prospek_id', 'nomor_bl', 'nomor_kontainer']);
+
+        $prospeksOnVoyage = DB::table('prospek as p')
+            ->join('manifests as m', 'm.prospek_id', '=', 'p.id')
+            ->where('m.nama_kapal', $namaKapal)
+            ->where('m.no_voyage', $noVoyage)
+            ->select('p.no_surat_jalan', 'm.nomor_bl')
+            ->get();
+
+        $blMap = [];
+        foreach ($manifests as $m) {
+            if ($m->nomor_tanda_terima) {
+                $blMap[$m->nomor_tanda_terima][] = $m->nomor_bl;
+            }
+        }
+        foreach ($prospeksOnVoyage as $p) {
+            if ($p->no_surat_jalan) {
+                $blMap[$p->no_surat_jalan][] = $p->nomor_bl;
+            }
+        }
+
+        $containerBlMap = [];
+        foreach ($manifests as $m) {
+            if ($m->nomor_kontainer) {
+                $containerBlMap[$m->nomor_kontainer][] = $m->nomor_bl;
+            }
+        }
+
+        // Attach nomor_bl to FCL Tanda Terima
+        foreach ($tandaTerimas as $tt) {
+            $tt->nomor_bl = $tt->prospeks->flatMap(fn($p) => $p->manifests->pluck('nomor_bl'))->filter()->unique()->implode(', ');
+        }
+
+        // Attach nomor_bl to Tanpa Surat Jalan Tanda Terima
+        foreach ($tandaTerimaTanpaSuratJalans as $tts) {
+            $blsForTts = [];
+            $keys = array_filter([$tts->no_tanda_terima, $tts->nomor_tanda_terima]);
+            foreach ($keys as $key) {
+                if (isset($blMap[$key])) {
+                    $blsForTts = array_merge($blsForTts, $blMap[$key]);
+                }
+            }
+            $tts->nomor_bl = implode(', ', array_unique(array_filter($blsForTts)));
+        }
+
+        // Attach nomor_bl to LCL Tanda Terima
+        foreach ($tandaTerimaLcls as $ttl) {
+            $blsForTtl = [];
+            if ($ttl->nomor_tanda_terima && isset($blMap[$ttl->nomor_tanda_terima])) {
+                $blsForTtl = array_merge($blsForTtl, $blMap[$ttl->nomor_tanda_terima]);
+            }
+            foreach ($ttl->kontainerPivot as $pivot) {
+                if ($pivot->nomor_kontainer && isset($containerBlMap[$pivot->nomor_kontainer])) {
+                    $blsForTtl = array_merge($blsForTtl, $containerBlMap[$pivot->nomor_kontainer]);
+                }
+            }
+            $ttl->nomor_bl = implode(', ', array_unique(array_filter($blsForTtl)));
+        }
 
         // Calculate statistics
         $stats = [

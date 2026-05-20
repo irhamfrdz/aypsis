@@ -134,6 +134,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider" style="width: 50px;">No</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. BL</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. SJ Pabrik</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. DN</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Tanggal Terima</th>
@@ -153,6 +154,7 @@
                             <tr class="hover:bg-gray-50 transition duration-150">
                                 <td class="px-4 py-3 text-center text-gray-900">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-3 font-semibold text-gray-900">{{ $tt->no_surat_jalan }}</td>
+                                <td class="px-4 py-3 text-gray-600 font-semibold">{{ $tt->nomor_bl ?: '-' }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $tt->surat_jalan_pabrik ?: '-' }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $tt->no_dn ?: '-' }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $tt->tanggal ? $tt->tanggal->format('d/M/Y') : '-' }}</td>
@@ -187,7 +189,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="14" class="px-4 py-8 text-center text-gray-500">
+                                <td colspan="15" class="px-4 py-8 text-center text-gray-500">
                                     <i class="fas fa-info-circle mr-2"></i>Tidak ada data Tanda Terima FCL untuk voyage ini.
                                 </td>
                             </tr>
@@ -205,6 +207,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider" style="width: 50px;">No</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. Tanda Terima</th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. BL</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. SJ Customer</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">SJ Pabrik</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Tanggal Terima</th>
@@ -224,6 +227,7 @@
                             <tr class="hover:bg-gray-50 transition duration-150">
                                 <td class="px-4 py-3 text-center text-gray-900">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-3 font-semibold text-gray-900">{{ $tts->no_tanda_terima }}</td>
+                                <td class="px-4 py-3 text-gray-600 font-semibold">{{ $tts->nomor_bl ?: '-' }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $tts->nomor_surat_jalan_customer ?: '-' }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $tts->surat_jalan_pabrik ?: '-' }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $tts->tanggal_tanda_terima ? $tts->tanggal_tanda_terima->format('d/M/Y') : '-' }}</td>
@@ -252,7 +256,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="14" class="px-4 py-8 text-center text-gray-500">
+                                <td colspan="15" class="px-4 py-8 text-center text-gray-500">
                                     <i class="fas fa-info-circle mr-2"></i>Tidak ada data Tanda Terima Tanpa Surat Jalan untuk voyage ini.
                                 </td>
                             </tr>
@@ -270,6 +274,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider" style="width: 50px;">No</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. Tanda Terima</th>
+                                <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. BL</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. SJ Customer</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">Tanggal Terima</th>
                                 <th class="px-4 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
@@ -288,6 +293,7 @@
                             <tr class="hover:bg-gray-50 transition duration-150">
                                 <td class="px-4 py-3 text-center text-gray-900">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-3 font-semibold text-gray-900">{{ $ttl->nomor_tanda_terima }}</td>
+                                <td class="px-4 py-3 text-gray-600 font-semibold">{{ $ttl->nomor_bl ?: '-' }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $ttl->no_surat_jalan_customer ?: '-' }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $ttl->tanggal_tanda_terima ? $ttl->tanggal_tanda_terima->format('d/M/Y') : '-' }}</td>
                                 <td class="px-4 py-3">
@@ -317,7 +323,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="13" class="px-4 py-8 text-center text-gray-500">
+                                <td colspan="14" class="px-4 py-8 text-center text-gray-500">
                                     <i class="fas fa-info-circle mr-2"></i>Tidak ada data Tanda Terima LCL untuk voyage ini.
                                 </td>
                             </tr>
