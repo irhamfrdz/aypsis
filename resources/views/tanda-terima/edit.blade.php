@@ -1147,11 +1147,19 @@
                                             <span>Putar Kanan</span>
                                         </button>
                                     </div>
-                                    <button type="button" onclick="toggleCropper()" id="cropper-toggle-btn"
-                                            class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-slate-950 hover:bg-slate-850 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-indigo-400 transition duration-150 cursor-pointer">
-                                        <i class="fas fa-crop-alt"></i>
-                                        <span id="cropper-btn-text">Aktifkan Pangkas (Crop)</span>
-                                    </button>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" onclick="toggleCropper()" id="cropper-toggle-btn"
+                                                class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-slate-950 hover:bg-slate-850 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-indigo-400 transition duration-150 cursor-pointer">
+                                            <i class="fas fa-crop-alt"></i>
+                                            <span id="cropper-btn-text">Pangkas Manual</span>
+                                        </button>
+                                        <button type="button" onclick="autoCropDocument()"
+                                                class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-indigo-950/65 hover:bg-indigo-900 border border-indigo-850 text-xs font-semibold text-indigo-300 hover:text-white transition duration-150 cursor-pointer"
+                                                title="Deteksi tepi kertas otomatis">
+                                            <i class="fas fa-magic text-indigo-400 mr-0.5 animate-pulse"></i>
+                                            <span>Autocrop</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 pt-6 border-t border-slate-800 mt-6">
@@ -1728,33 +1736,10 @@
         const modal = document.getElementById('camscanner-modal');
         modal.classList.remove('hidden');
         
-        loadScannerImage(item.originalDataUrl);
+        const savedSettings = (item.isProcessed && item.settings) ? item.settings : null;
+        const savedCrop = (item.isProcessed && item.crop) ? item.crop : null;
         
-        if (item.isProcessed && item.settings) {
-            currentSettings = { ...item.settings };
-            
-            document.getElementById('adjust-brightness').value = currentSettings.brightness;
-            document.getElementById('val-brightness').innerText = (currentSettings.brightness > 0 ? '+' : '') + currentSettings.brightness + '%';
-            document.getElementById('adjust-contrast').value = currentSettings.contrast;
-            document.getElementById('val-contrast').innerText = (currentSettings.contrast > 0 ? '+' : '') + currentSettings.contrast + '%';
-            document.getElementById('adjust-threshold').value = currentSettings.threshold;
-            document.getElementById('val-threshold').innerText = currentSettings.threshold;
-            
-            if (item.crop) {
-                cropBoxPercent = { ...item.crop };
-                const cropBox = document.getElementById('crop-box');
-                cropBox.style.left = cropBoxPercent.x + '%';
-                cropBox.style.top = cropBoxPercent.y + '%';
-                cropBox.style.width = cropBoxPercent.w + '%';
-                cropBox.style.height = cropBoxPercent.h + '%';
-                
-                isCropperActive = false;
-                toggleCropper();
-            }
-            
-            updateFilterUI();
-            applyFilters();
-        }
+        loadScannerImage(item.originalDataUrl, savedSettings, savedCrop);
     }
 
     function closeScannerModal() {
@@ -1804,6 +1789,128 @@
         applyFilters();
     }
 
+    function autoCropDocument(isSilent = false) {
+        if (!originalImgElement) return;
+        
+        try {
+            // Gunakan canvas sementara untuk analisis cepat dengan resolusi rendah
+            const tempCanvas = document.createElement('canvas');
+            const maxAnalysisSize = 300;
+            const scale = Math.min(1, maxAnalysisSize / Math.max(originalImgElement.width, originalImgElement.height));
+            tempCanvas.width = originalImgElement.width * scale;
+            tempCanvas.height = originalImgElement.height * scale;
+            
+            const tempCtx = tempCanvas.getContext('2d');
+            const rotation = currentSettings.rotation;
+            const isSwapped = (rotation / 90) % 2 !== 0;
+            
+            const analysisCanvas = document.createElement('canvas');
+            analysisCanvas.width = isSwapped ? tempCanvas.height : tempCanvas.width;
+            analysisCanvas.height = isSwapped ? tempCanvas.width : tempCanvas.height;
+            const analysisCtx = analysisCanvas.getContext('2d');
+            
+            // Gambar dengan rotasi aktif
+            analysisCtx.translate(analysisCanvas.width / 2, analysisCanvas.height / 2);
+            analysisCtx.rotate((rotation * Math.PI) / 180);
+            analysisCtx.drawImage(originalImgElement, -tempCanvas.width / 2, -tempCanvas.height / 2, tempCanvas.width, tempCanvas.height);
+            
+            const width = analysisCanvas.width;
+            const height = analysisCanvas.height;
+            const imgData = analysisCtx.getImageData(0, 0, width, height);
+            const data = imgData.data;
+            
+            // Konversi ke grayscale dan cari intensitas piksel
+            const grayData = new Uint8Array(width * height);
+            let minVal = 255;
+            let maxVal = 0;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i+1];
+                const b = data[i+2];
+                const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+                grayData[i/4] = gray;
+                if (gray < minVal) minVal = gray;
+                if (gray > maxVal) maxVal = gray;
+            }
+            
+            // Default bounding box (80% di tengah)
+            let finalCrop = { x: 10, y: 10, w: 80, h: 80 };
+            
+            // Jika kontras cukup memadai untuk segmentasi
+            if (maxVal - minVal > 40) {
+                // Gunakan threshold adaptif sederhana antara min dan max
+                const threshold = minVal + (maxVal - minVal) * 0.38;
+                
+                // Cari bounding box piksel di atas threshold (area kertas putih/terang)
+                // Beri margin 3% dari tepi luar agar tidak terganggu bayangan bingkai foto
+                const borderX = Math.max(1, Math.floor(width * 0.03));
+                const borderY = Math.max(1, Math.floor(height * 0.03));
+                
+                let minX = width;
+                let maxX = 0;
+                let minY = height;
+                let maxY = 0;
+                
+                for (let y = borderY; y < height - borderY; y++) {
+                    for (let x = borderX; x < width - borderX; x++) {
+                        const idx = y * width + x;
+                        if (grayData[idx] >= threshold) {
+                            if (x < minX) minX = x;
+                            if (x > maxX) maxX = x;
+                            if (y < minY) minY = y;
+                            if (y > maxY) maxY = y;
+                        }
+                    }
+                }
+                
+                // Pastikan bounding box valid dan tidak terlalu kecil (minimal 20% lebar/tinggi)
+                if (maxX > minX && maxY > minY && (maxX - minX) > width * 0.2 && (maxY - minY) > height * 0.2) {
+                    // Tambahkan padding 2% untuk memastikan konten tidak terpotong
+                    const padX = Math.floor((maxX - minX) * 0.02);
+                    const padY = Math.floor((maxY - minY) * 0.02);
+                    
+                    const left = Math.max(0, minX - padX);
+                    const right = Math.min(width - 1, maxX + padX);
+                    const top = Math.max(0, minY - padY);
+                    const bottom = Math.min(height - 1, maxY + padY);
+                    
+                    finalCrop = {
+                        x: Math.round((left / width) * 100),
+                        y: Math.round((top / height) * 100),
+                        w: Math.round(((right - left) / width) * 100),
+                        h: Math.round(((bottom - top) / height) * 100)
+                    };
+                }
+            }
+            
+            // Update cropBoxPercent
+            cropBoxPercent = finalCrop;
+            
+            // Sinkronkan ke DOM
+            const cropBox = document.getElementById('crop-box');
+            if (cropBox) {
+                cropBox.style.left = cropBoxPercent.x + '%';
+                cropBox.style.top = cropBoxPercent.y + '%';
+                cropBox.style.width = cropBoxPercent.w + '%';
+                cropBox.style.height = cropBoxPercent.h + '%';
+            }
+            
+            // Aktifkan area pangkas (cropper overlay) jika belum aktif
+            if (!isCropperActive) {
+                toggleCropper();
+            } else {
+                alignOverlayWithCanvas();
+            }
+            
+        } catch (error) {
+            console.error("Gagal melakukan autocrop:", error);
+            if (!isSilent) {
+                alert("Gagal mendeteksi dokumen secara otomatis.");
+            }
+        }
+    }
+
     function toggleCropper() {
         isCropperActive = !isCropperActive;
         const btn = document.getElementById('cropper-toggle-btn');
@@ -1817,7 +1924,7 @@
             btn.classList.add('bg-indigo-950', 'border-indigo-500', 'text-indigo-400');
         } else {
             overlay.classList.add('hidden');
-            text.innerText = 'Aktifkan Pangkas (Crop)';
+            text.innerText = 'Pangkas Manual';
             btn.classList.remove('bg-indigo-950', 'border-indigo-500', 'text-indigo-400');
         }
     }
@@ -1833,35 +1940,63 @@
         overlay.style.left = canvas.offsetLeft + 'px';
     }
 
-    function loadScannerImage(dataUrl) {
+    function loadScannerImage(dataUrl, savedSettings = null, savedCrop = null) {
         document.getElementById('scanner-loader').classList.remove('hidden');
         originalImgElement = new Image();
         originalImgElement.onload = function() {
             document.getElementById('scanner-loader').classList.add('hidden');
             
-            currentSettings = {
-                filter: 'original',
-                rotation: 0,
-                brightness: 0,
-                contrast: 0,
-                threshold: 120
-            };
+            if (savedSettings) {
+                currentSettings = { ...savedSettings };
+                
+                document.getElementById('adjust-brightness').value = currentSettings.brightness;
+                document.getElementById('val-brightness').innerText = (currentSettings.brightness > 0 ? '+' : '') + currentSettings.brightness + '%';
+                document.getElementById('adjust-contrast').value = currentSettings.contrast;
+                document.getElementById('val-contrast').innerText = (currentSettings.contrast > 0 ? '+' : '') + currentSettings.contrast + '%';
+                document.getElementById('adjust-threshold').value = currentSettings.threshold;
+                document.getElementById('val-threshold').innerText = currentSettings.threshold;
+            } else {
+                currentSettings = {
+                    filter: 'original',
+                    rotation: 0,
+                    brightness: 0,
+                    contrast: 0,
+                    threshold: 120
+                };
+                
+                document.getElementById('adjust-brightness').value = 0;
+                document.getElementById('val-brightness').innerText = '0%';
+                document.getElementById('adjust-contrast').value = 0;
+                document.getElementById('val-contrast').innerText = '0%';
+                document.getElementById('adjust-threshold').value = 120;
+                document.getElementById('val-threshold').innerText = '120';
+            }
             
-            document.getElementById('adjust-brightness').value = 0;
-            document.getElementById('val-brightness').innerText = '0%';
-            document.getElementById('adjust-contrast').value = 0;
-            document.getElementById('val-contrast').innerText = '0%';
-            document.getElementById('adjust-threshold').value = 120;
-            document.getElementById('val-threshold').innerText = '120';
+            if (savedCrop) {
+                cropBoxPercent = { ...savedCrop };
+                const cropBox = document.getElementById('crop-box');
+                cropBox.style.left = cropBoxPercent.x + '%';
+                cropBox.style.top = cropBoxPercent.y + '%';
+                cropBox.style.width = cropBoxPercent.w + '%';
+                cropBox.style.height = cropBoxPercent.h + '%';
+                
+                if (!isCropperActive) toggleCropper();
+            } else {
+                cropBoxPercent = { x: 10, y: 10, w: 80, h: 80 };
+                const cropBox = document.getElementById('crop-box');
+                cropBox.style.left = '10%';
+                cropBox.style.top = '10%';
+                cropBox.style.width = '80%';
+                cropBox.style.height = '80%';
+                
+                if (isCropperActive) toggleCropper();
+                
+                // Jalankan autocrop secara otomatis saat gambar pertama kali dimuat
+                setTimeout(function() {
+                    autoCropDocument(true);
+                }, 100);
+            }
             
-            cropBoxPercent = { x: 10, y: 10, w: 80, h: 80 };
-            const cropBox = document.getElementById('crop-box');
-            cropBox.style.left = '10%';
-            cropBox.style.top = '10%';
-            cropBox.style.width = '80%';
-            cropBox.style.height = '80%';
-            
-            if (isCropperActive) toggleCropper();
             updateFilterUI();
             applyFilters();
         };
