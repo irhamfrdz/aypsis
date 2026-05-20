@@ -36,6 +36,8 @@ class TandaTerima extends Model
         'penerima',
         'pic_penerima',
         'alamat_penerima',
+        'notify_party',
+        'alamat_notify_party',
         'gambar_checkpoint',
         'estimasi_nama_kapal',
         'nomor_ro',

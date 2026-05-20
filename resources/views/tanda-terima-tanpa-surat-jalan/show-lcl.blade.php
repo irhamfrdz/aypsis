@@ -138,6 +138,19 @@
                                     @endif
                                 </div>
                             </div>
+
+                            @if($tandaTerima->notify_party)
+                                <!-- Notify Party -->
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-500 mb-2">Notify Party</label>
+                                    <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                                        <p class="text-base font-semibold text-gray-900">{{ $tandaTerima->notify_party }}</p>
+                                        @if($tandaTerima->alamat_notify_party)
+                                            <p class="text-sm text-gray-600 mt-2">{{ $tandaTerima->alamat_notify_party }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

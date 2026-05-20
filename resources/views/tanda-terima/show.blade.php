@@ -192,6 +192,18 @@
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Alamat Penerima</dt>
                             <dd class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ $tandaTerima->alamat_penerima ?: '-' }}</dd>
                         </div>
+                        @if($tandaTerima->notify_party)
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Notify Party</dt>
+                            <dd class="text-sm text-gray-900 font-semibold">{{ $tandaTerima->notify_party }}</dd>
+                        </div>
+                        @endif
+                        @if($tandaTerima->alamat_notify_party)
+                        <div class="md:col-span-2">
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Alamat Notify Party</dt>
+                            <dd class="text-sm text-gray-900 bg-gray-50 p-2 rounded">{{ $tandaTerima->alamat_notify_party }}</dd>
+                        </div>
+                        @endif
                     </dl>
                 </div>
             </div>

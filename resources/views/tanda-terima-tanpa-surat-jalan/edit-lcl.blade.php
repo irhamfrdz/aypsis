@@ -339,6 +339,46 @@
                                                   class="penerima-alamat w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                                                   placeholder="Alamat lengkap penerima...">{{ old('alamat_penerima', $tandaTerima->alamat_penerima) }}</textarea>
                                     </div>
+
+                                    <!-- Notify Party -->
+                                    <div class="mt-4">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <label class="block text-sm font-medium text-gray-700">
+                                                Notify Party
+                                            </label>
+                                            <button type="button" 
+                                                    onclick="openNotifyPopup()"
+                                                    class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs transition-colors flex items-center"
+                                                    title="Tambah Notify Party Baru">
+                                                <i class="fas fa-plus mr-1"></i>
+                                                Tambah Notify Party
+                                            </button>
+                                        </div>
+                                        <select name="notify_party"
+                                                id="notify_party"
+                                                class="select2-notify w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                                            <option value="">-- Pilih Notify Party --</option>
+                                            @if(isset($masterPengirimPenerima))
+                                                @foreach($masterPengirimPenerima as $item)
+                                                    <option value="{{ $item->nama }}" 
+                                                            data-alamat="{{ $item->alamat }}"
+                                                            {{ old('notify_party', $tandaTerima->notify_party) == $item->nama ? 'selected' : '' }}>
+                                                        {{ $item->nama }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+
+                                    <!-- Alamat Notify Party -->
+                                    <div class="mt-3">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            Alamat Notify Party
+                                        </label>
+                                        <textarea name="alamat_notify_party" id="alamat_notify_party" rows="2"
+                                                  class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                                  placeholder="Alamat lengkap Notify Party...">{{ old('alamat_notify_party', $tandaTerima->alamat_notify_party) }}</textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2149,6 +2189,36 @@ function saveScannerResult() {
             });
         });
 
+        // Initialize all notify party Select2 dropdowns
+        $('.select2-notify').each(function() {
+            if ($(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2('destroy');
+            }
+            
+            $(this).select2({
+                placeholder: '-- Pilih Notify Party --',
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Auto-fill alamat when selected
+            $(this).off('select2:select').on('select2:select', function(e) {
+                var selectedOption = e.params.data.element;
+                var alamat = $(selectedOption).data('alamat');
+                
+                if (alamat) {
+                    $('#alamat_notify_party').val(alamat);
+                } else {
+                    $('#alamat_notify_party').val('');
+                }
+            });
+
+            // Clear alamat when cleared
+            $(this).off('select2:clear').on('select2:clear', function(e) {
+                $('#alamat_notify_party').val('');
+            });
+        });
+
         // Initialize all pengirim Select2 dropdowns
         $('.select2-pengirim').each(function() {
             if ($(this).hasClass('select2-hidden-accessible')) {
@@ -2355,6 +2425,21 @@ function saveScannerResult() {
             `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
         );
     }
+
+    // Function to open popup for adding new notify party
+    function openNotifyPopup() {
+        lastPopupOpened = 'notify';
+        const popupWidth = 700;
+        const popupHeight = 600;
+        const left = (screen.width - popupWidth) / 2;
+        const top = (screen.height - popupHeight) / 2;
+        
+        window.open(
+            '{{ route("tanda-terima.penerima.create", [], false) }}',
+            'TambahNotifyParty',
+            `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+    }
     
     // Listen for messages from popup window
     window.addEventListener('message', function(event) {
@@ -2371,6 +2456,7 @@ function saveScannerResult() {
             // Determine which one should be selected
             const selectAsPenerima = lastPopupOpened === 'penerima';
             const selectAsPengirim = lastPopupOpened === 'pengirim';
+            const selectAsNotify = lastPopupOpened === 'notify';
             
             // Create new option for all penerima dropdowns
             const newOptionPenerima = new Option(
@@ -2389,6 +2475,15 @@ function saveScannerResult() {
                 selectAsPengirim
             );
             $(newOptionPengirim).attr('data-alamat', penerimaData.alamat || '');
+
+            // Create new option for all notify dropdowns
+            const newOptionNotify = new Option(
+                penerimaData.nama,
+                penerimaData.nama,
+                selectAsNotify,
+                selectAsNotify
+            );
+            $(newOptionNotify).attr('data-alamat', penerimaData.alamat || '');
             
             // Add to all penerima dropdowns
             $('.select2-penerima').each(function() {
@@ -2406,11 +2501,21 @@ function saveScannerResult() {
                 }
             });
 
+            // Add to all notify dropdowns
+            $('.select2-notify').each(function() {
+                $(this).append($(newOptionNotify).clone());
+                if (selectAsNotify) {
+                    $(this).trigger('change');
+                }
+            });
+
             // Auto-fill alamat
             if (selectAsPenerima) {
                 $('#alamat_penerima').val(penerimaData.alamat || '');
             } else if (selectAsPengirim) {
                 $('#alamat_pengirim').val(penerimaData.alamat || '');
+            } else if (selectAsNotify) {
+                $('#alamat_notify_party').val(penerimaData.alamat || '');
             }
             
             // Show success notification

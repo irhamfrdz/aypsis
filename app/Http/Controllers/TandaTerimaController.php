@@ -576,6 +576,8 @@ class TandaTerimaController extends Controller
             'penerima' => 'nullable|string|max:255',
             'pic_penerima' => 'nullable|string|max:255',
             'alamat_penerima' => 'nullable|string',
+            'notify_party' => 'nullable|string|max:255',
+            'alamat_notify_party' => 'nullable|string',
             'catatan' => 'nullable|string',
             'nomor_kontainer' => 'nullable|array',
             'nomor_kontainer.*' => 'nullable|string|max:255',
@@ -662,6 +664,8 @@ class TandaTerimaController extends Controller
             $tandaTerima->penerima = $request->penerima;
             $tandaTerima->pic_penerima = $request->pic_penerima;
             $tandaTerima->alamat_penerima = $request->alamat_penerima;
+            $tandaTerima->notify_party = $request->notify_party;
+            $tandaTerima->alamat_notify_party = $request->alamat_notify_party;
             $tandaTerima->catatan = $request->catatan;
             $tandaTerima->lembur = $request->boolean('lembur');
             $tandaTerima->nginap = $request->boolean('nginap');
@@ -1240,6 +1244,8 @@ class TandaTerimaController extends Controller
             'alamat_pengirim' => 'nullable|string',
             'penerima' => 'nullable|string|max:255',
             'pic_penerima' => 'nullable|string|max:255',
+            'notify_party' => 'nullable|string|max:255',
+            'alamat_notify_party' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
@@ -1307,6 +1313,8 @@ class TandaTerimaController extends Controller
                 'penerima' => $request->penerima,
                 'pic_penerima' => $request->pic_penerima,
                 'alamat_penerima' => $request->alamat_penerima,
+                'notify_party' => $request->notify_party,
+                'alamat_notify_party' => $request->alamat_notify_party,
                 'updated_by' => Auth::id(),
             ];
 

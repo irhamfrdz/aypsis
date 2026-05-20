@@ -29,6 +29,8 @@ namespace App\Models;
         'pic_penerima',
         'telepon_penerima',
         'alamat_penerima',
+        'notify_party',
+        'alamat_notify_party',
         // Single Pengirim
         'nama_pengirim',
         'pic_pengirim',

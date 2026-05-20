@@ -506,6 +506,50 @@
                                 <i class="fas fa-info-circle mr-1"></i>Alamat akan terisi otomatis saat memilih penerima, namun dapat diubah sesuai kebutuhan
                             </p>
                         </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="notify_party" class="block text-xs font-medium text-gray-500">
+                                    Notify Party
+                                </label>
+                                <button type="button"
+                                        onclick="openNotifyPopup()"
+                                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors ml-auto">
+                                    <i class="fas fa-plus mr-1"></i>
+                                    Tambah Notify Party Baru
+                                </button>
+                            </div>
+                            <select name="notify_party"
+                                    id="notify_party"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-notify @error('notify_party') border-red-500 @enderror">
+                                <option value="">-- Pilih Notify Party --</option>
+                                @if(isset($masterPenerimaList))
+                                    @foreach($masterPenerimaList as $penerimaItem)
+                                        <option value="{{ $penerimaItem->nama_penerima }}"
+                                                data-alamat="{{ $penerimaItem->alamat ?? '' }}"
+                                                {{ old('notify_party', $tandaTerima->notify_party) == $penerimaItem->nama_penerima ? 'selected' : '' }}>
+                                            {{ $penerimaItem->nama_penerima }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            @error('notify_party')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-1 text-xs text-gray-500">
+                                <i class="fas fa-search mr-1"></i>Ketik untuk mencari notify party
+                            </p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="alamat_notify_party" class="block text-xs font-medium text-gray-500 mb-2">
+                                Alamat Notify Party
+                            </label>
+                            <textarea name="alamat_notify_party" id="alamat_notify_party" rows="2"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm @error('alamat_notify_party') border-red-500 @enderror"
+                                      placeholder="Alamat lengkap Notify Party">{{ old('alamat_notify_party', $tandaTerima->alamat_notify_party) }}</textarea>
+                            @error('alamat_notify_party')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         <!-- Gambar Checkpoint -->
                         @if($tandaTerima->suratJalan->gambar_checkpoint)
@@ -1283,6 +1327,24 @@
                         $('#alamat_penerima').val(alamat);
                     }
                 });
+
+                // Initialize Select2 for Notify Party with auto-fill alamat
+                $('.select2-notify').select2({
+                    placeholder: '-- Pilih Notify Party --',
+                    allowClear: true,
+                    width: '100%'
+                }).on('select2:select', function(e) {
+                    var data = e.params.data;
+                    var selectedOption = $(this).find('option:selected');
+                    var alamat = selectedOption.data('alamat');
+                    if (alamat) {
+                        $('#alamat_notify_party').val(alamat);
+                    } else {
+                        $('#alamat_notify_party').val('');
+                    }
+                }).on('select2:clear', function(e) {
+                    $('#alamat_notify_party').val('');
+                });
             }
         });
     })();
@@ -1344,8 +1406,15 @@
     }
 
     function openPenerimaPopup() {
+        lastPopupOpened = 'penerima';
         const url = `{{ route('tanda-terima.penerima.create') }}`;
         window.open(url, 'Tambah Penerima', 'width=800,height=600,scrollbars=yes');
+    }
+
+    function openNotifyPopup() {
+        lastPopupOpened = 'notify';
+        const url = `{{ route('tanda-terima.penerima.create') }}`;
+        window.open(url, 'Tambah Notify Party', 'width=800,height=600,scrollbars=yes');
     }
 
     // Listen for message from popup when new penerima or pengirim is added
@@ -1382,6 +1451,33 @@
                 jQuery('#alamat_penerima').val(newAlamat);
                 
                 console.log('✓ New penerima selected:', newName);
+            }
+        } else if (lastPopupOpened === 'notify') {
+            const data = event.data.penerima || event.data.data || event.data;
+            if (!data || !data.nama) return;
+
+            const newName = data.nama;
+            const newAlamat = data.alamat || '';
+            
+            // Add new option to select
+            const select = jQuery('#notify_party');
+            if (select.length) {
+                // Check if option already exists
+                const existingOption = select.find("option[value='" + newName + "']");
+                if (existingOption.length === 0) {
+                    const newOption = new Option(newName, newName, true, true);
+                    jQuery(newOption).attr('data-alamat', newAlamat);
+                    select.append(newOption);
+                } else {
+                    existingOption.attr('data-alamat', newAlamat);
+                    select.val(newName);
+                }
+                
+                // Trigger select2 change and auto-fill alamat
+                select.trigger('change');
+                jQuery('#alamat_notify_party').val(newAlamat);
+                
+                console.log('✓ New notify party selected:', newName);
             }
         } else if (event.data.type === 'pengirim-added' || lastPopupOpened === 'pengirim') {
             const data = event.data.data || event.data.pengirim || event.data;
