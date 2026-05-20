@@ -1759,11 +1759,14 @@
                             <p class="text-[11px] font-semibold text-gray-700 mt-2 truncate" title="${item.name}">${item.name}</p>
                             <p class="text-[10px] text-gray-500">Tersimpan di server</p>
                             <div class="flex gap-1.5 mt-2">
-                                <a href="${item.dataUrl}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-gray-100 border border-gray-200 text-gray-700 hover:text-black text-[10px] font-semibold transition cursor-pointer" download>
-                                    <i class="fas fa-download"></i> Unduh
+                                <a href="${item.dataUrl}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 py-1 px-1 rounded-lg bg-gray-100 border border-gray-200 text-gray-700 hover:text-black text-[10px] font-semibold transition cursor-pointer" download title="Unduh">
+                                    <i class="fas fa-download"></i>
                                 </a>
-                                <button type="button" onclick="removeImageItem(${index})" class="flex-1 flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:text-red-700 hover:bg-red-100 text-[10px] font-semibold transition cursor-pointer">
-                                    <i class="fas fa-trash"></i> Hapus
+                                <button type="button" onclick="openScannerModal(${index})" class="flex-1 flex items-center justify-center gap-1 py-1 px-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 text-[10px] font-semibold transition cursor-pointer" title="Scan Dokumen">
+                                    <i class="fas fa-magic"></i>
+                                </button>
+                                <button type="button" onclick="removeImageItem(${index})" class="flex-1 flex items-center justify-center gap-1 py-1 px-1 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:text-red-700 hover:bg-red-100 text-[10px] font-semibold transition cursor-pointer" title="Hapus">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                             <input type="hidden" name="existing_images[]" value="${item.path}">
@@ -1874,10 +1877,20 @@
         function openScannerModal(index) {
             activeImageIndex = index;
             const item = processedImages[index];
-            if (!item || item.isPdf || item.isExisting) return;
+            if (!item || item.isPdf) return;
 
             document.getElementById('camscanner-modal').classList.remove('hidden');
             document.getElementById('scanner-loader').classList.remove('hidden');
+
+            if (!item.settings) {
+                item.settings = {
+                    filter: 'original',
+                    rotation: 0,
+                    brightness: 0,
+                    contrast: 0,
+                    threshold: 120
+                };
+            }
 
             currentSettings = JSON.parse(JSON.stringify(item.settings));
             
@@ -1923,7 +1936,8 @@
                 document.getElementById('scanner-loader').classList.add('hidden');
                 closeScannerModal();
             };
-            originalImgElement.src = item.originalDataUrl;
+            // Use originalDataUrl if available, otherwise fallback to dataUrl (for existing images)
+            originalImgElement.src = item.originalDataUrl || item.dataUrl;
         }
 
         function closeScannerModal() {
@@ -2346,10 +2360,28 @@
             const canvas = document.getElementById('scanner-canvas');
             const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
 
-            processedImages[activeImageIndex].dataUrl = dataUrl;
-            processedImages[activeImageIndex].settings = { ...currentSettings };
-            processedImages[activeImageIndex].crop = isCropperActive ? { ...cropBoxPercent } : null;
-            processedImages[activeImageIndex].isProcessed = true;
+            const item = processedImages[activeImageIndex];
+
+            // If it was an existing image from the server, treat it as a newly uploaded scanned file
+            // so we add its old path to hapus_gambar[] and mark it as isExisting = false
+            if (item.isExisting) {
+                const form = document.querySelector('form');
+                if (form && item.path) {
+                    const rem = document.createElement('input');
+                    rem.type = 'hidden'; 
+                    rem.name = 'hapus_gambar[]'; 
+                    rem.value = item.path; 
+                    form.appendChild(rem);
+                }
+                item.isExisting = false;
+                if (!item.name) item.name = 'scanned_image.jpg';
+                if (!item.type) item.type = 'image/jpeg';
+            }
+
+            item.dataUrl = dataUrl;
+            item.settings = { ...currentSettings };
+            item.crop = isCropperActive ? { ...cropBoxPercent } : null;
+            item.isProcessed = true;
 
             renderImagePreviews();
             syncFileInput();
