@@ -6,7 +6,19 @@
 @push('styles')
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- FontAwesome for CamScanner Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+    /* CamScanner Styles */
+    .scanner-filter-btn.active {
+        background-color: rgb(79 70 229) !important; /* bg-indigo-600 */
+        color: #ffffff !important;
+        border-color: rgb(99 102 241) !important; /* border-indigo-500 */
+    }
+    .scanner-filter-btn.active i {
+        color: #ffffff !important;
+    }
+
     /* Custom Select2 styling to match Tailwind */
     .select2-container--default .select2-selection--single {
         height: 42px;
@@ -796,18 +808,6 @@
                             <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                         @enderror
 
-                        <!-- Preview Area for New Images -->
-                        <div id="image-preview-container" class="mt-4 hidden">
-                            <label class="block text-xs font-medium text-gray-500 mb-2">
-                                <i class="fas fa-eye mr-1 text-orange-600"></i>
-                                Preview Gambar Baru
-                            </label>
-                            <div id="image-preview-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                {{-- Preview images will be inserted here by JavaScript --}}
-                            </div>
-                        </div>
-
-                        <!-- Existing Images -->
                         @php
                             $existingImages = $tandaTerima->gambar_surat_jalan;
                             if (is_string($existingImages)) {
@@ -818,31 +818,34 @@
                             }
                         @endphp
 
-                        @if(!empty($existingImages))
-                            <div class="mt-4">
-                                <label class="block text-xs font-medium text-gray-500 mb-2">
-                                    <i class="fas fa-images mr-1 text-green-600"></i>
-                                    Gambar Yang Sudah Ada
-                                </label>
-                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                    @foreach($existingImages as $index => $imagePath)
-                                        @php $imgUrl = asset('storage/' . ltrim($imagePath, '/')); @endphp
-                                        <div class="relative bg-gray-50 rounded-lg border border-gray-200 p-2 existing-image-item" data-path="{{ $imagePath }}">
-                                            <img src="{{ $imgUrl }}" alt="Gambar {{ $index + 1 }}" class="object-cover w-full h-28 rounded" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27100%27 height=%27100%27%3E%3Crect fill=%27%23ddd%27 width=%27100%27 height=%27100%27/%3E%3Ctext fill=%27%23999%27 x=%2750%25%27 y=%2750%25%27 dominant-baseline=%27middle%27 text-anchor=%27middle%27%3EGambar tidak ditemukan%3C/text%3E%3C/svg%3E';"/>
-                                            <div class="flex justify-between items-center mt-2">
-                                                <div class="text-xs text-gray-600 truncate">Gambar {{ $index + 1 }}</div>
-                                                <button type="button" onclick="removeExistingImage(this, '{{ $imagePath }}')" class="text-red-500 hover:text-red-700 transition">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                            <input type="hidden" name="existing_images[]" value="{{ $imagePath }}">
+                        <!-- Preview Area for Images -->
+                        <div id="image-preview-container" class="mt-4 @if(empty($existingImages)) hidden @endif">
+                            <label class="block text-xs font-medium text-gray-500 mb-2">
+                                <i class="fas fa-eye mr-1 text-orange-600"></i>
+                                Preview Gambar
+                            </label>
+                            <div id="image-preview-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                @foreach($existingImages as $index => $imagePath)
+                                    @php $imgUrl = asset('storage/' . ltrim($imagePath, '/')); @endphp
+                                    <div class="relative bg-white border border-gray-200 rounded-xl p-3 image-preview-item" data-is-existing="1" data-path="{{ $imagePath }}">
+                                        <div class="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50 h-28 flex items-center justify-center">
+                                            <img src="{{ $imgUrl }}" alt="Gambar {{ $index + 1 }}" class="w-full h-full object-cover">
                                         </div>
-                                    @endforeach
-                                </div>
+                                        <p class="text-[11px] font-semibold text-gray-700 mt-2 truncate" title="Gambar {{ $index + 1 }}">Gambar {{ $index + 1 }}</p>
+                                        <p class="text-[10px] text-gray-500">Tersimpan di server</p>
+                                        <div class="flex gap-1.5 mt-2">
+                                            <a href="{{ $imgUrl }}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-gray-100 border border-gray-200 text-gray-700 hover:text-black text-[10px] font-semibold transition cursor-pointer" download>
+                                                <i class="fas fa-download"></i> Unduh
+                                            </a>
+                                            <button type="button" onclick="removeImageItem({{ $index }})" class="flex-1 flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:text-red-700 hover:bg-red-100 text-[10px] font-semibold transition cursor-pointer">
+                                                <i class="fas fa-trash"></i> Hapus
+                                            </button>
+                                        </div>
+                                        <input type="hidden" name="existing_images[]" value="{{ $imagePath }}">
+                                    </div>
+                                @endforeach
                             </div>
-                        @endif
+                        </div>
                     </div>
                 </div>
 
@@ -866,6 +869,149 @@
                 </div>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- CamScanner Scanner Modal -->
+<div id="camscanner-modal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-slate-950 bg-opacity-75 backdrop-blur-sm" aria-hidden="true" onclick="closeScannerModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="relative z-10 inline-block align-middle bg-slate-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-5xl sm:w-full border border-slate-800">
+            <div class="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-magic text-indigo-400"></i>
+                    <span>CamScanner Document Enhancer</span>
+                </h3>
+                <button type="button" onclick="closeScannerModal()" class="text-slate-400 hover:text-white transition-colors cursor-pointer">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
+                <div class="lg:col-span-2 p-6 bg-slate-950 flex flex-col items-center justify-center min-h-[400px] lg:min-h-[500px] relative overflow-hidden">
+                    <div id="scanner-loader" class="absolute inset-0 bg-slate-950/80 z-10 flex flex-col items-center justify-center gap-3 hidden">
+                        <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-xs text-slate-400 font-medium">Memproses gambar...</span>
+                    </div>
+                    <div id="scanner-canvas-wrapper" class="relative max-w-full max-h-[450px] overflow-hidden flex items-center justify-center bg-slate-900 rounded-xl border border-slate-800 p-2 shadow-inner">
+                        <canvas id="scanner-canvas" class="max-w-full max-h-[400px] object-contain rounded"></canvas>
+                        <div id="crop-overlay" class="absolute inset-0 hidden select-none pointer-events-none">
+                            <div id="crop-box" class="absolute border-2 border-dashed border-indigo-400 bg-indigo-500/10 pointer-events-auto cursor-move">
+                                <div class="absolute -top-1.5 -left-1.5 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-nwse-resize shadow-md" data-handle="nw"></div>
+                                <div class="absolute -top-1.5 -right-1.5 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-nesw-resize shadow-md" data-handle="ne"></div>
+                                <div class="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-nwse-resize shadow-md" data-handle="sw"></div>
+                                <div class="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-nesw-resize shadow-md" data-handle="se"></div>
+                                <div class="absolute top-1/2 -left-1.5 -translate-y-1/2 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-ew-resize shadow-md" data-handle="w"></div>
+                                <div class="absolute top-1/2 -right-1.5 -translate-y-1/2 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-ew-resize shadow-md" data-handle="e"></div>
+                                <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-ns-resize shadow-md" data-handle="n"></div>
+                                <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-indigo-500 border border-white rounded-full cursor-ns-resize shadow-md" data-handle="s"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-3 flex items-center gap-1.5">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Gunakan panel kanan untuk meningkatkan kontras dokumen atau merotasi.</span>
+                    </p>
+                </div>
+                <div class="p-6 bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col justify-between">
+                    <div class="space-y-6">
+                        <div>
+                            <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Mode Scan (Preset)</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="setScannerFilter('original')" id="filter-original"
+                                        class="scanner-filter-btn flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition duration-150 cursor-pointer">
+                                    <i class="fas fa-image text-lg mb-1 text-slate-400"></i>
+                                    <span class="text-xs font-medium">Asli</span>
+                                </button>
+                                <button type="button" onclick="setScannerFilter('magic')" id="filter-magic"
+                                        class="scanner-filter-btn flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition duration-150 cursor-pointer">
+                                    <i class="fas fa-magic text-lg mb-1 text-indigo-400"></i>
+                                    <span class="text-xs font-medium">Magic Color</span>
+                                </button>
+                                <button type="button" onclick="setScannerFilter('bw')" id="filter-bw"
+                                        class="scanner-filter-btn flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition duration-150 cursor-pointer">
+                                    <i class="fas fa-adjust text-lg mb-1 text-teal-400"></i>
+                                    <span class="text-xs font-medium">Hitam Putih</span>
+                                </button>
+                                <button type="button" onclick="setScannerFilter('grayscale')" id="filter-grayscale"
+                                        class="scanner-filter-btn flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition duration-150 cursor-pointer">
+                                    <i class="fas fa-palette text-lg mb-1 text-amber-400"></i>
+                                    <span class="text-xs font-medium">Grayscale</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-4 pt-4 border-t border-slate-800/60">
+                            <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Penyesuaian Manual</span>
+                            <div>
+                                <div class="flex justify-between text-xs font-medium text-slate-400 mb-1">
+                                    <span>Kecerahan (Brightness)</span>
+                                    <span id="val-brightness">0%</span>
+                                </div>
+                                <input type="range" id="adjust-brightness" min="-100" max="100" value="0" step="5"
+                                       oninput="adjustScannerManual('brightness', this.value)"
+                                       class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-medium text-slate-400 mb-1">
+                                    <span>Kontras (Contrast)</span>
+                                    <span id="val-contrast">0%</span>
+                                </div>
+                                <input type="range" id="adjust-contrast" min="-100" max="100" value="0" step="5"
+                                       oninput="adjustScannerManual('contrast', this.value)"
+                                       class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                            </div>
+                            <div id="threshold-slider-group" class="hidden">
+                                <div class="flex justify-between text-xs font-medium text-slate-400 mb-1">
+                                    <span>Ambang Batas (Threshold)</span>
+                                    <span id="val-threshold">120</span>
+                                </div>
+                                <input type="range" id="adjust-threshold" min="0" max="255" value="120" step="5"
+                                       oninput="adjustScannerManual('threshold', this.value)"
+                                       class="w-full h-1 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                            </div>
+                        </div>
+                        <div class="space-y-3 pt-4 border-t border-slate-800/60">
+                            <span class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Rotasi & Pangkas</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="rotateScanner(-90)"
+                                        class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-950 hover:bg-slate-850 border border-slate-850 text-xs font-semibold text-slate-300 hover:text-white transition duration-150 cursor-pointer">
+                                    <i class="fas fa-undo"></i>
+                                    <span>Putar Kiri</span>
+                                </button>
+                                <button type="button" onclick="rotateScanner(90)"
+                                        class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-950 hover:bg-slate-850 border border-slate-850 text-xs font-semibold text-slate-300 hover:text-white transition duration-150 cursor-pointer">
+                                    <i class="fas fa-redo"></i>
+                                    <span>Putar Kanan</span>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="toggleCropper()" id="cropper-toggle-btn"
+                                        class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-slate-950 hover:bg-slate-850 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-indigo-400 transition duration-150 cursor-pointer">
+                                    <i class="fas fa-crop-alt"></i>
+                                    <span id="cropper-btn-text">Pangkas Manual</span>
+                                </button>
+                                <button type="button" onclick="autoCropDocument()"
+                                        class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-indigo-950/65 hover:bg-indigo-900 border border-indigo-850 text-xs font-semibold text-indigo-300 hover:text-white transition duration-150 cursor-pointer"
+                                        title="Deteksi tepi kertas otomatis">
+                                    <i class="fas fa-magic text-indigo-400 mr-0.5 animate-pulse"></i>
+                                    <span>Autocrop</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 pt-6 border-t border-slate-800 mt-6">
+                        <button type="button" onclick="closeScannerModal()"
+                                class="flex-1 px-4 py-2.5 bg-slate-950 hover:bg-slate-850 border border-slate-850 text-slate-300 text-xs font-bold rounded-xl transition duration-150 cursor-pointer">
+                            Batal
+                        </button>
+                        <button type="button" onclick="saveScannerResult()"
+                                class="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition duration-150 shadow-lg shadow-indigo-600/20 cursor-pointer">
+                            Simpan Scan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1133,132 +1279,747 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Image Upload Functions
+// CamScanner & Image Upload Functions
+var processedImages = [];
+var activeImageIndex = null;
+var originalImgElement = null;
+var currentSettings = {
+    filter: 'original',
+    rotation: 0,
+    brightness: 0,
+    contrast: 0,
+    threshold: 120
+};
+
+let cropBoxPercent = { x: 10, y: 10, w: 80, h: 80 };
+let isCropperActive = false;
+let isDraggingBox = false;
+let isResizingBox = false;
+let activeHandle = null;
+let dragStartCoords = { x: 0, y: 0 };
+let cropBoxStartCoords = { x: 0, y: 0, w: 0, h: 0 };
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Initialize existing images from DOM
+function initializeExistingImages() {
+    const existingItems = document.querySelectorAll('#image-preview-grid .image-preview-item[data-is-existing="1"]');
+    existingItems.forEach((el, index) => {
+        const path = el.getAttribute('data-path');
+        const img = el.querySelector('img');
+        const imgUrl = img ? img.src : '';
+        processedImages.push({
+            isExisting: true,
+            path: path,
+            name: 'Gambar ' + (index + 1),
+            dataUrl: imgUrl,
+            size: 0,
+            type: 'image/jpeg'
+        });
+    });
+    // Re-render using our standard template so they are consistent
+    renderImagePreviews();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize existing images on page load
+    initializeExistingImages();
+});
+
 function previewImages(input) {
+    if (input.files && input.files.length > 0) {
+        const existingCount = processedImages.length;
+        const maxAllowed = 5 - existingCount;
+        if (maxAllowed <= 0) {
+            alert('Maksimal 5 gambar. Hapus beberapa gambar terlebih dahulu jika ingin menambahkan.');
+            input.value = '';
+            return;
+        }
+
+        const filesToProcess = Array.from(input.files).slice(0, maxAllowed);
+        let loadedCount = 0;
+        const startIndex = processedImages.length;
+
+        filesToProcess.forEach((file, fileIdx) => {
+            const isPdf = file.type === 'application/pdf';
+            
+            if (isPdf) {
+                processedImages.push({
+                    file: file,
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    isPdf: true,
+                    isExisting: false
+                });
+                loadedCount++;
+                checkFinish();
+            } else if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    processedImages.push({
+                        file: file,
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        isPdf: false,
+                        isExisting: false,
+                        originalDataUrl: e.target.result,
+                        dataUrl: e.target.result,
+                        isProcessed: false,
+                        settings: {
+                            filter: 'original',
+                            rotation: 0,
+                            brightness: 0,
+                            contrast: 0,
+                            threshold: 120
+                        },
+                        crop: null
+                    });
+                    loadedCount++;
+                    checkFinish();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                loadedCount++;
+                checkFinish();
+            }
+        });
+
+        function checkFinish() {
+            if (loadedCount === filesToProcess.length) {
+                renderImagePreviews();
+                syncFileInput();
+            }
+        }
+
+        if (input.files.length > maxAllowed) {
+            alert(`Hanya ${maxAllowed} gambar pertama yang akan diproses karena batas maksimal 5 gambar.`);
+        }
+    }
+}
+
+function renderImagePreviews() {
     const previewContainer = document.getElementById('image-preview-container');
     const previewGrid = document.getElementById('image-preview-grid');
     
-    if (input.files && input.files.length > 0) {
+    if (processedImages.length > 0) {
         previewContainer.classList.remove('hidden');
-        
-        // Clear previous previews
         previewGrid.innerHTML = '';
         
-        const maxFiles = 5;
-        const existingCount = document.querySelectorAll('.existing-image-item').length;
-        const availableSlots = maxFiles - existingCount;
-        
-        if (availableSlots <= 0) {
-            alert('Maksimal 5 gambar. Hapus beberapa gambar yang sudah ada terlebih dahulu.');
-            input.value = '';
-            previewContainer.classList.add('hidden');
-            return;
-        }
-        
-        const filesToProcess = Math.min(input.files.length, availableSlots);
-        
-        for (let i = 0; i < filesToProcess; i++) {
-            const file = input.files[i];
+        processedImages.forEach((item, index) => {
+            const previewDiv = document.createElement('div');
+            previewDiv.className = 'relative bg-white border border-gray-200 rounded-xl p-3 hover:shadow-lg hover:border-blue-300 transition duration-200 image-preview-item';
             
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                continue;
-            }
-            
-            // Validate file size (10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Salah satu file terlalu besar. Maksimal 10MB per file.');
-                continue;
-            }
-            
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const previewDiv = document.createElement('div');
-                previewDiv.className = 'relative bg-gray-50 rounded-lg border border-gray-200 p-2 image-preview-item';
-                previewDiv.dataset.fileIndex = i;
-                
+            if (item.isExisting) {
                 previewDiv.innerHTML = `
-                    <img src="${e.target.result}" alt="Preview ${i + 1}" class="object-cover w-full h-28 rounded"/>
-                    <div class="flex justify-between items-center mt-2">
-                        <div class="text-xs text-gray-600 truncate">${file.name}</div>
-                        <button type="button" onclick="removePreview(this, ${i})" class="text-red-500 hover:text-red-700 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
+                    <div class="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50 h-28 flex items-center justify-center">
+                        <img src="${item.dataUrl}" alt="${item.name}" class="w-full h-full object-cover">
+                    </div>
+                    <p class="text-[11px] font-semibold text-gray-700 mt-2 truncate" title="${item.name}">${item.name}</p>
+                    <p class="text-[10px] text-gray-500">Tersimpan di server</p>
+                    <div class="flex gap-1.5 mt-2">
+                        <a href="${item.dataUrl}" target="_blank" rel="noopener noreferrer" class="flex-1 flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-gray-100 border border-gray-200 text-gray-700 hover:text-black text-[10px] font-semibold transition cursor-pointer" download>
+                            <i class="fas fa-download"></i> Unduh
+                        </a>
+                        <button type="button" onclick="removeImageItem(${index})" class="flex-1 flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:text-red-700 hover:bg-red-100 text-[10px] font-semibold transition cursor-pointer">
+                            <i class="fas fa-trash"></i> Hapus
+                        </button>
+                    </div>
+                    <input type="hidden" name="existing_images[]" value="${item.path}">
+                `;
+            } else if (item.isPdf) {
+                previewDiv.innerHTML = `
+                    <div class="relative">
+                        <div class="w-full h-28 flex flex-col items-center justify-center bg-red-50 rounded-lg border border-red-200">
+                            <i class="fas fa-file-pdf text-red-500 text-3xl mb-1.5 animate-pulse"></i>
+                            <span class="text-[9px] font-bold text-red-600 uppercase tracking-wider">PDF DOCUMENT</span>
+                        </div>
+                        <button type="button" 
+                                onclick="removeImageItem(${index})"
+                                class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs transition shadow-md remove-preview-btn border border-red-500 z-10 cursor-pointer font-bold"
+                                title="Hapus file">
+                            ×
+                        </button>
+                    </div>
+                    <p class="text-[11px] font-semibold text-gray-700 mt-2 truncate" title="${item.name}">${item.name}</p>
+                    <p class="text-[10px] text-gray-500">${formatFileSize(item.size)}</p>
+                `;
+            } else {
+                previewDiv.innerHTML = `
+                    <div class="relative group overflow-hidden rounded-lg border border-gray-200 bg-gray-50 h-28 flex items-center justify-center">
+                        <img src="${item.dataUrl}" 
+                             alt="Preview ${index + 1}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <div class="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-all flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100">
+                            <button type="button" onclick="openScannerModal(${index})"
+                                    class="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-[11px] font-medium flex items-center gap-1 cursor-pointer">
+                                <i class="fas fa-magic"></i> Scan
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] font-semibold text-gray-700 mt-2 truncate" title="${item.name}">${item.name}</p>
+                    <p class="text-[10px] text-gray-500">${formatFileSize(item.size)}</p>
+                    <div class="flex gap-1.5 mt-2">
+                        <button type="button" onclick="openScannerModal(${index})"
+                                class="flex-1 flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-100 text-[10px] font-semibold transition cursor-pointer">
+                            <i class="fas fa-magic"></i> Scan Dokumen
+                        </button>
+                        <button type="button" onclick="removeImageItem(${index})"
+                                class="flex items-center justify-center gap-1 py-1 px-2 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:text-red-700 hover:bg-red-100 text-[10px] font-semibold transition cursor-pointer"
+                                title="Hapus file">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 `;
-                
-                previewGrid.appendChild(previewDiv);
-            };
+            }
             
-            reader.readAsDataURL(file);
-        }
-        
-        if (input.files.length > availableSlots) {
-            alert(`Maksimal ${maxFiles} gambar total. Tersisa ${availableSlots} slot. Hanya ${availableSlots} file pertama yang akan diupload.`);
-        }
+            previewGrid.appendChild(previewDiv);
+        });
     } else {
-        if (previewGrid.children.length === 0) {
-            previewContainer.classList.add('hidden');
-        }
-    }
-}
-
-function removePreview(button, index) {
-    const input = document.getElementById('gambar_surat_jalan');
-    const previewContainer = document.getElementById('image-preview-container');
-    const previewGrid = document.getElementById('image-preview-grid');
-    
-    // Remove preview element
-    const previewItem = button.closest('.image-preview-item');
-    if (previewItem) {
-        previewItem.remove();
-    }
-    
-    // Hide container if no more previews
-    if (previewGrid.children.length === 0) {
         previewContainer.classList.add('hidden');
     }
+}
+
+function removeImageItem(index) {
+    const item = processedImages[index];
+    if (item && item.isExisting) {
+        const form = document.querySelector('form');
+        if (form) {
+            const rem = document.createElement('input');
+            rem.type = 'hidden'; 
+            rem.name = 'hapus_gambar[]'; 
+            rem.value = item.path; 
+            form.appendChild(rem);
+        }
+    }
+    processedImages.splice(index, 1);
+    renderImagePreviews();
+    syncFileInput();
+}
+
+function syncFileInput() {
+    const input = document.getElementById('gambar_surat_jalan');
+    if (!input) return;
     
-    // Remove file from input (create new FileList without the removed file)
     try {
-        const files = Array.from(input.files || []);
-        const newFiles = files.filter((_, idx) => idx !== index);
-        
         const dataTransfer = new DataTransfer();
-        newFiles.forEach(f => dataTransfer.items.add(f));
+        processedImages.forEach(item => {
+            if (item.isExisting) return; // do not upload existing files
+            if (item.file) {
+                dataTransfer.items.add(item.file);
+            } else if (item.dataUrl) {
+                const file = dataURLtoFile(item.dataUrl, item.name, item.type);
+                dataTransfer.items.add(file);
+            }
+        });
         input.files = dataTransfer.files;
     } catch (err) {
-        // If browser doesn't support DataTransfer, just clear the input
-        console.warn('Could not remove specific file, browser limitation');
+        console.error("Gagal sinkronisasi file input:", err);
     }
 }
 
-function removeExistingImage(button, path) {
-    const imageItem = button.closest('.existing-image-item');
-    if (imageItem) {
-        imageItem.remove();
+function dataURLtoFile(dataurl, filename, mime) {
+    var arr = dataurl.split(','),
+        bstr = atob(arr[1]), 
+        n = bstr.length, 
+        u8arr = new Uint8Array(n);
+    while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
     }
+    return new File([u8arr], filename, {type: mime || 'image/jpeg'});
+}
+
+// CamScanner Engine
+function openScannerModal(index) {
+    activeImageIndex = index;
+    const item = processedImages[index];
+    if (!item || item.isPdf || item.isExisting) return;
+
+    document.getElementById('camscanner-modal').classList.remove('hidden');
+    document.getElementById('scanner-loader').classList.remove('hidden');
+
+    currentSettings = JSON.parse(JSON.stringify(item.settings));
     
-    // Remove from existing_images array by removing the hidden input
-    const hiddenInputs = document.querySelectorAll('input[name="existing_images[]"]');
-    hiddenInputs.forEach(input => {
-        if (input.value === path) {
-            input.remove();
+    // Set slider values
+    document.getElementById('adjust-brightness').value = currentSettings.brightness;
+    document.getElementById('val-brightness').textContent = (currentSettings.brightness > 0 ? '+' : '') + currentSettings.brightness + '%';
+    document.getElementById('adjust-contrast').value = currentSettings.contrast;
+    document.getElementById('val-contrast').textContent = (currentSettings.contrast > 0 ? '+' : '') + currentSettings.contrast + '%';
+    document.getElementById('adjust-threshold').value = currentSettings.threshold;
+    document.getElementById('val-threshold').textContent = currentSettings.threshold;
+
+    if (currentSettings.filter === 'bw') {
+        document.getElementById('threshold-slider-group').classList.remove('hidden');
+    } else {
+        document.getElementById('threshold-slider-group').classList.add('hidden');
+    }
+
+    // Update active preset button state
+    document.querySelectorAll('.scanner-filter-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById('filter-' + currentSettings.filter);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    originalImgElement = new Image();
+    originalImgElement.crossOrigin = "anonymous";
+    originalImgElement.onload = function() {
+        // Initialize manual crop boundary if not set
+        if (!item.crop) {
+            cropBoxPercent = { x: 10, y: 10, w: 80, h: 80 };
+        } else {
+            cropBoxPercent = JSON.parse(JSON.stringify(item.crop));
         }
-    });
-    
-    // Add to removal list
-    const form = document.querySelector('form');
-    if (form) {
-        const removeInput = document.createElement('input');
-        removeInput.type = 'hidden';
-        removeInput.name = 'hapus_gambar[]';
-        removeInput.value = path;
-        form.appendChild(removeInput);
+        
+        isCropperActive = false;
+        document.getElementById('crop-overlay').classList.add('hidden');
+        document.getElementById('cropper-btn-text').textContent = "Pangkas Manual";
+        document.getElementById('cropper-toggle-btn').className = "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-slate-950 hover:bg-slate-850 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-indigo-400 transition duration-150 cursor-pointer";
+
+        applyFilters();
+        document.getElementById('scanner-loader').classList.add('hidden');
+    };
+    originalImgElement.onerror = function() {
+        alert('Gagal memuat gambar untuk di-scan.');
+        document.getElementById('scanner-loader').classList.add('hidden');
+        closeScannerModal();
+    };
+    originalImgElement.src = item.originalDataUrl;
+}
+
+function closeScannerModal() {
+    document.getElementById('camscanner-modal').classList.add('hidden');
+    activeImageIndex = null;
+    originalImgElement = null;
+}
+
+function setScannerFilter(filterName) {
+    currentSettings.filter = filterName;
+    document.querySelectorAll('.scanner-filter-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById('filter-' + filterName);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    if (filterName === 'bw') {
+        document.getElementById('threshold-slider-group').classList.remove('hidden');
+    } else {
+        document.getElementById('threshold-slider-group').classList.add('hidden');
     }
+
+    applyFilters();
+}
+
+function adjustScannerManual(type, value) {
+    currentSettings[type] = parseInt(value, 10);
+    if (type === 'brightness') {
+        document.getElementById('val-brightness').textContent = (value > 0 ? '+' : '') + value + '%';
+    } else if (type === 'contrast') {
+        document.getElementById('val-contrast').textContent = (value > 0 ? '+' : '') + value + '%';
+    } else if (type === 'threshold') {
+        document.getElementById('val-threshold').textContent = value;
+    }
+    applyFilters();
+}
+
+function rotateScanner(deg) {
+    currentSettings.rotation = (currentSettings.rotation + deg) % 360;
+    if (currentSettings.rotation < 0) currentSettings.rotation += 360;
+    applyFilters();
+}
+
+function applyFilters() {
+    if (!originalImgElement) return;
+
+    const canvas = document.getElementById('scanner-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Calculate dimensions based on rotation
+    const is90or270 = (currentSettings.rotation === 90 || currentSettings.rotation === 270);
+    let targetW = is90or270 ? originalImgElement.height : originalImgElement.width;
+    let targetH = is90or270 ? originalImgElement.width : originalImgElement.height;
+
+    // Downscale for canvas editor limits to prevent browser crash
+    const maxDimension = 1200;
+    let scale = 1;
+    if (targetW > maxDimension || targetH > maxDimension) {
+        scale = maxDimension / Math.max(targetW, targetH);
+        targetW = Math.round(targetW * scale);
+        targetH = Math.round(targetH * scale);
+    }
+
+    canvas.width = targetW;
+    canvas.height = targetH;
+
+    ctx.clearRect(0, 0, targetW, targetH);
+    ctx.save();
+
+    // Translate and rotate
+    ctx.translate(targetW / 2, targetH / 2);
+    ctx.rotate((currentSettings.rotation * Math.PI) / 180);
+
+    // Draw image with translation offsets
+    const drawW = (is90or270 ? targetH : targetW);
+    const drawH = (is90or270 ? targetW : targetH);
+    ctx.drawImage(originalImgElement, -drawW / 2, -drawH / 2, drawW, drawH);
+    ctx.restore();
+
+    // 1. If Crop/Pangkas is active or stored, crop the canvas
+    if (cropBoxPercent && (isCropperActive || processedImages[activeImageIndex].crop)) {
+        // Get cropped pixel boundaries
+        const cx = Math.round((cropBoxPercent.x / 100) * targetW);
+        const cy = Math.round((cropBoxPercent.y / 100) * targetH);
+        const cw = Math.round((cropBoxPercent.w / 100) * targetW);
+        const ch = Math.round((cropBoxPercent.h / 100) * targetH);
+
+        if (cw > 5 && ch > 5) {
+            const cropImageData = ctx.getImageData(cx, cy, cw, ch);
+            canvas.width = cw;
+            canvas.height = ch;
+            ctx.putImageData(cropImageData, 0, 0);
+        }
+    }
+
+    // Apply Pixel Manipulations
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+
+    // Apply Brightness & Contrast
+    const b = currentSettings.brightness; // -100 to 100
+    const c = currentSettings.contrast;   // -100 to 100
+    const factor = (259 * (c + 255)) / (255 * (259 - c));
+
+    for (let i = 0; i < data.length; i += 4) {
+        // Brightness
+        let r = data[i] + b * 2.55;
+        let g = data[i + 1] + b * 2.55;
+        let bVal = data[i + 2] + b * 2.55;
+
+        // Contrast
+        r = factor * (r - 128) + 128;
+        g = factor * (g - 128) + 128;
+        bVal = factor * (bVal - 128) + 128;
+
+        data[i] = Math.max(0, Math.min(255, r));
+        data[i + 1] = Math.max(0, Math.min(255, g));
+        data[i + 2] = Math.max(0, Math.min(255, bVal));
+    }
+
+    // Apply Presets/Filters
+    if (currentSettings.filter === 'grayscale') {
+        for (let i = 0; i < data.length; i += 4) {
+            const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            data[i] = gray;
+            data[i + 1] = gray;
+            data[i + 2] = gray;
+        }
+    } else if (currentSettings.filter === 'bw') {
+        const thresh = currentSettings.threshold;
+        for (let i = 0; i < data.length; i += 4) {
+            const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            const bw = gray >= thresh ? 255 : 0;
+            data[i] = bw;
+            data[i + 1] = bw;
+            data[i + 2] = bw;
+        }
+    } else if (currentSettings.filter === 'magic') {
+        // Adaptive Contrast / White balance simulation for paper document clarity
+        for (let i = 0; i < data.length; i += 4) {
+            let r = data[i];
+            let g = data[i+1];
+            let bVal = data[i+2];
+
+            // Increase contrast dynamically and lighten background
+            r = Math.min(255, r * 1.15);
+            g = Math.min(255, g * 1.15);
+            bVal = Math.min(255, bVal * 1.15);
+
+            // If it's close to white, make it pure white (enhances paper contrast)
+            const brightness = 0.299 * r + 0.587 * g + 0.114 * bVal;
+            if (brightness > 165) {
+                r = Math.min(255, r * 1.1);
+                g = Math.min(255, g * 1.1);
+                bVal = Math.min(255, bVal * 1.1);
+            } else {
+                // Darken text slightly
+                r = r * 0.9;
+                g = g * 0.9;
+                bVal = bVal * 0.9;
+            }
+
+            data[i] = Math.max(0, Math.min(255, r));
+            data[i + 1] = Math.max(0, Math.min(255, g));
+            data[i + 2] = Math.max(0, Math.min(255, bVal));
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+
+    // Render/position crop box in UI if active
+    if (isCropperActive) {
+        updateCropBoxUI();
+    }
+}
+
+// Cropper manual methods
+function toggleCropper() {
+    isCropperActive = !isCropperActive;
+    const overlay = document.getElementById('crop-overlay');
+    const btnText = document.getElementById('cropper-btn-text');
+    const btn = document.getElementById('cropper-toggle-btn');
+    
+    if (isCropperActive) {
+        overlay.classList.remove('hidden');
+        btnText.textContent = "Matikan Pangkas";
+        btn.className = "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-indigo-600 text-white border border-indigo-500 text-xs font-semibold hover:bg-indigo-700 transition duration-150 cursor-pointer";
+        applyFilters(); // Re-render canvas in full size before cropping
+    } else {
+        overlay.classList.add('hidden');
+        btnText.textContent = "Pangkas Manual";
+        btn.className = "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-slate-950 hover:bg-slate-850 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-indigo-400 transition duration-150 cursor-pointer";
+        
+        // Discard changes to crop
+        processedImages[activeImageIndex].crop = null;
+        applyFilters();
+    }
+}
+
+function updateCropBoxUI() {
+    const canvas = document.getElementById('scanner-canvas');
+    const box = document.getElementById('crop-box');
+    
+    const canvasW = canvas.offsetWidth;
+    const canvasH = canvas.offsetHeight;
+    const canvasLeft = canvas.offsetLeft;
+    const canvasTop = canvas.offsetTop;
+
+    box.style.left = canvasLeft + (cropBoxPercent.x / 100) * canvasW + 'px';
+    box.style.top = canvasTop + (cropBoxPercent.y / 100) * canvasH + 'px';
+    box.style.width = (cropBoxPercent.w / 100) * canvasW + 'px';
+    box.style.height = (cropBoxPercent.h / 100) * canvasH + 'px';
+}
+
+// Event listener setup for crop box dragging/resizing
+document.addEventListener('mousedown', function(e) {
+    if (!isCropperActive) return;
+    const handle = e.target.getAttribute('data-handle');
+    const isBox = e.target === document.getElementById('crop-box');
+    
+    if (handle || isBox) {
+        e.preventDefault();
+        dragStartCoords = { x: e.clientX, y: e.clientY };
+        cropBoxStartCoords = { ...cropBoxPercent };
+        
+        if (handle) {
+            isResizingBox = true;
+            activeHandle = handle;
+        } else {
+            isDraggingBox = true;
+        }
+    }
+});
+
+document.addEventListener('mousemove', function(e) {
+    if (!isCropperActive || (!isDraggingBox && !isResizingBox)) return;
+
+    const canvas = document.getElementById('scanner-canvas');
+    const canvasW = canvas.offsetWidth;
+    const canvasH = canvas.offsetHeight;
+
+    const dxPercent = ((e.clientX - dragStartCoords.x) / canvasW) * 100;
+    const dyPercent = ((e.clientY - dragStartCoords.y) / canvasH) * 100;
+
+    if (isDraggingBox) {
+        let newX = cropBoxStartCoords.x + dxPercent;
+        let newY = cropBoxStartCoords.y + dyPercent;
+
+        // Clamp within bounds
+        newX = Math.max(0, Math.min(100 - cropBoxStartCoords.w, newX));
+        newY = Math.max(0, Math.min(100 - cropBoxStartCoords.h, newY));
+
+        cropBoxPercent.x = newX;
+        cropBoxPercent.y = newY;
+    } else if (isResizingBox) {
+        let newX = cropBoxStartCoords.x;
+        let newY = cropBoxStartCoords.y;
+        let newW = cropBoxStartCoords.w;
+        let newH = cropBoxStartCoords.h;
+
+        if (activeHandle.includes('e')) {
+            newW = Math.max(5, Math.min(100 - newX, cropBoxStartCoords.w + dxPercent));
+        }
+        if (activeHandle.includes('w')) {
+            const possibleW = cropBoxStartCoords.w - dxPercent;
+            if (possibleW >= 5) {
+                newX = Math.max(0, cropBoxStartCoords.x + dxPercent);
+                newW = cropBoxStartCoords.w + (cropBoxStartCoords.x - newX);
+            }
+        }
+        if (activeHandle.includes('s')) {
+            newH = Math.max(5, Math.min(100 - newY, cropBoxStartCoords.h + dyPercent));
+        }
+        if (activeHandle.includes('n')) {
+            const possibleH = cropBoxStartCoords.h - dyPercent;
+            if (possibleH >= 5) {
+                newY = Math.max(0, cropBoxStartCoords.y + dyPercent);
+                newH = cropBoxStartCoords.h + (cropBoxStartCoords.y - newY);
+            }
+        }
+
+        cropBoxPercent.x = newX;
+        cropBoxPercent.y = newY;
+        cropBoxPercent.w = newW;
+        cropBoxPercent.h = newH;
+    }
+
+    updateCropBoxUI();
+});
+
+document.addEventListener('mouseup', function() {
+    isDraggingBox = false;
+    isResizingBox = false;
+    activeHandle = null;
+});
+
+// Autocrop edge-detection algorithm
+function autoCropDocument() {
+    if (!originalImgElement) return;
+
+    document.getElementById('scanner-loader').classList.remove('hidden');
+
+    setTimeout(() => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Downscale for faster analysis
+        const scaleWidth = 300;
+        const scaleHeight = Math.round((originalImgElement.height / originalImgElement.width) * scaleWidth);
+        canvas.width = scaleWidth;
+        canvas.height = scaleHeight;
+
+        // Handle rotation in detector
+        ctx.translate(scaleWidth / 2, scaleHeight / 2);
+        ctx.rotate((currentSettings.rotation * Math.PI) / 180);
+        const is90or270 = (currentSettings.rotation === 90 || currentSettings.rotation === 270);
+        const drawW = is90or270 ? scaleHeight : scaleWidth;
+        const drawH = is90or270 ? scaleWidth : scaleHeight;
+        ctx.drawImage(originalImgElement, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.restore();
+
+        const imgData = ctx.getImageData(0, 0, scaleWidth, scaleHeight);
+        const data = imgData.data;
+
+        // 1. Convert to Grayscale & Calculate mean intensity
+        const gray = new Uint8Array(scaleWidth * scaleHeight);
+        let totalIntensity = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            const val = Math.round(0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2]);
+            gray[i / 4] = val;
+            totalIntensity += val;
+        }
+        const meanIntensity = totalIntensity / (scaleWidth * scaleHeight);
+
+        // 2. Sobel Edge Detection
+        const edge = new Uint8Array(scaleWidth * scaleHeight);
+        for (let y = 1; y < scaleHeight - 1; y++) {
+            for (let x = 1; x < scaleWidth - 1; x++) {
+                const idx = y * scaleWidth + x;
+                
+                // Sobel kernels
+                const gx = 
+                    -1 * gray[idx - scaleWidth - 1] + 1 * gray[idx - scaleWidth + 1] +
+                    -2 * gray[idx - 1]               + 2 * gray[idx + 1] +
+                    -1 * gray[idx + scaleWidth - 1] + 1 * gray[idx + scaleWidth + 1];
+
+                const gy = 
+                    -1 * gray[idx - scaleWidth - 1] - 2 * gray[idx - scaleWidth] - 1 * gray[idx - scaleWidth + 1] +
+                    1 * gray[idx + scaleWidth - 1] + 2 * gray[idx + scaleWidth] + 1 * gray[idx + scaleWidth + 1];
+
+                const mag = Math.sqrt(gx * gx + gy * gy);
+                edge[idx] = mag > 45 ? 255 : 0;
+            }
+        }
+
+        // 3. Document bounding box detection (horizontal & vertical projections)
+        let minX = scaleWidth, maxX = 0, minY = scaleHeight, maxY = 0;
+        let foundEdges = false;
+
+        // Thresholds based on lighting
+        const projThreshold = Math.max(2, Math.round(scaleWidth * 0.015));
+
+        for (let y = 4; y < scaleHeight - 4; y++) {
+            let rowCount = 0;
+            for (let x = 4; x < scaleWidth - 4; x++) {
+                if (edge[y * scaleWidth + x] === 255) {
+                    rowCount++;
+                }
+            }
+            if (rowCount > projThreshold) {
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+                foundEdges = true;
+            }
+        }
+
+        for (let x = 4; x < scaleWidth - 4; x++) {
+            let colCount = 0;
+            for (let y = 4; y < scaleHeight - 4; y++) {
+                if (edge[y * scaleWidth + x] === 255) {
+                    colCount++;
+                }
+            }
+            if (colCount > projThreshold) {
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+                foundEdges = true;
+            }
+        }
+
+        // 4. Update crop coordinates or fallback
+        if (foundEdges && (maxX - minX > scaleWidth * 0.25) && (maxY - minY > scaleHeight * 0.25)) {
+            // Success: Add minor margins
+            const marginX = Math.round(scaleWidth * 0.02);
+            const marginY = Math.round(scaleHeight * 0.02);
+
+            cropBoxPercent.x = Math.max(0, Math.min(100, ((minX - marginX) / scaleWidth) * 100));
+            cropBoxPercent.y = Math.max(0, Math.min(100, ((minY - marginY) / scaleHeight) * 100));
+            cropBoxPercent.w = Math.max(10, Math.min(100 - cropBoxPercent.x, ((maxX - minX + 2 * marginX) / scaleWidth) * 100));
+            cropBoxPercent.h = Math.max(10, Math.min(100 - cropBoxPercent.y, ((maxY - minY + 2 * marginY) / scaleHeight) * 100));
+        } else {
+            // Fallback to center-focused 85% area
+            cropBoxPercent = { x: 7.5, y: 7.5, w: 85, h: 85 };
+        }
+
+        // Enforce crop box view
+        isCropperActive = true;
+        const overlay = document.getElementById('crop-overlay');
+        const btnText = document.getElementById('cropper-btn-text');
+        const btn = document.getElementById('cropper-toggle-btn');
+        overlay.classList.remove('hidden');
+        btnText.textContent = "Matikan Pangkas";
+        btn.className = "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-indigo-600 text-white border border-indigo-500 text-xs font-semibold hover:bg-indigo-700 transition duration-150 cursor-pointer";
+
+        applyFilters();
+        document.getElementById('scanner-loader').classList.add('hidden');
+    }, 100);
+}
+
+function saveScannerResult() {
+    if (activeImageIndex === null) return;
+    const canvas = document.getElementById('scanner-canvas');
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+    processedImages[activeImageIndex].dataUrl = dataUrl;
+    processedImages[activeImageIndex].settings = { ...currentSettings };
+    processedImages[activeImageIndex].crop = isCropperActive ? { ...cropBoxPercent } : null;
+    processedImages[activeImageIndex].isProcessed = true;
+
+    renderImagePreviews();
+    syncFileInput();
+    closeScannerModal();
 }
 
 </script>
