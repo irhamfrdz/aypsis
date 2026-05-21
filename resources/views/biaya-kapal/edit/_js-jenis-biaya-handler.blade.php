@@ -78,6 +78,10 @@
         if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
         if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
         if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+        if(bankIdWrapper) {
+            bankIdWrapper.classList.add('hidden');
+            if(bankIdSelect) bankIdSelect.value = '';
+        }
         if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
         if(meratusWrapper) meratusWrapper.classList.add('hidden');
         if(temasWrapper) temasWrapper.classList.add('hidden');
@@ -496,6 +500,9 @@
             // Hide Operasional wrapper for Biaya Buruh
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
+
+            // Show Bank Dropdown for Biaya Buruh
+            if (bankIdWrapper) bankIdWrapper.classList.remove('hidden');
         }
         // Show TKBM wrapper if "Biaya KTKBM" is selected
         else if (selectedText.toLowerCase().includes('ktkbm')) {

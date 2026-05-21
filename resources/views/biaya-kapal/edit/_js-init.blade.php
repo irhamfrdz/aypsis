@@ -158,6 +158,8 @@
     var penerimaInput = document.getElementById('penerima');
     var namaVendorWrapper = document.getElementById('nama_vendor_wrapper');
     var nomorRekeningWrapper = document.getElementById('nomor_rekening_wrapper');
+    var bankIdWrapper = document.getElementById('bank_id_wrapper');
+    var bankIdSelect = document.getElementById('bank_id');
     var nomorReferensiWrapper = document.getElementById('nomor_referensi_wrapper');
     
     // Stuffing specific fields

@@ -8,7 +8,7 @@ use App\Models\PembayaranUangMuka;
 use App\Models\PembayaranPranotaSupir;
 use App\Models\PembayaranPranotaKontainer;
 use App\Models\PembayaranPranotaCat;
-use App\Models\PembayaranPranotaPerbaikanKontainer;
+
 use App\Models\PembayaranAktivitasLainnya;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -67,7 +67,7 @@ class ReportPembayaranController extends Controller
             'pranota_supir' => ['model' => PembayaranPranotaSupir::class, 'label' => 'Pembayaran Pranota Supir', 'date_column' => 'tanggal_pembayaran'],
             'pranota_kontainer' => ['model' => PembayaranPranotaKontainer::class, 'label' => 'Pembayaran Pranota Kontainer', 'date_column' => 'tanggal_pembayaran'],
             'pranota_cat' => ['model' => PembayaranPranotaCat::class, 'label' => 'Pembayaran Pranota CAT', 'date_column' => 'tanggal_kas'],
-            'pranota_perbaikan' => ['model' => PembayaranPranotaPerbaikanKontainer::class, 'label' => 'Pembayaran Pranota Perbaikan', 'date_column' => 'tanggal_pembayaran'],
+
             'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran']
         ];
 
@@ -156,7 +156,7 @@ class ReportPembayaranController extends Controller
             'pranota_supir' => ['model' => PembayaranPranotaSupir::class, 'label' => 'Pembayaran Pranota Supir', 'date_column' => 'tanggal_pembayaran'],
             'pranota_kontainer' => ['model' => PembayaranPranotaKontainer::class, 'label' => 'Pembayaran Pranota Kontainer', 'date_column' => 'tanggal_pembayaran'],
             'pranota_cat' => ['model' => PembayaranPranotaCat::class, 'label' => 'Pembayaran Pranota CAT', 'date_column' => 'tanggal_kas'],
-            'pranota_perbaikan' => ['model' => PembayaranPranotaPerbaikanKontainer::class, 'label' => 'Pembayaran Pranota Perbaikan', 'date_column' => 'tanggal_pembayaran'],
+
             'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran']
         ];
 
@@ -270,7 +270,7 @@ class ReportPembayaranController extends Controller
             'pranota_supir' => ['model' => PembayaranPranotaSupir::class, 'label' => 'Pembayaran Pranota Supir', 'date_column' => 'tanggal_pembayaran'],
             'pranota_kontainer' => ['model' => PembayaranPranotaKontainer::class, 'label' => 'Pembayaran Pranota Kontainer', 'date_column' => 'tanggal_pembayaran'],
             'pranota_cat' => ['model' => PembayaranPranotaCat::class, 'label' => 'Pembayaran Pranota CAT', 'date_column' => 'tanggal_kas'],
-            'pranota_perbaikan' => ['model' => PembayaranPranotaPerbaikanKontainer::class, 'label' => 'Pembayaran Pranota Perbaikan', 'date_column' => 'tanggal_pembayaran'],
+
             'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran']
         ];
 

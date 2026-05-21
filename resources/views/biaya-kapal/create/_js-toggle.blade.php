@@ -9,6 +9,10 @@
         if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
         if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
         if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+        if(bankIdWrapper) {
+            bankIdWrapper.classList.add('hidden');
+            if(bankIdSelect) bankIdSelect.value = '';
+        }
         if(nomorReferensiWrapper) nomorReferensiWrapper.classList.remove('hidden');
         if(labuhTambatWrapper) labuhTambatWrapper.classList.add('hidden');
         if(perijinanWrapper) perijinanWrapper.classList.add('hidden');
@@ -412,6 +416,9 @@
             // Hide Trucking wrapper for Biaya Buruh
             if (truckingWrapper) truckingWrapper.classList.add('hidden');
             clearAllTruckingSections();
+
+            // Show Bank Dropdown for Biaya Buruh
+            if (bankIdWrapper) bankIdWrapper.classList.remove('hidden');
         }
         // Show TKBM wrapper if "Biaya KTKBM" is selected
         else if (selectedText.toLowerCase().includes('ktkbm')) {

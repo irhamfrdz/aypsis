@@ -188,7 +188,7 @@
                                     'PembayaranPranotaSupir' => ['label' => 'Pranota Supir', 'color' => 'indigo'],
                                     'PembayaranPranotaKontainer' => ['label' => 'Pranota Kontainer', 'color' => 'pink'],
                                     'PembayaranPranotaCat' => ['label' => 'Pranota CAT', 'color' => 'cyan'],
-                                    'PembayaranPranotaPerbaikanKontainer' => ['label' => 'Pranota Perbaikan', 'color' => 'amber'],
+
                                     'PembayaranAktivitasLainnya' => ['label' => 'Aktivitas Lainnya', 'color' => 'emerald']
                                 ];
 

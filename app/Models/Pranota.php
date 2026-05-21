@@ -40,10 +40,6 @@ class Pranota extends Model
         return new PranotaUangJalan();
     }
 
-    public static function forPerbaikanKontainer()
-    {
-        return new PranotaPerbaikanKontainer();
-    }
 
     public function getTagihanItems()
     {
@@ -73,11 +69,6 @@ class Pranota extends Model
             return $catItems->sum('realisasi_biaya');
         }
 
-        // Check if there are perbaikan kontainer items
-        $perbaikanItems = \App\Models\PerbaikanKontainer::whereIn('id', $this->tagihan_ids)->get();
-        if ($perbaikanItems->isNotEmpty()) {
-            return $perbaikanItems->sum('realisasi_biaya_perbaikan');
-        }
 
         // If no CAT or perbaikan items, check kontainer sewa items
         $tagihanItems = $this->getTagihanItems();
@@ -119,15 +110,6 @@ class Pranota extends Model
         return \App\Models\DaftarTagihanKontainerSewa::whereIn('id', $this->tagihan_ids);
     }
 
-    public function perbaikanKontainer()
-    {
-        // Since tagihan_ids contains IDs from various tables including perbaikan_kontainer
-        // We need to filter PerbaikanKontainer where ID is in tagihan_ids
-        if (empty($this->tagihan_ids)) {
-            return collect();
-        }
-        return \App\Models\PerbaikanKontainer::whereIn('id', $this->tagihan_ids)->get();
-    }
 
     public function getLatestPayment()
     {

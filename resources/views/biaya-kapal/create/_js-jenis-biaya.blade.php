@@ -211,6 +211,8 @@
     const penerimaInput = document.getElementById('penerima');
     const namaVendorWrapper = document.getElementById('nama_vendor_wrapper');
     const nomorRekeningWrapper = document.getElementById('nomor_rekening_wrapper');
+    const bankIdWrapper = document.getElementById('bank_id_wrapper');
+    const bankIdSelect = document.getElementById('bank_id');
     const nomorReferensiWrapper = document.getElementById('nomor_referensi_wrapper');
 
     // Pricelist Air Tawar data

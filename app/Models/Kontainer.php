@@ -151,11 +151,6 @@ class Kontainer extends Model
         return $this->belongsToMany(Permohonan::class, 'permohonan_kontainers');
     }
 
-    // Relasi ke perbaikan kontainer
-    public function perbaikanKontainers()
-    {
-        return $this->hasMany(PerbaikanKontainer::class, 'nomor_kontainer', 'nomor_seri_gabungan');
-    }
 
     // Gate In relationships
     public function gateIn()

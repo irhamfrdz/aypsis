@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 
 class BiayaKapal extends Model
 {
-    use SoftDeletes, Auditable;
+    use Auditable, SoftDeletes;
 
     protected $table = 'biaya_kapals';
 
@@ -28,6 +28,7 @@ class BiayaKapal extends Model
         'penerima',
         'nama_vendor',
         'nomor_rekening',
+        'bank_id',
         'keterangan',
         'bukti',
         'ppn',
@@ -58,7 +59,7 @@ class BiayaKapal extends Model
     // Accessors
     public function getFormattedNominalAttribute()
     {
-        return 'Rp ' . number_format($this->nominal, 0, ',', '.');
+        return 'Rp '.number_format($this->nominal, 0, ',', '.');
     }
 
     public function getDisplayNamaKapalAttribute()
@@ -66,6 +67,7 @@ class BiayaKapal extends Model
         if (is_array($this->nama_kapal)) {
             return implode(', ', $this->nama_kapal);
         }
+
         return (string) $this->nama_kapal;
     }
 
@@ -74,6 +76,7 @@ class BiayaKapal extends Model
         if (is_array($this->no_voyage)) {
             return implode(', ', $this->no_voyage);
         }
+
         return (string) $this->no_voyage;
     }
 
@@ -82,6 +85,7 @@ class BiayaKapal extends Model
         if (is_array($this->no_bl)) {
             return implode(', ', $this->no_bl);
         }
+
         return (string) $this->no_bl;
     }
 
@@ -107,16 +111,18 @@ class BiayaKapal extends Model
     public function getBuktiFotoAttribute()
     {
         if ($this->bukti && in_array(pathinfo($this->bukti, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png'])) {
-            return asset('storage/' . $this->bukti);
+            return asset('storage/'.$this->bukti);
         }
+
         return null;
     }
 
     public function getBuktiPdfAttribute()
     {
         if ($this->bukti && pathinfo($this->bukti, PATHINFO_EXTENSION) === 'pdf') {
-            return asset('storage/' . $this->bukti);
+            return asset('storage/'.$this->bukti);
         }
+
         return null;
     }
 
@@ -175,8 +181,8 @@ class BiayaKapal extends Model
     public function pembayarans()
     {
         return $this->belongsToMany(PembayaranBiayaKapal::class, 'pembayaran_biaya_kapal_items', 'biaya_kapal_id', 'pembayaran_biaya_kapal_id')
-                    ->withPivot('nominal')
-                    ->withTimestamps();
+            ->withPivot('nominal')
+            ->withTimestamps();
     }
 
     public function barangDetails()
@@ -282,5 +288,10 @@ class BiayaKapal extends Model
     public function tenagaKerjaDetails()
     {
         return $this->hasMany(BiayaKapalTenagaKerja::class, 'biaya_kapal_id');
+    }
+
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class, 'bank_id');
     }
 }
