@@ -26,6 +26,7 @@ class BiayaKapalAir extends Model
         'grand_total',
         'penerima',
         'nomor_rekening',
+        'bank_id',
         'tanggal_invoice_vendor',
     ];
 
@@ -38,6 +39,7 @@ class BiayaKapalAir extends Model
         'grand_total' => 'decimal:2',
         'tanggal_invoice_vendor' => 'date',
         'is_lumpsum' => 'boolean',
+        'bank_id' => 'integer',
     ];
 
     /**
@@ -46,6 +48,14 @@ class BiayaKapalAir extends Model
     public function biayaKapal()
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
+    }
+
+    /**
+     * Relationship to Bank
+     */
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class, 'bank_id');
     }
 
     /**
